@@ -1,0 +1,25 @@
+{
+  "name": "digifactori-idearium",
+  "version": "1.0.0",
+  "description": "A 3D web application for children",
+  "keywords": [
+    "3d",
+    "school-project",
+    "room"
+  ],
+  "homepage": "https://github.com/blessingtutka/digifactori-idearium#readme",
+  "bugs": {
+    "url": "https://github.com/blessingtutka/digifactori-idearium/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blessingtutka/digifactori-idearium.git"
+  },
+  "license": "MIT",
+  "author": "blessingtutka",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
