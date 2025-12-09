@@ -1,25 +1,28 @@
 {
-  "name": "digifactori-idearium",
-  "version": "1.0.0",
-  "description": "A 3D web application for children",
-  "keywords": [
-    "3d",
-    "school-project",
-    "room"
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
-  "homepage": "https://github.com/blessingtutka/digifactori-idearium#readme",
-  "bugs": {
-    "url": "https://github.com/blessingtutka/digifactori-idearium/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/blessingtutka/digifactori-idearium.git"
-  },
-  "license": "MIT",
-  "author": "blessingtutka",
-  "type": "commonjs",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@commitlint/config-conventional": "^20.2.0",
+    "@types/node": "^24.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
+    "commitlint": "^20.2.0",
+    "eslint": "^9.39.1",
+    "husky": "^9.1.7",
+    "prettier": "^3.7.4",
+    "turbo": "^2.6.3",
+    "typescript": "^5.9.3"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   }
 }
