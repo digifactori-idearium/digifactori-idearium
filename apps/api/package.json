@@ -1,11 +1,12 @@
 {
   "name": "@digifactory_idearium/api",
   "version": "1.0.0",
+  "main": "dist/src/main.js",
   "private": true,
   "scripts": {
     "dev": "nodemon --watch src --exec tsx src/main.ts",
     "build": "tsc",
-    "start": "node dist/main.js",
+    "start": "node dist/src/main.js",
     "type-check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
