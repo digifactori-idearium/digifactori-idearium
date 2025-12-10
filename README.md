@@ -1,8 +1,12 @@
 # digifactori-idearium
 
-# My Monorepo Project
+**Idéarium 2.0** is an educational initiative by **digiFactory**, a Namur-based nonprofit founded in 2019. The project offers a 3-day workshop for children aged 6–12, modeled on a hackathon format, to introduce them to software development in a broad sense.
 
-[Optional description about the repo, apps, and packages]
+Beyond coding, the workshop emphasizes **collaboration, creativity, critical thinking, communication**, and basic technical concepts like **data, networks, UX, and agile methods**, all adapted to a young audience.
+
+Currently, the program uses **Rooms.xyz**, a platform for creating interactive 3D spaces. While fun and intuitive, the platform has some limitations that Idéarium 2.0 aims to address to enhance the learning experience.
+
+Learn more: [digiFactory](https://rooms.xyz/)
 
 ---
 
@@ -12,7 +16,9 @@
 
 ## 🔹 Backend Deployment (Render)
 
-![Backend Render Status](https://api.render.com/v1/services/srv-d4skhd63jp1c73f0iul0/badge)
+[![Render](https://img.shields.io/badge/Render-deployment-46e3b7?logo=render&logoColor=white)](https://digifactori-idearium.onrender.com)
+
+<!-- [![Render Status](https://img.shields.io/website?url=https://digifactori-idearium.onrender.com&label=DigiFactori%20Idearium&logo=render&logoColor=white&labelColor=46e3b7&style=flat-square)](https://digifactori-idearium.onrender.com) -->
 
 ## 🛡️ Code Quality / Security (CodeQL)
 
