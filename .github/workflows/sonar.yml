@@ -30,6 +30,12 @@ jobs:
         run: pnpm turbo run test -- --coverage
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
+        uses: SonarSource/sonarqube-scan-action@a31c939c97b05ad3f5af8f0c8bdaa7b5abf637f3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.branch.name=${{ github.ref_name }}
+            -Dsonar.projectKey=digifactori-idearium
+            -Dsonar.organization=digifactori-idearium
+            -Dsonar.host.url=https://sonarcloud.io
