@@ -5,6 +5,9 @@
       "outputs": ["dist/**"]
     },
     "lint": {},
-    "test": {}
+    "test": {
+      "dependsOn": ["^test"],
+      "outputs": ["coverage/**"]
+    }
   }
 }
