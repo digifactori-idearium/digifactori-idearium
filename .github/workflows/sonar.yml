@@ -30,7 +30,7 @@ jobs:
         run: pnpm turbo run test -- --coverage
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@a31c939c97b05ad3f5af8f0c8bdaa7b5abf637f3
+        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
