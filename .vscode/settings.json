@@ -44,5 +44,9 @@
   },
   "[typescript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "sonarlint.connectedMode.project": {
+    "connectionId": "digifactori-idearium",
+    "projectKey": "digifactori-idearium"
   }
 }

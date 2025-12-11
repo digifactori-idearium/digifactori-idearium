@@ -11,7 +11,9 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@app/(.*)$': '<rootDir>/../../packages/$1',
   },
-  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/main.ts'],
-  coverageDirectory: 'coverage',
   verbose: true,
+  collectCoverage: true,
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/main.ts'],
+  coverageDirectory: '<rootDir>/coverage',
+  coverageReporters: ['lcov', 'text-summary'],
 };
