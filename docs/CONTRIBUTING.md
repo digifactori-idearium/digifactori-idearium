@@ -3,7 +3,7 @@
 This project is a **PNPM monorepo** managed with **Turborepo**.
 
 For detailed contribution rules and workflows, see the:
-➡️ [Developer Guide](CONTRIBUTOR.md)
+➡️ [Developer Guide](/docs/CONTRIBUTOR.md)
 
 **Benefits**:
 

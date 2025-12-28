@@ -146,4 +146,4 @@ A new version is realesed each time a modification is pushed on **main**, and th
 
 To start contributing to the project, please read the contribution guide:
 
-➡️ [Contributing Guide](CONTRIBUTING.md)
+➡️ [Contributing Guide](/docs/CONTRIBUTING.md)
