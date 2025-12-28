@@ -1,0 +1,17 @@
+name: Branch Name Validation
+on:
+  push:
+    branches-ignore:
+      - main
+      - dev
+jobs:
+  validate-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          if [[ ! "$BRANCH_NAME" =~ ^[a-zA-Z]+/(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)/[a-zA-Z0-9_-]+$ ]]; then
+            echo "Branch name '$BRANCH_NAME' does not follow the template: <name>/<type>/<module>"
+            exit 1
+          fi

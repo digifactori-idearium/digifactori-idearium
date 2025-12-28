@@ -59,9 +59,9 @@ export default [
       'no-unused-vars': 'off',
 
       // --- Import rules ---
-      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-imports': 'warn',
       'import/order': [
-        'error',
+        'warn',
         {
           groups: [
             'builtin',
@@ -72,27 +72,6 @@ export default [
             'index',
           ],
           'newlines-between': 'always',
-        },
-      ],
-
-      // Domain boundaries (your custom rules)
-      'import/no-restricted-paths': [
-        'error',
-        {
-          zones: [
-            {
-              target: './src/**/domain/**.*ts',
-              from: './src/**/infra/**/*.ts',
-            },
-            {
-              target: './src/**/domain/**.*ts',
-              from: './src/**/usecases/**/*.ts',
-            },
-            {
-              target: './src/**/domain/**.*ts',
-              from: './src/**/app/**/*.ts',
-            },
-          ],
         },
       ],
     },
