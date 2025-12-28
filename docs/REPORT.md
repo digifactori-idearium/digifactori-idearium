@@ -4,6 +4,8 @@
 
 Our GitHub directory is available at https://github.com/digifactori-idearium/digifactori-idearium.
 
+Our telemetry with Sonarqube is available at https://sonarcloud.io/organizations/digifactori-idearium/projects
+
 ## How to trigger a build
 
 To trigger a build on the pipeline, you can:
