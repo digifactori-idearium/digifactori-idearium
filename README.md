@@ -12,7 +12,7 @@ Learn more: [digiFactory](https://rooms.xyz/)
 
 ## 🔹 Frontend Deployment (Netlify)
 
-![Frontend Netlify Status](https://api.netlify.com/api/v1/badges/4236d403-ae92-432a-a93a-c1c8b99b3bd8/deploy-status)
+[![Frontend Netlify Status](https://api.netlify.com/api/v1/badges/4236d403-ae92-432a-a93a-c1c8b99b3bd8/deploy-status)](https://digifactori-idearium.netlify.app/)
 
 ## 🔹 Backend Deployment (Render)
 
