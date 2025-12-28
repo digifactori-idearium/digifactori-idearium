@@ -1,4 +1,5 @@
 # Developers guidelines
+
 ## The branch management policy
 
 The project contains two major branches:
@@ -9,7 +10,7 @@ The project contains two major branches:
 
 To contribute on the **dev** branch, a developer create a short-living branch from **dev**:
 -  This branch name must follow this pattern : <contributor_name>/<type of work>/<modified module name>,
-    where the type of work is either bug, test-impl or new feature.
+    where the type of work is either 'build', 'chore', 'ci', 'docs', 'feat', 'fix', 'perf', 'refactor', 'revert', 'style' or 'test'.
 - The branch should correspond to a user story in the sprint backlog, and as so, should not live longer
     than 3 days.
 - The developer makes its commits on this branch, which respect the code conventions described below. The 
@@ -36,19 +37,18 @@ Those conventions are:
 -   The subject can be in any case style, except in start-case or pascal-case
 -   The subject can not be empty, and can not end with "."
 -   The type is in lowercase and not empty, and is either: 'build', 'chore', 'ci', 'docs', 'feat', 'fix', 'perf', 'refactor', 'revert', 'style' or 'test'.
-It checks also the footer and the body starts by a blank line, and emits a warning if the commit does not.
+It checks also that the footer and the body start by a blank line, and emits a warning if not.
 
 
 ## Code conventions
 The code conventions are verified with static tests by ESLint (see the eslint.config.js file). It blocks the commit if any test fails.
 The conventions are:
 -   All imported modules must be used. Unused imported modules leads to an error.
--   The modules must be imported in the following order: ... (for more info, see https://github.com/import-js/eslint-plugin-import/blob/01c9eb04331d2efa8d63f2d7f4bfec3bc44c94f3/docs/rules/order.md). Another order leads to an error.
--   Some files can't import other files from a specific directory, because ... (for more info, see https://github.com/import-js/eslint-plugin-import/blob/HEAD/docs/rules/no-restricted-paths.md). Importing those files leads to an error.
+-   The modules must be imported in the following order: builtin, external, internal, parent, sibling, index (for more info, see https://github.com/import-js/eslint-plugin-import/blob/01c9eb04331d2efa8d63f2d7f4bfec3bc44c94f3/docs/rules/order.md). Another order leads to an error.
 -   All variables and arguments must be used (except those starting with "_") (for more info, see https://eslint.org/docs/latest/rules/no-unused-vars). Unused variable or argument leads to a warning.
 -   All promises must be properly handled (for more info, see https://typescript-eslint.io/rules/no-floating-promises). Unhandled promises lead to a warning.
 
-The project uses Prettier too. Whenever a file is saved, Prettier does automatically the following formatting (see the .prettierrc file, and https://prettier.io/docs/options for moire info):
+The project uses Prettier too. Whenever a file is saved, Prettier does automatically the following formatting (see the .prettierrc file, and https://prettier.io/docs/options for more info):
 -   Adds a semicolon at the end of each statement
 -   Adds trailing commas where valid in ES5
 -   Remplaces any double quotes by single quotes
@@ -59,5 +59,8 @@ The project uses Prettier too. Whenever a file is saved, Prettier does automatic
 -   Sets end of line characters to \n
 
 
+The project uses Sonar and CodeQL to detect bad code smells and vulnerabilities in the code. The developers are stronly adviced to check the reports of those tools when after a pull request.
+
+
 ## Release policy
-The project will be release 
+A new version is realesed each time a modification is pushed on **main**, and the first complete version is expected for May 2026.
