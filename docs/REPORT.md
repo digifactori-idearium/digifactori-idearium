@@ -24,12 +24,13 @@ Bénédicte has:
 - set up the commitLint analyser
 - set up the sonar analyser
 - set up Husky
+- set up CodeQL
 - created the backbones of our future application (backend and frontend)
-- reviewed the documentation
+- reviewed the documentation and added CONTRIBUTING.md
 
 Robin has:
 
-- written the documentations
+- written the documentations in docs
 - doing so, reviewed the choice of rules for the ESLint, Prettier and commitlint
 
 ## Self-reflection
