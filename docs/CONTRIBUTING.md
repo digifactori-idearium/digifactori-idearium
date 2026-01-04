@@ -32,6 +32,35 @@ pnpm install
 cp .env.example .env
 ```
 
+## Start the Application
+
+### Start everything (recommended)
+
+From the root of the monorepo:
+
+```bash
+pnpm turbo run dev
+```
+
+This will start:
+
+- API at http://localhost:3000
+- Web at http://localhost:5173
+
+### Start applications individually
+
+#### Start the API
+
+```bash
+pnpm --filter api dev
+```
+
+#### Start the Web application
+
+```bash
+pnpm --filter web dev
+```
+
 ## Development Setup
 
 ### Project structure
@@ -45,11 +74,11 @@ apps/
 │   │   ├── middlewares/     # Express middlewares
 │   │   ├── utils/           # API-specific utilities
 │   │   └── main.ts          # Application entry point
-│   └── tests/              # API tests
+│   └── tests/               # API tests
 │
 ├── web/
 │   ├── src/
-│   │   ├── components/      # React components
+│   │   ├── components/     # React components
 │   │   │   ├── 3d/         # Three.js components
 │   │   │   └── ui/         # UI components
 │   │   ├── assets/         # Static assets
@@ -59,15 +88,43 @@ apps/
 │   │   ├── services/       # API service calls
 │   │   ├── store/          # State management
 │   │   └── types/          # Frontend-specific types
-│   └── tests/             # Frontend tests
+│   └── tests/              # Frontend tests
 │
 packages/
 ├── types/
-│       └── index.ts        # Export all shared types
+│       └── index.ts       # Export all shared types
 └── utils/
         ├── api/           # Shared API utilities
         ├── validation/    # Shared validation logic
         └── index.ts       # Export all shared utilities
+```
+
+### Available Scripts
+
+#### Root (Turborepo)
+
+```bash
+pnpm turbo run dev       # Start all apps
+pnpm turbo run build     # Build all apps
+pnpm turbo run test      # Run all tes
+```
+
+#### API (apps/api)
+
+```bash
+pnpm dev                 # Start API
+pnpm build               # Build API
+pnpm test                # Run API integration tests
+pnpm db:generate         # Generate Prisma client
+pnpm db:migrate          # Run migrations
+```
+
+#### Web (apps/web)
+
+```bash
+pnpm dev                 # Start frontend
+pnpm build               # Build frontend
+pnpm test                # Run frontend tests
 ```
 
 ### Application Overview
@@ -109,3 +166,8 @@ Shared code used across backend and frontend:
 - **Frontend (Web)**:
   - Framework: Vitest
   - Tests components, hooks, and utilities
+
+#### Integration Tests
+
+- **Backend (API)**: Jest + Supertest for Express routes, middleware, and Prisma with a test database.
+- **Frontend (Web)**: Vitest + Testing Library for Component interactions, and API calls.
