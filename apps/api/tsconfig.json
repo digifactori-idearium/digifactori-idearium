@@ -8,10 +8,13 @@
       "@/*": ["./src/*"],
       "@app/*": ["../../package/*"]
     },
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "types": ["node", "jest"],
 
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2023",
+    "types": ["node", "jest"],
+    "strict": true,
+    "esModuleInterop": true,
     "declaration": true,
     "declarationMap": true,
     "emitDecoratorMetadata": true,
