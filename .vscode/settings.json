@@ -1,50 +1,39 @@
 {
   "workbench.colorCustomizations": {
-    /* Small accents only – no background changes */
-
     "activityBarBadge.background": "#ff6ec7",
     "activityBarBadge.foreground": "#ffffff",
-
     "activityBar.activeBorder": "#6f6cff",
-
     "statusBarItem.hoverBackground": "#b086ff33",
-
     "commandCenter.border": "#6f6cff99",
-
     "sash.hoverBorder": "#ff6ec7",
-
     "editorCursor.foreground": "#ff6ec7",
-
     "editorLineNumber.activeForeground": "#b086ff",
-
     "editorBracketHighlight.foreground1": "#6b42c6",
     "editorBracketHighlight.foreground2": "#b086ff",
     "editorBracketHighlight.foreground3": "#6f6cff",
-
     "editorSuggestWidget.highlightForeground": "#ff6ec7",
-
     "tab.activeBorderTop": "#6f6cff",
     "tab.activeModifiedBorder": "#ff6ec7",
-
     "panel.border": "#6b42c6",
     "sideBarSectionHeader.border": "#b086ff55"
   },
-  "peacock.color": "#1a1f15",
+
   "eslint.validate": [
     "javascript",
     "javascriptreact",
-    { "language": "typescript", "autoFix": true },
-    { "language": "typescriptreact", "autoFix": true }
+    "typescript",
+    "typescriptreact"
   ],
-  "editor.formatOnPaste": false,
+  "eslint.format.enable": true,
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.useFlatConfig": true,
+
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll.eslint": "always"
   },
-  "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  },
+  "prettier.enable": true,
+
   "sonarlint.connectedMode.project": {
     "connectionId": "digifactori-idearium",
     "projectKey": "digifactori-idearium"
