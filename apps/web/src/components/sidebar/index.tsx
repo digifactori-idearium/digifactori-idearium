@@ -35,7 +35,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <SidebarMenuButton asChild>
           <Link
-            to={'chat'}
+            to="chat"
             role="button"
             className="flex justify-center items-center py-6 text-xl text-foreground! bg-blue-500! hover:bg-blue-700! rounded-4xl!"
           >

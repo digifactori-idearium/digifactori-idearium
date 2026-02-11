@@ -61,15 +61,13 @@ export function Search({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className={`w-full justify-between bg-[#161618] border-white/10 text-white hover:bg-white/5`}
+            className="w-full justify-between bg-[#161618] border-white/10 text-white hover:bg-white/5"
           >
             {value || `Search ${label}...`}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          className={`w-(--radix-popover-trigger-width) p-0 border-white/10 bg-[#161618]`}
-        >
+        <PopoverContent className="w-(--radix-popover-trigger-width) p-0 border-white/10 bg-[#161618]">
           <Command shouldFilter={false}>
             <CommandInput
               placeholder="Type molecule name..."

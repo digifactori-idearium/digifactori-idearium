@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo.png';
 import { Button } from '../ui/button';
 
@@ -37,7 +37,7 @@ export const Header = () => {
             Log In
           </Button>
           <Link
-            to={'/app'}
+            to="/app"
             role="button"
             className="bg-white! text-black! hover:bg-white/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
           >
@@ -45,7 +45,7 @@ export const Header = () => {
               Get Started <ArrowRight className="ml-2 h-4 w-4" />
             </span>
             {/* Subtle gradient hover effect on button */}
-            <div className="absolute inset-0 h-full w-full scale-0 rounded-md transition-all duration-300 group-hover:scale-105 group-hover:bg-metatron-gradient opacity-20"></div>
+            <div className="absolute inset-0 h-full w-full scale-0 rounded-md transition-all duration-300 group-hover:scale-105 group-hover:bg-metatron-gradient opacity-20" />
           </Link>
         </div>
       </div>
