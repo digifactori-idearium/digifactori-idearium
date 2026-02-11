@@ -1,4 +1,11 @@
+import { CircleUser } from 'lucide-react';
 import * as React from 'react';
+import { Link } from 'react-router-dom';
+
+import { NavBrand } from './NavBrand';
+import { NavLink } from './NavLink';
+import { NavLinkSkeleton } from './NavSkeleton';
+
 import {
   Sidebar,
   SidebarContent,
@@ -9,12 +16,6 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-
-import { NavLink } from './NavLink';
-import { NavBrand } from './NavBrand';
-import { NavLinkSkeleton } from './NavSkeleton';
-import { Link } from 'react-router-dom';
-import { CircleUser } from 'lucide-react';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (

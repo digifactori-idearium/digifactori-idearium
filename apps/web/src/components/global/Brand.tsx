@@ -1,5 +1,6 @@
-import logo from '../../assets/images/logo.png';
 import { Link } from 'react-router-dom';
+
+import logo from '../../assets/images/logo.png';
 export function Brand() {
   return (
     <Link to="/app" className=" flex items-center gap-1.5">

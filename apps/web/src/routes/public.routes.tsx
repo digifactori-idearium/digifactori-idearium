@@ -1,5 +1,5 @@
-import Home from '@/pages/Home';
 import AuthPage from '@/pages/Auth';
+import Home from '@/pages/Home';
 
 const publicRoutes = [
   { path: '', element: <Home />, exact: true },
