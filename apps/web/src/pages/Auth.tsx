@@ -1,7 +1,7 @@
 import Auth from '@/components/auth';
 
 const AuthPage = () => {
-  const con: string = 'connexion';
+  const con = 'connexion';
   return (
     <div className="bg">
       <Auth connexion={con} />
