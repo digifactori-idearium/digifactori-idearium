@@ -31,7 +31,13 @@
     "typescript-eslint": "^8.55.0"
   },
   "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
+    "**/*.{ts,tsx,js,jsx}": [
+      "lint --fix",
+      "prettier --write --ignore-unknown"
+    ],
+    "**/*.{json,md,css}": [
+      "prettier --write --ignore-unknown"
+    ]
   },
   "commitlint": {
     "extends": [
