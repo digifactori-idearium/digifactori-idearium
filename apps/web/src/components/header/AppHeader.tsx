@@ -1,6 +1,7 @@
+import { House } from 'lucide-react';
+
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { House } from 'lucide-react';
 
 export function AppHeader() {
   return (

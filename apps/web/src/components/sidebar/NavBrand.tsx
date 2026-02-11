@@ -1,9 +1,10 @@
+import { Brand } from '../global';
+
 import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { Brand } from '../global';
 
 export function NavBrand() {
   return (

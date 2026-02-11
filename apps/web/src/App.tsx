@@ -1,7 +1,9 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
 import { ThemeProvider } from './providers/theme-provider';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import routes from './routes';
+
+import { TooltipProvider } from '@/components/ui/tooltip';
 import './app.css';
 
 const router = createBrowserRouter(routes);

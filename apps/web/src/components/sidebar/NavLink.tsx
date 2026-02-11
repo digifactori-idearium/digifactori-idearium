@@ -1,10 +1,11 @@
+import { LayoutDashboard } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { Link } from 'react-router-dom';
-import { LayoutDashboard } from 'lucide-react';
 
 export function NavLink() {
   const links = {
