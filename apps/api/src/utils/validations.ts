@@ -14,8 +14,10 @@ const getUserByEmail = async (email: string): Promise<User | null> => {
 };
 
 const validateRegistration = async (
-  user: RegisterInput
+  acc: RegisterInput
 ): Promise<ValidationError[]> => {
+  const user = acc.user;
+  const profile = acc.profile;
   const exists = await getUserByEmail(user.email);
 
   const errors: ValidationError[] = [];
@@ -25,6 +27,8 @@ const validateRegistration = async (
     errors.push({ field: 'fullName', message: 'First name is required' });
   if (!user.last_name)
     errors.push({ field: 'fullName', message: 'Last name is required' });
+  if (!profile.pseudo)
+    errors.push({ field: 'pseudo', message: 'Pseudo name is required' });
   if (!user.password)
     errors.push({ field: 'password', message: 'password is required' });
   if (![Role.CHILD, Role.SUPERVISOR].includes(user.role))
