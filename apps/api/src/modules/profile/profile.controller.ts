@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../../types';
+import { validateProfile } from "../../utils/validations";
 import { getSingleProfile, updateProfile } from './profile.service';
 
 async function profile(req: AuthenticatedRequest, res: Response) {
@@ -59,8 +60,8 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
         });
     }
 
-    // const errors = await validateSetting(req.body);
-    // if (errors.length > 0) return res.status(422).json({ errors });
+    const errors = validateProfile(req.body);
+    if (errors.length > 0) return res.status(422).json({ errors });
 
     // if (req.file) {
     //     const file = req.file;
