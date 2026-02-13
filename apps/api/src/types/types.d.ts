@@ -9,7 +9,7 @@ interface LoginInput {
   password: string;
 }
 
-interface RegisterInput {
+interface UserInput {
   email: string;
   first_name: string;
   last_name: string;
@@ -17,3 +17,12 @@ interface RegisterInput {
   parental_code: string;
   role: 'CHILD' | 'SUPERVISOR';
 }
+
+interface ProfileInput {
+  pseudo: string;
+}
+
+type RegisterInput = {
+  user: UserInput;
+  profile: ProfileInput;
+};
