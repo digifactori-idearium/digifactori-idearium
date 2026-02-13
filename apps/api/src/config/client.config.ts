@@ -1,6 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, type User } from '@prisma/client';
+import { PrismaClient, type User, Profile, Role } from '@prisma/client';
 import { Pool } from 'pg';
+
 import 'dotenv/config';
 
 // Create a connection pool
@@ -36,5 +37,6 @@ class Database {
 }
 
 export const prisma = Database.getInstance();
-export type { User };
+export { Role };
+export type { User, Profile };
 export default Database;
