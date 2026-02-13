@@ -1,4 +1,4 @@
-import { Response, NextFunction } from 'express';
+import type { Response, NextFunction } from 'express';
 
 import { Role } from '../config/client.config';
 import { AuthenticatedRequest } from '../types';
