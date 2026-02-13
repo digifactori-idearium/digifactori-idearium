@@ -109,3 +109,28 @@ Shared code used across backend and frontend:
 - **Frontend (Web)**:
   - Framework: Vitest
   - Tests components, hooks, and utilities
+
+#### AT EVERY PULL
+
+Befor any chanfe make sur you pull from the dev branch
+
+```shell
+git pull orign dev
+```
+
+```shell
+cd apps/api # for backend
+cd apps/web # for frontend
+pnpm install
+pnpm db:migrate
+pnpm db:generate
+
+```
+
+#### AT EVERY PUSH
+
+Before any push make sure you run
+
+```shell
+pnpm run build
+```
