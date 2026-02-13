@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import authRoutes from "./modules/auth/auth.route";
+import profileRoutes from "./modules/profile/profile.route";
 
 // Env variables
 dotenv.config();
@@ -16,6 +18,10 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use("/api/auth", authRoutes)
+app.use("/api/profile", profileRoutes)
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
