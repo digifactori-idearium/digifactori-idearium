@@ -37,5 +37,6 @@ class Database {
 }
 
 export const prisma = Database.getInstance();
-export type { User, Profile, Role };
+export { Role };
+export type { User, Profile };
 export default Database;
