@@ -28,7 +28,7 @@
     "outDir": "./dist",
 
     // Interop Constraints
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "forceConsistentCasingInFileNames": true,
 
     // Type Checking
