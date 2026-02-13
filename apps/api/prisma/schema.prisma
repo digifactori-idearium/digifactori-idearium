@@ -23,6 +23,7 @@ model User {
   first_name String
   last_name  String
   password  String
+  parental_code String
   role      Role
   profil   Profil?  
   createdAt DateTime  @default(now())
