@@ -1,4 +1,4 @@
-import { prisma, type User, Role } from '../config/client.config';
+import { prisma, Role, type User } from '../config/client.config';
 
 const getUserByEmail = async (email: string): Promise<User | null> => {
   try {
@@ -51,4 +51,14 @@ const validateLogin = (input: Partial<LoginInput>): ValidationError[] => {
   return errors;
 };
 
-export { validateRegistration, validateLogin };
+
+const validateProfile = (profile: ProfileInput): ValidationError[] => {
+
+  const errors: ValidationError[] = [];
+  if (!profile.pseudo)
+    errors.push({ field: 'pseudo', message: 'pseudo is required' });
+  return errors;
+};
+
+export { validateLogin, validateProfile, validateRegistration };
+

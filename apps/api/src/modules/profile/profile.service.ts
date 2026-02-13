@@ -1,5 +1,5 @@
 import { prisma } from '../../config/client.config';
-import { requestBodyProfile } from '../../types';
+import { RequestBodyProfile } from '../../types';
 
 const profileTable = prisma.profile;
 
@@ -26,30 +26,18 @@ const getSingleProfile = async (userId: string) => {
     }
 }
 
-const updateProfile = async (userId: string, body: requestBodyProfile) => {
+const updateProfile = async (userId: string, body: RequestBodyProfile) => {
     try {
-        const hasProfile = await profileTable.findUnique({
+        
+        const employer = await profileTable.update({
             where: {
                 userId: userId,
             },
+            data: { ...body },
         });
-
-        if (hasProfile) {
-            const employer = await profileTable.update({
-                where: {
-                    userId: userId,
-                },
-                data: { ...body },
-            });
-            return employer;
-        } else {
-            const employer = await profileTable.create({
-                data: { ...body, userId: userId },
-            });
-            return employer;
-        }
+        return employer;
     } catch (error: any) {
-        throw new Error(`Error operating Employer: ${error.message}`);
+        throw new Error(`Error operating Profile: ${error.message}`);
     }
 }
 
