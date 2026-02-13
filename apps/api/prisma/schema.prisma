@@ -5,8 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -24,13 +23,14 @@ model User {
   first_name String
   last_name  String
   password  String
+  parental_code String
   role      Role
-  profil   Profil?  
+  profil   Profile?  
   createdAt DateTime  @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Profil {
+model Profile {
   id        String    @id @default(cuid())
   userId    String   @unique
   pseudo    String   @unique
@@ -44,9 +44,9 @@ model Profil {
 }
 
 model Follows {
-  followers   Profil @relation("followers", fields: [followedById], references: [id])
+  followers   Profile @relation("followers", fields: [followedById], references: [id])
   followedById String
-  following    Profil @relation("following", fields: [followingId], references: [id])
+  following    Profile @relation("following", fields: [followingId], references: [id])
   followingId  String
 
   @@id([followingId, followedById])
