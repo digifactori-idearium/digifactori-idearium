@@ -1,4 +1,4 @@
-import { prisma, type User } from '../../config/client.config';
+import { prisma, User } from '../../config/client.config';
 
 const userTable = prisma.user;
 

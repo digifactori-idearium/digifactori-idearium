@@ -61,7 +61,7 @@ export default defineConfig([
         },
       ],
 
-      'prettier/prettier': 'warn',
+      'prettier/prettier': 'off',
     },
   },
 ]);

@@ -119,9 +119,11 @@ git pull orign dev
 ```
 
 ```shell
+cd apps/api # for backend
+cd apps/web # for frontend
 pnpm install
 pnpm db:migrate
-pnpm generate
+pnpm db:generate
 
 ```
 
