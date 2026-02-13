@@ -1,8 +1,8 @@
-import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 
 // Env variables
 dotenv.config();
@@ -40,7 +40,7 @@ app.use(
     err: Error,
     req: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    _next: express.NextFunction
   ) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Something went wrong!' });
