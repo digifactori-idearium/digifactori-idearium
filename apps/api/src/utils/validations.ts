@@ -17,7 +17,7 @@ const getUserByEmail = async (email: string): Promise<User | null> => {
   }
 };
 
-const userSchema = z
+export const userSchema = z
   .object({
     email: z.email({
       error: iss => {
@@ -57,7 +57,7 @@ const userSchema = z
     }
   });
 
-const profileSchema = z.object({
+export const profileSchema = z.object({
   pseudo: z.string('Pseudo required').min(2, 'Pseudo must be at least 2 char'),
 });
 
