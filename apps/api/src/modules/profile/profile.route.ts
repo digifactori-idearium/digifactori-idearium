@@ -7,5 +7,3 @@ const profileRoutes: ExpressRouter = Router();
 profileRoutes.get('/:code', authenticate, profile);
 profileRoutes.get('/setting', authenticate, setProfile)
 export default profileRoutes;
-;
-
