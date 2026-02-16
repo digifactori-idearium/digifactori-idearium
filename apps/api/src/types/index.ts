@@ -11,7 +11,7 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export interface RequestBodyProfile {
-    pseudo?: string;
-    avatar?: string;
-    bio?: string;
-  }
+  pseudo?: string;
+  avatar?: string;
+  bio?: string;
+}

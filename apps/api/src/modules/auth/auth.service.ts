@@ -52,7 +52,10 @@ export default class AuthenticationService {
 
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const hashedParentalCode = await bcrypt.hash(parental_code, 10);
+      let hashedParentalCode: string | null = null;
+      if (parental_code !== undefined && parental_code !== null) {
+        hashedParentalCode = await bcrypt.hash(parental_code.toString(), 10);
+      }
 
       const result = await prisma.$transaction(async tx => {
         const newUser = await tx.user.create({
@@ -96,6 +99,7 @@ export default class AuthenticationService {
         return null;
       }
     } catch (error: any) {
+      console.log('DB ERRORS');
       throw new Error(`Error verifying user: ${error.message}`);
     } finally {
       await prisma.$disconnect();
@@ -119,6 +123,7 @@ export default class AuthenticationService {
         return null;
       }
     } catch (error: any) {
+      console.log('DB ERRORS');
       throw new Error(`Error verifying user: ${error.message}`);
     } finally {
       await prisma.$disconnect();

@@ -8,8 +8,10 @@ const configSchema = z.object({
     .enum(['development', 'production', 'test'])
     .default('development'),
   PORT: z.string().default('3001'),
-  DATABASE_URL: z.string(),
-  JWT_SECRET: z.string().min(32),
+  DATABASE_URL: z
+    .string()
+    .default('postgresql://username:password@host:port/database?schema=public'),
+  JWT_SECRET: z.string().min(32).default('MY SECRET TOKEN KEY'),
   JWT_EXPIRES_IN: z.string().default('7d'),
   API_URL: z.url().default('http://localhost:3001'),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
