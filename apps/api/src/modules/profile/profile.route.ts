@@ -4,7 +4,7 @@ import { profile, setProfile } from './profile.controller';
 
 const profileRoutes: ExpressRouter = Router();
 
-profileRoutes.get('/', authenticate, profile);
+profileRoutes.get('/:code', authenticate, profile);
 profileRoutes.get('/setting', authenticate, setProfile)
 export default profileRoutes;
 ;
