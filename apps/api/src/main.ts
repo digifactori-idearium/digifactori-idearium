@@ -1,8 +1,11 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import authRoutes from './modules/auth/auth.route';
+import profileRoutes from './modules/profile/profile.route';
 
 // Env variables
 dotenv.config();
@@ -10,12 +13,23 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// set up rate limiter: maximum of five requests per minute
+const limiter = RateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // max 60 requests per windowMs
+});
+
 // Middleware
+app.use(limiter);
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
