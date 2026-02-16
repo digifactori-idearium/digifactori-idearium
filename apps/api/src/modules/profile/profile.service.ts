@@ -29,7 +29,7 @@ const getSingleProfile = async (userId: string, parentalCode: boolean) => {
     } finally {
         await prisma.$disconnect();
     }
-}
+};
 
 const updateProfile = async (userId: string, body: SetProfileInput) => {
     try {

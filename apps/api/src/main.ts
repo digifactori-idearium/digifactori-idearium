@@ -4,8 +4,8 @@ import express from 'express';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import authRoutes from "./modules/auth/auth.route";
-import profileRoutes from "./modules/profile/profile.route";
+import authRoutes from './modules/auth/auth.route';
+import profileRoutes from './modules/profile/profile.route';
 
 // Env variables
 dotenv.config();
@@ -28,8 +28,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api/auth", authRoutes)
-app.use("/api/profile", profileRoutes)
+app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

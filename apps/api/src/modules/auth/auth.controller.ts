@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { generateToken } from '../../utils/generateToken';
-import { validateLogin, validateRegistration } from '../../utils/validations';
+import { registrationSchema, loginSchema } from '../../utils/validations';
 
 import AuthenticationService from './auth.service';
 
@@ -13,8 +13,16 @@ interface UserRequest extends Request {
 }
 
 async function register(req: UserRequest, res: Response) {
-  const errors = await validateRegistration(req.body);
-  if (errors.length > 0) return res.status(422).json({ errors });
+  const result = await registrationSchema.safeParseAsync(req.body);
+
+  if (!result.success) {
+    const errors = result.error.issues.map(err => ({
+      field: err.path.join('.'),
+      message: err.message,
+    }));
+
+    return res.status(400).json({ errors });
+  }
 
   try {
     const acc = await AuthenticationService.createAccount(req.body);
@@ -32,24 +40,39 @@ async function register(req: UserRequest, res: Response) {
     const responseError = {
       status: 'error',
       error: {
-        code: 'Bad Request',
+        code: 'Internal server error',
         message: 'Registration unsuccessful',
         error,
       },
 
-      status_code: 400,
+      status_code: 500,
     };
     return res.status(responseError.status_code).json(responseError);
   }
 }
 
 async function login(req: Request, res: Response) {
-  const { pseudo, password } = req.body;
-  const errors = validateLogin(req.body);
-  if (errors.length > 0) return res.status(422).json({ errors });
+  const result = await loginSchema.safeParseAsync(req.body);
+
+  if (!result.success) {
+    const errors = result.error.issues.map(err => ({
+      field: err.path.join('.'),
+      message: err.message,
+    }));
+
+    return res.status(400).json({ errors });
+  }
+
+  const { pseudo, email, password } = result.data;
 
   try {
-    const user = await AuthenticationService.loginPseudo(pseudo, password);
+    let user;
+
+    if (pseudo) {
+      user = await AuthenticationService.loginPseudo(pseudo, password);
+    } else if (email) {
+      user = await AuthenticationService.loginEmail(email, password);
+    }
 
     if (user) {
       const token = generateToken(user);
@@ -69,7 +92,7 @@ async function login(req: Request, res: Response) {
           code: 'Bad Request',
           message: 'Bad Credential',
         },
-        status_code: 400,
+        status_code: 401,
       };
       return res.status(responseError.status_code).json(responseError);
     }
@@ -77,11 +100,11 @@ async function login(req: Request, res: Response) {
     const responseError = {
       status: 'error',
       error: {
-        code: 'Bad Request',
+        code: 'Internal server error',
         message: 'Authentication failed',
         error,
       },
-      status_code: 400,
+      status_code: 500,
     };
     return res.status(responseError.status_code).json(responseError);
   }
