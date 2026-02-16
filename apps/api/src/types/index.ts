@@ -9,3 +9,9 @@ export interface AuthenticatedRequest extends Request {
     role: Role;
   };
 }
+
+export interface RequestBodyProfile {
+    pseudo?: string;
+    avatar?: string;
+    bio?: string;
+  }
