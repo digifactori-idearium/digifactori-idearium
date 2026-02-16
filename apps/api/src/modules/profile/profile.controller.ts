@@ -18,7 +18,7 @@ async function profile(req: AuthenticatedRequest, res: Response) {
     }
 
     try {
-        const user = await getSingleProfile(currentUser?.userId);
+        const user = await getSingleProfile(currentUser?.userId, req.params.code ? true : false );
         if (user) {
             const response = {
                 status: 'success',

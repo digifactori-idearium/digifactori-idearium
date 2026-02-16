@@ -1,24 +1,29 @@
 import { prisma } from '../../config/client.config';
-import { RequestBodyProfile } from '../../types';
 
 const profileTable = prisma.profile;
+const userTable = prisma.user;
 
-const getSingleProfile = async (userId: string) => {
+const getSingleProfile = async (userId: string, parentalCode: boolean) => {
     try {
-        const profil = await profileTable.findUnique({
-            where: {
-                id: userId,
-            },
-            include: {
+        const include = parentalCode ? {
                 followers: true,
-                following: true
+                following: true,
+                user: true
+            } : {
+                followers: true,
+                following: true,
             }
+        const profile = await profileTable.findUnique({
+            where: {
+                userId: userId,
+            },
+            include: include
         });
 
-        if (!profil) {
+        if (!profile) {
             throw new Error(`User not found`);
         }
-        return profil;
+        return profile;
     } catch (error: any) {
         throw new Error(`Error fetching profil: ${error.message}`);
     } finally {
@@ -26,16 +31,26 @@ const getSingleProfile = async (userId: string) => {
     }
 }
 
-const updateProfile = async (userId: string, body: RequestBodyProfile) => {
+const updateProfile = async (userId: string, body: SetProfileInput) => {
     try {
-        
-        const employer = await profileTable.update({
+        let response: {user?, profile} = {profile: {}}
+        if (body.user) {
+            const {email, first_name, last_name, password, parental_code} = {...body.user};
+            response.user = await userTable.update({
+                where: {
+                    id: userId
+                },
+                data: {email, first_name, last_name, password, parental_code}
+            })
+        }
+        const {pseudo, bio, avatar} = {...body.profile};
+        response.profile = await profileTable.update({
             where: {
                 userId: userId,
             },
-            data: { ...body },
+            data: { pseudo, bio, avatar },
         });
-        return employer;
+        return response;
     } catch (error: any) {
         throw new Error(`Error operating Profile: ${error.message}`);
     }
