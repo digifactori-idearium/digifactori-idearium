@@ -1,9 +1,9 @@
 import { Response } from 'express';
 
 import { AuthenticatedRequest } from '../../types';
-import { profileSchema } from '../../utils/validations';
+import { profileSchema, userSchema } from '../../utils/validations';
 
-import { getSingleProfile, updateProfile } from './profile.service';
+import { getSingleProfile, updateProfile, verifyPassword } from './profile.service';
 
 async function profile(req: AuthenticatedRequest, res: Response) {
   const currentUser = req.user;
@@ -61,16 +61,41 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
       status_code: 401,
     });
   }
+  const test = await verifyPassword(user.userId, req.body.password);
+  if(!test) {
+      return res.status(401).json({
+        status: 'error',
+        error: {
+          code: 'Bad Request',
+          message: 'Bad Password',
+        },
+        status_code: 401,
+      });
+  }
 
-  const result = await profileSchema.safeParseAsync(req.body);
+  const resultProfileSchema = await profileSchema.safeParseAsync(req.body.profile);
+  const resultUserSchema = await userSchema.safeParseAsync(req.body.user);
 
-  if (!result.success) {
-    const errors = result.error.issues.map(err => ({
-      field: err.path.join('.'),
-      message: err.message,
-    }));
+  if (!resultProfileSchema.success || !resultUserSchema.success) {
+    let profileErrors = {};
+    let userErrors = {};
+  
+    if (!resultProfileSchema.success) {
+      profileErrors = resultProfileSchema.error.issues.map(err => ({
+        field: err.path.join('.'),
+        message: err.message,
+      }));
 
-    return res.status(400).json({ errors });
+    }
+
+    if (!resultUserSchema.success) {
+      userErrors = resultUserSchema.error.issues.map(err => ({
+        field: err.path.join('.'),
+        message: err.message,
+      }));
+
+    }
+    return res.status(400).json({ profileErrors, userErrors });
   }
 
   // if (req.file) {
@@ -86,7 +111,7 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
       const response = {
         status: 'success',
         message: 'Employer profile retrieved successfully',
-        data: { ...profile },
+        data: profile,
         status_code: 201,
       };
       return res.status(response.status_code).json(response);

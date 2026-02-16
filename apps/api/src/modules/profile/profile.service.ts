@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import { prisma } from '../../config/client.config';
 
 const profileTable = prisma.profile;
@@ -32,15 +33,23 @@ const getSingleProfile = async (userId: string, parentalCode: boolean) => {
 };
 
 const updateProfile = async (userId: string, body: SetProfileInput) => {
+    const test = await userTable.findUnique({
+        where: {
+            id: "cmlppg2tn0000gsutd64l78ge"
+        }
+    })
+    console.log("userId ", test);
     try {
         let response: {user?, profile} = {profile: {}}
         if (body.user) {
-            const {email, first_name, last_name, password, parental_code} = {...body.user};
+            const {password, email, first_name, last_name} = {...body.user};
+            const hashedPassword: string|undefined = password ? await bcrypt.hash(password, 10) : ""
             response.user = await userTable.update({
                 where: {
                     id: userId
                 },
-                data: {email, first_name, last_name, password, parental_code}
+                data: {email, first_name, last_name,
+                    password: hashedPassword}
             })
         }
         const {pseudo, bio, avatar} = {...body.profile};
@@ -56,5 +65,16 @@ const updateProfile = async (userId: string, body: SetProfileInput) => {
     }
 }
 
-export { getSingleProfile, updateProfile };
+const verifyPassword = async (userId: string, password: string) => {
+    const correctPassword = await userTable.findUnique({
+        where: {
+            id: userId
+        }
+    }).then(res => res?.password)
+    console.log('mdp', password)
+    console.log('correctPassword', correctPassword)
+    return bcrypt.compare(password, correctPassword)
+}
+
+export { getSingleProfile, updateProfile, verifyPassword };
 
