@@ -40,12 +40,12 @@ async function register(req: UserRequest, res: Response) {
     const responseError = {
       status: 'error',
       error: {
-        code: 'Bad Request',
+        code: 'Internal server error',
         message: 'Registration unsuccessful',
         error,
       },
 
-      status_code: 400,
+      status_code: 500,
     };
     return res.status(responseError.status_code).json(responseError);
   }
@@ -92,7 +92,7 @@ async function login(req: Request, res: Response) {
           code: 'Bad Request',
           message: 'Bad Credential',
         },
-        status_code: 400,
+        status_code: 401,
       };
       return res.status(responseError.status_code).json(responseError);
     }
@@ -100,11 +100,11 @@ async function login(req: Request, res: Response) {
     const responseError = {
       status: 'error',
       error: {
-        code: 'Bad Request',
+        code: 'Internal server error',
         message: 'Authentication failed',
         error,
       },
-      status_code: 400,
+      status_code: 500,
     };
     return res.status(responseError.status_code).json(responseError);
   }
