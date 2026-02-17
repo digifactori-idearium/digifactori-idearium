@@ -4,8 +4,8 @@ import { deleteProfile, getProfile, setProfile } from './profile.controller';
 
 const profileRoutes: ExpressRouter = Router();
 
-profileRoutes.get('/:code', authenticate, getProfile);
-profileRoutes.post('/setting', authenticate, setProfile)
-profileRoutes.post('/delete', authenticate, deleteProfile)
+profileRoutes.post('/', authenticate, getProfile);
+profileRoutes.post('/setting', authenticate, setProfile);
+profileRoutes.post('/delete', authenticate, deleteProfile);
 
 export default profileRoutes;
