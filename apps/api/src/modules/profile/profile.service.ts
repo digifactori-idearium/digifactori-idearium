@@ -76,5 +76,21 @@ const verifyPassword = async (userId: string, password: string) => {
     return bcrypt.compare(password, correctPassword)
 }
 
-export { getSingleProfile, updateProfile, verifyPassword };
+const deleteUser = async(userId: string) => {
+    let response = {user : {}, profile : {}}
+    response.user = await profileTable.delete({
+        where: {
+            userId: userId
+        }
+    })
+    response.profile = await userTable.delete({
+        where: {
+            id: userId
+        }
+    })
+    return response
+    
+}
+
+export { deleteUser, getSingleProfile, updateProfile, verifyPassword };
 

@@ -3,9 +3,9 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../../types';
 import { profileSchema, userSchema } from '../../utils/validations';
 
-import { getSingleProfile, updateProfile, verifyPassword } from './profile.service';
+import { deleteUser, getSingleProfile, updateProfile, verifyPassword } from './profile.service';
 
-async function profile(req: AuthenticatedRequest, res: Response) {
+const getProfile = async (req: AuthenticatedRequest, res: Response) => {
   const currentUser = req.user;
 
   if (!currentUser) {
@@ -20,7 +20,7 @@ async function profile(req: AuthenticatedRequest, res: Response) {
   }
 
     try {
-        const user = await getSingleProfile(currentUser?.userId, req.params.code ? true : false );
+        const user = await getSingleProfile(currentUser?.userId, !!req.params.code );
         if (user) {
             const response = {
                 status: 'success',
@@ -110,7 +110,7 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
     if (profile) {
       const response = {
         status: 'success',
-        message: 'Employer profile retrieved successfully',
+        message: 'Profile retrieved successfully',
         data: profile,
         status_code: 201,
       };
@@ -120,7 +120,7 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
         status: 'error',
         error: {
           code: 'Not Found',
-          message: 'Employer profile not found',
+          message: 'Profile not found',
         },
         status_code: 404,
       });
@@ -130,7 +130,7 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
       status: 'error',
       error: {
         code: 'Bad Request',
-        message: 'Error setting employer profile',
+        message: 'Error setting profile',
         error: error,
       },
       status_code: 400,
@@ -139,5 +139,39 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-export { profile, setProfile };
+const deleteProfile = async (req: AuthenticatedRequest, res: Response) => {
+    const user = req.user;
+  if (!user) {
+    return res.status(401).json({
+      status: 'error',
+      error: {
+        code: 'Unauthorized',
+        message: "You don't have access",
+      },
+      status_code: 401,
+    });
+  }
+
+  try {
+    const deleted = await deleteUser(user.userId);
+    const response = {
+      status: 'success',
+      message: 'User deleted successfully',
+      data: deleted,
+      status_code: 201,
+    }
+    return res.status(response.status_code).json(response);
+  } catch {
+    return res.status(401).json({
+      status: 'error',
+      error: {
+        code: 'Error',
+        message: "Error while deleting user",
+      },
+      status_code: 401,
+    })
+  }
+}
+
+export { deleteProfile, getProfile, setProfile };
 
