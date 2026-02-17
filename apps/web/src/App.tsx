@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import { ThemeProvider } from './providers/theme-provider';
+import UserProvider from './providers/UserProvider';
 import routes from './routes';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -11,9 +12,11 @@ const router = createBrowserRouter(routes);
 const App = () => {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <TooltipProvider>
-        <RouterProvider router={router} />
-      </TooltipProvider>
+      <UserProvider>
+        <TooltipProvider>
+          <RouterProvider router={router} />
+        </TooltipProvider>
+      </UserProvider>
     </ThemeProvider>
   );
 };
