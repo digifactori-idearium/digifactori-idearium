@@ -4,93 +4,117 @@ import { prisma } from '../../config/client.config';
 const profileTable = prisma.profile;
 const userTable = prisma.user;
 
-const getSingleProfile = async (userId: string, parentalCode: boolean) => {
-    try {
-        const include = parentalCode ? {
-                followers: true,
-                following: true,
-                user: true
-            } : {
-                followers: true,
-                following: true,
-            }
-        const profile = await profileTable.findUnique({
-            where: {
-                userId: userId,
-            },
-            include: include
-        });
+const getSingleProfile = async (
+	userId: string,
+	parental_code: string | null
+) => {
+	try {
+		const response: { profile: {} | null; user?: any } = { profile: {} };
+		response.profile = await profileTable.findUnique({
+			where: {
+				userId: userId,
+			},
+			include: {
+				followers: true,
+				following: true,
+			},
+		});
 
-        if (!profile) {
-            throw new Error(`User not found`);
-        }
-        return profile;
-    } catch (error: any) {
-        throw new Error(`Error fetching profil: ${error.message}`);
-    } finally {
-        await prisma.$disconnect();
-    }
+		if (!response.profile) {
+			throw new Error(`User not found`);
+		}
+		if (parental_code) {
+			console.log('here');
+			const userInfo = await userTable.findUnique({
+				where: {
+					id: userId,
+				},
+			});
+			const test = await bcrypt.compare(parental_code, userInfo?.parental_code);
+			if (userInfo?.role == 'SUPERVISOR' || test) {
+				response.user = await userTable.findUnique({
+					where: {
+						id: userId,
+					},
+				});
+			}
+		}
+		console.log('response');
+		return response;
+	} catch (error: any) {
+		console.log('err: ', error);
+		throw new Error(`Error fetching profil: ${error.message}`);
+	} finally {
+		await prisma.$disconnect();
+	}
 };
 
 const updateProfile = async (userId: string, body: SetProfileInput) => {
-    const test = await userTable.findUnique({
-        where: {
-            id: "cmlppg2tn0000gsutd64l78ge"
-        }
-    })
-    console.log("userId ", test);
-    try {
-        let response: {user?, profile} = {profile: {}}
-        if (body.user) {
-            const {password, email, first_name, last_name} = {...body.user};
-            const hashedPassword: string|undefined = password ? await bcrypt.hash(password, 10) : ""
-            response.user = await userTable.update({
-                where: {
-                    id: userId
-                },
-                data: {email, first_name, last_name,
-                    password: hashedPassword}
-            })
-        }
-        const {pseudo, bio, avatar} = {...body.profile};
-        response.profile = await profileTable.update({
-            where: {
-                userId: userId,
-            },
-            data: { pseudo, bio, avatar },
-        });
-        return response;
-    } catch (error: any) {
-        throw new Error(`Error operating Profile: ${error.message}`);
-    }
-}
+	try {
+		let response: { user?; profile } = { profile: {} };
+		if (body.user) {
+			const user = await userTable.findUnique({
+				where: {
+					id: userId,
+				},
+			});
+			const { password, parental_code, ...data } = {
+				...body.user,
+			};
+			const hashedPassword: string | undefined = password
+				? await bcrypt.hash(password, 10)
+				: user?.password;
+			const hashedParentalCode: string | undefined = parental_code
+				? await bcrypt.hash(parental_code, 10)
+				: user?.parental_code;
+			response.user = await userTable.update({
+				where: {
+					id: userId,
+				},
+				data: {
+					...data,
+					password: hashedPassword,
+					parental_code: hashedParentalCode,
+				},
+			});
+		}
+		const { pseudo, bio, avatar } = { ...body.profile };
+		response.profile = await profileTable.update({
+			where: {
+				userId: userId,
+			},
+			data: { pseudo, bio, avatar },
+		});
+		return response;
+	} catch (error: any) {
+		throw new Error(`Error operating Profile: ${error.message}`);
+	}
+};
 
 const verifyPassword = async (userId: string, password: string) => {
-    const correctPassword = await userTable.findUnique({
-        where: {
-            id: userId
-        }
-    }).then(res => res?.password)
-    console.log('mdp', password)
-    console.log('correctPassword', correctPassword)
-    return bcrypt.compare(password, correctPassword)
-}
+	const correctPassword = await userTable
+		.findUnique({
+			where: {
+				id: userId,
+			},
+		})
+		.then(res => res?.password);
+	return bcrypt.compare(password, correctPassword);
+};
 
-const deleteUser = async(userId: string) => {
-    let response = {user : {}, profile : {}}
-    response.user = await profileTable.delete({
-        where: {
-            userId: userId
-        }
-    })
-    response.profile = await userTable.delete({
-        where: {
-            id: userId
-        }
-    })
-    return response
-    
-}
+const deleteUser = async (userId: string) => {
+	let response = { user: {}, profile: {} };
+	response.user = await profileTable.delete({
+		where: {
+			userId: userId,
+		},
+	});
+	response.profile = await userTable.delete({
+		where: {
+			id: userId,
+		},
+	});
+	return response;
+};
 
 export { deleteUser, getSingleProfile, updateProfile, verifyPassword };
-
