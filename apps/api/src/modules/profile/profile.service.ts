@@ -79,12 +79,11 @@ const updateProfile = async (userId: string, body: SetProfileInput) => {
 				},
 			});
 		}
-		const { pseudo, bio, avatar } = { ...body.profile };
 		response.profile = await profileTable.update({
 			where: {
 				userId: userId,
 			},
-			data: { pseudo, bio, avatar },
+			data: { ...body.profile },
 		});
 		return response;
 	} catch (error: any) {
@@ -119,3 +118,4 @@ const deleteUser = async (userId: string) => {
 };
 
 export { deleteUser, getSingleProfile, updateProfile, verifyPassword };
+
