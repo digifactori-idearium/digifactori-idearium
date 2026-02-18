@@ -20,9 +20,16 @@ interface UserInput {
 
 interface ProfileInput {
   pseudo: string;
+  bio?: string;
+  avatar?: string
 }
 
 type RegisterInput = {
   user: UserInput;
   profile: ProfileInput;
 };
+
+type SetProfileInput = {
+  user?: Partial<UserInput>,
+  profile: Partial<ProfileInput>
+}
