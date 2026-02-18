@@ -10,7 +10,7 @@ const getSingleProfile = async (
 	parental_code: string | null
 ) => {
 	try {
-		const response: { profile: {} | null; user?: any } = { profile: {} };
+		const response: { profile; user? } = { profile: {} };
 		response.profile = await profileTable.findUnique({
 			where: {
 				userId: userId,
