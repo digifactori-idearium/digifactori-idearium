@@ -1,6 +1,7 @@
 import { Response } from 'express';
 
 import { AuthenticatedRequest } from '../../types';
+
 import { profileSchema, userSchema } from '../../utils/validations';
 
 import {
