@@ -1,5 +1,7 @@
 import { Router, type Router as ExpressRouter } from 'express';
+
 import authenticate from '../../middlewares/authenticate';
+
 import { deleteProfile, getProfile, setProfile } from './profile.controller';
 
 const profileRoutes: ExpressRouter = Router();

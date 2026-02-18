@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+
 import { prisma } from '../../config/client.config';
 
 const profileTable = prisma.profile;
