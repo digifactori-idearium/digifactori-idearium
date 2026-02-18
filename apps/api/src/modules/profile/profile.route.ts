@@ -1,10 +1,13 @@
 import { Router, type Router as ExpressRouter } from 'express';
+
 import authenticate from '../../middlewares/authenticate';
-import { profile, setProfile } from './profile.controller';
+
+import { deleteProfile, getProfile, setProfile } from './profile.controller';
 
 const profileRoutes: ExpressRouter = Router();
 
-profileRoutes.get('/:code', authenticate, profile);
-profileRoutes.post('/setting', authenticate, setProfile)
+profileRoutes.post('/', authenticate, getProfile);
+profileRoutes.post('/setting', authenticate, setProfile);
+profileRoutes.post('/delete', authenticate, deleteProfile);
 
 export default profileRoutes;
