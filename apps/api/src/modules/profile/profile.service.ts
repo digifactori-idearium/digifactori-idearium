@@ -51,7 +51,7 @@ const getSingleProfile = async (
 
 const updateProfile = async (userId: string, body: SetProfileInput) => {
 	try {
-		let response: { user?; profile } = { profile: {} };
+		const response: { user?; profile } = { profile: {} };
 		if (body.user) {
 			const user = await userTable.findUnique({
 				where: {
@@ -103,7 +103,7 @@ const verifyPassword = async (userId: string, password: string) => {
 };
 
 const deleteUser = async (userId: string) => {
-	let response = { user: {}, profile: {} };
+	const response = { user: {}, profile: {} };
 	response.user = await profileTable.delete({
 		where: {
 			userId: userId,
