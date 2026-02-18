@@ -69,8 +69,6 @@ export default defineConfig([
           argsIgnorePattern: '^_',
         },
       ],
-
-      'prettier/prettier': 'warn',
     },
   },
 ]);
