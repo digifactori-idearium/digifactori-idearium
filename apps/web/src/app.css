@@ -3,7 +3,7 @@
 @layer utilities {
   body {
     overflow-x: hidden;
-    background-color: #18181b;
+    background-color: var(--color-sidebar);
   }
 
   #root {
@@ -35,12 +35,16 @@
   }
 
   .home-bg {
-    background-color: rgba(3, 7, 18, 0.92);
+    background-color: var(--color-sidebar);
     @apply rounded-md;
   }
 
   .main-btn {
     @apply bg-blue-500 text-white hover:bg-blue-700;
+  }
+
+  .side-btn {
+    @apply bg-sidebar! hover:bg-sidebar/70! active:bg-sidebar/50! outline-none! border-none!;
   }
   .magic-text {
     @apply relative bg-linear-to-r from-[#00f2fe] via-[#fe4f9d] to-[#ffd700] bg-clip-text text-transparent box-decoration-clone py-1 font-extrabold;
