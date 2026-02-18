@@ -1,10 +1,11 @@
 import { AxiosResponse } from 'axios';
-import axios from '../axios';
+import { type User, Profile as ProfileType } from "../../../api/src/config/client.config";
+import axios from '../services/axios.service';
 
-interface Profile {
-    pseudo: string;
-    bio: string;
-    avatar: string;
+
+type getProfileResponse = {
+    profile: ProfileType,
+    user: User
 }
 
 
@@ -16,9 +17,10 @@ interface ApiResponse<T> {
 }
 
 // Services
-export const getProfile = async (empId: string): Promise<ApiResponse<Profile>> => {
+export const getProfile = async (): Promise<ApiResponse<getProfileResponse>> => {
+    console.log("getProfile...")
     try {
-        const response: AxiosResponse<ApiResponse<Profile>> = await axios.get(`http://localhost:3001/api/profile/code=125`);
+        const response: AxiosResponse<ApiResponse<getProfileResponse>> = await axios.post(`http://localhost:3001/api/profile/`, {});
         return response.data;
     } catch (error: any) {
         throw new Error(error.response?.data?.error?.message || 'Error fetching employer profile');
