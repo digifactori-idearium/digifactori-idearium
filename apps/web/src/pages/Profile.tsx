@@ -1,24 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { type User, Profile as ProfileType } from "../../../api/src/config/client.config";
-import { getProfile } from '../services/profile.service';
+import { type User, Profile as ProfileType, Role } from "../../../api/src/config/client.config";
+import { getProfile, updateProfile } from '../services/profile.service';
 
-interface Profile {
-    pseudo: string;
-    bio: string;
-    avatar: string;
-}
 
 const Profile: React.FC = () => {
 
-    const [error, setError] = useState<string | null>(null);
+    const getProfileWithParentalCode = async (parentalCode: string) => {
+        const response = await getProfile(parentalCode)
+        console.log("with parentalCode: ", response.data)
+        return response.data
+    }
+
     const [user, setUser] = useState<{profile: ProfileType, user?: User} | null>(null);
-    console.log("Profile component")
-    localStorage.setItem("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWxzOHBvZmYwMDAwbDB1dG01Zmt3Yno1IiwiZW1haWwiOiJibGVzc2luZ3R1dGthMzA2QGdtYWlsLmNvbSIsInJvbGUiOiJDSElMRCIsImlhdCI6MTc3MTQzMTcyNywiZXhwIjoxNzcxNDQ2MTI3fQ.EzFf_9TppoRJcTXhfQ9q8yJkybvUnNeDP7rX1FS9qys");
+    const [parentalCode, setParentalCode] = useState("1234");
+    const [error, setError] = useState<string | null>(null);
+
+    const [password, setPassword] = useState("")
+
+
+    localStorage.setItem("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWx0aTFoaG8wMDAwN2t1dGZnZGVxaWN3IiwiZW1haWwiOiJyb2JpbjNAZ21haWwuY29tIiwicm9sZSI6IkNISUxEIiwiaWF0IjoxNzcxNTA3ODYwLCJleHAiOjE3NzE1MjIyNjB9.541Cv5cdZyxwAApQJXVqODGhartaPkVuTerq6w5ybig");
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                console.log("cc")
                 const response = await getProfile();
                 setUser(response.data);
                 setError('');
@@ -29,15 +33,72 @@ const Profile: React.FC = () => {
         console.log("fetching")
         fetchProfile();
     }, []);
-console.log("profile: ", user);
+
+    const [updatedUser, setUpdatedUser] = useState(user?.user ?? {
+        email: "",
+        first_name: "",
+        last_name: "",
+        password: "",
+        parental_code: "",
+        role: "CHILD" as Role
+    })
+
+     const [updatedProfile, setUpdatedProfile] = useState({
+        pseudo: user?.profile.pseudo,
+        bio: user?.profile.bio ?? "" ,
+        avatar: user?.profile.avatar ?? "",
+    })
+
+    useEffect(() => {
+        if (user?.user) {
+            setUpdatedUser({
+                email: user.user.email,
+                first_name: user.user.first_name,
+                last_name: user.user.last_name,
+                password: user.user.password,
+                parental_code: user.user.parental_code ? user.user.parental_code : "",
+                role: user.user.role
+            });
+        if(user?.profile) {
+            setUpdatedProfile({
+                pseudo: user?.profile.pseudo,
+                bio: user.profile.bio ?? "",
+                avatar: user.profile.avatar ?? "",
+            })
+        }
+        }
+    }, [user]);
+
+   
+
+    if (user?.user) {
+
+
+        return <div className="w-full min-h-screen flex flex-col items-center justify-center px-6">
+            <h1 className="text-4xl font-bold text-gray-800 mb-4">Ton profiiiiile{} 👋</h1>
+            <span> mdp (pour modifier) <input type="text" value={password} onChange={e => setPassword(e.target.value)}></input></span>
+            <span> e-mail: <input type="text" value={updatedUser.email} onChange={e => setUpdatedUser({...updatedUser, email: e.target.value})}></input></span>
+            <span> prénom: <input type="text" value={updatedUser.first_name} onChange={e => setUpdatedUser({...updatedUser, first_name: e.target.value})}></input></span>
+            <span> nom de famille: <input type="text" value={updatedUser.last_name} onChange={e => setUpdatedUser({...updatedUser, last_name: e.target.value})}></input></span>
+            <span>mot de passe: <input type="text" value={updatedUser.password} onChange={e => setUpdatedUser({...updatedUser, password: e.target.value})}></input> </span>
+            {(updatedUser.parental_code && updatedUser.parental_code != "" ) && <span>code parental<input type="text" value={updatedUser.parental_code} onChange={e => setUpdatedUser({...updatedUser, parental_code: e.target.value})}></input> </span>}
+            <span>pseudo: <input type="text" value={updatedProfile.pseudo} onChange={e => setUpdatedProfile({...updatedProfile, pseudo: e.target.value})}></input></span>
+            <span>bio: <input type="text" value={updatedProfile.bio} onChange={e => setUpdatedProfile({...updatedProfile, bio: e.target.value})}></input></span>
+            <span>avatar: <input type="text" value={updatedProfile.avatar} onChange={e => setUpdatedProfile({...updatedProfile, avatar: e.target.value})}></input></span>
+            <button 
+                onClick={() => updateProfile(password, updatedUser, updatedProfile)}></button>
+        </div>
+    }
+
   return (
     <div className="w-full min-h-screen flex flex-col items-center justify-center px-6">
-      <h1 className="text-4xl font-bold text-gray-800 mb-4">Your profile 👋</h1>
+      <h1 className="text-4xl font-bold text-gray-800 mb-4">Ton profile 👋</h1>
       <span>pseudo: {user ? user.profile.pseudo : "pas connecté"}</span>
       <span>bio: {user ? user.profile.bio : "pas connecté"}</span>
       <span>avatar: {user ? user.profile.avatar : "pas connecté"}</span>
-      <button>Access User info</button>
-      <button>Update profile</button>
+      <p>Votre code parental</p>
+      <input type="text" value={parentalCode} onChange={e => setParentalCode(e.target.value)}></input>
+     <button onClick={() => getProfileWithParentalCode(parentalCode).then(res => setUser(res))}></button>
     </div>
   );
 };
