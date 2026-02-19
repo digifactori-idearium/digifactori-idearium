@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 
-import { prisma } from '../../config/client.config';
+import { prisma, Role } from '../../config/client.config';
 
 const profileTable = prisma.profile;
 const userTable = prisma.user;
@@ -10,6 +10,7 @@ const getSingleProfile = async (
 	parental_code: string | null
 ) => {
 	try {
+		
 		const response: { profile; user? } = { profile: {} };
 		response.profile = await profileTable.findUnique({
 			where: {
@@ -24,23 +25,30 @@ const getSingleProfile = async (
 		if (!response.profile) {
 			throw new Error(`User not found`);
 		}
+
+		// Getting user data if needed
+		const userInfo = await userTable.findUnique({
+			where: {
+				id: userId,
+			},
+		});
+
+		let includeUser = false;
 		if (parental_code) {
-			console.log('here');
-			const userInfo = await userTable.findUnique({
+			const test = await bcrypt.compare(parental_code, userInfo?.parental_code);
+			if (test) {
+				includeUser = true
+			}
+		} else if (userInfo?.role == Role.SUPERVISOR) {
+				includeUser = true
+		}
+		if (includeUser) {
+			response.user = await userTable.findUnique({
 				where: {
 					id: userId,
 				},
 			});
-			const test = await bcrypt.compare(parental_code, userInfo?.parental_code);
-			if (userInfo?.role == 'SUPERVISOR' || test) {
-				response.user = await userTable.findUnique({
-					where: {
-						id: userId,
-					},
-				});
-			}
 		}
-		console.log('response');
 		return response;
 	} catch (error: any) {
 		console.log('err: ', error);
@@ -79,11 +87,12 @@ const updateProfile = async (userId: string, body: SetProfileInput) => {
 				},
 			});
 		}
+		const { pseudo, bio, avatar } = { ...body.profile };
 		response.profile = await profileTable.update({
 			where: {
 				userId: userId,
 			},
-			data: { ...body.profile },
+			data: { pseudo, bio, avatar },
 		});
 		return response;
 	} catch (error: any) {
@@ -99,7 +108,8 @@ const verifyPassword = async (userId: string, password: string) => {
 			},
 		})
 		.then(res => res?.password);
-	return bcrypt.compare(password, correctPassword);
+	const result = await bcrypt.compare(password, correctPassword)
+	return result;
 };
 
 const deleteUser = async (userId: string) => {
