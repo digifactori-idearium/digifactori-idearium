@@ -43,7 +43,7 @@ const Home: React.FC = () => {
           
           // Décalage pour les lignes impaires (nid d'abeille)
           const beeOffset = rowIndex % 2 !== 0 ? hexWidth / 2 : 0;
-          const length = row.length;
+          //const length = row.length;
           
           return (
             <div
