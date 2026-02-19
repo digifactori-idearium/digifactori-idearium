@@ -28,7 +28,11 @@ const FormInput: React.FC<FormInputProps> = ({
   register,
   errors,
 }) => {
-  const errorMessages = errors && (errors[input.name]?.message as string);
+  const getNestedError = (errors: FieldErrors<FieldValues>, path: string) => {
+    return path.split('.').reduce((obj, key) => (obj as any)?.[key], errors);
+  };
+  const error = errors ? getNestedError(errors, input.name) : undefined;
+  const errorMessages = error?.message as string | undefined;
   const hasError = !!errorMessages;
 
   const registerOptions = input.required ? { required: true } : {};

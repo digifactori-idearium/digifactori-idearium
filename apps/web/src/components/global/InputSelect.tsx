@@ -14,7 +14,7 @@ import {
 interface InputSelectProps {
   placeholder?: string;
   options: Option[];
-  defaultValue?: string;
+  value?: string;
   name: string;
   error?: string;
   icon?: React.ForwardRefExoticComponent<
@@ -26,13 +26,11 @@ interface InputSelectProps {
 export default function InputSelect({
   options,
   placeholder = 'Select an option',
-  defaultValue,
   onChange,
+  value,
   error,
   icon,
 }: InputSelectProps) {
-  const [value, setValue] = React.useState<string | undefined>(defaultValue);
-
   return (
     <div className="w-full flex flex-col gap-2">
       <div className="w-full flex items-center gap-2">
@@ -43,13 +41,7 @@ export default function InputSelect({
         )}
         <FieldGroup className={`w-full`}>
           <Field>
-            <Select
-              value={value}
-              onValueChange={val => {
-                setValue(val);
-                onChange?.(val);
-              }}
-            >
+            <Select value={value || ''} onValueChange={val => onChange?.(val)}>
               <SelectTrigger
                 className={`w-full relative bg-sidebar! form-input rounded-2xl! p-6! ${error ? 'error' : ''}`}
               >
