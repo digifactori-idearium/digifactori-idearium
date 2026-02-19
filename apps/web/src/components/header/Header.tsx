@@ -1,13 +1,51 @@
-import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowRight, LogOutIcon, Moon, Sun } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 import logo from '../../assets/images/logo.png';
 import { Button } from '../ui/button';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useAuth } from '@/providers/AuthProvider';
+import { useTheme } from '@/providers/theme-provider';
+import { useUser } from '@/providers/UserProvider';
+
 export const Header = () => {
+  const { theme, setTheme } = useTheme();
+  const { removeToken } = useUser();
+  const { openAuth } = useAuth();
+
+  const handleTheme = () => {
+    if (theme == 'dark') {
+      setTheme('light');
+    } else {
+      setTheme('dark');
+    }
+  };
+
+  const { getUser } = useUser();
+
+  const user = getUser();
+
+  const navigate = useNavigate();
+
+  const onLogout = () => {
+    removeToken();
+    navigate('/');
+  };
+
   return (
     <header
-      className="sticky top-4 z-50 px-6 rounded-2xl mx-6 border-2 bg-[#51545c]/10
+      className="sticky top-4 z-50 px-6 rounded-2xl mx-6 bg-[#51545c]/10  border-0 dark:border-2 
       bg-meta-darkBg/30 backdrop-blur-md supports-backdrop-filter:bg-meta-darkBg/30"
     >
       <div className="container flex h-16 items-center justify-between">
@@ -20,7 +58,7 @@ export const Header = () => {
               className="h-full w-full object-contain"
             />
           </div>
-          <span className="text-white hidden font-bold sm:inline-block text-xl tracking-wider">
+          <span className="text-foreground hidden font-bold sm:inline-block text-xl tracking-wider">
             Idearium
           </span>
         </Link>
@@ -30,17 +68,55 @@ export const Header = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden sm:flex border border-white! hover:border-blue-500!"
-          >
-            Log In
-          </Button>
+          {!user && (
+            <Button
+              onClick={() => {
+                openAuth('login');
+              }}
+              role="button"
+              className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
+            >
+              {' '}
+              Log In{' '}
+            </Button>
+          )}
+          {user && (
+            <div className="flex gap-1 md:gap-2">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="side-btn text-foreground! flex gap-2"
+                  >
+                    <LogOutIcon className="w-5 h-5 text-red-500" />
+                    <span className="hidden sm:inline">Me Déconnecter</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Se déconnecter ?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Êtes-vous sûr de vouloir quitter votre session ? Vous
+                      devrez vous reconnecter pour accéder à vos données.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={onLogout}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Se déconnecter
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
           <Link
             to="/app"
             role="button"
-            className="bg-white! text-black! hover:bg-white/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
+            className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
           >
             <span className="relative z-10 flex items-center">
               Get Started <ArrowRight className="ml-2 h-4 w-4" />
@@ -48,6 +124,15 @@ export const Header = () => {
             {/* Subtle gradient hover effect on button */}
             <div className="absolute inset-0 h-full w-full scale-0 rounded-md transition-all duration-300 group-hover:scale-105 group-hover:bg-metatron-gradient opacity-20" />
           </Link>
+          <div>
+            <Button onClick={handleTheme} className="side-btn">
+              {theme == 'dark' ? (
+                <Sun className=" text-foreground! w-5! h-5!" />
+              ) : (
+                <Moon className=" text-foreground! w-5! h-5!" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </header>

@@ -4,6 +4,7 @@ import { ThemeProvider } from './providers/theme-provider';
 import UserProvider from './providers/UserProvider';
 import routes from './routes';
 
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import './app.css';
 
@@ -11,12 +12,13 @@ const router = createBrowserRouter(routes);
 
 const App = () => {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <UserProvider>
         <TooltipProvider>
           <RouterProvider router={router} />
         </TooltipProvider>
       </UserProvider>
+      <Toaster position="top-right" richColors />
     </ThemeProvider>
   );
 };
