@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --watch src --exec tsx src/main.ts",
-    "build": "pnpm prisma generate && tsc -p tsconfig.build.json",
+    "prebuild": "pnpm prisma generate",
+    "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
