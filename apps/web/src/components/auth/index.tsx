@@ -21,9 +21,9 @@ export default function AuthModal() {
       <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden bg-sidebar! border-[#6F51B0]! [&>button]:hidden">
         <DialogHeader className="shrink-0">
           <DialogTitle>
-            {mode === 'login' && 'Login'}
-            {mode === 'register' && 'Create Account'}
-            {mode === 'reset' && 'Reset Password'}
+            {mode === 'login' && 'Se connecter'}
+            {mode === 'register' && 'Créez votre compte'}
+            {mode === 'reset' && 'Réinitialisez votre mot de passe'}
           </DialogTitle>
         </DialogHeader>
 

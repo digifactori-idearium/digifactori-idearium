@@ -24,10 +24,10 @@ export default function Login() {
 
       navigate('/app');
       setIsOpen(false);
-      toast.success('Login Successfully');
+      toast.success('Connexion réussie');
     } catch (error: any) {
       removeToken();
-      toast.error(error?.message || 'Login failed');
+      toast.error(error?.message || 'Échec de la connexion');
     } finally {
       setLoading(false);
     }
@@ -36,9 +36,7 @@ export default function Login() {
   return (
     <div className="login w-full flex flex-col gap-5">
       <div className="title">
-        <p className="text-[#626262]">
-          Login to your account - enjoy exclusive features & many more
-        </p>
+        <p className="text-[#626262]">Connectez-vous à votre compte</p>
       </div>
 
       <Form inputs={loginInputs} handleOnSubmit={onSubmit} loading={loading} />
@@ -51,7 +49,7 @@ export default function Login() {
             type="checkbox"
           />
           <label htmlFor="remember" className="font-medium">
-            Remember me
+            Se souvenir de moi
           </label>
         </div>
 
@@ -59,17 +57,17 @@ export default function Login() {
           className="forgot links font-semibold cursor-pointer hover:text-[#6F51B0]!"
           onClick={switchToRest}
         >
-          Forget password?
+          Mot de passe oublié ?
         </span>
       </div>
 
       <div className="w-full text-center">
-        Don't have an account?{' '}
+        Pas de compte ?{' '}
         <span
           className="links font-medium cursor-pointer hover:text-[#6F51B0]!"
           onClick={switchToRegister}
         >
-          Sign Up
+          S'enregistrer
         </span>
       </div>
     </div>

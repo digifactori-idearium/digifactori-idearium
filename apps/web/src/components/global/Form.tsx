@@ -130,7 +130,7 @@ const Form: React.FC<FormProps> = ({
           type="submit"
           className="w-full rounded-md bg-[#6F51B0]! p-2 text-white "
         >
-          {loading ? <Loader2 /> : 'Send'}
+          {loading ? <Loader2 /> : 'Envoyer'}
         </button>
       </form>
     </div>
