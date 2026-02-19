@@ -4,6 +4,7 @@ import { ThemeProvider } from './providers/theme-provider';
 import UserProvider from './providers/UserProvider';
 import routes from './routes';
 
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import './app.css';
 
@@ -17,6 +18,7 @@ const App = () => {
           <RouterProvider router={router} />
         </TooltipProvider>
       </UserProvider>
+      <Toaster position="top-right" richColors />
     </ThemeProvider>
   );
 };
