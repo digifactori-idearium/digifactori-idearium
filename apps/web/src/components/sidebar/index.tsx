@@ -36,7 +36,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <SidebarMenuButton asChild>
           <Link
-            to="chat"
+            to="/app/profile"
             role="button"
             className="flex justify-center items-center py-6 text-xl text-white! bg-[#6F51B0]! hover:bg-[#6F51B0]/80! rounded-4xl!"
           >
