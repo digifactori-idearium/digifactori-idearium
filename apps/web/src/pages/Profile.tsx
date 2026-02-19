@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+
 import { type User, Profile as ProfileType, Role } from "../../../api/src/config/client.config";
+
 import { getProfile, updateProfile } from '../services/profile.service';
 
 
@@ -13,7 +15,6 @@ const Profile: React.FC = () => {
 
     const [user, setUser] = useState<{profile: ProfileType, user?: User} | null>(null);
     const [parentalCode, setParentalCode] = useState("1234");
-    const [error, setError] = useState<string | null>(null);
 
     const [password, setPassword] = useState("")
 
@@ -25,9 +26,8 @@ const Profile: React.FC = () => {
             try {
                 const response = await getProfile();
                 setUser(response.data);
-                setError('');
             } catch (err: any) {
-                setError(err.message);
+                console.log("error: ", err)
             }
         };
         console.log("fetching")

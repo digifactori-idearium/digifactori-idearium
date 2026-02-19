@@ -1,5 +1,7 @@
 import { AxiosResponse } from 'axios';
+
 import { type User, Profile as ProfileType } from "../../../api/src/config/client.config";
+
 import axios from '../services/axios.service';
 
 
