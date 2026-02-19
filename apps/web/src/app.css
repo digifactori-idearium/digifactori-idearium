@@ -44,7 +44,7 @@
   }
 
   .side-btn {
-    @apply bg-sidebar! hover:bg-sidebar/70! active:bg-sidebar/50! outline-none! border-none!;
+    @apply bg-sidebar!  hover:bg-sidebar/70! active:bg-sidebar/50! outline-none! border-none!;
   }
 
   .form-input {
