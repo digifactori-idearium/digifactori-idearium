@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { type User, Profile as ProfileType, Role } from "../../../api/src/config/client.config";
 import { getProfile, updateProfile } from '../services/profile.service';
 
 
@@ -12,7 +11,7 @@ const Profile: React.FC = () => {
         return response.data
     }
 
-    const [user, setUser] = useState<{profile: ProfileType, user?: User} | null>(null);
+    const [user, setUser] = useState<{profile: Profile, user?: User} | null>(null);
     const [parentalCode, setParentalCode] = useState("1234");
 
     const [password, setPassword] = useState("")
@@ -76,7 +75,8 @@ const Profile: React.FC = () => {
         return <div className="w-full min-h-screen flex flex-col items-center justify-center px-6">
             <h1 className="text-4xl font-bold text-gray-800 mb-4">Ton profiiiiile{} 👋</h1>
             <span> mdp (pour modifier) <input type="text" value={password} onChange={e => setPassword(e.target.value)}></input></span>
-            <span> e-mail: <input type="text" value={updatedUser.email} onChange={e => setUpdatedUser({...updatedUser, email: e.target.value})}></input></span>
+            {/* <span> e-mail: <input type="text" value={user.user.email} onChange={e => setUser({...user, user: {...user.user as User, email: e.target.value}})}></input></span> */}
+            <span> prénom: <input type="text" value={updatedUser.email} onChange={e => setUpdatedUser({...updatedUser, email: e.target.value})}></input></span>
             <span> prénom: <input type="text" value={updatedUser.first_name} onChange={e => setUpdatedUser({...updatedUser, first_name: e.target.value})}></input></span>
             <span> nom de famille: <input type="text" value={updatedUser.last_name} onChange={e => setUpdatedUser({...updatedUser, last_name: e.target.value})}></input></span>
             <span>mot de passe: <input type="text" value={updatedUser.password} onChange={e => setUpdatedUser({...updatedUser, password: e.target.value})}></input> </span>

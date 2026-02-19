@@ -24,3 +24,5 @@ type Profile = {
     createdAt: Date;
     updatedAt: Date;
 }
+
+type Role = "CHILD" | "SUPERVISOR"
