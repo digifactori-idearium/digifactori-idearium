@@ -16,8 +16,10 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
+import { useUser } from '@/providers/UserProvider';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { getUser } = useUser();
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -33,18 +35,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenuButton asChild>
-          <Link
-            to="chat"
-            role="button"
-            className="flex justify-center items-center py-6 text-xl text-foreground! bg-blue-500! hover:bg-blue-700! rounded-4xl!"
-          >
-            <CircleUser className="h-6! w-6!" />
-            <span>Profile 😊</span>
-          </Link>
-        </SidebarMenuButton>
-      </SidebarFooter>
+      {getUser() && (
+        <SidebarFooter>
+          <SidebarMenuButton asChild>
+            <Link
+              to="/app/profile"
+              role="button"
+              className="flex justify-center items-center py-6 text-xl text-white! bg-[#6F51B0]! hover:bg-[#6F51B0]/80! rounded-4xl!"
+            >
+              <CircleUser className="h-6! w-6!" />
+              <span>Profile 😊</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }
