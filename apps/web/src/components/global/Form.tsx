@@ -99,16 +99,14 @@ const Form: React.FC<FormProps> = ({
                     name={input.name}
                     control={control}
                     rules={{ required: input.required ? 'Required' : false }}
-                    // eslint-disable-next-line unused-imports/no-unused-vars
                     render={({ field: { ref, ...field } }) => (
                       <InputSelect
                         {...field}
                         name={input.name}
                         error={errors[input.name]?.message as string}
-                        defaultValue={initialValues?.[input.name]}
                         options={input?.options || []}
                         placeholder={input.placeholder}
-                        onChange={(e: any) => field.onChange(e.value)}
+                        onChange={val => field.onChange(val)}
                         icon={input.icon}
                       />
                     )}
@@ -128,16 +126,12 @@ const Form: React.FC<FormProps> = ({
           })}
         </div>
 
-        {loading ? (
-          <Loader2 />
-        ) : (
-          <button
-            type="submit"
-            className="w-full rounded-md bg-primary p-2 text-white"
-          >
-            Send
-          </button>
-        )}
+        <button
+          type="submit"
+          className="w-full rounded-md bg-[#6F51B0]! p-2 text-white "
+        >
+          {loading ? <Loader2 /> : 'Send'}
+        </button>
       </form>
     </div>
   );
