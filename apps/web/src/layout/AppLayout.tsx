@@ -8,10 +8,10 @@ export function AppLayout({ header }: { header: React.ReactElement }) {
     <SidebarProvider>
       <AppSidebar className="border-r-0!" />
       {/* Main content area */}
-      <SidebarInset className="flex flex-col min-h-screen w-full relative bg-[#18181b] md:left-2">
+      <SidebarInset className="flex flex-col min-h-screen w-full relative bg-sidebar md:left-2">
         {/* Header is sticky */}
         {header}
-        <main className="content-bg min-h-[calc(100vh - 100px)] flex-1 flex items-center justify-center p-4 z-0">
+        <main className="min-h-[calc(100vh - 100px)] bg-sidebar flex-1 flex items-center justify-center p-4 z-0">
           <div className="relative w-full h-full flex items-center justify-center">
             <Outlet />
           </div>
