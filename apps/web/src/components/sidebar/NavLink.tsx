@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 
 import {
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
 export function NavLink() {
   const links = {
-    home: { path: '', label: 'Dasboard', icon: LayoutDashboard },
+    home: { path: '', label: 'Rooms', icon: LayoutDashboard },
   };
 
   return (
