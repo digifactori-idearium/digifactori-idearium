@@ -38,7 +38,7 @@ const Form: React.FC<FormProps> = ({
     reset,
   } = useForm<FieldValues>({
     defaultValues: initialValues || {},
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema as any),
   });
 
   useEffect(() => {
