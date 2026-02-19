@@ -1,14 +1,29 @@
-import { ArrowRight, Moon, Sun } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowRight, LogOutIcon, Moon, Sun } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 import logo from '../../assets/images/logo.png';
 import { Button } from '../ui/button';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useAuth } from '@/providers/AuthProvider';
 import { useTheme } from '@/providers/theme-provider';
 import { useUser } from '@/providers/UserProvider';
 
 export const Header = () => {
   const { theme, setTheme } = useTheme();
+  const { removeToken } = useUser();
+  const { openAuth } = useAuth();
+
   const handleTheme = () => {
     if (theme == 'dark') {
       setTheme('light');
@@ -16,7 +31,17 @@ export const Header = () => {
       setTheme('dark');
     }
   };
-  const user = useUser();
+
+  const { getUser } = useUser();
+
+  const user = getUser();
+
+  const navigate = useNavigate();
+
+  const onLogout = () => {
+    removeToken();
+    navigate('/');
+  };
 
   return (
     <header
@@ -43,28 +68,53 @@ export const Header = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
-          {user.getUser() && (
-            <Link
-              to="/app/login"
+          {!user && (
+            <Button
+              onClick={() => {
+                openAuth('login');
+              }}
               role="button"
               className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
             >
               {' '}
               Log In{' '}
-            </Link>
+            </Button>
           )}
-          {!user.getUser() && (
-            <Link
-              to="/app"
-              role="button"
-              className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
-            >
-              {' '}
-              Log Out{' '}
-            </Link>
+          {user && (
+            <div className="flex gap-1 md:gap-2">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="side-btn text-foreground! flex gap-2"
+                  >
+                    <LogOutIcon className="w-5 h-5 text-red-500" />
+                    <span className="hidden sm:inline">Me Déconnecter</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Se déconnecter ?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Êtes-vous sûr de vouloir quitter votre session ? Vous
+                      devrez vous reconnecter pour accéder à vos données.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={onLogout}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Se déconnecter
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           )}
           <Link
-            to="/app/logout"
+            to="/app"
             role="button"
             className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
           >

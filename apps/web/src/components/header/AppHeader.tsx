@@ -21,7 +21,7 @@ import { useUser } from '@/providers/UserProvider';
 
 export function AppHeader() {
   const { theme, setTheme } = useTheme();
-  const { removeToken } = useUser();
+  const { removeToken, getUser } = useUser();
   const navigate = useNavigate();
 
   const handleTheme = () => {
@@ -49,36 +49,37 @@ export function AppHeader() {
           </div>
 
           <div className="flex gap-1 md:gap-2">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="side-btn text-foreground! flex gap-2"
-                >
-                  <LogOutIcon className="w-5 h-5 text-red-500" />
-                  <span className="hidden sm:inline">Me Déconnecter</span>
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Se déconnecter ?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Êtes-vous sûr de vouloir quitter votre session ? Vous devrez
-                    vous reconnecter pour accéder à vos données.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={onLogout}
-                    className="bg-red-600 hover:bg-red-700 text-white"
+            {getUser() && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="side-btn text-foreground! flex gap-2"
                   >
-                    Se déconnecter
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            {/* --- LOGOUT DIALOG END --- */}
+                    <LogOutIcon className="w-5 h-5 text-red-500" />
+                    <span className="hidden sm:inline">Me Déconnecter</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Se déconnecter ?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Êtes-vous sûr de vouloir quitter votre session ? Vous
+                      devrez vous reconnecter pour accéder à vos données.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={onLogout}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Se déconnecter
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
 
             <Button onClick={handleTheme} className="side-btn">
               {theme === 'dark' ? (
