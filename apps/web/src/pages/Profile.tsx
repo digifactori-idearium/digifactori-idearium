@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import { type User, Profile as ProfileType, Role } from "../../../api/src/config/client.config";
-
 import { getProfile, updateProfile } from '../services/profile.service';
 
 
@@ -30,7 +29,6 @@ const Profile: React.FC = () => {
                 console.log("error: ", err)
             }
         };
-        console.log("fetching")
         fetchProfile();
     }, []);
 
@@ -51,6 +49,7 @@ const Profile: React.FC = () => {
 
     useEffect(() => {
         if (user?.user) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setUpdatedUser({
                 email: user.user.email,
                 first_name: user.user.first_name,
