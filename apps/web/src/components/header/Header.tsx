@@ -4,17 +4,11 @@ import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo.png';
 import { Button } from '../ui/button';
 
-import { useAuth } from '@/providers/AuthProvider';
 import { useTheme } from '@/providers/theme-provider';
 import { useUser } from '@/providers/UserProvider';
 
 export const Header = () => {
   const { theme, setTheme } = useTheme();
-  const { switchToLogin } = useAuth();
-  const { getUser } = useUser();
-
-  const user = getUser();
-
   const handleTheme = () => {
     if (theme == 'dark') {
       setTheme('light');
@@ -22,6 +16,8 @@ export const Header = () => {
       setTheme('dark');
     }
   };
+  const user = useUser();
+
   return (
     <header
       className="sticky top-4 z-50 px-6 rounded-2xl mx-6 bg-[#51545c]/10  border-0 dark:border-2 
@@ -47,30 +43,28 @@ export const Header = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
-          {user ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex border border-foreground! text-white! hover:border-blue-500!"
+          {user.getUser() && (
+            <Link
+              to="/app/login"
+              role="button"
+              className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
             >
-              Log Out
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex border border-foreground! text-white! hover:border-blue-500!"
-              onClick={() => {
-                console.log('Login clicked'); // Add this to debug!
-                switchToLogin();
-              }}
-            >
-              Log In
-            </Button>
+              {' '}
+              Log In{' '}
+            </Link>
           )}
-
+          {!user.getUser() && (
+            <Link
+              to="/app"
+              role="button"
+              className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
+            >
+              {' '}
+              Log Out{' '}
+            </Link>
+          )}
           <Link
-            to="/app"
+            to="/app/logout"
             role="button"
             className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
           >
