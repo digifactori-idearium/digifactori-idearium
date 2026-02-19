@@ -88,7 +88,7 @@ export const loginSchema = z
       .or(z.literal('')),
     password: z
       .string()
-      .min(8, 'Password must be 8+ characters')
+      .min(6, 'Password must be 6+ characters')
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/,
         'Need 1 upper, 1 lower, and 1 number'

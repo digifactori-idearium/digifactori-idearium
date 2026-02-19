@@ -19,15 +19,19 @@ interface ErrorResponse {
 }
 
 export const login = async (
-  email: string,
+  pseudo: string,
   password: string
 ): Promise<LoginResponse> => {
   try {
-    const response = await axios.post('auth/login', { email, password });
+    const response = await axios.post('api/auth/login', { pseudo, password });
 
     if (response.data.status === 'error') {
-      throw new Error(response.data.error.message);
+      throw new Error(
+        response.data.error?.message || response.data.errors[0]?.message
+      );
     }
+
+    console.log(response.data);
 
     const { accessToken, user } = response.data.data;
     return { token: accessToken, role: user.role };
@@ -43,7 +47,7 @@ export const login = async (
 
 export const register = async (userData: any): Promise<RegisterResponse> => {
   try {
-    const response = await axios.post('auth/register', userData);
+    const response = await axios.post('api/auth/register', userData);
 
     if (response.data.status === 'error') {
       throw new Error(response.data.error.message);
