@@ -1,12 +1,10 @@
 import { AxiosResponse } from 'axios';
 
-import { type User, Profile as ProfileType } from "../../../api/src/config/client.config";
-
 import axios from '../services/axios.service';
 
 
 type getProfileResponse = {
-    profile: ProfileType,
+    profile: Profile,
     user: User
 }
 
@@ -29,7 +27,7 @@ export const getProfile = async (parentalCode: string = ""): Promise<ApiResponse
     }
 };
 
-export const updateProfile = async (password: string, newUserInfo: Partial<User>, newProfileInfo: Partial<ProfileType>) => {
+export const updateProfile = async (password: string, newUserInfo: Partial<User>, newProfileInfo: Partial<Profile>) => {
     try {
         const response: AxiosResponse<ApiResponse<getProfileResponse>> = await axios.post(`http://localhost:3001/api/profile/setting`, {
             password: password,
