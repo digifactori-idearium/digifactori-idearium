@@ -46,6 +46,13 @@
   .side-btn {
     @apply bg-sidebar! hover:bg-sidebar/70! active:bg-sidebar/50! outline-none! border-none!;
   }
+
+  .form-input {
+    @apply w-full pr-10!  border-[#6F51B0]! border-2! rounded-2xl outline! focus:border-dashed;
+  }
+  .form-icon {
+    @apply w-12 h-12 rounded-full bg-[#6F51B0]! flex justify-center items-center;
+  }
   .magic-text {
     @apply relative bg-linear-to-r from-[#00f2fe] via-[#fe4f9d] to-[#ffd700] bg-clip-text text-transparent box-decoration-clone py-1 font-extrabold;
   }
