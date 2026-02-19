@@ -94,6 +94,13 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+.btn-hex {
+  aspect-ratio: 1;
+  background-color: #df3737;
+  clip-path: path("M 50 1 L 90 20 A 10 10 0 0 1 95 30 L 95 70 L 55 90 A 20 20 0 0 1 45 90 L 5 70 L 5 30 A 10 10 0 0 1 10 20 Z");
+}
+
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
