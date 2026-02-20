@@ -47,7 +47,7 @@ const FormInput: React.FC<FormInputProps> = ({
             rows={5}
             placeholder={input.placeholder}
             {...register(input.name, registerOptions)}
-            className={`form-control form-input w-full pr-10 py-3${hasError ? 'error' : ''} ${input.icon ? 'pl-9' : ''}`}
+            className={`form-control form-input w-full px-9 py-3 ${hasError ? 'error' : ''} `}
           />
         );
 
@@ -170,7 +170,7 @@ const FormInput: React.FC<FormInputProps> = ({
             type={input.type}
             placeholder={input.placeholder}
             {...register(input.name, registerOptions)}
-            className={`form-control form-input py-3! ${hasError ? 'error' : ''} ${input.icon ? 'pl-9' : ''}`}
+            className={`form-control form-input px-9 py-3! ${hasError ? 'error' : ''}`}
           />
         );
     }
