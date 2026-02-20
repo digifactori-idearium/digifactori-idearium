@@ -27,11 +27,9 @@ export const login = async (
 
     if (response.data.status === 'error') {
       throw new Error(
-        response.data.error?.message || response.data.errors[0]?.message
+        response.data.errors[0]?.message || response.data.error?.message
       );
     }
-
-    console.log(response.data);
 
     const { accessToken, user } = response.data.data;
     return { token: accessToken, role: user.role };
@@ -50,7 +48,9 @@ export const register = async (userData: any): Promise<RegisterResponse> => {
     const response = await axios.post('api/auth/register', userData);
 
     if (response.data.status === 'error') {
-      throw new Error(response.data.error.message);
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
     }
 
     const { accessToken, user } = response.data.data;
@@ -63,9 +63,4 @@ export const register = async (userData: any): Promise<RegisterResponse> => {
       throw new Error('An unexpected error occurred');
     }
   }
-};
-
-export const getUserProfile = async (): Promise<any> => {
-  const response = await axios.get('auth/profile');
-  return response.data.data;
 };

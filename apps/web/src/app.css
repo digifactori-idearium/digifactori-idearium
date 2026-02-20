@@ -46,12 +46,18 @@
   .side-btn {
     @apply bg-sidebar!  hover:bg-sidebar/70! active:bg-sidebar/50! outline-none! border-none!;
   }
+  .danger-btn {
+    @apply border-none! p-4 rounded-2xl bg-red-500! hover:bg-red-600! text-white! font-bold shadow-[0_4px_0_rgb(180,40,40)] active:translate-y-1 active:shadow-none transition-all;
+  }
 
   .form-input {
-    @apply w-full pr-10!  border-[#6F51B0]! border-2! rounded-2xl outline! focus:border-dashed;
+    @apply w-full pr-10!  border-mauve! border-2! rounded-2xl outline! focus:border-dashed;
   }
   .form-icon {
-    @apply w-12 h-12 rounded-full bg-[#6F51B0]! flex justify-center items-center;
+    @apply w-12 h-12 rounded-full bg-mauve! flex justify-center items-center;
+  }
+  .form-button {
+    @apply rounded-md bg-mauve! hover:bg-mauve/80! p-2 text-white! border-white! border-2! focus:border-3! shadow-none! outline-none!;
   }
   .magic-text {
     @apply relative bg-linear-to-r from-[#00f2fe] via-[#fe4f9d] to-[#ffd700] bg-clip-text text-transparent box-decoration-clone py-1 font-extrabold;
