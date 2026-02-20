@@ -13,12 +13,14 @@ export function NavLink() {
   };
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className="h-fit">
       {Object.entries(links).map(([key, link]) => (
         <SidebarMenuItem key={key} className="my-1">
-          <SidebarMenuButton asChild>
-            <Link to={link.path} className=" text-foreground!">
-              <link.icon size={24} className="me-2" />
+          <SidebarMenuButton asChild className="h-auto!">
+            <Link to={link.path} className=" flex flex-col text-foreground!">
+              <div className="form-icon">
+                <link.icon size={32} className=" text-white" />
+              </div>
               <span>{link.label}</span>
             </Link>
           </SidebarMenuButton>

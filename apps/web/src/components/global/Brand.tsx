@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo.png';
 export function Brand() {
   return (
-    <Link to="/app" className=" flex items-center gap-1.5">
+    <Link to="/app" className="w-full flex justify-center items-end gap-1.5">
       <img src={logo} alt="logo-image" className="size-8!" />
       <span className="text-base font-semibold">Idearium</span>
     </Link>
