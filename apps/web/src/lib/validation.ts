@@ -20,21 +20,23 @@ export const validation = (input: FormInputData) => {
 
   switch (input.type) {
     case 'email':
-      schema = z.string().email('Invalid email address');
+      schema = z.string().email('Adresse mail invalide');
       break;
     case 'password':
-      schema = z.string().min(6, 'Password must be at least 6 characters');
+      schema = z
+        .string()
+        .min(6, 'Le mot de passe doit contenir au moins 6 caractères');
       break;
     case 'number':
       schema = z.preprocess(
         val => (val === '' ? undefined : Number(val)),
-        z.number('Must be a number')
+        z.number('Doit être un chiffre')
       );
       break;
     case 'select':
       schema = z
         .string()
-        .min(1, `Please select a ${input.label.toLowerCase()}`);
+        .min(1, `Veuillez sélectionner un ${input.label.toLowerCase()}`);
       break;
     default:
       schema = z.string();
@@ -43,7 +45,7 @@ export const validation = (input: FormInputData) => {
   // Handle Required logic
   if (input.required) {
     if (input.type !== 'number') {
-      schema = (schema as z.ZodString).min(1, `${input.label} is required`);
+      schema = (schema as z.ZodString).min(1, `${input.label} est requis`);
     }
   } else {
     schema = schema.optional().or(z.literal(''));
