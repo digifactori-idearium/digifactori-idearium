@@ -27,8 +27,6 @@ export default class AuthenticationService {
       throw new Error(
         `Erreur lors de la création de l'utilisateur: ${error.message}`
       );
-    } finally {
-      await prisma.$disconnect();
     }
   }
 
@@ -46,8 +44,6 @@ export default class AuthenticationService {
       throw new Error(
         `Erreur lors de la création de l'utilisateur: ${error.message}`
       );
-    } finally {
-      await prisma.$disconnect();
     }
   }
 
@@ -107,8 +103,6 @@ export default class AuthenticationService {
       throw new Error(
         `Erreur lors de la vérification de l'utilisateur: ${error.message}`
       );
-    } finally {
-      await prisma.$disconnect();
     }
   }
 
@@ -133,8 +127,6 @@ export default class AuthenticationService {
       throw new Error(
         `Erreur lors de la vérification de l'utilisateur: ${error.message}`
       );
-    } finally {
-      await prisma.$disconnect();
     }
   }
 }
