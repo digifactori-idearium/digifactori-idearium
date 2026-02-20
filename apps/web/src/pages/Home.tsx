@@ -2,7 +2,7 @@ import { Play } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import DigifactoryLogo from '../assets/images/digifactory.jpg';
+import DigifactoryLogo from '../assets/images/digifactory.png';
 import ImageStage from '../assets/images/stage.jpg';
 import UnamurLogo from '../assets/images/unamur.png';
 import Card from '../components/home/Card';
@@ -92,7 +92,7 @@ const Home: React.FC = () => {
         <Card image={DigifactoryLogo} animation="fade-right" />
         <CardText
           animation="fade-left"
-          header="Une innitiative de l'ASBL Digifactory"
+          header="Une initiative de l'ASBL Digifactory"
           text="digifactory oeuvre à créer des contenus pour former des citoyens capables de relever les défis émergents de l'ère numérique"
         />
       </div>
