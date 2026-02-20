@@ -5,21 +5,22 @@ import React, {
   ReactNode,
   useEffect,
   useCallback,
+  useMemo,
 } from 'react';
 
 import useLocalStorage from '@/hooks/useLocaleStorage';
 
-interface UserContextType {
-  getUser: () => User | null;
-  removeToken: () => void;
-  setToken: (newToken: string) => void;
-}
-
-interface User {
+interface UserSession {
   id: string;
   email: string;
   role: string;
   token: string;
+}
+
+interface UserContextType {
+  getUser: () => UserSession | null;
+  removeToken: () => void;
+  setToken: (newToken: string | null) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -43,50 +44,55 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     setToken(null);
   }, [setToken]);
 
-  const checkTokenExpiry = useCallback(
-    (token: string | null): boolean => {
-      if (!token) return true;
+  /**
+   * Returns decoded token if valid.
+   * Automatically removes token if expired or invalid.
+   */
+  const getDecodedToken = useCallback(() => {
+    if (!token) return null;
 
-      try {
-        const decodedToken: any = jwtDecode(token);
-        const currentTime = Date.now() / 1000;
-
-        if (decodedToken.exp && decodedToken.exp < currentTime) {
-          removeToken();
-          return true;
-        }
-
-        return false;
-      } catch {
-        removeToken();
-        return true;
-      }
-    },
-    [removeToken]
-  );
-
-  const getUser = (): User | null => {
-    if (token && !checkTokenExpiry(token)) {
+    try {
       const decoded: any = jwtDecode(token);
-      return {
-        id: decoded.userId,
-        email: decoded.email,
-        role: decoded.role,
-        token: token,
-      };
+      const currentTime = Date.now() / 1000;
+
+      if (!decoded.exp || decoded.exp < currentTime) {
+        removeToken();
+        return null;
+      }
+
+      return decoded;
+    } catch {
+      removeToken();
+      return null;
     }
-    return null;
-  };
+  }, [token, removeToken]);
 
+  const getUser = useCallback((): UserSession | null => {
+    const decoded = getDecodedToken();
+
+    if (!decoded) return null;
+
+    return {
+      id: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+      token: token as string,
+    };
+  }, [getDecodedToken, token]);
+
+  // Automatically remove expired token on mount or token change
   useEffect(() => {
-    checkTokenExpiry(token);
-  }, [checkTokenExpiry, token]);
+    getDecodedToken();
+  }, [getDecodedToken]);
 
-  const contextValue = {
-    getUser,
-    removeToken,
-    setToken,
-  };
+  const contextValue = useMemo(
+    () => ({
+      getUser,
+      removeToken,
+      setToken,
+    }),
+    [getUser, removeToken, setToken]
+  );
 
   return (
     <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>

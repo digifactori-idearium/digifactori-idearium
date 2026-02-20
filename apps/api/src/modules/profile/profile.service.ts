@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 
-import { prisma, Role } from '../../config/client.config';
+import { prisma } from '../../config/client.config';
 
 const profileTable = prisma.profile;
 const userTable = prisma.user;
@@ -22,40 +22,41 @@ const getSingleProfile = async (
 			},
 		});
 
-		if (!response.profile) {
-			throw new Error(`Utilisateur introuvable`);
-		}
+    if (!response.profile) {
+      throw new Error(`Utilisateur introuvable`);
+    }
 
-		// Getting user data if needed
-		const userInfo = await userTable.findUnique({
-			where: {
-				id: userId,
-			},
-		});
+    const userInfo = await userTable.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!userInfo) {
+      throw new Error('Utilisateur introuvable');
+    }
 
-		let includeUser = false;
-		if (parental_code) {
-			const test = await bcrypt.compare(parental_code, userInfo?.parental_code);
-			if (test) {
-				includeUser = true
-			}
-		} else if (userInfo?.role == Role.SUPERVISOR) {
-				includeUser = true
-		}
-		if (includeUser) {
-			response.user = await userTable.findUnique({
-				where: {
-					id: userId,
-				},
-			});
-		}
-		return response;
-	} catch (error: any) {
-		console.log('err: ', error);
-		throw new Error(`Erreur lors de la récupération du profil: ${error.message}`);
-	} finally {
-		await prisma.$disconnect();
-	}
+    let isParentalCodeValid = false;
+
+    if (parental_code && userInfo.parental_code) {
+      isParentalCodeValid = await bcrypt.compare(
+        parental_code,
+        userInfo.parental_code
+      );
+    }
+
+    if (userInfo.role !== 'CHILD' || isParentalCodeValid) {
+      response.user = userInfo;
+    }
+
+    return response;
+  } catch (error: any) {
+    console.log('err: ', error);
+    throw new Error(
+      `Erreur lors de la récupération du profil: ${error.message}`
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 };
 
 const updateProfile = async (userId: string, body: SetProfileInput) => {
