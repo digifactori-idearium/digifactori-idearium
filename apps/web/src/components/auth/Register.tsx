@@ -18,9 +18,9 @@ export default function Register() {
       await registerService(data);
 
       switchToLogin();
-      toast.success('Account Created Successfully');
+      toast.success('Création du compte réussie');
     } catch (error: any) {
-      toast.error(error.message || 'Registration failed');
+      toast.error(error.message || 'Échec de la création du compte');
     } finally {
       setLoading(false);
     }
@@ -30,7 +30,7 @@ export default function Register() {
     <div className="w-full flex flex-col gap-5">
       <div className="title">
         <p className="text-[#626262]">
-          Create your account and enjoy exclusive features
+          Créez votre compte et profitez d'Idéarium
         </p>
       </div>
 
@@ -41,12 +41,12 @@ export default function Register() {
       />
 
       <div className="w-full text-center">
-        Already have an account?{' '}
+        Vous avez déjà un compte ?{' '}
         <span
           className="links font-medium cursor-pointer hover:text-[#6F51B0]!"
           onClick={switchToLogin}
         >
-          Sign in
+          Se connecter
         </span>
       </div>
     </div>

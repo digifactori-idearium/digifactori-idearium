@@ -29,7 +29,7 @@ async function register(req: UserRequest, res: Response) {
     const token = generateToken(acc.user);
     const response = {
       status: 'success',
-      message: 'Registration successful',
+      message: 'Création de compte réussie',
       data: {
         accessToken: token,
         user: acc.user,
@@ -41,7 +41,7 @@ async function register(req: UserRequest, res: Response) {
       status: 'error',
       error: {
         code: 'Internal server error',
-        message: 'Registration unsuccessful',
+        message: 'Échec de la création de compte',
         error,
       },
 
@@ -78,7 +78,7 @@ async function login(req: Request, res: Response) {
       const token = generateToken(user);
       const response = {
         status: 'success',
-        message: 'Login successful',
+        message: 'Connexion réussie',
         data: {
           accessToken: token,
           user: user,
@@ -101,7 +101,7 @@ async function login(req: Request, res: Response) {
       status: 'error',
       error: {
         code: 'Internal server error',
-        message: 'Authentication failed',
+        message: "Échec de l'authentification",
         error,
       },
       status_code: 500,
