@@ -17,6 +17,25 @@ const getUserByEmail = async (email: string): Promise<User | null> => {
   }
 };
 
+const checkHasParentalCode = async (email: string): Promise<boolean> => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        role: true,
+        parental_code: true,
+      },
+    });
+
+    if (!user) return false;
+
+    return user.parental_code !== null;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
 export const userSchema = z
   .object({
     email: z.email({
@@ -83,17 +102,21 @@ export const userProfileSchema = z
         return iss.input === undefined ? 'Le rôle est requis' : 'Rôle inconnu';
       },
     }),
-    parental_code: z.coerce.number().optional(),
+    parental_code: z.string().optional().or(z.literal('')),
   })
-  .superRefine((data, ctx) => {
+  .superRefine(async (data, ctx) => {
+    const isChildInForm = data.role === 'CHILD';
+
+    const hasCodeInDb = await checkHasParentalCode(data.email);
+
     if (
-      data.role === Role.CHILD &&
-      (!data.parental_code || data.parental_code.toString().length < 4)
+      isChildInForm &&
+      !hasCodeInDb &&
+      (!data.parental_code || data.parental_code.length < 4)
     ) {
       ctx.addIssue({
         code: 'custom',
-        message:
-          'Un code parental est requis pour les comptes enfants (minimum 4 chiffres).',
+        message: 'Un code parental est requis pour les comptes enfants.',
         path: ['parental_code'],
       });
     }

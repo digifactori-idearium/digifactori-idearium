@@ -1,5 +1,3 @@
-import { AxiosResponse } from 'axios';
-
 import axios from '../services/axios.service';
 
 type getProfileResponse = {
@@ -19,11 +17,16 @@ export const getProfile = async (
   parentalCode: string = ''
 ): Promise<ApiResponse<getProfileResponse>> => {
   try {
-    const response: AxiosResponse<ApiResponse<getProfileResponse>> =
-      await axios.post(
-        `http://localhost:3001/api/profile/`,
-        parentalCode == '' ? {} : { parental_code: parentalCode }
+    const response = await axios.post(
+      `http://localhost:3001/api/profile/`,
+      parentalCode == '' ? {} : { parental_code: parentalCode }
+    );
+
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
       );
+    }
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error?.message || 'Échec du profil');
@@ -35,11 +38,19 @@ export const updateProfile = async (
   newProfileInfo: Partial<Profile>
 ) => {
   try {
-    const response: AxiosResponse<ApiResponse<getProfileResponse>> =
-      await axios.post(`http://localhost:3001/api/profile/setting`, {
+    const response = await axios.post(
+      `http://localhost:3001/api/profile/setting`,
+      {
         user: newUserInfo,
         profile: newProfileInfo,
-      });
+      }
+    );
+
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
     return response.data;
   } catch (error: any) {
     throw new Error(

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, SendHorizontal } from 'lucide-react';
 import React, { useEffect } from 'react';
 import {
   useForm,
@@ -126,11 +126,14 @@ const Form: React.FC<FormProps> = ({
           })}
         </div>
 
-        <button
-          type="submit"
-          className="w-full rounded-md bg-[#6F51B0]! p-2 text-white "
-        >
-          {loading ? <Loader2 /> : 'Envoyer'}
+        <button type="submit" className="w-full form-button">
+          {loading ? (
+            <Loader2 />
+          ) : (
+            <div className="flex gap-2 justify-center items-center">
+              <SendHorizontal /> Envoyer
+            </div>
+          )}
         </button>
       </form>
     </div>

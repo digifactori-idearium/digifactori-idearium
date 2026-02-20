@@ -38,7 +38,7 @@ const AVATAR_OPTIONS = [
 ];
 
 const ProfilePage: React.FC = () => {
-  const { getUser } = useUser();
+  const { getUser, removeToken } = useUser();
   const [acc, setAcc] = useState<{ profile: any; user?: any } | null>(null);
   const [parentalAccess, setParentalAccess] = useState(
     getUser()?.role != 'CHILD'
@@ -60,16 +60,23 @@ const ProfilePage: React.FC = () => {
   }, []);
 
   const handleUnlock = async () => {
-    console.log(acc?.user);
-    if (parentalCodeInput) {
-      setParentalAccess(true);
+    if (!parentalCodeInput) {
+      toast.error('Veuillez entrer un code');
+      return;
+    }
+
+    try {
       const response = await getProfile(parentalCodeInput);
-      if (response.data.user) {
+
+      if (response.data && response.data.user) {
         setAcc(response.data);
-        toast.success('You can configure your account');
+        setParentalAccess(true);
+        toast.success('Accès autorisé');
+      } else {
+        toast.error('Code parental incorrect');
       }
-    } else {
-      toast.error('Incorrect parental code');
+    } catch {
+      toast.error('Erreur de validation du code');
     }
   };
 
@@ -93,7 +100,7 @@ const ProfilePage: React.FC = () => {
     first_name: acc.user?.first_name || '',
     last_name: acc.user?.last_name || '',
     role: acc.user?.role || '',
-    parental_code: '',
+    parental_code: acc.user?.parental_code ? '****' : '',
   };
 
   const handleSubmit = async (data: any) => {
@@ -109,79 +116,46 @@ const ProfilePage: React.FC = () => {
 
   const handleAdvancedSubmit = async (data: any) => {
     try {
-      await updateProfile(data, acc.profile);
+      const payload = { ...data };
+
+      if (payload.parental_code === '****') {
+        delete payload.parental_code;
+      }
+
+      await updateProfile(payload, acc.profile);
       setAcc(prev =>
         prev ? { ...prev, user: { ...prev.user, ...data } } : prev
       );
+
+      const currentRole = acc.user?.role;
+      const newRole = data.role;
+
+      if (currentRole && newRole && currentRole !== newRole) {
+        toast.success('Rôle mis à jour. Veuillez vous reconnecter.');
+        removeToken();
+        return;
+      }
+
       toast.success('Profil mis à jour !');
     } catch {
+      setOpen(false);
+      const res = await getProfile();
+      setAcc(res.data);
       toast.error('Échec de la mise à jour du profil.');
     }
   };
 
   return (
     <div className="w-full">
-      <div className="flex gap-2 justify-center items-center py-4">
-        <UserCircle className="w-12! h-12! text-mauve" />
-        <h1 className="magic-text text-center w-fit md:text-5xl! text-3xl!">
-          MON PROFILE
-        </h1>
-      </div>
-
-      <div className="h-full w-full flex md:flex-row flex-col justify-center items-center md:gap-8 gap-1">
-        {/* Avatar */}
-        <div className="flex flex-col gap-3 justify-center items-center md:w-2/6 w-full">
-          <div className="w-32 h-32 rounded-full border-4 p-1">
-            <Avatar className="w-full h-full">
-              <AvatarImage src={initialValues.avatar} />
-              <AvatarFallback>NB</AvatarFallback>
-            </Avatar>
-          </div>
-          <p className="magic-text py-1!">{acc.profile.pseudo}</p>
-          {/* Avatar Selection */}
-          <div className="grid grid-cols-3 grid-rows-2 gap-6 mb-10 w-fit mx-auto">
-            {AVATAR_OPTIONS.map(av => (
-              <button
-                key={av.id}
-                onClick={() =>
-                  setAcc(prev =>
-                    prev
-                      ? {
-                          ...prev,
-                          profile: { ...prev.profile, avatar: av.url },
-                        }
-                      : prev
-                  )
-                }
-                className={`w-16 h-16 p-1! rounded-full overflow-hidden border-2 transition-all ${
-                  acc.profile.avatar === av.url
-                    ? 'border-orange-500 scale-110 shadow-md'
-                    : 'border-transparent opacity-50'
-                }`}
-              >
-                <img
-                  src={av.url}
-                  alt="avatar option"
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
-          </div>
+      <div className="flex gap-2 flex-col md:flex-row justify-around items-center py-4">
+        <div className="flex gap-2 justify-center items-center py-4">
+          <UserCircle className="w-12! h-12! text-mauve" />
+          <h1 className="magic-text text-center w-fit md:text-5xl! text-3xl!">
+            MON PROFILE
+          </h1>
         </div>
-
-        {/* Profile Form */}
-        <div className="lg:4/6 md:w-3/6 w-full p-3">
-          <Form
-            inputs={[
-              { label: 'Pseudo', type: 'text', name: 'pseudo', required: true },
-              { label: 'Bio', type: 'textarea', name: 'bio' },
-              // { label: 'Avatar URL', type: 'text', name: 'avatar' },
-            ]}
-            initialValues={initialValues}
-            handleOnSubmit={handleSubmit}
-          />
-
-          {/* Advanced Settings */}
+        {/* Advanced Settings */}
+        <div>
           <Dialog
             open={open}
             onOpenChange={isOpen => {
@@ -194,9 +168,9 @@ const ProfilePage: React.FC = () => {
             }}
           >
             <DialogTrigger asChild>
-              <Button className="flex items-center gap-2 bg-mauve! text-white mt-6">
+              <Button className="flex items-center gap-2 form-button">
                 <Lock className="w-4 h-4" />
-                Advanced Settings
+                Paramètres avancés
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden bg-sidebar! border-mauve! [&>button]:hidden">
@@ -216,29 +190,29 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </AlertDialogTrigger>
 
-                  <AlertDialogContent className="rounded-4xl border-none shadow-2xl p-8">
+                  <AlertDialogContent className="rounded-4xl border-mauve! bg-sidebar!  shadow-2xl p-8">
                     <AlertDialogHeader className="flex flex-col items-center justify-center">
-                      <AlertDialogTitle className="text-2xl mx-auto font-black text-slate-800 text-center!">
-                        Are you sure?
+                      <AlertDialogTitle className="text-2xl mx-auto font-black text-mauve text-center!">
+                        Êtes-vous sûr ?
                       </AlertDialogTitle>
-                      <AlertDialogDescription className="text-slate-500 text-center text-lg">
-                        This will permanently delete the profile for{' '}
-                        <span className="font-bold text-slate-800">
+                      <AlertDialogDescription className="dark:text-slate-500  text-center text-lg">
+                        Cela supprimera définitivement le profil de{' '}
+                        <span className="font-bold text-mauve">
                           {acc.profile.pseudo}
                         </span>
-                        . This action cannot be undone.
+                        . Cette action ne peut pas être annulée.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
 
                     <AlertDialogFooter className="flex-col sm:flex-row gap-3 mt-4">
-                      <AlertDialogCancel className="p-4 rounded-2xl border-2 border-slate-100 font-bold text-slate-500">
-                        No, keep it
+                      <AlertDialogCancel className="p-4 form-button font-bold ">
+                        Non, gardez-le.
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => console.log('Deleting profile...')}
-                        className="p-4 rounded-2xl bg-red-500! hover:bg-red-600! font-bold shadow-[0_4px_0_rgb(180,40,40)] active:translate-y-1 active:shadow-none transition-all"
+                        className="danger-btn"
                       >
-                        Yes, delete profile
+                        Oui, supprimer le profil
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -309,6 +283,61 @@ const ProfilePage: React.FC = () => {
               </div>
             </DialogContent>
           </Dialog>
+        </div>
+      </div>
+
+      <div className="h-full w-full flex md:flex-row flex-col justify-center items-center md:gap-8 gap-1">
+        {/* Avatar */}
+        <div className="flex flex-col gap-3 justify-center items-center md:w-2/6 w-full">
+          <div className="w-32 h-32 rounded-full border-4 p-1">
+            <Avatar className="w-full h-full">
+              <AvatarImage src={initialValues.avatar} />
+              <AvatarFallback>NB</AvatarFallback>
+            </Avatar>
+          </div>
+          <p className="magic-text py-1!">{acc.profile.pseudo}</p>
+          {/* Avatar Selection */}
+          <div className="grid grid-cols-3 grid-rows-2 gap-6 mb-10 w-fit mx-auto">
+            {AVATAR_OPTIONS.map(av => (
+              <button
+                key={av.id}
+                onClick={() =>
+                  setAcc(prev =>
+                    prev
+                      ? {
+                          ...prev,
+                          profile: { ...prev.profile, avatar: av.url },
+                        }
+                      : prev
+                  )
+                }
+                className={`w-16 h-16 p-1! rounded-full overflow-hidden border-2 transition-all ${
+                  acc.profile.avatar === av.url
+                    ? 'border-orange-500 scale-110 shadow-md'
+                    : 'border-transparent opacity-50'
+                }`}
+              >
+                <img
+                  src={av.url}
+                  alt="avatar option"
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Profile Form */}
+        <div className="lg:4/6 md:w-3/6 w-full p-3">
+          <Form
+            inputs={[
+              { label: 'Pseudo', type: 'text', name: 'pseudo', required: true },
+              { label: 'Bio', type: 'textarea', name: 'bio' },
+              // { label: 'Avatar URL', type: 'text', name: 'avatar' },
+            ]}
+            initialValues={initialValues}
+            handleOnSubmit={handleSubmit}
+          />
         </div>
       </div>
     </div>
