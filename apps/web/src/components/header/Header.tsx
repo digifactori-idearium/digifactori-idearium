@@ -1,4 +1,4 @@
-import { ArrowRight, LogOutIcon, Moon, Sun } from 'lucide-react';
+import { LogOutIcon, Moon, Sun, LogIn, Play } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import logo from '../../assets/images/logo.png';
@@ -59,7 +59,7 @@ export const Header = () => {
             />
           </div>
           <span className="text-foreground hidden font-bold sm:inline-block text-xl tracking-wider">
-            Idearium
+            Idéarium
           </span>
         </Link>
 
@@ -77,7 +77,7 @@ export const Header = () => {
               className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
             >
               {' '}
-              Log In{' '}
+              Se connecter <LogIn />{' '}
             </Button>
           )}
           {user && (
@@ -119,7 +119,7 @@ export const Header = () => {
             className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
           >
             <span className="relative z-10 flex items-center">
-              Get Started <ArrowRight className="ml-2 h-4 w-4" />
+              Se lancer <Play className="ml-2 h-4 w-4" />
             </span>
             {/* Subtle gradient hover effect on button */}
             <div className="absolute inset-0 h-full w-full scale-0 rounded-md transition-all duration-300 group-hover:scale-105 group-hover:bg-metatron-gradient opacity-20" />

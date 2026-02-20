@@ -24,7 +24,9 @@ export default class AuthenticationService {
 
       return newUser;
     } catch (error: any) {
-      throw new Error(`Error creating user: ${error.message}`);
+      throw new Error(
+        `Erreur lors de la création de l'utilisateur: ${error.message}`
+      );
     } finally {
       await prisma.$disconnect();
     }
@@ -41,7 +43,9 @@ export default class AuthenticationService {
 
       return newProfile;
     } catch (error: any) {
-      throw new Error(`Error creating user: ${error.message}`);
+      throw new Error(
+        `Erreur lors de la création de l'utilisateur: ${error.message}`
+      );
     } finally {
       await prisma.$disconnect();
     }
@@ -81,7 +85,7 @@ export default class AuthenticationService {
 
       return result;
     } catch (error: any) {
-      throw new Error(`Error creating account: ${error.message}`);
+      throw new Error(`Erreur lors de la création du compte: ${error.message}`);
     }
   }
 
@@ -100,7 +104,9 @@ export default class AuthenticationService {
       }
     } catch (error: any) {
       console.log('DB ERRORS');
-      throw new Error(`Error verifying user: ${error.message}`);
+      throw new Error(
+        `Erreur lors de la vérification de l'utilisateur: ${error.message}`
+      );
     } finally {
       await prisma.$disconnect();
     }
@@ -124,7 +130,9 @@ export default class AuthenticationService {
       }
     } catch (error: any) {
       console.log('DB ERRORS');
-      throw new Error(`Error verifying user: ${error.message}`);
+      throw new Error(
+        `Erreur lors de la vérification de l'utilisateur: ${error.message}`
+      );
     } finally {
       await prisma.$disconnect();
     }
