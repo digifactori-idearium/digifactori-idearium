@@ -24,23 +24,29 @@ const getSingleProfile = async (
     if (!response.profile) {
       throw new Error(`Utilisateur introuvable`);
     }
-    if (parental_code) {
-      console.log('here');
-      const userInfo = await userTable.findUnique({
-        where: {
-          id: userId,
-        },
-      });
-      const test = await bcrypt.compare(parental_code, userInfo?.parental_code);
-      if (userInfo?.role == 'SUPERVISOR' || test) {
-        response.user = await userTable.findUnique({
-          where: {
-            id: userId,
-          },
-        });
-      }
+
+    const userInfo = await userTable.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!userInfo) {
+      throw new Error('Utilisateur introuvable');
     }
-    console.log('response');
+
+    let isParentalCodeValid = false;
+
+    if (parental_code && userInfo.parental_code) {
+      isParentalCodeValid = await bcrypt.compare(
+        parental_code,
+        userInfo.parental_code
+      );
+    }
+
+    if (userInfo.role !== 'CHILD' || isParentalCodeValid) {
+      response.user = userInfo;
+    }
+
     return response;
   } catch (error: any) {
     console.log('err: ', error);

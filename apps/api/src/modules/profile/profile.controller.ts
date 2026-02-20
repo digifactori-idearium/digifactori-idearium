@@ -1,14 +1,9 @@
 import { Response } from 'express';
 
 import { AuthenticatedRequest } from '../../types';
-import { profileSchema, userSchema } from '../../utils/validations';
+import { profileSchema, userProfileSchema } from '../../utils/validations';
 
-import {
-  deleteUser,
-  getSingleProfile,
-  updateProfile,
-  verifyPassword,
-} from './profile.service';
+import { deleteUser, getSingleProfile, updateProfile } from './profile.service';
 
 const getProfile = async (req: AuthenticatedRequest, res: Response) => {
   const currentUser = req.user;
@@ -59,6 +54,7 @@ const getProfile = async (req: AuthenticatedRequest, res: Response) => {
 
 const setProfile = async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user;
+
   if (!user) {
     return res.status(401).json({
       status: 'error',
@@ -69,26 +65,14 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
       status_code: 401,
     });
   }
-  const test = await verifyPassword(user.userId, req.body.password);
-  if (!test) {
-    return res.status(401).json({
-      status: 'error',
-      error: {
-        code: 'Bad Request',
-        message: 'Mot de passe erroné',
-      },
-      status_code: 401,
-    });
-  }
 
-  const resultProfileSchema = await profileSchema.safeParseAsync(
-    req.body.profile
-  );
-  const resultUserSchema = await userSchema.safeParseAsync(req.body.user);
+  let profileErrors: any[] = [];
+  let userErrors: any[] = [];
 
-  if (!resultProfileSchema.success || !resultUserSchema.success) {
-    let profileErrors = {};
-    let userErrors = {};
+  if (req.body.profile) {
+    const resultProfileSchema = await profileSchema.safeParseAsync(
+      req.body.profile
+    );
 
     if (!resultProfileSchema.success) {
       profileErrors = resultProfileSchema.error.issues.map(err => ({
@@ -96,6 +80,12 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
         message: err.message,
       }));
     }
+  }
+
+  if (req.body.user) {
+    const resultUserSchema = await userProfileSchema.safeParseAsync(
+      req.body.user
+    );
 
     if (!resultUserSchema.success) {
       userErrors = resultUserSchema.error.issues.map(err => ({
@@ -103,27 +93,19 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
         message: err.message,
       }));
     }
-    return res.status(400).json({ profileErrors, userErrors });
   }
 
-  // if (req.file) {
-  //     const file = req.file;
-  //     if (file.filename != 'null') {
-  //         req.body[file.fieldname] = file.filename;
-  //     }
-  // }
+  if (profileErrors.length > 0 || userErrors.length > 0) {
+    return res.status(400).json({
+      profileErrors,
+      userErrors,
+    });
+  }
 
   try {
-    const profile = await updateProfile(user?.userId, req.body);
-    if (profile) {
-      const response = {
-        status: 'success',
-        message: 'Profil récupéré avec succès',
-        data: profile,
-        status_code: 201,
-      };
-      return res.status(response.status_code).json(response);
-    } else {
+    const profile = await updateProfile(user.userId, req.body);
+
+    if (!profile) {
       return res.status(404).json({
         status: 'error',
         error: {
@@ -133,17 +115,23 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
         status_code: 404,
       });
     }
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Profil mis à jour avec succès',
+      data: profile,
+      status_code: 200,
+    });
   } catch (error) {
-    const responseError = {
+    return res.status(500).json({
       status: 'error',
       error: {
-        code: 'Bad Request',
+        code: 'Internal Server Error',
         message: 'Erreur lors de la configuration du profil',
-        error: error,
+        error,
       },
-      status_code: 400,
-    };
-    return res.status(responseError.status_code).json(responseError);
+      status_code: 500,
+    });
   }
 };
 
