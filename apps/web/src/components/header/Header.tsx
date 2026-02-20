@@ -92,7 +92,7 @@ export const Header = () => {
                     <span className="hidden sm:inline">Me Déconnecter</span>
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-4xl border-mauve! bg-sidebar!  shadow-2xl p-8">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Se déconnecter ?</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -101,10 +101,12 @@ export const Header = () => {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogCancel className="form-button p-4">
+                      Annuler
+                    </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={onLogout}
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      className="danger-btn"
                     >
                       Se déconnecter
                     </AlertDialogAction>
@@ -120,7 +122,8 @@ export const Header = () => {
               className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
             >
               <span className="relative z-10 flex items-center">
-                Se lancer <Play className="ml-2 h-4 w-4" />
+                <span className="hidden sm:inline">Se lancer</span>
+                <Play className="ml-2 h-4 w-4" />
               </span>
               {/* Subtle gradient hover effect on button */}
               <div className="absolute inset-0 h-full w-full scale-0 rounded-md transition-all duration-300 group-hover:scale-105 group-hover:bg-metatron-gradient opacity-20" />

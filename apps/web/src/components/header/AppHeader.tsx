@@ -1,5 +1,5 @@
 import { House, LogOutIcon, Moon, Sun } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Assuming you use react-router
+import { Link, useNavigate } from 'react-router-dom'; // Assuming you use react-router
 
 import { Button } from '../ui/button';
 
@@ -43,9 +43,12 @@ export function AppHeader() {
               orientation="vertical"
               className="mx-2 data-[orientation=vertical]:h-4"
             />
-            <h1 className="text-base font-medium flex items-center gap-1.5">
+            <Link
+              to="/"
+              className="text-base text-foreground! hover:text-foreground/80! font-medium flex items-center gap-1.5"
+            >
               <House className="h-5" /> <span className="text-base">Home</span>
-            </h1>
+            </Link>
           </div>
 
           <div className="flex gap-1 md:gap-2">
@@ -60,7 +63,7 @@ export function AppHeader() {
                     <span className="hidden sm:inline">Me Déconnecter</span>
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-4xl border-mauve! bg-sidebar!  shadow-2xl p-8">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Se déconnecter ?</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -69,10 +72,12 @@ export function AppHeader() {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogCancel className="form-button p-4">
+                      Annuler
+                    </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={onLogout}
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      className="danger-btn"
                     >
                       Se déconnecter
                     </AlertDialogAction>
