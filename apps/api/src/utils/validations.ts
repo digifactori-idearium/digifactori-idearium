@@ -21,26 +21,31 @@ export const userSchema = z
   .object({
     email: z.email({
       error: iss => {
-        return iss.input === undefined ? 'Email is required' : 'Invalid Email';
+        return iss.input === undefined
+          ? "L'adresse mail est requise"
+          : 'Adresse mail invalide';
       },
     }),
     first_name: z
-      .string('First Name is required')
-      .min(2, 'First Name must be at least 2 char'),
+      .string('Le prénom est requis')
+      .min(2, "Le prénom doit être composé d'au moins 2 caractères"),
     last_name: z
-      .string('Last Name is required')
-      .min(2, 'Last Name must be at least 2 char'),
+      .string('Le nom de fammile est requis')
+      .min(2, 'Le nom de famille doit comporter au moins 2 caractères'),
     role: z.enum(Role, {
       error: iss => {
-        return iss.input === undefined ? 'Role is required' : 'Unknown Role';
+        return iss.input === undefined ? 'Le rôle est requis' : 'Rôle inconnu';
       },
     }),
     password: z
-      .string('Password Required')
-      .min(8, 'To short password, make it at least 8 🙃')
+      .string('Le mot de passe est requis')
+      .min(
+        8,
+        'Le mot de passe est trop petit, il doit comporter au moins 8 caractères'
+      )
       .regex(
         passwordRegex,
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+        'Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule et un chiffre.'
       ),
     parental_code: z.coerce.number().optional(),
   })
@@ -51,14 +56,17 @@ export const userSchema = z
     ) {
       ctx.addIssue({
         code: 'custom',
-        message: 'Parental code is required for child accounts (min 4 digits)',
+        message:
+          'Un code parental est requis pour les comptes enfants (minimum 4 chiffres).',
         path: ['parental_code'],
       });
     }
   });
 
 export const profileSchema = z.object({
-  pseudo: z.string('Pseudo required').min(2, 'Pseudo must be at least 2 char'),
+  pseudo: z
+    .string('Le pseudo est requis')
+    .min(2, 'Le pseudo doit comporter au moins 2 caractères.'),
 });
 
 export const registrationSchema = z
@@ -73,28 +81,29 @@ export const registrationSchema = z
       ctx.addIssue({
         path: ['user', 'email'],
         code: 'custom',
-        message: 'Email already exists',
+        message: "L'email existe déjà",
       });
     }
   });
 
 export const loginSchema = z
   .object({
-    email: z.email('Invalid email format').optional().or(z.literal('')),
+    email: z.email("Format de l'email invalid").optional().or(z.literal('')),
     pseudo: z
       .string()
-      .min(3, 'Pseudo must be at least 3 characters')
+      .min(3, 'Le pseudo doit comporter au moins 3 caractères')
       .optional()
       .or(z.literal('')),
     password: z
       .string()
-      .min(6, 'Password must be 6+ characters')
+      .min(6, 'Le mot de passe doit comporter au moins 6 caractères')
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/,
         'Need 1 upper, 1 lower, and 1 number'
       ),
   })
   .refine(data => !!data.email !== !!data.pseudo, {
-    message: 'Please provide either an Email or a Pseudo, but not both.',
+    message:
+      'Veuillez fournir soit une adresse mail, soit un pseudo, mais pas les deux.',
     path: ['email'],
   });

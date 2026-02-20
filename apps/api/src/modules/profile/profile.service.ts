@@ -6,8 +6,8 @@ const profileTable = prisma.profile;
 const userTable = prisma.user;
 
 const getSingleProfile = async (
-	userId: string,
-	parental_code: string | null
+  userId: string,
+  parental_code: string | null
 ) => {
 	try {
 		
@@ -23,7 +23,7 @@ const getSingleProfile = async (
 		});
 
 		if (!response.profile) {
-			throw new Error(`User not found`);
+			throw new Error(`Utilisateur introuvable`);
 		}
 
 		// Getting user data if needed
@@ -52,52 +52,54 @@ const getSingleProfile = async (
 		return response;
 	} catch (error: any) {
 		console.log('err: ', error);
-		throw new Error(`Error fetching profil: ${error.message}`);
+		throw new Error(`Erreur lors de la récupération du profil: ${error.message}`);
 	} finally {
 		await prisma.$disconnect();
 	}
 };
 
 const updateProfile = async (userId: string, body: SetProfileInput) => {
-	try {
-		const response: { user?; profile } = { profile: {} };
-		if (body.user) {
-			const user = await userTable.findUnique({
-				where: {
-					id: userId,
-				},
-			});
-			const { password, parental_code, ...data } = {
-				...body.user,
-			};
-			const hashedPassword: string | undefined = password
-				? await bcrypt.hash(password, 10)
-				: user?.password;
-			const hashedParentalCode: string | undefined = parental_code
-				? await bcrypt.hash(parental_code, 10)
-				: user?.parental_code;
-			response.user = await userTable.update({
-				where: {
-					id: userId,
-				},
-				data: {
-					...data,
-					password: hashedPassword,
-					parental_code: hashedParentalCode,
-				},
-			});
-		}
-		const { pseudo, bio, avatar } = { ...body.profile };
-		response.profile = await profileTable.update({
-			where: {
-				userId: userId,
-			},
-			data: { pseudo, bio, avatar },
-		});
-		return response;
-	} catch (error: any) {
-		throw new Error(`Error operating Profile: ${error.message}`);
-	}
+  try {
+    const response: { user?; profile } = { profile: {} };
+    if (body.user) {
+      const user = await userTable.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+      const { password, parental_code, ...data } = {
+        ...body.user,
+      };
+      const hashedPassword: string | undefined = password
+        ? await bcrypt.hash(password, 10)
+        : user?.password;
+      const hashedParentalCode: string | undefined = parental_code
+        ? await bcrypt.hash(parental_code, 10)
+        : user?.parental_code;
+      response.user = await userTable.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          ...data,
+          password: hashedPassword,
+          parental_code: hashedParentalCode,
+        },
+      });
+    }
+    const { pseudo, bio, avatar } = { ...body.profile };
+    response.profile = await profileTable.update({
+      where: {
+        userId: userId,
+      },
+      data: { pseudo, bio, avatar },
+    });
+    return response;
+  } catch (error: any) {
+    throw new Error(
+      `Erreur lors du fonctionnement du profil: ${error.message}`
+    );
+  }
 };
 
 const verifyPassword = async (userId: string, password: string) => {
@@ -113,18 +115,18 @@ const verifyPassword = async (userId: string, password: string) => {
 };
 
 const deleteUser = async (userId: string) => {
-	const response = { user: {}, profile: {} };
-	response.user = await profileTable.delete({
-		where: {
-			userId: userId,
-		},
-	});
-	response.profile = await userTable.delete({
-		where: {
-			id: userId,
-		},
-	});
-	return response;
+  const response = { user: {}, profile: {} };
+  response.user = await profileTable.delete({
+    where: {
+      userId: userId,
+    },
+  });
+  response.profile = await userTable.delete({
+    where: {
+      id: userId,
+    },
+  });
+  return response;
 };
 
 export { deleteUser, getSingleProfile, updateProfile, verifyPassword };
