@@ -63,6 +63,42 @@ export const userSchema = z
     }
   });
 
+export const userProfileSchema = z
+  .object({
+    email: z.email({
+      error: iss => {
+        return iss.input === undefined
+          ? "L'adresse mail est requise"
+          : 'Adresse mail invalide';
+      },
+    }),
+    first_name: z
+      .string('Le prénom est requis')
+      .min(2, "Le prénom doit être composé d'au moins 2 caractères"),
+    last_name: z
+      .string('Le nom de fammile est requis')
+      .min(2, 'Le nom de famille doit comporter au moins 2 caractères'),
+    role: z.enum(Role, {
+      error: iss => {
+        return iss.input === undefined ? 'Le rôle est requis' : 'Rôle inconnu';
+      },
+    }),
+    parental_code: z.coerce.number().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.role === Role.CHILD &&
+      (!data.parental_code || data.parental_code.toString().length < 4)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message:
+          'Un code parental est requis pour les comptes enfants (minimum 4 chiffres).',
+        path: ['parental_code'],
+      });
+    }
+  });
+
 export const profileSchema = z.object({
   pseudo: z
     .string('Le pseudo est requis')
