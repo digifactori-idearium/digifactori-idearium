@@ -1,4 +1,3 @@
-import { X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -8,7 +7,6 @@ import Form from '@/components/global/Form';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -93,7 +91,7 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
       }}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden bg-sidebar! border-mauve! [&>button]:hidden">
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden bg-sidebar! border-mauve! dialog-btn">
         <DialogHeader>
           <DialogTitle>
             {isUnlocked ? 'Paramètres du compte' : 'Code Parental Requis'}
@@ -101,17 +99,10 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
         </DialogHeader>
 
         {isUnlocked && effectiveUser && (
-          <div className="absolute top-3 right-14">
+          <div className="absolute top-5 right-16">
             <DeleteProfileDialog pseudo={profile.pseudo} onConfirm={onDelete} />
           </div>
         )}
-
-        <DialogClose
-          className="absolute w-8 h-8 flex justify-center items-center top-3 right-3 text-white hover:text-white/80 bg-mauve! rounded-full"
-          asChild
-        >
-          <X className="w-6 h-6" />
-        </DialogClose>
 
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
           {isUnlocked ? (
