@@ -8,6 +8,6 @@ const profileRoutes: ExpressRouter = Router();
 
 profileRoutes.post('/', authenticate, getProfile);
 profileRoutes.post('/setting', authenticate, setProfile);
-profileRoutes.post('/delete', authenticate, deleteProfile);
+profileRoutes.delete('/delete', authenticate, deleteProfile);
 
 export default profileRoutes;

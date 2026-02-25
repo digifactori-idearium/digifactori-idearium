@@ -114,17 +114,22 @@ const verifyPassword = async (userId: string, password: string) => {
 };
 
 const deleteUser = async (userId: string) => {
-  const response = { user: {}, profile: {} };
-  response.user = await profileTable.delete({
-    where: {
-      userId: userId,
-    },
+  const response = await prisma.$transaction(async tx => {
+    const profile = await tx.profile.delete({
+      where: {
+        userId: userId,
+      },
+    });
+
+    const user = await tx.user.delete({
+      where: {
+        id: userId,
+      },
+    });
+
+    return { user, profile };
   });
-  response.profile = await userTable.delete({
-    where: {
-      id: userId,
-    },
-  });
+
   return response;
 };
 
