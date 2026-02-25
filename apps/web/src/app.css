@@ -51,7 +51,7 @@
   }
 
   .form-input {
-    @apply w-full pr-10!  border-mauve! border-2! rounded-2xl outline! focus:border-dashed;
+    @apply w-full pr-10!  border-mauve! border-2! rounded-2xl! outline! focus:border-dashed;
   }
   .form-icon {
     @apply w-12 h-12 rounded-full bg-mauve! flex justify-center items-center;
@@ -61,6 +61,24 @@
   }
   .magic-text {
     @apply relative bg-linear-to-r from-[#00f2fe] via-[#fe4f9d] to-[#ffd700] bg-clip-text text-transparent box-decoration-clone py-1 font-extrabold;
+  }
+
+  .dialog-btn {
+    & > button {
+      @apply flex justify-center p-2! items-center text-white! hover:text-white/80 bg-mauve! rounded-full! [&>svg]:size-6!;
+    }
+  }
+
+  .accordion-btn {
+    @apply bg-transparent! outline-none! border-none!;
+  }
+
+  .room-form textarea {
+    @apply max-h-16!;
+  }
+
+  .room-form input {
+    @apply py-1.5!;
   }
 
   .magic-icon {
