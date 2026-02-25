@@ -13,6 +13,7 @@ export interface FormInputData {
   >;
   color?: string;
   options?: Option[];
+  dialogueContent?: React.ReactElement;
 }
 
 export interface FormInputProps {
