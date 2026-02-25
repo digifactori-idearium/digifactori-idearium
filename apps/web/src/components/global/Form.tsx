@@ -53,7 +53,7 @@ const Form: React.FC<FormProps> = ({
   };
 
   return (
-    <div className="login w-full flex flex-col gap-5">
+    <div className="dynamic-form w-full flex flex-col gap-5">
       <form
         onSubmit={handleSubmit(onSubmit)}
         encType="multipart/form"
