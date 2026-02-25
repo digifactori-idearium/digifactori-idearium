@@ -45,7 +45,9 @@ export default function Hero() {
           </Link>
 
           <Link
-            to="/about"
+            to="https://www.d1g1factory.org/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-8 py-4 font-semibold text-gray-700 dark:text-gray-300 rounded-2xl border-2 border-gray-200 dark:border-gray-800 hover:border-mauve! dark:hover:border-mauve/80! hover:text-mauve! transition-all duration-300"
           >
             Le projet digiFactory
