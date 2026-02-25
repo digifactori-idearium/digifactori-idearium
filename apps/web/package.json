@@ -32,6 +32,8 @@
     "react-hook-form": "^7.71.1",
     "react-router-dom": "^7.13.0",
     "sonner": "^2.0.7",
+    "@react-three/fiber": "^9.3.0",
+    "three": "^0.175.x",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "zod": "^4.3.6"
