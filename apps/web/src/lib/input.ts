@@ -126,3 +126,72 @@ export const resetInputs = [
     icon: KeyRound,
   },
 ];
+
+/* =========================
+   ROOM CONFIGURATION FORM INPUTS
+========================= */
+
+const globalConfigInputs = [
+  {
+    label: 'Visibilité(Public)',
+    type: 'switch',
+    name: 'visible',
+    placeholder: 'Public ou pas',
+    required: false,
+  },
+  {
+    label: 'Éclairage',
+    type: 'select',
+    name: 'brightness',
+    placeholder: "Choisir l'Éclairage",
+    options: [
+      { value: 'bright', text: 'Lumineux' },
+      { value: 'dim', text: 'Faible' },
+      { value: 'dark', text: 'Sombre' },
+    ],
+    required: false,
+  },
+  {
+    label: 'Music',
+    type: 'dialog',
+    name: 'music',
+    placeholder: 'Choisir la Music',
+    required: false,
+  },
+  {
+    label: 'Thème couleur',
+    type: 'select',
+    name: 'theme',
+    placeholder: 'Choisir le thème',
+    options: [
+      { value: 'black-orange', text: 'Noir Orange' },
+      { value: 'Pink-blue', text: 'Rose Bleu' },
+      { value: 'white', text: 'Blanc' },
+    ],
+    required: false,
+  },
+];
+
+const partConfigInput = [
+  { name: 'hidden', label: 'Cacher', type: 'switch' },
+  { name: 'color', label: 'Couleur', type: 'text' },
+  {
+    name: 'texture',
+    label: 'Texture',
+    type: 'select',
+    options: [
+      { value: 'none', text: 'Aucun' },
+      { value: 'bricks', text: 'Bricks' },
+      { value: 'wood', text: 'Bois' },
+    ],
+  },
+];
+const infoConfig = [
+  { name: 'description', label: 'Description', type: 'textarea' },
+];
+
+export const roomConfigInputs = {
+  global: globalConfigInputs,
+  info: infoConfig,
+  part: partConfigInput,
+};
