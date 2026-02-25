@@ -78,5 +78,25 @@ export const createFormSchema = (inputs: FormInputData[]) => {
     return z.object(newShape);
   };
 
-  return convertToZod(shape);
+  const baseSchema = convertToZod(shape);
+
+  return baseSchema.superRefine((data: any, ctx: z.RefinementCtx) => {
+    const role = data.role || (data.user && data.user.role);
+    const parentalCode =
+      data.parental_code || (data.user && data.user.parental_code);
+
+    if (role === 'CHILD') {
+      const isEmpty = !parentalCode;
+      const isPlaceholder = parentalCode === '****';
+      const isTooShort = String(parentalCode).length < 4;
+
+      if ((isEmpty || isTooShort) && !isPlaceholder) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Un code parental de 4 chiffres est requis pour les enfants',
+          path: data.user ? ['user', 'parental_code'] : ['parental_code'],
+        });
+      }
+    }
+  });
 };
