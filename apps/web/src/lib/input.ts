@@ -195,3 +195,77 @@ export const roomConfigInputs = {
   info: infoConfig,
   part: partConfigInput,
 };
+
+/* =========================
+   OBJECT ASSETS CONFIGURATION FORM INPUTS
+========================= */
+const objectInfoInputs = [
+  {
+    name: 'name',
+    label: "Nom de l'objet",
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'category',
+    label: 'Catégorie',
+    type: 'select',
+    options: [
+      { value: 'voxel', text: 'Voxel' },
+      { value: 'furniture', text: 'Furniture' },
+      { value: 'decoration', text: 'Decoration' },
+    ],
+  },
+];
+
+const transformInputs = [
+  { name: 'position', label: 'Position (x,y,z)', type: 'vector3' },
+  { name: 'rotation', label: 'Rotation (x,y,z)', type: 'vector3' },
+  { name: 'scale', label: 'Échelle', type: 'slider', max: 8 },
+];
+
+const styleInputs = [
+  { name: 'tint', label: 'Couleur (Teinte)', type: 'color' },
+  {
+    name: 'opacity',
+    label: 'Opacité (transparence)',
+    type: 'slider',
+    nim: 0,
+    step: 0.01,
+    max: 1,
+  },
+  { name: 'glow', label: 'Lueur', type: 'slider', max: 4 },
+  {
+    name: 'threshold',
+    label: 'Seuil',
+    type: 'slider',
+    nim: 0,
+    step: 0.01,
+    max: 1,
+  },
+];
+
+const advancedInputs = [
+  { name: 'parent', label: 'Contenant(Parent)', type: 'dialog' },
+  {
+    name: 'physics',
+    label: 'Physique',
+    type: 'select',
+    options: [
+      { value: 'kinematic', text: 'Cinématique' },
+      { value: 'upright', text: 'Droit / Vertical' },
+      { value: 'tumbly', text: 'Bascule' },
+      { value: 'passthrough', text: 'Passage' },
+      { value: 'trigger', text: 'Déclencheur' },
+    ],
+  },
+  { name: 'hidden', label: 'Caché', type: 'switch' },
+  { name: 'locked', label: 'Verrouiller en mode édition', type: 'switch' },
+];
+
+export const objectConfigInputs = {
+  info: objectInfoInputs,
+  transform: transformInputs,
+  style: styleInputs,
+  advanced: advancedInputs,
+};
