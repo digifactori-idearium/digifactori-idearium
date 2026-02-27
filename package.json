@@ -44,5 +44,8 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7"
   }
 }
