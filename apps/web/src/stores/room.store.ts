@@ -1,33 +1,5 @@
 import { create } from 'zustand';
 
-interface PartSettings {
-  color: string;
-  hidden: boolean;
-  texture: string;
-}
-
-interface RoomState {
-  // Global State
-  global: {
-    brightness: 'bright' | 'dim' | 'dark';
-    visible: boolean;
-    theme: string;
-  };
-
-  // Info State
-  info: {
-    description: string;
-  };
-
-  // Environment Parts
-  leftWall: PartSettings;
-  rightWall: PartSettings;
-  floor: PartSettings;
-
-  // Actions
-  update: (path: keyof Omit<RoomState, 'update'>, values: Partial<any>) => void;
-}
-
 export const useRoomStore = create<RoomState>(set => ({
   global: { brightness: 'bright', visible: true, theme: 'black-orange' },
   info: { description: 'New Room' },
