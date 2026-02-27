@@ -5,6 +5,10 @@ type getProfileResponse = {
   user: User;
 };
 
+type DeleteProfileResponse = {
+  user: User;
+  profile: Profile;
+};
 interface ApiResponse<T> {
   status: string;
   message: string;
@@ -55,6 +59,31 @@ export const updateProfile = async (
   } catch (error: any) {
     throw new Error(
       error.response?.data?.error?.message || 'Échec du profil' + error
+    );
+  }
+};
+
+export const deleteProfile = async (): Promise<
+  ApiResponse<DeleteProfileResponse>
+> => {
+  try {
+    const response = await axios.delete(
+      `http://localhost:3001/api/profile/delete`
+    );
+
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors?.[0]?.message ||
+          response.data.error?.message ||
+          'Erreur lors de la suppression du profil'
+      );
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.error?.message ||
+        'Échec de la suppression du profil'
     );
   }
 };
