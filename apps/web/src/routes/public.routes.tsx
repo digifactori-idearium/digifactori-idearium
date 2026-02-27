@@ -1,5 +1,5 @@
 import Home from '@/pages/Home';
-import { Room } from "@/pages/myPages.tsx";
+import { Room } from "@/pages/myPage";
 import TestFormPage from '@/pages/TestForm';
 
 const publicRoutes = [
