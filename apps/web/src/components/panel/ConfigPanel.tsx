@@ -9,9 +9,10 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { roomConfigInputs } from '@/lib/input';
+import { useRoomStore } from '@/stores';
 
 interface AccordionSection {
-  id: string;
+  id: 'global' | 'info' | 'leftWall' | 'rightWall' | 'floor';
   label: string;
   input: 'global' | 'info' | 'part';
 }
@@ -32,7 +33,7 @@ export const ConfigPanel = () => {
         <div>
           <FormThree
             inputs={roomConfigInputs['global']}
-            storeKey="room"
+            store={useRoomStore}
             sliceKey="global"
           />
         </div>
@@ -52,7 +53,7 @@ export const ConfigPanel = () => {
                 <AccordionContent className="pt-3 px-4">
                   <FormThree
                     inputs={roomConfigInputs[section.input]}
-                    storeKey="room"
+                    store={useRoomStore}
                     sliceKey={section.id}
                   />
                 </AccordionContent>
