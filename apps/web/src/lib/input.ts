@@ -131,6 +131,40 @@ export const resetInputs = [
    ROOM CONFIGURATION FORM INPUTS
 ========================= */
 
+//Tags
+const roomTags = [
+  { value: 'none', text: 'Aucun' },
+  { value: 'music', text: 'Musique' },
+  { value: 'lofi', text: 'Lo-Fi' },
+  { value: 'story', text: 'Histoire' },
+  { value: 'gaming', text: 'Jeux Vidéo' },
+  { value: 'chill', text: 'Détente' },
+  { value: 'focus', text: 'Productivité' },
+  { value: 'art', text: 'Art' },
+  { value: 'design', text: 'Design' },
+  { value: 'coding', text: 'Programmation' },
+  { value: 'education', text: 'Éducation' },
+  { value: 'podcast', text: 'Podcast' },
+  { value: 'movie', text: 'Cinéma' },
+  { value: 'anime', text: 'Anime' },
+  { value: 'social', text: 'Social' },
+  { value: 'business', text: 'Affaires' },
+  { value: 'fitness', text: 'Fitness' },
+  { value: 'cooking', text: 'Cuisine' },
+  { value: 'tech', text: 'Technologie' },
+  { value: 'writing', text: 'Écriture' },
+  { value: 'crypto', text: 'Crypto / Web3' },
+  { value: 'nature', text: 'Nature' },
+  { value: 'travel', text: 'Voyage' },
+  { value: 'mentalhealth', text: 'Santé Mentale' },
+  { value: 'meditation', text: 'Méditation' },
+  { value: 'fashion', text: 'Mode' },
+  { value: 'photography', text: 'Photographie' },
+  { value: 'debate', text: 'Débat' },
+  { value: 'science', text: 'Science' },
+  { value: 'history', text: 'Histoire (Sujet)' },
+];
+
 const globalConfigInputs = [
   {
     label: 'Visibilité(Public)',
@@ -174,7 +208,7 @@ const globalConfigInputs = [
 
 const partConfigInput = [
   { name: 'hidden', label: 'Cacher', type: 'switch' },
-  { name: 'color', label: 'Couleur', type: 'text' },
+  { name: 'color', label: 'Couleur', type: 'color' },
   {
     name: 'texture',
     label: 'Texture',
@@ -188,11 +222,18 @@ const partConfigInput = [
 ];
 const infoConfig = [
   { name: 'description', label: 'Description', type: 'textarea' },
+  { name: 'category', label: 'Catégorie', type: 'select', options: roomTags },
+];
+
+const backConfig = [
+  { name: 'color', label: 'Couleur', type: 'color' },
+  { name: 'accent', label: 'Accent', type: 'color' },
 ];
 
 export const roomConfigInputs = {
   global: globalConfigInputs,
   info: infoConfig,
+  background: backConfig,
   part: partConfigInput,
 };
 

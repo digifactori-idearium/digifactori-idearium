@@ -12,12 +12,13 @@ import { roomConfigInputs } from '@/lib/input';
 import { useRoomStore } from '@/stores';
 
 interface AccordionSection {
-  id: 'global' | 'info' | 'leftWall' | 'rightWall' | 'floor';
+  id: 'global' | 'info' | 'leftWall' | 'rightWall' | 'floor' | 'background';
   label: string;
-  input: 'global' | 'info' | 'part';
+  input: 'global' | 'info' | 'part' | 'background';
 }
 const accordionSections: AccordionSection[] = [
   { id: 'info', label: 'Information', input: 'info' },
+  { id: 'background', label: 'Arrière-plan', input: 'background' },
   { id: 'leftWall', label: 'Mur Gauche', input: 'part' },
   { id: 'rightWall', label: 'Mur Droit', input: 'part' },
   { id: 'floor', label: 'Sol', input: 'part' },
