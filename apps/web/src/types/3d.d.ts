@@ -65,9 +65,12 @@ interface RoomState {
     theme: string;
   };
 
+  background: { color: string; accent: string };
+
   // Info State
   info: {
     description: string;
+    category?: string;
   };
 
   // Environment Parts
