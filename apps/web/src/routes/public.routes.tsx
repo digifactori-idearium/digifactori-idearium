@@ -1,5 +1,5 @@
+import EmptyRoom from '@/pages/EmptyRoom';
 import Home from '@/pages/Home';
-import EmptyRoom from '@/pages/myPage';
 import Rooms from '@/pages/Rooms';
 import RoomsPlayground from '@/pages/RoomsPlayground';
 

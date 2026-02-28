@@ -3,6 +3,8 @@ import { Canvas, useThree } from '@react-three/fiber';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Audio, AudioListener, AudioLoader, Color } from "three";
 
+import { useRoomStore } from "@/stores";
+
 
 
 
@@ -55,24 +57,15 @@ const AudioComponent: React.FC<{soundTrack: string}> = ({soundTrack}) => {
 
 export const EmptyRoom: React.FC = () => {
 
-  const [intensity, setIntensity] = useState(5);
-  const [showLeftWall, setShowLeftWall] = useState(true)
-  const [showRightWall, setShowRightWall] = useState(true)
-  const [showFloor, setShowFloor] = useState(true)
   const [soundTrack, setSoundTrack] = useState("")
-  
-  const themes = {
-    base:{
-      wallColors: ["red", "orange", "yellow"],
-      bgColor: "blue"
-    },
-    fluo:{
-      wallColors: ["red", "green", "blue"],
-      bgColor: "lightyellow"
-    }
+
+  const roomStore = useRoomStore((state => state));
+
+  const intensities = {
+    "bright": 50,
+    "dim": 30,
+    "dark": 10
   }
-  
-  const [theme, setTheme] = useState<{wallColors: number[] | string[] | string, bgColor: string}>(themes.fluo)
 
     return <div id="canvas-container" style={{width: 500, height: 500}}>
         <Canvas shadows camera={{ position: [80, 100, 80] }}>
@@ -81,38 +74,24 @@ export const EmptyRoom: React.FC = () => {
             rotateSpeed={2}
             zoomSpeed={2}
             panSpeed={2}/>
-          <UpdateSceneBackground color={theme.bgColor}/>
-          <ambientLight intensity={intensity} color="white"/>
-          <mesh receiveShadow position ={[0, -5, 0]} visible={showFloor} >
+          <UpdateSceneBackground color={roomStore.background.color}/>
+          <ambientLight intensity={intensities[roomStore.global.brightness]} color="white"/>
+          <mesh receiveShadow position ={[0, -5, 0]} visible={!roomStore.floor.hidden} >
             <boxGeometry args={[80, 10, 80]}/>
-            <meshPhongMaterial color={theme.wallColors[0]}/>
+            <meshPhongMaterial color={roomStore.floor.color}/>
           </mesh>
-           <mesh position ={[0, 40, -35]} rotation={[Math.PI/2, 0, 0]} visible={showRightWall}>
+           <mesh position ={[0, 40, -35]} rotation={[Math.PI/2, 0, 0]} visible={!roomStore.rightWall.hidden}>
             <boxGeometry args={[80, 10, 80]}/>
-            <meshPhongMaterial color={theme.wallColors[1]}/>
+            <meshPhongMaterial color={roomStore.rightWall.color}/>
           </mesh>
-          <mesh position ={[-35, 40, 5]} rotation={[0, 0, Math.PI/2]} visible={showLeftWall}>
+          <mesh position ={[-35, 40, 5]} rotation={[0, 0, Math.PI/2]} visible={!roomStore.leftWall.hidden}>
             <boxGeometry args={[80, 10, 70]}/>
-            <meshPhongMaterial color={theme.wallColors[2]}/>
+            <meshPhongMaterial color={roomStore.leftWall.color}/>
           </mesh>
 
           
         </Canvas>
         <div>
-          <p>
-            Thème:<select 
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value == "base") {
-                  setTheme(themes.base)
-                } else if (value == "fluo") {
-                  setTheme(themes.fluo)
-                }
-              }}>
-              <option value="base">Choix 1</option>
-              <option value="fluo">Choix 2</option>
-            </select>
-          </p>
           <p>
             Musique:<select 
               onChange={(e) => {
@@ -133,18 +112,6 @@ export const EmptyRoom: React.FC = () => {
               <option value="forest">Foret</option>
               <option value="gun">Gun</option>
             </select>
-          </p>
-          <p>
-            Intensité de la lumière<input type="range" min={0} max={10} value={intensity} onChange={(e) => setIntensity(parseInt(e.target.value))}/>
-          </p>
-          <p>
-            Montrer le sol<input type="checkbox" checked={showFloor} onChange={()=>setShowFloor(!showFloor)}/> 
-          </p>
-          <p>
-            Montrer le mur de droite<input type="checkbox" checked={showRightWall} onChange={()=>setShowRightWall(!showRightWall)}/>
-          </p>
-          <p>
-            Montrer le mur de gauche<input type="checkbox" checked={showLeftWall} onChange={()=>setShowLeftWall(!showLeftWall)}/>
           </p>
         </div>
     </div>
