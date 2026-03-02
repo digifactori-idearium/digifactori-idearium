@@ -52,7 +52,7 @@ function VoxelPainter({ mode }: VoxelPainterProps) {
   const clickDuration = performance.now() - clickStartTime.current
   if (clickDuration > 400) return
 
-  let position = new THREE.Vector3()
+  const position = new THREE.Vector3()
 
   if (event.face) {
     position.copy(event.point).add(event.face.normal)
