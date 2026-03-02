@@ -1,6 +1,6 @@
-import { ContactShadows } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
 import { Settings } from 'lucide-react';
+
+import EmptyRoom from './EmptyRoom';
 
 import { ConfigPanel } from '@/components/panel/ConfigPanel';
 import { Sheet, SheetTrigger } from '@/components/ui/sheet';
@@ -22,11 +22,7 @@ export default function Room() {
 
       {/* 2. THE 3D LAYER (WebGL) */}
       <div className="w-full h-full overflow-hidden flex flex-col">
-        <Canvas shadows camera={{ position: [0, 1.5, 0.8] }} className="flex-1">
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[3, 5, 2]} intensity={1} castShadow />
-          <ContactShadows opacity={0.4} scale={10} blur={2} far={10} />
-        </Canvas>
+        <EmptyRoom/>
       </div>
     </div>
   );
