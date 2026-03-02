@@ -1,7 +1,7 @@
 import { OrbitControls } from '@react-three/drei';
-import { Canvas, useThree } from '@react-three/fiber';
-import React, { useEffect, useMemo } from 'react';
-import { Audio, AudioListener, AudioLoader, Color, DoubleSide, ShaderMaterial } from "three";
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Audio, AudioListener, AudioLoader, Color, DoubleSide, Mesh, ShaderMaterial } from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 
 import { useRoomStore } from '@/stores';
@@ -85,6 +85,33 @@ const AudioComponent: React.FC<{ soundTrack: string }> = ( {soundTrack} ) => {
 
 }
 
+const AnimatedBox:React.FC  = () =>{
+
+  const boxRef = useRef<Mesh>(null);
+
+  const [wireframe, setWireframe] = useState(false)
+
+  const handleClick = () => {
+    setWireframe(!wireframe)
+  }
+
+  useFrame(() => {
+    if(boxRef.current) {
+      boxRef.current.rotation.x += 0.005;
+      boxRef.current.rotation.x += 0.005;
+      boxRef.current.rotation.x += 0.005;
+    }
+    
+  })
+  
+  return (
+  <mesh name='bob' castShadow position={[39, 39, 39]}ref={boxRef} onClick={handleClick}>
+    <boxGeometry args={[10, 10, 10]}/>
+    <meshStandardMaterial color={"yellow"} wireframe={wireframe}/>
+  </mesh>
+)
+}
+
 const Exporter: React.FC = () => {
   const {scene} = useThree();
       const saveChange = () => {
@@ -141,6 +168,7 @@ export const EmptyRoom: React.FC = () => {
         }}
       >
         {/* <GradientBackground color1="#ef3b0e" color2="#4c0fda" /> */}
+        <Exporter/>
         {soundTrack && <AudioComponent soundTrack={soundTrack} />}
         <OrbitControls rotateSpeed={0.2} zoomSpeed={0.2} panSpeed={2} />
         <UpdateSceneBackground color={roomStore.background.color} />
@@ -162,6 +190,7 @@ export const EmptyRoom: React.FC = () => {
           intensity={20000}
           color="blue"
         />
+        <AnimatedBox/>
         <mesh castShadow position={[50, 50, 50]} visible={true}>
           <boxGeometry args={[20, 20, 20]} />
           <meshPhongMaterial color={'#fc048c'} />
@@ -170,7 +199,9 @@ export const EmptyRoom: React.FC = () => {
           <boxGeometry args={[1, 1, 1]} />
           <meshPhongMaterial color={'#f60c0c'} />
         </mesh>
+
         <mesh
+          // id={25}
           receiveShadow={true}
           position={[50, -5, 50]}
           visible={!roomStore.floor.hidden}
