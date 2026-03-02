@@ -184,7 +184,7 @@ const FormInput: React.FC<FormInputProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="form-input-container flex flex-col gap-2">
       <label htmlFor={`Input${id}`}>
         <b>{input.label}</b>
         {input.required && <span className=" text-red-600">*</span>}

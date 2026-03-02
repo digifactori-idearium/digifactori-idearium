@@ -15,7 +15,7 @@ export function Vector3Field({ input, control }: Vector3FieldProps) {
   const step = input.step ?? 1;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="form-input-container flex flex-col gap-2">
       <label className="text-sm font-medium">{input.label}</label>
 
       <div className="grid grid-cols-3 gap-3">
