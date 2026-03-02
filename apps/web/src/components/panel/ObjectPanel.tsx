@@ -6,6 +6,7 @@ import {
   Hand,
   Trash,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import FormThree from '../global/FormThree';
 import { Button } from '../ui/button';
@@ -32,6 +33,8 @@ const accordionSections: AccordionSection[] = [
 ];
 
 export const ObjectConfigPanel = () => {
+  const navigate = useNavigate();
+
   return (
     <Card className="flex flex-col gap-2! p-4 h-full w-full sm:max-w-md border-l bg-sidebar shadow-2xl overflow-hidden rounded-none">
       <CardHeader>
@@ -40,7 +43,10 @@ export const ObjectConfigPanel = () => {
 
       {/* Top Action Bar */}
       <div className="w-full border-b flex gap-2 items-center justify-center px-4 py-2">
-        <Button className="icon-round-btn">
+        <Button
+          className="icon-round-btn"
+          onClick={() => navigate('/app/voxel')}
+        >
           <Cuboid className="size-6!" />
         </Button>
         <Button className="icon-round-btn">
