@@ -10,7 +10,7 @@ export default function Room() {
   const mode = useRoomStore(state => state.mode);
   const setMode = useRoomStore(state => state.setMode);
 
-  const selectedObject = false;
+  const selectedObject = true;
 
   const isEditMode = mode === 'edit';
 

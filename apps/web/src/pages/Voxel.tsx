@@ -1,75 +1,75 @@
-import { Canvas, ThreeEvent } from "@react-three/fiber"
-import { OrbitControls } from "@react-three/drei"
-import { useRef, useState, useMemo } from "react"
-import * as THREE from "three"
+import { OrbitControls } from '@react-three/drei';
+import { Canvas, ThreeEvent } from '@react-three/fiber';
+import { useRef, useState, useMemo } from 'react';
+import * as THREE from 'three';
 
 interface VoxelPainterProps {
-  mode: "add" | "remove"
+  mode: 'add' | 'remove';
 }
 
 function VoxelPainter({ mode }: VoxelPainterProps) {
-  const planeRef = useRef<THREE.Mesh>(null!)
-  const rollOverRef = useRef<THREE.Mesh>(null!)
+  const planeRef = useRef<THREE.Mesh>(null!);
+  const rollOverRef = useRef<THREE.Mesh>(null!);
 
-  const clickStartTime = useRef(0)
-  const [voxels, setVoxels] = useState<THREE.Vector3[]>([])
+  const clickStartTime = useRef(0);
+  const [voxels, setVoxels] = useState<THREE.Vector3[]>([]);
 
-  const cubeGeo = useMemo(() => new THREE.BoxGeometry(50, 50, 50), [])
+  const cubeGeo = useMemo(() => new THREE.BoxGeometry(50, 50, 50), []);
   const cubeMaterial = useMemo(
     () => new THREE.MeshLambertMaterial({ color: 0xfeb74c }),
     []
-  )
+  );
 
   const snapPosition = (pos: THREE.Vector3) => {
-    pos.divideScalar(50).floor().multiplyScalar(50).addScalar(25)
-    if (pos.y < 25) pos.y = 25
-    return pos
-  }
+    pos.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+    if (pos.y < 25) pos.y = 25;
+    return pos;
+  };
 
   const onPointerMove = (event: ThreeEvent<PointerEvent>) => {
-    event.stopPropagation()
-    if (!event.face) return
+    event.stopPropagation();
+    if (!event.face) return;
 
-    const pos = rollOverRef.current.position
-    pos.copy(event.point).add(event.face.normal)
+    const pos = rollOverRef.current.position;
+    pos.copy(event.point).add(event.face.normal);
 
-    if (mode == "remove" && event.object !== planeRef.current) {
-      pos.copy(event.object.position)
-      return
+    if (mode == 'remove' && event.object !== planeRef.current) {
+      pos.copy(event.object.position);
+      return;
     }
 
-    snapPosition(pos)
-  }
+    snapPosition(pos);
+  };
 
   const onPointerDown = (event: ThreeEvent<PointerEvent>) => {
-    event.stopPropagation()
-    clickStartTime.current = performance.now()
-  }
+    event.stopPropagation();
+    clickStartTime.current = performance.now();
+  };
 
   const onPointerUp = (event: ThreeEvent<PointerEvent>) => {
-  event.stopPropagation()
+    event.stopPropagation();
 
-  const clickDuration = performance.now() - clickStartTime.current
-  if (clickDuration > 400) return
+    const clickDuration = performance.now() - clickStartTime.current;
+    if (clickDuration > 400) return;
 
-  const position = new THREE.Vector3()
+    const position = new THREE.Vector3();
 
-  if (event.face) {
-    position.copy(event.point).add(event.face.normal)
-  } else {
-    position.copy(rollOverRef.current.position)
-  }
+    if (event.face) {
+      position.copy(event.point).add(event.face.normal);
+    } else {
+      position.copy(rollOverRef.current.position);
+    }
 
-  snapPosition(position)
+    snapPosition(position);
 
-  if (mode === "remove") {
-    setVoxels(prev =>
-      prev.filter(v => !v.equals(event.object?.position || position))
-    )
-  } else {
-    setVoxels(prev => [...prev, position])
-  }
-}
+    if (mode === 'remove') {
+      setVoxels(prev =>
+        prev.filter(v => !v.equals(event.object?.position || position))
+      );
+    } else {
+      setVoxels(prev => [...prev, position]);
+    }
+  };
 
   return (
     <>
@@ -110,47 +110,56 @@ function VoxelPainter({ mode }: VoxelPainterProps) {
         />
       ))}
     </>
-  )
+  );
 }
 
 export default function Voxel() {
-  const isDragging = useRef(false)
-  const [mode, setMode] = useState<"add" | "remove">("add")
+  const isDragging = useRef(false);
+  const [mode, setMode] = useState<'add' | 'remove'>('add');
   return (
     <>
-      <div style={{
-        position: "absolute",
-        top: 90,              // distance depuis le haut de la zone
-        left: "50%",           // centre horizontal
-        transform: "translateX(-50%)",
-        zIndex: 1,
-        display: "flex",
-        gap: "10px",           // espace entre les boutons
-        }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 90, // distance depuis le haut de la zone
+          left: '50%', // centre horizontal
+          transform: 'translateX(-50%)',
+          zIndex: 1,
+          display: 'flex',
+          gap: '10px', // espace entre les boutons
+        }}
+      >
         <button
-          onClick={() => setMode("add")}
-          style={{ background: mode === "add" ? "lightgreen" : "grey" }}
+          onClick={() => setMode('add')}
+          style={{ background: mode === 'add' ? 'lightgreen' : 'grey' }}
         >
           Ajouter
         </button>
         <button
-          onClick={() => setMode("remove")}
-          style={{ background: mode === "remove" ? "lightcoral" : "grey", marginLeft: 5 }}
+          onClick={() => setMode('remove')}
+          style={{
+            background: mode === 'remove' ? 'lightcoral' : 'grey',
+            marginLeft: 5,
+          }}
         >
           Supprimer
         </button>
       </div>
       <Canvas
-        style={{ width: "100vw", height: "100vh" }}
+        style={{ width: '100vw', height: '100vh' }}
         camera={{ position: [500, 800, 1300], fov: 45, near: 1, far: 10000 }}
       >
-        <VoxelPainter mode={mode}/>
+        <VoxelPainter mode={mode} />
         <OrbitControls
           target={[0, 25, 0]}
-          onStart={() => { isDragging.current = true }}
-          onEnd={() => { isDragging.current = false }}
+          onStart={() => {
+            isDragging.current = true;
+          }}
+          onEnd={() => {
+            isDragging.current = false;
+          }}
         />
       </Canvas>
     </>
-  )
+  );
 }
