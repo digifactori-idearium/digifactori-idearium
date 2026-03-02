@@ -42,11 +42,18 @@ const ExpandedHoneycomb = () => {
                   }}
                 >
                   <div className="relative w-full h-full">
-                    <div className="absolute inset-0 flex items-center justify-center text-center p-4">
+                    <div className="absolute inset-0 flex items-center justify-center text-center">
+                      <img
+                        src="https://cdn.shadcnstudio.com/ss-assets/components/card/image-5.png?width=368&format=auto"
+                        alt="alt"
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                      />
+                    </div>
+                    {/* <div className="absolute inset-0 flex items-center justify-center text-center p-4">
                       <span className="text-white font-bold text-xs uppercase tracking-widest group-hover:text-white/70 transition-colors">
                         {room}
                       </span>
-                    </div>
+                    </div> */}
 
                     {/* 
                     <img 
