@@ -201,10 +201,10 @@ const globalConfigInputs = [
     name: 'theme',
     placeholder: 'Choisir le thème',
     options: [
-      { value: 'customized', text: 'Personnalisé' },
       { value: 'black-orange', text: 'Noir Orange' },
       { value: 'pink-blue', text: 'Rose Bleu' },
       { value: 'white', text: 'Blanc' },
+      { value: 'customized', text: 'Personnalisé' },
     ],
     required: false,
   },

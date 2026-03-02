@@ -1,11 +1,30 @@
 import { OrbitControls, useGLTF } from "@react-three/drei";
-import { Canvas } from '@react-three/fiber';
+import { Canvas, } from '@react-three/fiber';
 import React from 'react';
+import { Object3D, Object3DEventMap } from "three";
 
+const animations = {
+  "bob": [{
+    interval: 10,
+    anim: (child: Object3D<Object3DEventMap>) => {
+      child.rotation.x += 0.01
+  }}
+]
 
+  
+}
 
 function Model() {
-  const { scene } = useGLTF("/models/scene (2).gltf")
+  const { scene } = useGLTF("/models/scene.gltf")
+ 
+  scene.children.forEach(child => {if(child.name == 'bob') {
+    console.log(child);
+    animations[child.name].forEach(animation => setInterval(() => animation.anim(child), animation.interval))
+    // setInterval( () => child.rotation.x += 0.01, 10)
+    // child.position.x = 60
+  }
+
+  })
 
   return <primitive object={scene} />
 }
