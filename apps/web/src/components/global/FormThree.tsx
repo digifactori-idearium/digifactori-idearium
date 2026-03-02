@@ -79,7 +79,7 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
   }, [watchedValues]);
 
   return (
-    <div className="w-full room-form flex flex-col gap-4">
+    <div className="w-full room-form flex flex-col gap-2">
       {inputs.map((input, index) => {
         if (input.type === 'file' || input.type === 'image') {
           return (
@@ -105,7 +105,10 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
         // SELECT
         if (input.type === 'select') {
           return (
-            <div key={index} className="flex flex-col gap-2">
+            <div
+              key={index}
+              className="form-input-container flex flex-col gap-2"
+            >
               <label className="font-medium">{input.label}</label>
               <Controller
                 name={input.name}
@@ -119,7 +122,6 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
                     placeholder={input.placeholder}
                     onChange={val => field.onChange(val)}
                     icon={input.icon}
-                    className="py-2!"
                   />
                 )}
               />
@@ -206,7 +208,10 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
         // DIALOG
         if (input.type === 'dialog') {
           return (
-            <div key={index} className="flex flex-col gap-2">
+            <div
+              key={index}
+              className="form-input-container flex flex-col gap-2"
+            >
               <label className="text-sm font-medium">{input.label}</label>
               <Dialog>
                 <DialogTrigger asChild>

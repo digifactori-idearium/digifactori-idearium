@@ -202,7 +202,7 @@ const globalConfigInputs = [
     placeholder: 'Choisir le thème',
     options: [
       { value: 'black-orange', text: 'Noir Orange' },
-      { value: 'Pink-blue', text: 'Rose Bleu' },
+      { value: 'pink-blue', text: 'Rose Bleu' },
       { value: 'white', text: 'Blanc' },
     ],
     required: false,

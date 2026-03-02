@@ -45,7 +45,7 @@ export default function InputSelect({
           <Field>
             <Select value={value || ''} onValueChange={val => onChange?.(val)}>
               <SelectTrigger
-                className={`w-full relative bg-sidebar! form-input rounded-2xl! p-6! ${className} ${error ? 'error' : ''}`}
+                className={`w-full relative bg-sidebar! form-select form-input rounded-2xl! p-6! ${className} ${error ? 'error' : ''}`}
               >
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
