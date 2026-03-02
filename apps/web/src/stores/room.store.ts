@@ -55,10 +55,10 @@ const setColorsAsInTheme = (state: RoomState) => {
 export const useRoomStore = create<RoomState>(set => ({
   global: { brightness: 'bright', visible: true, theme: 'black-orange' },
   info: { description: 'New Room', category: 'none' },
-  background: { color: '#7d7d7d', accent: '#7d7d7d' },
-  leftWall: { color: '#7d7d7d', hidden: false, texture: 'none' },
-  rightWall: { color: '#7d7d7d', hidden: false, texture: 'none' },
-  floor: { color: '#444444', hidden: false, texture: 'none' },
+  background: { color: '#f0d400', accent: '#7d7d7d' },
+  leftWall: { color: '#f45405', hidden: false, texture: 'none' },
+  rightWall: { color: '#e80606', hidden: false, texture: 'none' },
+  floor: { color: '#100101', hidden: false, texture: 'none' },
 
   update: (path, values) => {
     set(state => {
@@ -73,7 +73,6 @@ export const useRoomStore = create<RoomState>(set => ({
       return {...newState, ...setColorsAsInTheme(newState)}
     }
     else if (["background", "leftWall", "rightWall", "floor"].includes(path)) {
-      console.log("color changed")
       return {...newState, global: {
         ...state.global,
         theme: "customized"}
