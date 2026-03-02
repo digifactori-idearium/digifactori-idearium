@@ -16,8 +16,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { objectConfigInputs } from '@/lib/input';
 import { useObjectStore } from '@/stores';
 
@@ -33,12 +33,13 @@ const accordionSections: AccordionSection[] = [
 
 export const ObjectConfigPanel = () => {
   return (
-    <SheetContent className="dialog-btn gap-1! bg-sidebar">
-      <SheetHeader>
-        <SheetTitle className="text-2xl">Object Configuration</SheetTitle>
-      </SheetHeader>
+    <Card className="flex flex-col gap-2! p-4 h-full w-full sm:max-w-md border-l bg-sidebar shadow-2xl overflow-hidden rounded-none">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold">Object Name</CardTitle>
+      </CardHeader>
 
-      <div className="w-full flex gap-2 items-center justify-center">
+      {/* Top Action Bar */}
+      <div className="w-full border-b flex gap-2 items-center justify-center px-4 py-2">
         <Button className="icon-round-btn">
           <Cuboid className="size-6!" />
         </Button>
@@ -47,7 +48,7 @@ export const ObjectConfigPanel = () => {
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+      <CardContent className="flex-1 overflow-y-auto p-0 custom-scrollbar">
         <div>
           <FormThree
             inputs={objectConfigInputs['transform']}
@@ -56,15 +57,10 @@ export const ObjectConfigPanel = () => {
           />
         </div>
 
-        <Separator className="my-3!" />
+        <Separator className="my-3! bg-border" />
 
         <div>
-          <Accordion
-            type="single"
-            collapsible
-            defaultValue="info"
-            className="max-w-lg"
-          >
+          <Accordion type="multiple" className="max-w-lg">
             {accordionSections.map(section => (
               <AccordionItem key={section.id} value={section.id}>
                 <AccordionTrigger className="accordion-btn">
@@ -85,11 +81,11 @@ export const ObjectConfigPanel = () => {
               </AccordionItem>
             ))}
           </Accordion>
-
-          <Separator className="my-3!" />
         </div>
-      </div>
-      <div className="w-full my-3 flex gap-2 items-center justify-center">
+      </CardContent>
+
+      {/* Bottom Sticky Action Bar */}
+      <div className="w-full p-2 border-t bg-sidebar flex gap-2 items-center justify-center">
         <Button className="icon-round-btn">
           <ArrowBigDown className="size-6!" />
         </Button>
@@ -103,6 +99,6 @@ export const ObjectConfigPanel = () => {
           <Trash className="size-6!" />
         </Button>
       </div>
-    </SheetContent>
+    </Card>
   );
 };

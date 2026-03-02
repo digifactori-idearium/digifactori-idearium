@@ -29,7 +29,6 @@ const themesToColors = {
 
 const setColorsAsInTheme = (state: RoomState) => {
   const theme = themesToColors[state.global.theme];
-  console.log('theme', state.global.theme);
   return {
     background: {
       ...state.background,
@@ -51,11 +50,12 @@ const setColorsAsInTheme = (state: RoomState) => {
 };
 
 export const useRoomStore = create<RoomState>(set => ({
+  mode: 'edit',
   global: {
     brightness: 'bright',
     visible: true,
     music: { currentTrack: '', volume: 0.5 },
-    theme: 'black-orange',
+    theme: 'pink-blue',
   },
   info: { description: 'New Room', category: 'none' },
   background: { color: '#f0d400', accent: '#7d7d7d' },
@@ -63,6 +63,7 @@ export const useRoomStore = create<RoomState>(set => ({
   rightWall: { color: '#e80606', hidden: false, texture: 'none' },
   floor: { color: '#100101', hidden: false, texture: 'none' },
 
+  setMode: (mode: RoomMode) => set({ mode }),
   update: (path, values) => {
     set(state => {
       const newState = {
