@@ -9,6 +9,8 @@ import {
   KeyRound,
 } from 'lucide-react';
 
+import { MusicSelector } from './MusicDialog';
+
 /* =========================
    LOGIN INPUTS
 ========================= */
@@ -191,6 +193,7 @@ const globalConfigInputs = [
     name: 'music',
     placeholder: 'Choisir la Music',
     required: false,
+    dialogueContent: <MusicSelector />,
   },
   {
     label: 'Thème couleur',

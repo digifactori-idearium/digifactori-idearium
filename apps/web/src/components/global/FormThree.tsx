@@ -13,7 +13,14 @@ import InputSelect from './InputSelect';
 import UploadField from './UploadField';
 import { Vector3Field } from './Vector3Field';
 
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { createFormSchema } from '@/lib/validation';
 
@@ -30,7 +37,6 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
   store,
   sliceKey,
 }: FormThreeProps<T>) {
-  // ✅ Correctly typed store selection
   const storeState = store(state => state[sliceKey]) as T[typeof sliceKey];
 
   const update = store(state => state.update);
@@ -54,25 +60,23 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
 
   useEffect(() => {
     reset(storeState as any);
-    }, [storeState, reset]);
+  }, [storeState, reset]);
 
   const watchedValues = useWatch({
     control,
   });
 
-useEffect(() => {
-  if (isFirstRender.current) {
-    isFirstRender.current = false;
-    return;
-  }
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
 
-  // On compare uniquement les clés du slice
-  if (!isEqual(watchedValues, storeState)) {
-    update(sliceKey, watchedValues);
-  }
-}, [watchedValues]);
-
-  
+    // On compare uniquement les clés du slice
+    if (!isEqual(watchedValues, storeState)) {
+      update(sliceKey, watchedValues);
+    }
+  }, [watchedValues]);
 
   return (
     <div className="w-full room-form flex flex-col gap-4">
@@ -214,7 +218,14 @@ useEffect(() => {
                     <SquareArrowOutUpRight size={20} />
                   </button>
                 </DialogTrigger>
-                <DialogContent className="max-w-lg dialog-btn">
+                <DialogContent className="max-w-lg bg-sidebar dialog-btn">
+                  <DialogHeader>
+                    <DialogTitle>Configuration {input.label}</DialogTitle>
+                    <DialogDescription className="text-zinc-400">
+                      Personnalisez les réglages pour
+                      {input.label.toLowerCase()} ci-dessous.
+                    </DialogDescription>
+                  </DialogHeader>
                   {input.dialogueContent || 'Nothing to display'}
                 </DialogContent>
               </Dialog>
