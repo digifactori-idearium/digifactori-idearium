@@ -4,6 +4,7 @@ import BatchRegister from '@/components/auth';
 import ProfilePage from '@/pages/Profile';
 import Room from '@/pages/Room';
 import Rooms from '@/pages/Rooms';
+import Voxel from '@/pages/Voxel';
 
 const appRoutes = [
   {
@@ -20,6 +21,7 @@ const appRoutes = [
     path: 'batch_register',
     element: <ProtectedRoute element={<BatchRegister />} />,
   },
+  { path: 'voxel', element: <ProtectedRoute element={<Voxel />} /> },
 ];
 
 export default appRoutes;
