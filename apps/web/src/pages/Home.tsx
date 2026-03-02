@@ -17,7 +17,7 @@ const Home: React.FC = () => {
         <HoneycombGrid />
       </div>
 
-      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-80 px-6">
+      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-30 px-6">
         <Card image={ImageStage} animation="fade-right" />
         <CardText
           animation="fade-left"
@@ -25,15 +25,15 @@ const Home: React.FC = () => {
           text="Les enfants plongent dans le monde de la programmation"
         />
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-80 px-6">
+      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-30 px-6">
         <Card image={DigifactoryLogo} animation="fade-right" />
         <CardText
           animation="fade-left"
-          header="Une initiative de l'ASBL Digifactory"
-          text="digifactory oeuvre à créer des contenus pour former des citoyens capables de relever les défis émergents de l'ère numérique"
+          header="Une initiative de l'ASBL digiFactory"
+          text="digiFactory oeuvre à créer des contenus pour former des citoyens capables de relever les défis émergents de l'ère numérique"
         />
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-80 px-6">
+      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-auto px-6">
         <Card image={UnamurLogo} animation="fade-right" />
         <CardText
           animation="fade-left"
