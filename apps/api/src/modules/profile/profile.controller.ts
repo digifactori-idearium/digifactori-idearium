@@ -5,6 +5,18 @@ import { profileSchema, userProfileSchema } from '../../utils/validations';
 
 import { deleteUser, getSingleProfile, updateProfile } from './profile.service';
 
+/**
+ *
+ * @param req
+ * @param res {status: string, status_code: int, error?: {code: string, message: string}, data?: {
+ *     profile: Profile,
+ *     user?: User
+ * } where: - error is set if an error occurs, data is set otherwise
+ *          - User is set if the auth user has the "SUPERVISOR" role or if the parental_code in the body of req corresponds to its correct
+ *            parental_code
+ * }
+ * @returns res
+ */
 const getProfile = async (req: AuthenticatedRequest, res: Response) => {
   const currentUser = req.user;
 
@@ -170,3 +182,4 @@ const deleteProfile = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 export { deleteProfile, getProfile, setProfile };
+
