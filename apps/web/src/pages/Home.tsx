@@ -20,22 +20,7 @@ const Home: React.FC = () => {
         <HoneycombGrid />
       </div>
 
-      {/* 🔥 SECTION 3D */}
-      <section className="w-full max-w-6xl mx-auto px-6 mb-80">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Démonstration 3D interactive
-        </h2>
-
-        <div className="w-full h-[500px] max-w-6xl mx-auto">
-          <VoxelScene />
-        </div>
-
-        <p className="text-center mt-4 text-muted-foreground">
-          Cliquez sur le cube pour changer sa couleur
-        </p>
-      </section>
-
-      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-80 px-6">
+      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-30 px-6">
         <Card image={ImageStage} animation="fade-right" />
         <CardText
           animation="fade-left"
@@ -45,15 +30,17 @@ const Home: React.FC = () => {
       </div>
 
       <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-80 px-6">
+      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-30 px-6">
         <Card image={DigifactoryLogo} animation="fade-right" />
         <CardText
           animation="fade-left"
-          header="Une initiative de l'ASBL Digifactory"
-          text="digifactory oeuvre à créer des contenus pour former des citoyens capables de relever les défis émergents de l'ère numérique"
+          header="Une initiative de l'ASBL digiFactory"
+          text="digiFactory oeuvre à créer des contenus pour former des citoyens capables de relever les défis émergents de l'ère numérique"
         />
       </div>
 
       <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-80 px-6">
+      <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-auto px-6">
         <Card image={UnamurLogo} animation="fade-right" />
         <CardText
           animation="fade-left"

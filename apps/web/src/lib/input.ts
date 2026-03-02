@@ -126,3 +126,187 @@ export const resetInputs = [
     icon: KeyRound,
   },
 ];
+
+/* =========================
+   ROOM CONFIGURATION FORM INPUTS
+========================= */
+
+//Tags
+const roomTags = [
+  { value: 'none', text: 'Aucun' },
+  { value: 'music', text: 'Musique' },
+  { value: 'lofi', text: 'Lo-Fi' },
+  { value: 'story', text: 'Histoire' },
+  { value: 'gaming', text: 'Jeux Vidéo' },
+  { value: 'chill', text: 'Détente' },
+  { value: 'focus', text: 'Productivité' },
+  { value: 'art', text: 'Art' },
+  { value: 'design', text: 'Design' },
+  { value: 'coding', text: 'Programmation' },
+  { value: 'education', text: 'Éducation' },
+  { value: 'podcast', text: 'Podcast' },
+  { value: 'movie', text: 'Cinéma' },
+  { value: 'anime', text: 'Anime' },
+  { value: 'social', text: 'Social' },
+  { value: 'business', text: 'Affaires' },
+  { value: 'fitness', text: 'Fitness' },
+  { value: 'cooking', text: 'Cuisine' },
+  { value: 'tech', text: 'Technologie' },
+  { value: 'writing', text: 'Écriture' },
+  { value: 'crypto', text: 'Crypto / Web3' },
+  { value: 'nature', text: 'Nature' },
+  { value: 'travel', text: 'Voyage' },
+  { value: 'mentalhealth', text: 'Santé Mentale' },
+  { value: 'meditation', text: 'Méditation' },
+  { value: 'fashion', text: 'Mode' },
+  { value: 'photography', text: 'Photographie' },
+  { value: 'debate', text: 'Débat' },
+  { value: 'science', text: 'Science' },
+  { value: 'history', text: 'Histoire (Sujet)' },
+];
+
+const globalConfigInputs = [
+  {
+    label: 'Visibilité(Public)',
+    type: 'switch',
+    name: 'visible',
+    placeholder: 'Public ou pas',
+    required: false,
+  },
+  {
+    label: 'Éclairage',
+    type: 'select',
+    name: 'brightness',
+    placeholder: "Choisir l'Éclairage",
+    options: [
+      { value: 'bright', text: 'Lumineux' },
+      { value: 'dim', text: 'Faible' },
+      { value: 'dark', text: 'Sombre' },
+    ],
+    required: false,
+  },
+  {
+    label: 'Music',
+    type: 'dialog',
+    name: 'music',
+    placeholder: 'Choisir la Music',
+    required: false,
+  },
+  {
+    label: 'Thème couleur',
+    type: 'select',
+    name: 'theme',
+    placeholder: 'Choisir le thème',
+    options: [
+      { value: 'black-orange', text: 'Noir Orange' },
+      { value: 'Pink-blue', text: 'Rose Bleu' },
+      { value: 'white', text: 'Blanc' },
+    ],
+    required: false,
+  },
+];
+
+const partConfigInput = [
+  { name: 'hidden', label: 'Cacher', type: 'switch' },
+  { name: 'color', label: 'Couleur', type: 'color' },
+  {
+    name: 'texture',
+    label: 'Texture',
+    type: 'select',
+    options: [
+      { value: 'none', text: 'Aucun' },
+      { value: 'bricks', text: 'Bricks' },
+      { value: 'wood', text: 'Bois' },
+    ],
+  },
+];
+const infoConfig = [
+  { name: 'description', label: 'Description', type: 'textarea' },
+  { name: 'category', label: 'Catégorie', type: 'select', options: roomTags },
+];
+
+const backConfig = [
+  { name: 'color', label: 'Couleur', type: 'color' },
+  { name: 'accent', label: 'Accent', type: 'color' },
+];
+
+export const roomConfigInputs = {
+  global: globalConfigInputs,
+  info: infoConfig,
+  background: backConfig,
+  part: partConfigInput,
+};
+
+/* =========================
+   OBJECT ASSETS CONFIGURATION FORM INPUTS
+========================= */
+const objectInfoInputs = [
+  {
+    name: 'name',
+    label: "Nom de l'objet",
+    type: 'text',
+    required: true,
+  },
+  {
+    name: 'category',
+    label: 'Catégorie',
+    type: 'select',
+    options: [
+      { value: 'voxel', text: 'Voxel' },
+      { value: 'furniture', text: 'Furniture' },
+      { value: 'decoration', text: 'Decoration' },
+    ],
+  },
+];
+
+const transformInputs = [
+  { name: 'position', label: 'Position (x,y,z)', type: 'vector3' },
+  { name: 'rotation', label: 'Rotation (x,y,z)', type: 'vector3' },
+  { name: 'scale', label: 'Échelle', type: 'slider', max: 8 },
+];
+
+const styleInputs = [
+  { name: 'tint', label: 'Couleur (Teinte)', type: 'color' },
+  {
+    name: 'opacity',
+    label: 'Opacité (transparence)',
+    type: 'slider',
+    nim: 0,
+    step: 0.01,
+    max: 1,
+  },
+  { name: 'glow', label: 'Lueur', type: 'slider', max: 4 },
+  {
+    name: 'threshold',
+    label: 'Seuil',
+    type: 'slider',
+    nim: 0,
+    step: 0.01,
+    max: 1,
+  },
+];
+
+const advancedInputs = [
+  { name: 'parent', label: 'Contenant(Parent)', type: 'dialog' },
+  {
+    name: 'physics',
+    label: 'Physique',
+    type: 'select',
+    options: [
+      { value: 'kinematic', text: 'Cinématique' },
+      { value: 'upright', text: 'Droit / Vertical' },
+      { value: 'tumbly', text: 'Bascule' },
+      { value: 'passthrough', text: 'Passage' },
+      { value: 'trigger', text: 'Déclencheur' },
+    ],
+  },
+  { name: 'hidden', label: 'Caché', type: 'switch' },
+  { name: 'locked', label: 'Verrouiller en mode édition', type: 'switch' },
+];
+
+export const objectConfigInputs = {
+  info: objectInfoInputs,
+  transform: transformInputs,
+  style: styleInputs,
+  advanced: advancedInputs,
+};
