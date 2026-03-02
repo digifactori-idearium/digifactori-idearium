@@ -51,7 +51,7 @@ const UpdateSceneBackground: React.FC<{ color: string }> = ({ color }) => {
   return null;
 };
 
-const AudioComponent: React.FC<{ soundTrack: string }> = ({ soundTrack }) => {
+const AudioComponent: React.FC<{ soundTrack: string }> = ( {soundTrack} ) => {
   const { camera } = useThree();
 
   const listener = useMemo(() => new AudioListener(), []);
@@ -81,6 +81,7 @@ const AudioComponent: React.FC<{ soundTrack: string }> = ({ soundTrack }) => {
       audioLoader.abort();
     };
   }, [camera, soundTrack, audioLoader, sound]);
+  return null
 
 }
 
@@ -171,26 +172,26 @@ export const EmptyRoom: React.FC = () => {
         </mesh>
         <mesh
           receiveShadow={true}
-          position={[45, -5, 45]}
+          position={[50, -5, 50]}
           visible={!roomStore.floor.hidden}
         >
-          <boxGeometry args={[110, 10, 110]} />
+          <boxGeometry args={[100, 10, 100]} />
           <meshPhongMaterial color={roomStore.floor.color} />
         </mesh>
         <mesh
-          position={[45, 50, -5]}
+          position={[45, 45, -5]}
           rotation={[Math.PI / 2, 0, 0]}
           visible={!roomStore.rightWall.hidden}
         >
-          <boxGeometry args={[110, 10, 100]} />
+          <boxGeometry args={[110, 10, 110]} />
           <meshPhongMaterial color={roomStore.rightWall.color} />
         </mesh>
         <mesh
-          position={[-5, 50, 50]}
+          position={[-5, 45, 50]}
           rotation={[0, 0, Math.PI / 2]}
           visible={!roomStore.leftWall.hidden}
         >
-          <boxGeometry args={[100, 10, 100]} />
+          <boxGeometry args={[110, 10, 100]} />
           <meshPhongMaterial color={roomStore.leftWall.color} />
         </mesh>
       </Canvas>
