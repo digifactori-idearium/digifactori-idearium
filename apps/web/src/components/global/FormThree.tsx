@@ -2,9 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { isEqual } from 'lodash';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
-import { useForm, Controller, FieldValues } from 'react-hook-form';
-import { useWatch } from 'react-hook-form';
-import { UseBoundStore, StoreApi } from 'zustand';
+import { Controller, FieldValues, useForm, useWatch } from 'react-hook-form';
+import { StoreApi, UseBoundStore } from 'zustand';
 
 import { Slider } from '../ui/slider';
 
@@ -54,26 +53,26 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    const currentFormValues = control._formValues;
-
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    if (!isEqual(currentFormValues, storeState)) {
-      reset(storeState as any);
-    }
-  }, [storeState, reset, control]);
+    reset(storeState as any);
+    }, [storeState, reset]);
 
   const watchedValues = useWatch({
     control,
   });
-  useEffect(() => {
-    if (!isEqual(watchedValues, storeState)) {
-      update(sliceKey, watchedValues);
-    }
-  }, [watchedValues, storeState, update, sliceKey]);
+
+useEffect(() => {
+  if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+  }
+
+  // On compare uniquement les clés du slice
+  if (!isEqual(watchedValues, storeState)) {
+    update(sliceKey, watchedValues);
+  }
+}, [watchedValues]);
+
+  
 
   return (
     <div className="w-full room-form flex flex-col gap-4">
