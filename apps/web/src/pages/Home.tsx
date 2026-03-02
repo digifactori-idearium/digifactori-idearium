@@ -26,7 +26,7 @@ const Home: React.FC = () => {
           Démonstration 3D interactive
         </h2>
 
-        <div className="w-full h-[400px] rounded-xl overflow-hidden border">
+        <div className="w-full h-[500px] max-w-6xl mx-auto">
           <VoxelScene />
         </div>
 
