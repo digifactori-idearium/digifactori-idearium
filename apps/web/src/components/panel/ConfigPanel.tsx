@@ -9,14 +9,16 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { roomConfigInputs } from '@/lib/input';
+import { useRoomStore } from '@/stores';
 
 interface AccordionSection {
-  id: string;
+  id: 'global' | 'info' | 'leftWall' | 'rightWall' | 'floor' | 'background';
   label: string;
-  input: 'global' | 'info' | 'part';
+  input: 'global' | 'info' | 'part' | 'background';
 }
 const accordionSections: AccordionSection[] = [
   { id: 'info', label: 'Information', input: 'info' },
+  { id: 'background', label: 'Arrière-plan', input: 'background' },
   { id: 'leftWall', label: 'Mur Gauche', input: 'part' },
   { id: 'rightWall', label: 'Mur Droit', input: 'part' },
   { id: 'floor', label: 'Sol', input: 'part' },
@@ -32,7 +34,7 @@ export const ConfigPanel = () => {
         <div>
           <FormThree
             inputs={roomConfigInputs['global']}
-            storeKey="room"
+            store={useRoomStore}
             sliceKey="global"
           />
         </div>
@@ -52,7 +54,7 @@ export const ConfigPanel = () => {
                 <AccordionContent className="pt-3 px-4">
                   <FormThree
                     inputs={roomConfigInputs[section.input]}
-                    storeKey="room"
+                    store={useRoomStore}
                     sliceKey={section.id}
                   />
                 </AccordionContent>

@@ -30,6 +30,16 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
+
+  .no-spinner::-webkit-outer-spin-button,
+  .no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .no-spinner {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
   .content-bg {
     @apply w-full  bg-cover bg-center bg-welcome bg-fixed bg-no-repeat;
   }
@@ -40,7 +50,10 @@
   }
 
   .main-btn {
-    @apply bg-blue-500 text-white hover:bg-blue-700;
+    @apply bg-mauve! text-white! hover:bg-mauve/80! outline-none! focus:border-2! focus:border-white!;
+  }
+  .icon-round-btn {
+    @apply flex justify-center items-center aspect-square h-12 w-12 text-white! hover:text-white/80 bg-mauve! hover:bg-mauve/80! rounded-full! p-0!;
   }
 
   .side-btn {
@@ -52,6 +65,9 @@
 
   .form-input {
     @apply w-full pr-10!  border-mauve! border-2! rounded-2xl! outline! focus:border-dashed;
+  }
+  .slider-input {
+    @apply w-14 text-center rounded-md border-mauve! border-2! outline! focus:border-dashed;
   }
   .form-icon {
     @apply w-12 h-12 rounded-full bg-mauve! flex justify-center items-center;

@@ -12,8 +12,14 @@ export interface FormInputData {
     Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>
   >;
   color?: string;
+  // Select
   options?: Option[];
+  // dialogue
   dialogueContent?: React.ReactElement;
+  // Slider/Number
+  max?: number;
+  min?: number;
+  step?: number;
 }
 
 export interface FormInputProps {
