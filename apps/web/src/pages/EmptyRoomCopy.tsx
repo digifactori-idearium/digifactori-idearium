@@ -151,23 +151,23 @@ export const EmptyRoom: React.FC = () => {
           <pointLight position={[-10, -10, -10]} castShadow={false} intensity={20000} color="blue"/>
           <mesh castShadow position ={[50, 50, 50]} visible={true} >
             <boxGeometry args={[20, 20, 20]}/>
-            <meshPhongMaterial color={"#fc6f04"}/>
+            <meshPhongMaterial color={"#d45f06"}/>
           </mesh>
           <mesh receiveShadow position ={[0, 0, 0]} visible={false} >
             <boxGeometry args={[1, 1, 1]}/>
             <meshPhongMaterial color={"#f60c0c"}/>
           </mesh>
 
-          <mesh receiveShadow={true} position ={[45, -5, 45]} visible={!roomStore.floor.hidden} >
-            <boxGeometry args={[110, 10, 110]}/>
+          <mesh receiveShadow={true} position ={[50, -5,50]} visible={!roomStore.floor.hidden} >
+            <boxGeometry args={[100, 10, 100]}/>
             <meshPhongMaterial color={roomStore.floor.color}/>
           </mesh>
-           <mesh position ={[45, 50, -5]} rotation={[Math.PI/2, 0, 0]} visible={!roomStore.rightWall.hidden}>
-            <boxGeometry args={[110, 10, 100]}/>
+           <mesh position ={[45, 45, -5]} rotation={[Math.PI/2, 0, 0]} visible={!roomStore.rightWall.hidden}>
+            <boxGeometry args={[110, 10, 110]}/>
             <meshPhongMaterial color={roomStore.rightWall.color}/>
           </mesh>
-          <mesh position ={[-5, 50, 50]} rotation={[0, 0, Math.PI/2]} visible={!roomStore.leftWall.hidden}>
-            <boxGeometry args={[100, 10, 100]}/>
+          <mesh position ={[-5, 45, 50]} rotation={[0, 0, Math.PI/2]} visible={!roomStore.leftWall.hidden}>
+            <boxGeometry args={[110, 10, 100]}/>
             <meshPhongMaterial color={roomStore.leftWall.color}/>
           </mesh>
 

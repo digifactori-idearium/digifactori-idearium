@@ -2,6 +2,7 @@ import ProtectedRoute from './protected.routes';
 
 import ProfilePage from '@/pages/Profile';
 import Room from '@/pages/Room';
+import RoomCopy from '@/pages/RoomCopy';
 import Rooms from '@/pages/Rooms';
 
 const appRoutes = [
@@ -15,6 +16,7 @@ const appRoutes = [
     element: <ProtectedRoute element={<ProfilePage />} />,
   },
   { path: 'room', element: <ProtectedRoute element={<Room />} /> },
+  { path: 'roomCopy', element: <ProtectedRoute element={<RoomCopy />} /> },
 ];
 
 export default appRoutes;
