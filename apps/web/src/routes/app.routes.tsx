@@ -2,8 +2,8 @@ import ProtectedRoute from './protected.routes';
 
 import ProfilePage from '@/pages/Profile';
 import Room from '@/pages/Room';
-import Rooms from '@/pages/Rooms';
 import Voxel from '@/pages/Voxel';
+import Rooms from '@/pages/Rooms';
 
 const appRoutes = [
   {
