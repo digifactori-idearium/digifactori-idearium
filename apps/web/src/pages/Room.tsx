@@ -7,7 +7,7 @@ import { Sheet, SheetTrigger } from '@/components/ui/sheet';
 
 export default function Room() {
   return (
-    <div className="flex lg:h-[calc(100dvh-100px)] lg:flex-row flex-col w-full overflow-hidden bg-[#0a0a0c] relative">
+    <div className="flex lg:h-full lg:flex-row flex-col w-full overflow-hidden relative">
       <Sheet>
         <div className="absolute top-4 right-4 z-50">
           <SheetTrigger asChild>
@@ -22,7 +22,7 @@ export default function Room() {
 
       {/* 2. THE 3D LAYER (WebGL) */}
       <div className="w-full h-full overflow-hidden flex flex-col">
-        <EmptyRoom/>
+        <EmptyRoom />
       </div>
     </div>
   );
