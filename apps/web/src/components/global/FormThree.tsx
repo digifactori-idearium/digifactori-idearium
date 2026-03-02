@@ -1,33 +1,39 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isEqual } from 'lodash';
 import { SquareArrowOutUpRight } from 'lucide-react';
-import React, { useEffect, useMemo, useRef } from 'react';
-import { useForm, Controller, FieldValues } from 'react-hook-form';
+import { useEffect, useMemo, useRef } from 'react';
+import { Controller, FieldValues, useForm, useWatch } from 'react-hook-form';
+import { StoreApi, UseBoundStore } from 'zustand';
 
+import { Slider } from '../ui/slider';
+
+import { HexColorField } from './HexColorField';
 import FormInput, { FormInputData } from './Input';
 import InputSelect from './InputSelect';
 import UploadField from './UploadField';
+import { Vector3Field } from './Vector3Field';
 
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { createFormSchema } from '@/lib/validation';
-import { storeRegistry } from '@/stores';
 
-interface FormThreeProps {
+interface FormThreeProps<
+  T extends { update: (path: any, values: any) => void },
+> {
   inputs: FormInputData[];
-  storeKey: keyof typeof storeRegistry;
-  sliceKey: string;
+  store: UseBoundStore<StoreApi<T>>;
+  sliceKey: keyof Omit<T, 'update'>;
 }
 
-const FormThree: React.FC<FormThreeProps> = ({
+function FormThree<T extends { update: (path: any, values: any) => void }>({
   inputs,
-  storeKey,
+  store,
   sliceKey,
-}) => {
-  const useSelectedStore = storeRegistry[storeKey];
+}: FormThreeProps<T>) {
+  // ✅ Correctly typed store selection
+  const storeState = store(state => state[sliceKey]) as T[typeof sliceKey];
 
-  const storeState = useSelectedStore((state: any) => state[sliceKey]);
-  const update = useSelectedStore((state: any) => state.update);
+  const update = store(state => state.update);
 
   const formSchema = useMemo(() => {
     return createFormSchema(inputs);
@@ -37,37 +43,36 @@ const FormThree: React.FC<FormThreeProps> = ({
     register,
     control,
     setValue,
-    watch,
     reset,
     formState: { errors },
   } = useForm<FieldValues>({
-    defaultValues: storeState,
+    defaultValues: storeState as any,
     resolver: zodResolver(formSchema as any),
   });
 
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    const currentFormValues = control._formValues;
+    reset(storeState as any);
+    }, [storeState, reset]);
 
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+  const watchedValues = useWatch({
+    control,
+  });
 
-    if (!isEqual(currentFormValues, storeState)) {
-      reset(storeState);
-    }
-  }, [storeState, reset, control]);
+useEffect(() => {
+  if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+  }
 
-  useEffect(() => {
-    const subscription = watch(values => {
-      if (!isEqual(values, storeState)) {
-        update(sliceKey, values);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, update, sliceKey, storeState]);
+  // On compare uniquement les clés du slice
+  if (!isEqual(watchedValues, storeState)) {
+    update(sliceKey, watchedValues);
+  }
+}, [watchedValues]);
+
+  
 
   return (
     <div className="w-full room-form flex flex-col gap-4">
@@ -93,7 +98,7 @@ const FormThree: React.FC<FormThreeProps> = ({
           );
         }
 
-        //SELECT
+        // SELECT
         if (input.type === 'select') {
           return (
             <div key={index} className="flex flex-col gap-2">
@@ -118,7 +123,7 @@ const FormThree: React.FC<FormThreeProps> = ({
           );
         }
 
-        //SWITCH
+        // SWITCH
         if (input.type === 'switch') {
           return (
             <div key={index} className="flex items-center justify-between">
@@ -146,7 +151,55 @@ const FormThree: React.FC<FormThreeProps> = ({
           );
         }
 
-        //DIALOG
+        // VECTOR3
+        if (input.type === 'vector3') {
+          return <Vector3Field control={control} input={input} />;
+        }
+
+        // HEX
+        if (input.type === 'color') {
+          return <HexColorField control={control} input={input} />;
+        }
+
+        // SLIDER
+        if (input.type === 'slider') {
+          return (
+            <div
+              key={index}
+              className="flex items-center gap-2 justify-between"
+            >
+              <label className="text-sm font-medium">{input.label}</label>
+              <Controller
+                name={input.name}
+                control={control}
+                render={({ field }) => (
+                  <div className="flex w-full items-center gap-2">
+                    <input
+                      type="number"
+                      value={field.value}
+                      min={input.min ?? 0}
+                      max={input.max ?? 10}
+                      step={input.step ?? 0.1}
+                      onChange={e => field.onChange(Number(e.target.value))}
+                      className="slider-input"
+                    />
+
+                    <Slider
+                      min={input.min ?? 0}
+                      max={input.max ?? 10}
+                      step={input.step ?? 0.1}
+                      value={[field.value ?? 1]}
+                      onValueChange={val => field.onChange(val[0])}
+                      className="flex-1 py-4 cursor-pointer"
+                    />
+                  </div>
+                )}
+              />
+            </div>
+          );
+        }
+
+        // DIALOG
         if (input.type === 'dialog') {
           return (
             <div key={index} className="flex flex-col gap-2">
@@ -169,7 +222,7 @@ const FormThree: React.FC<FormThreeProps> = ({
           );
         }
 
-        //DEFAULT INPUT
+        // DEFAULT INPUT
         return (
           <FormInput
             key={index}
@@ -182,6 +235,6 @@ const FormThree: React.FC<FormThreeProps> = ({
       })}
     </div>
   );
-};
+}
 
 export default FormThree;
