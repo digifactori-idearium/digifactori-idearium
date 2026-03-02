@@ -1,12 +1,12 @@
 import {
-  Mail,
+  Briefcase,
+  Fingerprint,
+  KeyRound,
   Lock,
+  Mail,
+  ShieldCheck,
   User,
   Users,
-  Fingerprint,
-  ShieldCheck,
-  Briefcase,
-  KeyRound,
 } from 'lucide-react';
 
 import { MusicSelector } from './MusicDialog';
@@ -204,6 +204,7 @@ const globalConfigInputs = [
       { value: 'black-orange', text: 'Noir Orange' },
       { value: 'pink-blue', text: 'Rose Bleu' },
       { value: 'white', text: 'Blanc' },
+      { value: 'customized', text: 'Personnalisé' },
     ],
     required: false,
   },
