@@ -1,14 +1,8 @@
 import { OrbitControls } from '@react-three/drei';
-import { Canvas, useThree } from '@react-three/fiber';
-import React, { useEffect, useMemo } from 'react';
-import {
-  Audio,
-  AudioListener,
-  AudioLoader,
-  Color,
-  DoubleSide,
-  ShaderMaterial,
-} from 'three';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Audio, AudioListener, AudioLoader, Color, DoubleSide, Mesh, ShaderMaterial } from "three";
+import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 
 import { useRoomStore } from '@/stores';
 
@@ -57,7 +51,7 @@ const UpdateSceneBackground: React.FC<{ color: string }> = ({ color }) => {
   return null;
 };
 
-const AudioComponent: React.FC<{ soundTrack: string }> = ({ soundTrack }) => {
+const AudioComponent: React.FC<{ soundTrack: string }> = ( {soundTrack} ) => {
   const { camera } = useThree();
 
   const listener = useMemo(() => new AudioListener(), []);
@@ -87,9 +81,68 @@ const AudioComponent: React.FC<{ soundTrack: string }> = ({ soundTrack }) => {
       audioLoader.abort();
     };
   }, [camera, soundTrack, audioLoader, sound]);
+  return null
 
-  return null;
-};
+}
+
+const AnimatedBox:React.FC  = () =>{
+
+  const boxRef = useRef<Mesh>(null);
+
+  const [wireframe, setWireframe] = useState(false)
+
+  const handleClick = () => {
+    setWireframe(!wireframe)
+  }
+
+  useFrame(() => {
+    if(boxRef.current) {
+      boxRef.current.rotation.x += 0.005;
+      boxRef.current.rotation.x += 0.005;
+      boxRef.current.rotation.x += 0.005;
+    }
+    
+  })
+  
+  return (
+  <mesh name='bob' castShadow position={[39, 39, 39]}ref={boxRef} onClick={handleClick}>
+    <boxGeometry args={[10, 10, 10]}/>
+    <meshStandardMaterial color={"yellow"} wireframe={wireframe}/>
+  </mesh>
+)
+}
+
+const Exporter: React.FC = () => {
+  const {scene} = useThree();
+      const saveChange = () => {
+          const exporter = new GLTFExporter()
+          
+  
+      exporter.parse(
+        scene,
+        (result:  ArrayBuffer | object) => {
+          const output =
+            result instanceof ArrayBuffer
+              ? result
+              : JSON.stringify(result, null, 2)
+  
+          const blob = new Blob([output], {
+            type: "application/octet-stream",
+          })
+  
+          const link = document.createElement("a")
+          link.href = URL.createObjectURL(blob)
+          link.download = "scene.gltf"
+          link.click()
+        },
+        { binary: false } // true = .glb
+      )
+      }
+  return <mesh onClick={() => {saveChange()}}>
+            <boxGeometry args={[20, 20, 20]}/>
+
+  </mesh>
+}
 
 export const EmptyRoom: React.FC = () => {
   const soundTrack = useRoomStore(state => state.global.music.currentTrack);
@@ -115,6 +168,7 @@ export const EmptyRoom: React.FC = () => {
         }}
       >
         {/* <GradientBackground color1="#ef3b0e" color2="#4c0fda" /> */}
+        <Exporter/>
         {soundTrack && <AudioComponent soundTrack={soundTrack} />}
         <OrbitControls rotateSpeed={0.2} zoomSpeed={0.2} panSpeed={2} />
         <UpdateSceneBackground color={roomStore.background.color} />
@@ -136,6 +190,7 @@ export const EmptyRoom: React.FC = () => {
           intensity={20000}
           color="blue"
         />
+        <AnimatedBox/>
         <mesh castShadow position={[50, 50, 50]} visible={true}>
           <boxGeometry args={[20, 20, 20]} />
           <meshPhongMaterial color={'#fc048c'} />
@@ -144,28 +199,30 @@ export const EmptyRoom: React.FC = () => {
           <boxGeometry args={[1, 1, 1]} />
           <meshPhongMaterial color={'#f60c0c'} />
         </mesh>
+
         <mesh
+          // id={25}
           receiveShadow={true}
-          position={[45, -5, 45]}
+          position={[50, -5, 50]}
           visible={!roomStore.floor.hidden}
         >
-          <boxGeometry args={[110, 10, 110]} />
+          <boxGeometry args={[100, 10, 100]} />
           <meshPhongMaterial color={roomStore.floor.color} />
         </mesh>
         <mesh
-          position={[45, 50, -5]}
+          position={[45, 45, -5]}
           rotation={[Math.PI / 2, 0, 0]}
           visible={!roomStore.rightWall.hidden}
         >
-          <boxGeometry args={[110, 10, 100]} />
+          <boxGeometry args={[110, 10, 110]} />
           <meshPhongMaterial color={roomStore.rightWall.color} />
         </mesh>
         <mesh
-          position={[-5, 50, 50]}
+          position={[-5, 45, 50]}
           rotation={[0, 0, Math.PI / 2]}
           visible={!roomStore.leftWall.hidden}
         >
-          <boxGeometry args={[100, 10, 100]} />
+          <boxGeometry args={[110, 10, 100]} />
           <meshPhongMaterial color={roomStore.leftWall.color} />
         </mesh>
       </Canvas>
