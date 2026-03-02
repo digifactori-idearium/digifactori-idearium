@@ -17,7 +17,7 @@ interface HexColorFieldProps {
 
 export function HexColorField({ input, control }: HexColorFieldProps) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="form-input-container flex flex-col gap-2">
       <label className="text-sm font-medium">{input.label}</label>
 
       <Controller
