@@ -57,8 +57,11 @@ interface PartSettings {
   texture: string;
 }
 
+type RoomMode = 'edit' | 'play';
+
 interface RoomState {
   // Global State
+  mode: RoomMode;
   global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
@@ -81,6 +84,7 @@ interface RoomState {
 
   // Actions
   update: (path: keyof Omit<RoomState, 'update'>, values: Partial<any>) => void;
+  setMode: (mode: RoomMode) => void;
 }
 
 // OBJECT ASSETS TYPES
