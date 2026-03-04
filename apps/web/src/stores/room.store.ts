@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { proxy } from 'valtio';
+import { proxy, ref } from 'valtio';
 
 export const themesToColors = {
   customized: {
@@ -7,24 +7,56 @@ export const themesToColors = {
     rightWall: '#e80606',
     floor: '#100101',
     background: '#f0d400',
-  },
-  'black-orange': {
-    leftWall: '#f45405',
-    rightWall: '#e80606',
-    floor: '#100101',
-    background: '#f0d400',
-  },
-  'pink-blue': {
-    leftWall: '#2905f4',
-    rightWall: '#068ee8',
-    floor: '#dccece',
-    background: '#f80088',
+    accent: '#fcca44',
   },
   white: {
-    leftWall: '#f2e8e3',
-    rightWall: '#f3cbcb',
-    floor: '#8f8383',
-    background: '#f0d400',
+    leftWall: '#747488',
+    rightWall: '#747488',
+    floor: '#25252f',
+    background: '#c5c3c3',
+    accent: '#cfcbcc',
+  },
+  black: {
+    leftWall: '#e0e0ff',
+    rightWall: '#e0e0ff',
+    floor: '#9898ba',
+    background: '#313133',
+    accent: '#2a2a33',
+  },
+  night: {
+    leftWall: '#c0b7bb',
+    rightWall: '#c0b7bb',
+    floor: '#4f4788',
+    background: '#201333',
+    accent: '#231437',
+  },
+  'black-orange': {
+    leftWall: '#ffcc55',
+    rightWall: '#ffcc55',
+    floor: '#9898ba',
+    background: '#313133',
+    accent: '#2a2a33',
+  },
+  'pink-blue': {
+    leftWall: '#3d61ee',
+    rightWall: '#3d61ee',
+    floor: '#dccece',
+    background: '#f72585',
+    accent: '#b70999',
+  },
+  'blue-yellow': {
+    leftWall: '#ffcc55',
+    rightWall: '#ffcc55',
+    floor: '#3d4255',
+    background: '#3d61ee',
+    accent: '#3d61ee',
+  },
+  'yellow-gray': {
+    leftWall: '#c8daee',
+    rightWall: '#c8daee',
+    floor: '#414e66',
+    background: '#f6b022',
+    accent: '#fcca44',
   },
 };
 
@@ -106,6 +138,7 @@ export const actions = {
             themesToColors[values.theme as keyof typeof themesToColors];
           if (themeData) {
             sceneState.background.color = themeData.background;
+            sceneState.background.accent = themeData.accent;
             sceneState.leftWall.color = themeData.leftWall;
             sceneState.rightWall.color = themeData.rightWall;
             sceneState.floor.color = themeData.floor;
@@ -143,6 +176,6 @@ export const actions = {
     if (sceneState.selectedObjectId === id) sceneState.selectedObjectId = null;
   },
   registerObject: (id: string, obj: THREE.Object3D) =>
-    sceneRegistry.set(id, obj),
+    sceneRegistry.set(id, ref(obj)),
   unregisterObject: (id: string) => sceneRegistry.delete(id),
 };
