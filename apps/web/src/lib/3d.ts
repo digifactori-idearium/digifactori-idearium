@@ -28,3 +28,14 @@ export function arrayIndexToVector3(index: number, size: number = 32) {
     (index % size) >> 0
   );
 }
+
+export function getContrastColor(hex: string) {
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substr(0, 2), 16);
+  const g = parseInt(c.substr(2, 2), 16);
+  const b = parseInt(c.substr(4, 2), 16);
+
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+  return brightness > 150 ? 'text-black' : 'text-white';
+}
