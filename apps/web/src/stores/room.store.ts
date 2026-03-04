@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { proxy } from 'valtio';
 
 export const themesToColors = {
@@ -27,8 +28,12 @@ export const themesToColors = {
   },
 };
 
+const transformModes = ['translate', 'rotate', 'scale'] as const;
+
 export const sceneState = proxy<RoomState>({
   mode: 'edit' as RoomMode,
+
+  transformMode: 0,
 
   global: {
     brightness: 'bright' as 'bright' | 'dim' | 'dark',
@@ -49,9 +54,17 @@ export const sceneState = proxy<RoomState>({
   isDragging: false,
 });
 
+export const sceneRegistry = new Map<string, THREE.Object3D>();
+
 export const actions = {
   setMode(mode: RoomMode) {
     sceneState.mode = mode;
+  },
+  getTransformMode(): TransformMode {
+    return transformModes[sceneState.transformMode];
+  },
+  setTransformMode(mode: number) {
+    sceneState.transformMode = mode;
   },
   setIsDragging(value: boolean) {
     sceneState.isDragging = value;
@@ -129,4 +142,7 @@ export const actions = {
     delete sceneState.objects[id];
     if (sceneState.selectedObjectId === id) sceneState.selectedObjectId = null;
   },
+  registerObject: (id: string, obj: THREE.Object3D) =>
+    sceneRegistry.set(id, obj),
+  unregisterObject: (id: string) => sceneRegistry.delete(id),
 };

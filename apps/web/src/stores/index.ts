@@ -1,1 +1,1 @@
-export { sceneState, actions } from './room.store';
+export { sceneState, actions, sceneRegistry } from './room.store';

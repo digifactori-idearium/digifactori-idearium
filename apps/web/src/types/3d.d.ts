@@ -62,6 +62,7 @@ type RoomMode = 'edit' | 'play';
 interface RoomState {
   // Global State
   mode: RoomMode;
+  transformMode: number;
   global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
@@ -146,6 +147,6 @@ interface ObjectState {
   // Advanced
   advanced: AdvancedSettings;
 }
-type Node = 'translate' | 'rotate' | 'scale';
+type TransformMode = 'translate' | 'rotate' | 'scale';
 type ObjectSliceKey = keyof ObjectState;
 type RootSliceKey = keyof Omit<RoomState, 'objects'>;
