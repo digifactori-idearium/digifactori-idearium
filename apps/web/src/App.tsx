@@ -18,7 +18,7 @@ const App = () => {
           <RouterProvider router={router} />
         </TooltipProvider>
       </UserProvider>
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-right" richColors closeButton />
     </ThemeProvider>
   );
 };
