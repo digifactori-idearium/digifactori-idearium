@@ -21,6 +21,7 @@ interface InputSelectProps {
     Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>
   >;
   onChange?: (value: string) => void;
+  className?: string;
 }
 
 export default function InputSelect({
@@ -30,6 +31,7 @@ export default function InputSelect({
   value,
   error,
   icon,
+  className = '',
 }: InputSelectProps) {
   return (
     <div className="w-full flex flex-col gap-2">
@@ -43,12 +45,12 @@ export default function InputSelect({
           <Field>
             <Select value={value || ''} onValueChange={val => onChange?.(val)}>
               <SelectTrigger
-                className={`w-full relative bg-sidebar! form-input rounded-2xl! p-6! ${error ? 'error' : ''}`}
+                className={`w-full relative bg-sidebar! form-select form-input rounded-2xl! p-6! ${className} ${error ? 'error' : ''}`}
               >
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
 
-              <SelectContent position="item-aligned">
+              <SelectContent position="popper">
                 <SelectGroup>
                   {options.map(option => (
                     <SelectItem key={option.value} value={option.value}>

@@ -30,6 +30,16 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
+
+  .no-spinner::-webkit-outer-spin-button,
+  .no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .no-spinner {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
   .content-bg {
     @apply w-full  bg-cover bg-center bg-welcome bg-fixed bg-no-repeat;
   }
@@ -40,18 +50,24 @@
   }
 
   .main-btn {
-    @apply bg-blue-500 text-white hover:bg-blue-700;
+    @apply bg-mauve! text-white! hover:bg-mauve/80! outline-none! focus:border-2! focus:border-white!;
+  }
+  .icon-round-btn {
+    @apply flex justify-center items-center aspect-square h-12 w-12 text-white! hover:text-white/80 bg-mauve! hover:bg-mauve/80! rounded-full! p-0!;
   }
 
   .side-btn {
-    @apply bg-sidebar!  hover:bg-sidebar/70! active:bg-sidebar/50! outline-none! border-none!;
+    @apply bg-sidebar! hover:bg-sidebar/70! active:bg-sidebar/50! outline-none! border-none!;
   }
   .danger-btn {
     @apply border-none! p-4 rounded-2xl bg-red-500! hover:bg-red-600! text-white! font-bold shadow-[0_4px_0_rgb(180,40,40)] active:translate-y-1 active:shadow-none transition-all;
   }
 
   .form-input {
-    @apply w-full pr-10!  border-mauve! border-2! rounded-2xl outline! focus:border-dashed;
+    @apply w-full pr-10!  border-mauve! border-2! rounded-2xl! outline! focus:border-dashed;
+  }
+  .slider-input {
+    @apply w-14 text-center rounded-md border-mauve! border-2! outline! focus:border-dashed;
   }
   .form-icon {
     @apply w-12 h-12 rounded-full bg-mauve! flex justify-center items-center;
@@ -61,6 +77,44 @@
   }
   .magic-text {
     @apply relative bg-linear-to-r from-[#00f2fe] via-[#fe4f9d] to-[#ffd700] bg-clip-text text-transparent box-decoration-clone py-1 font-extrabold;
+  }
+
+  .dialog-btn {
+    & > button {
+      @apply flex justify-center p-2! items-center text-white! hover:text-white/80 bg-mauve! rounded-full! [&>svg]:size-6!;
+    }
+  }
+
+  .accordion-btn {
+    @apply bg-transparent! outline-none! border-none!;
+  }
+
+  .main-small-btn {
+    @apply text-sm! bg-mauve! hover:bg-mauve/90! backdrop-blur-md text-white border! border-white/20!  shadow-xl transition-all;
+  }
+
+  /* ROOM FORM */
+
+  .room-form .form-input-container {
+    @apply gap-0.5!;
+  }
+
+  .room-form label {
+    @apply text-sm;
+  }
+  .room-form .form-input {
+    @apply rounded-sm! text-sm!;
+  }
+
+  .room-form .form-select {
+    @apply py-1!;
+  }
+  .room-form textarea {
+    @apply max-h-16!;
+  }
+
+  .room-form input {
+    @apply py-1.5!;
   }
 
   .magic-icon {
