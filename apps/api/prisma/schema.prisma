@@ -25,7 +25,8 @@ model User {
   password      String
   parental_code String?
   role          Role
-  profil        Profile?  
+  profil        Profile? 
+  rooms         Room[] 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -50,4 +51,39 @@ model Follows {
   followingId  String
 
   @@id([followingId, followedById])
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  name        String   @default("New Room")
+  description String?
+  theme       String   @default("black-orange")
+  brightness  String   @default("bright")
+  isPublic    Boolean  @default(true)
+
+  backgroundColor String @default("#f0d400")
+  leftWallColor   String @default("#f45405")
+  rightWallColor  String @default("#e80606")
+  floorColor      String @default("#100101")
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+
+  voxels     Voxel[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Voxel {
+  id      String @id @default(cuid())
+  x       Int
+  y       Int
+  z       Int
+  color   String
+
+  roomId  String
+  room    Room   @relation(fields: [roomId], references: [id])
+
+  createdAt DateTime @default(now())
 }
