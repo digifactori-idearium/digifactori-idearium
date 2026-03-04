@@ -1,6 +1,7 @@
-import { create } from 'zustand';
+import * as THREE from 'three';
+import { proxy } from 'valtio';
 
-const themesToColors = {
+export const themesToColors = {
   customized: {
     leftWall: '#f45405',
     rightWall: '#e80606',
@@ -27,66 +28,121 @@ const themesToColors = {
   },
 };
 
-const setColorsAsInTheme = (state: RoomState) => {
-  const theme = themesToColors[state.global.theme];
-  return {
-    background: {
-      ...state.background,
-      color: theme.background,
-    },
-    rightWall: {
-      ...state.rightWall,
-      color: theme.rightWall,
-    },
-    leftWall: {
-      ...state.leftWall,
-      color: theme.leftWall,
-    },
-    floor: {
-      ...state.floor,
-      color: theme.floor,
-    },
-  };
-};
+const transformModes = ['translate', 'rotate', 'scale'] as const;
 
-export const useRoomStore = create<RoomState>(set => ({
-  mode: 'edit',
+export const sceneState = proxy<RoomState>({
+  mode: 'edit' as RoomMode,
+
+  transformMode: 0,
+
   global: {
-    brightness: 'bright',
+    brightness: 'bright' as 'bright' | 'dim' | 'dark',
     visible: true,
     music: { currentTrack: '', volume: 0.5 },
-    theme: 'pink-blue',
+    theme: 'pink-blue' as keyof typeof themesToColors,
   },
+
   info: { description: 'New Room', category: 'none' },
+
   background: { color: '#f0d400', accent: '#7d7d7d' },
   leftWall: { color: '#f45405', hidden: false, texture: 'none' },
   rightWall: { color: '#e80606', hidden: false, texture: 'none' },
   floor: { color: '#100101', hidden: false, texture: 'none' },
 
-  setMode: (mode: RoomMode) => set({ mode }),
-  update: (path, values) => {
-    set(state => {
-      const newState = {
-        ...state,
-        [path]: {
-          ...(state[path as keyof RoomState] as object),
-          ...values,
-        },
-      };
-      if (path == 'global') {
-        return { ...newState, ...setColorsAsInTheme(newState) };
-      } else if (
-        ['background', 'leftWall', 'rightWall', 'floor'].includes(path)
-      ) {
-        return {
-          ...newState,
-          global: {
-            ...state.global,
-            theme: 'customized',
-          },
-        };
-      }
-      return newState;
-    });
+  objects: {} as Record<string, ObjectState>,
+  selectedObjectId: null as string | null,
+  isDragging: false,
+});
+
+export const sceneRegistry = new Map<string, THREE.Object3D>();
+
+export const actions = {
+  setMode(mode: RoomMode) {
+    sceneState.mode = mode;
   },
-}));
+  getTransformMode(): TransformMode {
+    return transformModes[sceneState.transformMode];
+  },
+  setTransformMode(mode: number) {
+    sceneState.transformMode = mode;
+  },
+  setIsDragging(value: boolean) {
+    sceneState.isDragging = value;
+  },
+  selectObject: (id: string | null) => {
+    sceneState.selectedObjectId = id;
+  },
+
+  clearSelection() {
+    sceneState.selectedObjectId = null;
+  },
+
+  updateSlice<K extends ObjectSliceKey | RootSliceKey>(
+    sliceKey: K,
+    values: Partial<any>,
+    objectId?: string | null
+  ) {
+    if (objectId) {
+      const obj = sceneState.objects[objectId];
+      if (!obj) return;
+
+      const target = obj[sliceKey as ObjectSliceKey];
+      if (target && typeof target === 'object') {
+        Object.entries(values).forEach(([key, value]) => {
+          (target as any)[key] = value;
+        });
+      }
+    } else {
+      const target = (sceneState as any)[sliceKey];
+      if (target && typeof target === 'object') {
+        Object.assign(target, values);
+
+        if (
+          sliceKey === 'global' &&
+          values.theme &&
+          values.theme !== 'customized'
+        ) {
+          const themeData =
+            themesToColors[values.theme as keyof typeof themesToColors];
+          if (themeData) {
+            sceneState.background.color = themeData.background;
+            sceneState.leftWall.color = themeData.leftWall;
+            sceneState.rightWall.color = themeData.rightWall;
+            sceneState.floor.color = themeData.floor;
+          }
+        }
+
+        const colorSlices = ['leftWall', 'rightWall', 'floor', 'background'];
+        if (colorSlices.includes(sliceKey as string) && values.color) {
+          if (sceneState.global.theme !== 'customized') {
+            sceneState.global.theme = 'customized';
+          }
+        }
+      }
+    }
+  },
+
+  addObject(name: string, type?: string) {
+    const id = crypto.randomUUID();
+
+    sceneState.objects[id] = {
+      info: { name: name, category: type },
+      transform: {
+        position: { x: 50, y: 0, z: 50 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scale: 8,
+      },
+      style: { tint: '#ffffff', opacity: 1, glow: 0, threshold: 0 },
+      advanced: { parent: null, physics: false, hidden: false, locked: false },
+    };
+
+    sceneState.selectedObjectId = id;
+  },
+  removeObject: (id: string) => {
+    delete sceneState.objects[id];
+    if (sceneState.selectedObjectId === id) sceneState.selectedObjectId = null;
+  },
+  registerObject: (id: string, obj: THREE.Object3D) =>
+    sceneRegistry.set(id, obj),
+  unregisterObject: (id: string) => sceneRegistry.delete(id),
+};
