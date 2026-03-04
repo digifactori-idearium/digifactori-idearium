@@ -99,7 +99,7 @@ function ResponsiveCanvas({ children }: { children: ReactNode }) {
 // ==============================
 // Composant principal
 // ==============================
-export default function ChangeColorScene() {
+export default function VoxelColor() {
     const [selectedColor, setSelectedColor] = useState<string>(COLORS[0]);
 
     return (
