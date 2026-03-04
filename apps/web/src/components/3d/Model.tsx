@@ -1,9 +1,10 @@
 import { useGLTF, useCursor } from '@react-three/drei';
 import { ThreeEvent } from '@react-three/fiber';
-import { JSX, useState } from 'react';
+import { JSX, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { GLTF } from 'three-stdlib';
+import { SkeletonUtils } from 'three-stdlib';
 import { useSnapshot } from 'valtio';
 
 import { sceneState, actions } from '@/stores';
@@ -25,20 +26,31 @@ type GLTFResult = GLTF & {
 export function Model({ id, name, file, ...props }: ModelProps) {
   const snap = useSnapshot(sceneState);
   const data = snap.objects[id];
-  const { scene } = useGLTF(file) as unknown as GLTFResult;
+  const { scene: gltfScene } = useGLTF(file) as unknown as GLTFResult;
+
+  const scene = useMemo(() => SkeletonUtils.clone(gltfScene), [gltfScene]);
 
   const [hovered, setHovered] = useState(false);
   const isSelected = snap.selectedObjectId === id;
 
+  useEffect(() => {
+    actions.registerObject(id, scene);
+    return () => {
+      actions.unregisterObject(id);
+    };
+  }, [id, scene]);
+
   useCursor(hovered);
 
-  useMemo(() => {
+  useEffect(() => {
     scene.traverse(child => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         const mat = mesh.material as any;
+
         if (mat) {
           mat.color.set(isSelected ? '#ff6080' : data.style.tint || 'white');
+
           if (mat.emissive) {
             mat.emissive.set(isSelected ? '#ff6080' : '#000000');
             mat.emissiveIntensity = isSelected ? 0.2 : 0;
@@ -55,6 +67,7 @@ export function Model({ id, name, file, ...props }: ModelProps) {
       {...props}
       object={scene}
       name={name}
+      userData={{ id }}
       position={[
         data.transform.position.x,
         data.transform.position.y,
@@ -73,6 +86,12 @@ export function Model({ id, name, file, ...props }: ModelProps) {
       onPointerOver={(e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation();
         setHovered(true);
+      }}
+      onContextMenu={(e: ThreeEvent<MouseEvent>) => {
+        e.stopPropagation();
+        actions.selectObject(id);
+        const nextMode = (snap.transformMode + 1) % 3;
+        actions.setTransformMode(nextMode);
       }}
       onPointerOut={() => setHovered(false)}
       dispose={null}

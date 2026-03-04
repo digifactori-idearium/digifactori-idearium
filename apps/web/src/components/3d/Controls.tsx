@@ -1,16 +1,18 @@
 import { OrbitControls, TransformControls } from '@react-three/drei';
-import { useThree } from '@react-three/fiber';
 import { useSnapshot } from 'valtio';
 
 import { sceneState, actions } from '@/stores';
+import { sceneRegistry } from '@/stores';
 
 export function Controls() {
   const snap = useSnapshot(sceneState);
-  const scene = useThree(state => state.scene);
+  // const scene = useThree(state => state.scene);
 
-  const selected = snap.selectedObjectId && snap.objects[snap.selectedObjectId];
+  // const selected = snap.selectedObjectId && snap.objects[snap.selectedObjectId];
 
-  const object = selected && scene.getObjectByName(selected.info.name);
+  const object = snap.selectedObjectId
+    ? sceneRegistry.get(snap.selectedObjectId)
+    : null;
 
   const handleDragEnd = () => {
     if (!object || !snap.selectedObjectId) return;
@@ -41,9 +43,16 @@ export function Controls() {
       {object && (
         <TransformControls
           object={object}
-          mode="translate"
+          mode={actions.getTransformMode()}
           onMouseDown={() => actions.setIsDragging(true)}
           onMouseUp={handleDragEnd}
+          onChange={() => {
+            if (object && snap.transformMode === 2) {
+              let s = object.scale.x;
+              s = Math.max(1, Math.min(s, 8));
+              object.scale.set(s, s, s);
+            }
+          }}
         />
       )}
 
