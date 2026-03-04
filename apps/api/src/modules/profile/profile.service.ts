@@ -9,17 +9,18 @@ const getSingleProfile = async (
   userId: string,
   parental_code: string | null
 ) => {
-  try {
-    const response: { profile; user? } = { profile: {} };
-    response.profile = await profileTable.findUnique({
-      where: {
-        userId: userId,
-      },
-      include: {
-        followers: true,
-        following: true,
-      },
-    });
+	try {
+		
+		const response: { profile; user? } = { profile: {} };
+		response.profile = await profileTable.findUnique({
+			where: {
+				userId: userId,
+			},
+			include: {
+				followers: true,
+				following: true,
+			},
+		});
 
     if (!response.profile) {
       throw new Error(`Utilisateur introuvable`);
@@ -103,29 +104,36 @@ const updateProfile = async (userId: string, body: SetProfileInput) => {
 };
 
 const verifyPassword = async (userId: string, password: string) => {
-  const correctPassword = await userTable
-    .findUnique({
-      where: {
-        id: userId,
-      },
-    })
-    .then(res => res?.password);
-  return bcrypt.compare(password, correctPassword);
+	const correctPassword = await userTable
+		.findUnique({
+			where: {
+				id: userId,
+			},
+		})
+		.then(res => res?.password);
+	const result = await bcrypt.compare(password, correctPassword)
+	return result;
 };
 
 const deleteUser = async (userId: string) => {
-  const response = { user: {}, profile: {} };
-  response.user = await profileTable.delete({
-    where: {
-      userId: userId,
-    },
+  const response = await prisma.$transaction(async tx => {
+    const profile = await tx.profile.delete({
+      where: {
+        userId: userId,
+      },
+    });
+
+    const user = await tx.user.delete({
+      where: {
+        id: userId,
+      },
+    });
+
+    return { user, profile };
   });
-  response.profile = await userTable.delete({
-    where: {
-      id: userId,
-    },
-  });
+
   return response;
 };
 
 export { deleteUser, getSingleProfile, updateProfile, verifyPassword };
+

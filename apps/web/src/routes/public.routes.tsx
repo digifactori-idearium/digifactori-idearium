@@ -1,9 +1,26 @@
+import EmptyRoom from '@/pages/EmptyRoom';
 import Home from '@/pages/Home';
-import TestFormPage from '@/pages/TestForm';
+import Rooms from '@/pages/Rooms';
+import RoomsPlayground from '@/pages/RoomsPlayground';
+import Voxel from '@/pages/Voxel';
 
 const publicRoutes = [
   { path: '', element: <Home />, exact: true },
-  { path: 'testform', element: <TestFormPage /> },
+  {
+    path: 'rooms',
+    children: [
+      { index: true, element: <Rooms /> },
+      { path: 'playground', element: <RoomsPlayground /> },
+      { path: 'myroom', element: <EmptyRoom /> },
+    ],
+  },
+  {
+    path: 'voxel',
+    children: [
+      { index: true, element: <Voxel /> },
+      { path: 'playground', element: <Voxel /> },
+    ],
+  },
 ];
 
 export default publicRoutes;
