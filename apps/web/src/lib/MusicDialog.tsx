@@ -1,10 +1,11 @@
 import { Music, Play, Pause, Check } from 'lucide-react';
 import { useState, useRef } from 'react';
+import { useSnapshot } from 'valtio';
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { useRoomStore } from '@/stores';
+import { sceneState } from '@/stores';
 
 const TRACKS = [
   { id: 'sea', name: 'Deep Sea', url: '/sea.wav' },
@@ -13,8 +14,8 @@ const TRACKS = [
 ];
 
 export function MusicSelector() {
-  const currentTrack = useRoomStore(state => state.global.music.currentTrack);
-  const update = useRoomStore(state => state.update);
+  const snap = useSnapshot(sceneState);
+  const currentTrack = snap.global.music.currentTrack;
 
   const [previewId, setPreviewId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -33,12 +34,7 @@ export function MusicSelector() {
   };
 
   const selectTrack = (url: string) => {
-    const currentMusicState = useRoomStore.getState().global.music;
-    const newTrack = currentTrack === url ? '' : url;
-
-    update('global', {
-      music: { ...currentMusicState, currentTrack: newTrack },
-    });
+    sceneState.global.music.currentTrack = currentTrack === url ? '' : url;
   };
 
   return (
@@ -97,7 +93,7 @@ export function MusicSelector() {
                     size="sm"
                     onClick={() => selectTrack(track.url)}
                     className={cn(
-                      'group min-w-22.5 transition-all  bg-mauve! text-white!',
+                      'group min-w-22.5 transition-all bg-mauve! text-white!',
                       isSelected && [
                         'bg-mauve text-white hover:bg-destructive! hover:border-destructive!',
                         'dark:hover:bg-destructive/20! dark:hover:text-destructive!',
@@ -106,12 +102,10 @@ export function MusicSelector() {
                   >
                     {isSelected ? (
                       <>
-                        {/* Shown by default */}
                         <div className="flex items-center group-hover:hidden">
                           <Check size={14} className="mr-1" />
                           <span>Active</span>
                         </div>
-                        {/* Shown on hover */}
                         <span className="hidden group-hover:inline text-xs">
                           Retirer
                         </span>

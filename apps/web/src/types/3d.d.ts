@@ -62,6 +62,7 @@ type RoomMode = 'edit' | 'play';
 interface RoomState {
   // Global State
   mode: RoomMode;
+  transformMode: number;
   global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
@@ -82,9 +83,30 @@ interface RoomState {
   rightWall: PartSettings;
   floor: PartSettings;
 
-  // Actions
-  update: (path: keyof Omit<RoomState, 'update'>, values: Partial<any>) => void;
-  setMode: (mode: RoomMode) => void;
+  // Objects managements
+  objects: Record<string, ObjectState>;
+  selectedObjectId: string | null;
+
+  //Objects movement managemet
+  isDragging: boolean;
+  // setIsDragging: (isDragging: boolean) => void;
+
+  // // Actions
+  // update: (path: keyof Omit<RoomState, 'update'>, values: Partial<any>) => void;
+  // setMode: (mode: RoomMode) => void;
+
+  // //Object states managements
+  // selectObject: (id?: string) => void;
+  // clearSelection: () => void;
+  // // addObject: (id: string, object: ObjectState) => void;
+  // addObject: (type?: string) => void;
+
+  // updateObjectSlice: (
+  //   id: string,
+  //   slice: keyof ObjectState,
+  //   values: Partial<any>
+  // ) => void;
+  // removeObject: (id: string) => void;
 }
 
 // OBJECT ASSETS TYPES
@@ -124,10 +146,7 @@ interface ObjectState {
 
   // Advanced
   advanced: AdvancedSettings;
-
-  // Actions
-  update: (
-    path: keyof Omit<ObjectState, 'update'>,
-    values: Partial<any>
-  ) => void;
 }
+type TransformMode = 'translate' | 'rotate' | 'scale';
+type ObjectSliceKey = keyof ObjectState;
+type RootSliceKey = keyof Omit<RoomState, 'objects'>;
