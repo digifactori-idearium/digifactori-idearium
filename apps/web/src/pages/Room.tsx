@@ -3,6 +3,7 @@ import { useSnapshot } from 'valtio';
 
 import Scene from '@/components/3d';
 import { ConfigPanel } from '@/components/panel/ConfigPanel';
+import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { ObjectConfigPanel } from '@/components/panel/ObjectPanel';
 import { sceneState, actions } from '@/stores';
 
@@ -19,7 +20,7 @@ export default function Room() {
 
         <button
           onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
-          className="absolute top-3 left-3 z-50 p-2! main-small-btn"
+          className="absolute top-3 left-[calc(50%-100px)] z-50 p-2! main-small-btn"
         >
           {isEditMode ? (
             <span className="flex items-center gap-1">
@@ -36,7 +37,7 @@ export default function Room() {
 
         <button
           onClick={() => actions.addObject('table')}
-          className="absolute top-3 left-40 z-50 p-2! main-small-btn"
+          className="absolute top-3 left-1/2 z-50 p-2! main-small-btn"
         >
           <span className="flex items-center gap-1">
             <Plus className="w-4 h-4 text-white!" />
@@ -50,6 +51,11 @@ export default function Room() {
           <div className="h-full w-full flex flex-col backdrop-blur-xl border rounded-xl shadow-2xl overflow-hidden text-white">
             {selectedObject ? <ObjectConfigPanel /> : <ConfigPanel />}
           </div>
+        </aside>
+      )}
+      {isEditMode && (
+        <aside className="fixed left-3 top-20 bottom-3 w-64 z-50 animate-in slide-in-from-left duration-500">
+          <ObjectListPanel />
         </aside>
       )}
     </div>
