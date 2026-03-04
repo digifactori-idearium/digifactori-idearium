@@ -1,9 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { isEqual } from 'lodash';
 import { SquareArrowOutUpRight } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Controller, FieldValues, useForm, useWatch } from 'react-hook-form';
-import { StoreApi, UseBoundStore } from 'zustand';
+import { useSnapshot } from 'valtio';
 
 import { Slider } from '../ui/slider';
 
@@ -23,68 +22,55 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { createFormSchema } from '@/lib/validation';
+import { sceneState, actions } from '@/stores';
 
-interface FormThreeProps<
-  T extends { update: (path: any, values: any) => void },
-> {
+interface FormThreeProps {
   inputs: FormInputData[];
-  store: UseBoundStore<StoreApi<T>>;
-  sliceKey: keyof Omit<T, 'update'>;
+  sliceKey: ObjectSliceKey | RootSliceKey;
+  objectId?: string | null;
 }
 
-function FormThree<T extends { update: (path: any, values: any) => void }>({
-  inputs,
-  store,
-  sliceKey,
-}: FormThreeProps<T>) {
-  const storeState = store(state => state[sliceKey]) as T[typeof sliceKey];
+function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
+  const snap = useSnapshot(sceneState);
 
-  const update = store(state => state.update);
+  const currentState = useMemo(() => {
+    if (objectId && snap.objects[objectId]) {
+      return snap.objects[objectId][
+        sliceKey as keyof (typeof snap.objects)[string]
+      ];
+    }
+    return (snap as any)[sliceKey];
+  }, [snap, objectId, sliceKey]);
 
-  const formSchema = useMemo(() => {
-    return createFormSchema(inputs);
-  }, [inputs]);
+  const formSchema = useMemo(() => createFormSchema(inputs), [inputs]);
 
   const {
     register,
     control,
     setValue,
-    reset,
     formState: { errors },
   } = useForm<FieldValues>({
-    defaultValues: storeState as any,
+    values: currentState as any,
     resolver: zodResolver(formSchema as any),
   });
 
-  const isFirstRender = useRef(true);
+  const watchedValues = useWatch({ control });
 
   useEffect(() => {
-    reset(storeState as any);
-  }, [storeState, reset]);
-
-  const watchedValues = useWatch({
-    control,
-  });
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
+    if (watchedValues) {
+      // Direct mutation via action ensures the store stays in sync with UI
+      actions.updateSlice(sliceKey, watchedValues, objectId);
     }
-
-    // On compare uniquement les clés du slice
-    if (!isEqual(watchedValues, storeState)) {
-      update(sliceKey, watchedValues);
-    }
-  }, [watchedValues]);
+  }, [watchedValues, sliceKey, objectId]);
 
   return (
     <div className="w-full room-form flex flex-col gap-2">
       {inputs.map((input, index) => {
+        // IMAGE / FILE
         if (input.type === 'file' || input.type === 'image') {
           return (
             <div key={index} className="flex flex-col gap-2">
-              <label>{input.label}</label>
+              <label className="text-sm font-medium">{input.label}</label>
               <Controller
                 name={input.name}
                 control={control}
@@ -109,7 +95,7 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
               key={index}
               className="form-input-container flex flex-col gap-2"
             >
-              <label className="font-medium">{input.label}</label>
+              <label className="text-sm font-medium">{input.label}</label>
               <Controller
                 name={input.name}
                 control={control}
@@ -142,14 +128,7 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
                     checked={field.value}
                     onCheckedChange={field.onChange}
                     id={input.name}
-                    className="
-                      bg-zinc-800!
-                      data-[state=checked]:bg-mauve!
-                      border! border-zinc-700!
-                      [&>span]:bg-zinc-400!
-                      data-[state=checked]:[&>span]:bg-white!
-                      [&>span]:shadow-md!
-                    "
+                    className="bg-zinc-800! data-[state=checked]:bg-mauve! border! border-zinc-700!"
                   />
                 )}
               />
@@ -159,12 +138,20 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
 
         // VECTOR3
         if (input.type === 'vector3') {
-          return <Vector3Field control={control} input={input} />;
+          return (
+            <div key={index}>
+              <Vector3Field control={control} input={input} />
+            </div>
+          );
         }
 
-        // HEX
+        // COLOR
         if (input.type === 'color') {
-          return <HexColorField control={control} input={input} />;
+          return (
+            <div key={index}>
+              <HexColorField control={control} input={input} />
+            </div>
+          );
         }
 
         // SLIDER
@@ -187,14 +174,13 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
                       max={input.max ?? 10}
                       step={input.step ?? 0.1}
                       onChange={e => field.onChange(Number(e.target.value))}
-                      className="slider-input"
+                      className="slider-input w-12 text-xs"
                     />
-
                     <Slider
                       min={input.min ?? 0}
                       max={input.max ?? 10}
                       step={input.step ?? 0.1}
-                      value={[field.value ?? 1]}
+                      value={[field.value ?? 0]}
                       onValueChange={val => field.onChange(val[0])}
                       className="flex-1 py-4 cursor-pointer"
                     />
@@ -217,18 +203,17 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
                 <DialogTrigger asChild>
                   <button
                     type="button"
-                    className="px-3 py-1! flex justify-between items-center form-input bg-transparent! text-muted-foreground!"
+                    className="px-3 py-1 flex justify-between items-center form-input bg-transparent! text-muted-foreground!"
                   >
                     <span>Choisir {input.label}</span>
-                    <SquareArrowOutUpRight size={20} />
+                    <SquareArrowOutUpRight size={16} />
                   </button>
                 </DialogTrigger>
-                <DialogContent className="max-w-lg bg-sidebar dialog-btn">
+                <DialogContent className="max-w-lg bg-sidebar">
                   <DialogHeader>
                     <DialogTitle>Configuration {input.label}</DialogTitle>
-                    <DialogDescription className="text-zinc-400">
-                      Personnalisez les réglages pour
-                      {input.label.toLowerCase()} ci-dessous.
+                    <DialogDescription>
+                      Personnalisez les réglages ci-dessous.
                     </DialogDescription>
                   </DialogHeader>
                   {input.dialogueContent || 'Nothing to display'}
@@ -238,7 +223,7 @@ function FormThree<T extends { update: (path: any, values: any) => void }>({
           );
         }
 
-        // DEFAULT INPUT
+        // DEFAULT TEXT INPUT
         return (
           <FormInput
             key={index}
