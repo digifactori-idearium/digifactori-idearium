@@ -161,7 +161,7 @@ export const actions = {
     sceneState.objects[id] = {
       info: { name: name, category: type },
       transform: {
-        position: { x: 50, y: 0, z: 50 },
+        position: { x: 45, y: 10, z: 45 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: 8,
       },

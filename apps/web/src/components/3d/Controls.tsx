@@ -1,21 +1,19 @@
 import { OrbitControls, TransformControls } from '@react-three/drei';
+import { useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
-import { sceneState, actions } from '@/stores';
-import { sceneRegistry } from '@/stores';
+import { sceneState, sceneRegistry, actions } from '@/stores/room.store';
 
 export function Controls() {
-  const snap = useSnapshot(sceneState);
-  // const scene = useThree(state => state.scene);
+  const { selectedObjectId, isDragging, transformMode } =
+    useSnapshot(sceneState);
 
-  // const selected = snap.selectedObjectId && snap.objects[snap.selectedObjectId];
-
-  const object = snap.selectedObjectId
-    ? sceneRegistry.get(snap.selectedObjectId)
-    : null;
+  const object = useMemo(() => {
+    return selectedObjectId ? sceneRegistry.get(selectedObjectId) : undefined;
+  }, [selectedObjectId]);
 
   const handleDragEnd = () => {
-    if (!object || !snap.selectedObjectId) return;
+    if (!object || !selectedObjectId) return;
 
     actions.updateSlice(
       'transform',
@@ -32,7 +30,7 @@ export function Controls() {
         },
         scale: object.scale.x,
       },
-      snap.selectedObjectId
+      selectedObjectId
     );
 
     actions.setIsDragging(false);
@@ -42,12 +40,13 @@ export function Controls() {
     <>
       {object && (
         <TransformControls
+          key={selectedObjectId ?? 'no-selection'}
           object={object}
           mode={actions.getTransformMode()}
           onMouseDown={() => actions.setIsDragging(true)}
           onMouseUp={handleDragEnd}
           onChange={() => {
-            if (object && snap.transformMode === 2) {
+            if (object && transformMode === 2) {
               let s = object.scale.x;
               s = Math.max(1, Math.min(s, 8));
               object.scale.set(s, s, s);
@@ -58,7 +57,7 @@ export function Controls() {
 
       <OrbitControls
         makeDefault
-        enabled={!snap.isDragging}
+        enabled={!isDragging}
         minPolarAngle={0}
         maxPolarAngle={Math.PI / 1.75}
       />
