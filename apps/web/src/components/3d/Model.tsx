@@ -1,6 +1,6 @@
 import { useGLTF, useCursor } from '@react-three/drei';
 import { ThreeEvent } from '@react-three/fiber';
-import { JSX, useEffect, useState } from 'react';
+import { JSX, useEffect, useState, useRef } from 'react';
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { GLTF } from 'three-stdlib';
@@ -24,19 +24,38 @@ type GLTFResult = GLTF & {
 };
 
 export function Model({ id, name, file, ...props }: ModelProps) {
-  const snap = useSnapshot(sceneState);
-  const data = snap.objects[id];
+  const data = useSnapshot(sceneState.objects[id]);
+  const registeredRef = useRef(false);
+
   const { scene: gltfScene } = useGLTF(file) as unknown as GLTFResult;
 
-  const scene = useMemo(() => SkeletonUtils.clone(gltfScene), [gltfScene]);
+  const scene = useMemo(() => {
+    const clone = SkeletonUtils.clone(gltfScene);
+    clone.traverse(child => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        if (Array.isArray(mesh.material)) {
+          mesh.material = mesh.material.map(m => m.clone());
+        } else {
+          mesh.material = mesh.material.clone();
+        }
+      }
+    });
+    return clone;
+  }, [gltfScene]);
 
   const [hovered, setHovered] = useState(false);
-  const isSelected = snap.selectedObjectId === id;
+  const isSelected = useSnapshot(sceneState).selectedObjectId === id;
 
   useEffect(() => {
-    actions.registerObject(id, scene);
+    if (!registeredRef.current) {
+      actions.registerObject(id, scene);
+      registeredRef.current = true;
+    }
+
     return () => {
       actions.unregisterObject(id);
+      registeredRef.current = false;
     };
   }, [id, scene]);
 
@@ -90,7 +109,9 @@ export function Model({ id, name, file, ...props }: ModelProps) {
       onContextMenu={(e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
         actions.selectObject(id);
-        const nextMode = (snap.transformMode + 1) % 3;
+
+        const currentMode = sceneState.transformMode;
+        const nextMode = (currentMode + 1) % 3;
         actions.setTransformMode(nextMode);
       }}
       onPointerOut={() => setHovered(false)}
@@ -98,5 +119,3 @@ export function Model({ id, name, file, ...props }: ModelProps) {
     />
   );
 }
-// Preload to avoid jitter when adding objects
-// useGLTF.preload('/compressed.glb');

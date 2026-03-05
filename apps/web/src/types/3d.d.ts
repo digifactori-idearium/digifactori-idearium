@@ -67,7 +67,7 @@ interface RoomState {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
     music: { currentTrack: string; volume: number };
-    theme: 'customized' | 'black-orange' | 'pink-blue' | 'white';
+    theme: string;
   };
 
   background: { color: string; accent: string };

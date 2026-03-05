@@ -6,6 +6,7 @@ import { useSnapshot } from 'valtio';
 import { Controls } from './Controls';
 import { Model } from './Model';
 import { SceneAudio } from './SceneAudio';
+import { SceneGradient } from './SceneGradient';
 
 import { sceneState, actions } from '@/stores';
 
@@ -45,6 +46,11 @@ export const Scene: React.FC = () => {
         }}
       >
         {soundTrack && <SceneAudio soundTrack={soundTrack} />}
+
+        <SceneGradient
+          baseColor={snap.background.color}
+          accentColor={snap.background.accent}
+        />
 
         <SceneBackground color={snap.background.color} />
 

@@ -1,12 +1,17 @@
 import { useMemo } from 'react';
 import { ShaderMaterial, Color } from 'three';
 
-export function SceneGradient({ color = '#6c63ff' }) {
+interface Props {
+  baseColor: string;
+  accentColor: string;
+}
+
+export function SceneGradient({ baseColor, accentColor }: Props) {
   const material = useMemo(() => {
     return new ShaderMaterial({
       uniforms: {
-        uColor: { value: new Color(color) },
-        uIntensity: { value: 0.15 },
+        uBaseColor: { value: new Color(baseColor) },
+        uAccentColor: { value: new Color(accentColor) },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -16,18 +21,24 @@ export function SceneGradient({ color = '#6c63ff' }) {
         }
       `,
       fragmentShader: `
-        uniform vec3 uColor;
-        uniform float uIntensity;
+        uniform vec3 uBaseColor;
+        uniform vec3 uAccentColor;
         varying vec2 vUv;
 
         void main() {
-          float dist = distance(vUv, vec2(0.5));
-          
-          float mask = pow(1.0 - dist * 1.5, 3.0);
-          mask = clamp(mask, 0.0, 1.0);
 
-          vec3 backgroundColor = vec3(0.02); 
-          vec3 finalColor = mix(backgroundColor, uColor, mask * uIntensity);
+          // Radial center glow
+          float dist = distance(vUv, vec2(0.5));
+          float radial = 1.0 - smoothstep(0.2, 0.8, dist);
+
+          // Vertical lift (subtle sky feel)
+          float vertical = smoothstep(0.0, 1.0, vUv.y);
+
+          // Blend base → accent in center
+          vec3 radialBlend = mix(uBaseColor, uAccentColor, radial * 0.6);
+
+          // Slight vertical brightness
+          vec3 finalColor = mix(radialBlend, uAccentColor, vertical * 0.15);
 
           gl_FragColor = vec4(finalColor, 1.0);
         }
@@ -35,13 +46,10 @@ export function SceneGradient({ color = '#6c63ff' }) {
       depthWrite: false,
       depthTest: false,
     });
-  }, [color]);
+  }, [baseColor, accentColor]);
 
   return (
-    <mesh
-      renderOrder={-10000} // Ensures it stays behind everything else
-      frustumCulled={false}
-    >
+    <mesh renderOrder={-10000} frustumCulled={false}>
       <planeGeometry args={[2, 2]} />
       <primitive object={material} attach="material" />
     </mesh>
