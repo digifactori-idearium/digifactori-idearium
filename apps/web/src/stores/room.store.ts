@@ -74,7 +74,7 @@ export const sceneState = proxy<RoomState>({
     theme: 'pink-blue' as keyof typeof themesToColors,
   },
 
-  info: { description: 'New Room', category: 'none' },
+  info: { name: 'Template', description: 'New Room', category: 'none' },
 
   background: { color: '#f0d400', accent: '#7d7d7d' },
   leftWall: { color: '#f45405', hidden: false, texture: 'none' },
@@ -127,8 +127,6 @@ export const actions = {
     } else {
       const target = (sceneState as any)[sliceKey];
       if (target && typeof target === 'object') {
-        Object.assign(target, values);
-
         if (
           sliceKey === 'global' &&
           values.theme &&
@@ -147,10 +145,15 @@ export const actions = {
 
         const colorSlices = ['leftWall', 'rightWall', 'floor', 'background'];
         if (colorSlices.includes(sliceKey as string) && values.color) {
-          if (sceneState.global.theme !== 'customized') {
+          if (
+            target.color !== values.color &&
+            sceneState.global.theme !== 'customized'
+          ) {
             sceneState.global.theme = 'customized';
           }
         }
+
+        Object.assign(target, values);
       }
     }
   },

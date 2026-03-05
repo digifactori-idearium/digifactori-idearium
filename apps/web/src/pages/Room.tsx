@@ -54,7 +54,7 @@ export default function Room() {
         </aside>
       )}
       {isEditMode && (
-        <aside className="fixed left-3 top-20 bottom-3 w-64 z-50 animate-in slide-in-from-left duration-500">
+        <aside className="fixed left-3 top-20 bottom-3 w-45 z-50 animate-in slide-in-from-left duration-500">
           <ObjectListPanel />
         </aside>
       )}
