@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SquareArrowOutUpRight } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Controller, FieldValues, useForm, useWatch } from 'react-hook-form';
 import { useSnapshot } from 'valtio';
 
@@ -30,18 +30,22 @@ interface FormThreeProps {
   objectId?: string | null;
 }
 
+function useSliceSnapshot(
+  sliceKey: ObjectSliceKey | RootSliceKey,
+  objectId?: string | null
+) {
+  if (objectId) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const snap = useSnapshot(sceneState.objects[objectId]);
+    return snap[sliceKey as keyof typeof snap];
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const snap = useSnapshot((sceneState as any)[sliceKey]);
+  return snap;
+}
+
 function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
-  const snap = useSnapshot(sceneState);
-
-  const currentState = useMemo(() => {
-    if (objectId && snap.objects[objectId]) {
-      return snap.objects[objectId][
-        sliceKey as keyof (typeof snap.objects)[string]
-      ];
-    }
-    return (snap as any)[sliceKey];
-  }, [snap, objectId, sliceKey]);
-
+  const currentState = useSliceSnapshot(sliceKey, objectId);
   const formSchema = useMemo(() => createFormSchema(inputs), [inputs]);
 
   const {
@@ -50,17 +54,45 @@ function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
     setValue,
     formState: { errors },
   } = useForm<FieldValues>({
-    values: currentState as any,
+    defaultValues: currentState as any,
     resolver: zodResolver(formSchema as any),
   });
+
+  const watcher = useRef(false);
+
+  useEffect(() => {
+    if (watcher.current) {
+      watcher.current = false;
+      return;
+    }
+    Object.entries(currentState as Record<string, any>).forEach(
+      ([key, val]) => {
+        setValue(key, val, {
+          shouldDirty: false,
+          shouldTouch: false,
+          shouldValidate: false,
+        });
+      }
+    );
+  }, [currentState, setValue]);
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const watchedValues = useWatch({ control });
 
   useEffect(() => {
-    if (watchedValues) {
-      // Direct mutation via action ensures the store stays in sync with UI
+    if (!watchedValues) return;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      watcher.current = true;
       actions.updateSlice(sliceKey, watchedValues, objectId);
-    }
+    }, 50);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [watchedValues, sliceKey, objectId]);
 
   return (

@@ -43,7 +43,7 @@ export const ConfigPanel = () => {
     <Card className="flex flex-col p-4 gap-2! h-full w-full bg-sidebar sm:max-w-md border-none! shadow-2xl overflow-hidden rounded-none">
       <CardHeader className="p-0">
         <CardTitle className="text-xl font-bold">
-          {snap.info.category || 'Room Configuration'}
+          {snap.info.name || 'Room'}
         </CardTitle>
       </CardHeader>
 
@@ -66,7 +66,7 @@ export const ConfigPanel = () => {
                   <AccordionTrigger className="accordion-btn hover:no-underline py-3">
                     {section.label}
                   </AccordionTrigger>
-                  <AccordionContent className="px-1 pt-2">
+                  <AccordionContent className="px-4 pl-5 pt-2">
                     <FormThree
                       inputs={roomConfigInputs[section.input]}
                       sliceKey={section.id}

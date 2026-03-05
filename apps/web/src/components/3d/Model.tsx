@@ -1,7 +1,16 @@
+/* eslint-disable react-hooks/immutability */
 import { useGLTF, useCursor } from '@react-three/drei';
 import { ThreeEvent } from '@react-three/fiber';
-import { JSX, useEffect, useState, useRef } from 'react';
-import { useMemo } from 'react';
+import {
+  JSX,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useRef,
+  useCallback,
+  memo,
+  useMemo,
+} from 'react';
 import * as THREE from 'three';
 import { GLTF } from 'three-stdlib';
 import { SkeletonUtils } from 'three-stdlib';
@@ -23,9 +32,36 @@ type GLTFResult = GLTF & {
   materials: Record<string, THREE.Material>;
 };
 
-export function Model({ id, name, file, ...props }: ModelProps) {
-  const data = useSnapshot(sceneState.objects[id]);
-  const registeredRef = useRef(false);
+function useObjectTransform(id: string) {
+  return useSnapshot(sceneState.objects[id].transform);
+}
+
+function useObjectStyle(id: string) {
+  return useSnapshot(sceneState.objects[id].style);
+}
+
+function useIsSelected(id: string) {
+  const snap = useSnapshot(sceneState, { sync: false });
+  return snap.selectedObjectId === id;
+}
+
+function collectMeshes(scene: THREE.Object3D): THREE.Mesh[] {
+  const meshes: THREE.Mesh[] = [];
+  scene.traverse(child => {
+    if ((child as THREE.Mesh).isMesh) meshes.push(child as THREE.Mesh);
+  });
+  return meshes;
+}
+
+export const Model = memo(function Model({
+  id,
+  name,
+  file,
+  ...props
+}: ModelProps) {
+  const transform = useObjectTransform(id);
+  const style = useObjectStyle(id);
+  const isSelected = useIsSelected(id);
 
   const { scene: gltfScene } = useGLTF(file) as unknown as GLTFResult;
 
@@ -34,52 +70,73 @@ export function Model({ id, name, file, ...props }: ModelProps) {
     clone.traverse(child => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
-        if (Array.isArray(mesh.material)) {
-          mesh.material = mesh.material.map(m => m.clone());
-        } else {
-          mesh.material = mesh.material.clone();
-        }
+        mesh.material = Array.isArray(mesh.material)
+          ? mesh.material.map(m => m.clone())
+          : mesh.material.clone();
       }
     });
     return clone;
   }, [gltfScene]);
 
-  const [hovered, setHovered] = useState(false);
-  const isSelected = useSnapshot(sceneState).selectedObjectId === id;
+  const meshesRef = useRef<THREE.Mesh[]>([]);
 
   useEffect(() => {
+    meshesRef.current = collectMeshes(scene);
+  }, [scene]);
+
+  const registeredRef = useRef(false);
+
+  useLayoutEffect(() => {
     if (!registeredRef.current) {
       actions.registerObject(id, scene);
       registeredRef.current = true;
     }
-
     return () => {
       actions.unregisterObject(id);
       registeredRef.current = false;
     };
   }, [id, scene]);
 
+  useEffect(() => {
+    const tint = style.tint || 'white';
+    for (const mesh of meshesRef.current) {
+      const mat = mesh.material as any;
+      if (!mat) continue;
+      mat.color.set(isSelected ? '#ff6080' : tint);
+      if (mat.emissive) {
+        mat.emissive.set(isSelected ? '#ff6080' : '#000000');
+        mat.emissiveIntensity = isSelected ? 0.2 : 0;
+      }
+    }
+  }, [isSelected, style.tint]);
+
+  const [hovered, setHovered] = useState(false);
   useCursor(hovered);
 
-  useEffect(() => {
-    scene.traverse(child => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        const mat = mesh.material as any;
+  const handleClick = useCallback(
+    (e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation();
+      actions.selectObject(id);
+    },
+    [id]
+  );
 
-        if (mat) {
-          mat.color.set(isSelected ? '#ff6080' : data.style.tint || 'white');
+  const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation();
+    setHovered(true);
+  }, []);
 
-          if (mat.emissive) {
-            mat.emissive.set(isSelected ? '#ff6080' : '#000000');
-            mat.emissiveIntensity = isSelected ? 0.2 : 0;
-          }
-        }
-      }
-    });
-  }, [scene, isSelected, data.style.tint]);
+  const handlePointerOut = useCallback(() => setHovered(false), []);
 
-  if (!data) return null;
+  const handleContextMenu = useCallback(
+    (e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation();
+      actions.selectObject(id);
+      const nextMode = (sceneState.transformMode + 1) % 3;
+      actions.setTransformMode(nextMode);
+    },
+    [id]
+  );
 
   return (
     <primitive
@@ -88,34 +145,21 @@ export function Model({ id, name, file, ...props }: ModelProps) {
       name={name}
       userData={{ id }}
       position={[
-        data.transform.position.x,
-        data.transform.position.y,
-        data.transform.position.z,
+        transform.position.x,
+        transform.position.y,
+        transform.position.z,
       ]}
       rotation={[
-        data.transform.rotation.x,
-        data.transform.rotation.y,
-        data.transform.rotation.z,
+        transform.rotation.x,
+        transform.rotation.y,
+        transform.rotation.z,
       ]}
-      scale={data.transform.scale}
-      onClick={(e: ThreeEvent<MouseEvent>) => {
-        e.stopPropagation();
-        actions.selectObject(id);
-      }}
-      onPointerOver={(e: ThreeEvent<PointerEvent>) => {
-        e.stopPropagation();
-        setHovered(true);
-      }}
-      onContextMenu={(e: ThreeEvent<MouseEvent>) => {
-        e.stopPropagation();
-        actions.selectObject(id);
-
-        const currentMode = sceneState.transformMode;
-        const nextMode = (currentMode + 1) % 3;
-        actions.setTransformMode(nextMode);
-      }}
-      onPointerOut={() => setHovered(false)}
+      scale={transform.scale}
+      onClick={handleClick}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+      onContextMenu={handleContextMenu}
       dispose={null}
     />
   );
-}
+});

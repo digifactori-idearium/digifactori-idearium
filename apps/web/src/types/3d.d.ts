@@ -74,6 +74,7 @@ interface RoomState {
 
   // Info State
   info: {
+    name: string;
     description: string;
     category?: string;
   };
