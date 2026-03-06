@@ -21,7 +21,7 @@ interface FormProps {
   initialValues?: FieldValues;
 }
 
-const Form: React.FC<FormProps> = ({
+export const Form: React.FC<FormProps> = ({
   inputs,
   handleOnSubmit,
   initialValues,
@@ -139,5 +139,3 @@ const Form: React.FC<FormProps> = ({
     </div>
   );
 };
-
-export default Form;

@@ -1,6 +1,6 @@
 import { useSnapshot } from 'valtio';
 
-import FormThree from '../global/FormThree';
+import { FormThree } from '@/components/global';
 
 import {
   Accordion,

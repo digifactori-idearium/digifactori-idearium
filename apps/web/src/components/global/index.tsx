@@ -1,2 +1,10 @@
 export { Brand } from './Brand';
 export { Search } from './Search';
+export { VoiceButton } from './VoiceButton';
+export { TooltipButton } from './ToolTipButton';
+export { SuperButton } from './SuperButton';
+export { VoiceLink } from './VoiceLink';
+export { TooltipLink } from './TooltipLink';
+export { SuperLink } from './SuperLink';
+export { Form } from './Form';
+export { FormThree } from './FormThree';

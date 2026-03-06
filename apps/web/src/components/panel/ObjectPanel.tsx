@@ -9,7 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
-import FormThree from '../global/FormThree';
+import { FormThree } from '@/components/global';
 import { Button } from '../ui/button';
 
 import {

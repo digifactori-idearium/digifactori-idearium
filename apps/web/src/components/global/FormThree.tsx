@@ -44,7 +44,7 @@ function useSliceSnapshot(
   return snap;
 }
 
-function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
+export function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
   const currentState = useSliceSnapshot(sliceKey, objectId);
   const formSchema = useMemo(() => createFormSchema(inputs), [inputs]);
 
@@ -269,5 +269,3 @@ function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
     </div>
   );
 }
-
-export default FormThree;
