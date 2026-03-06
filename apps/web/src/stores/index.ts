@@ -1,1 +1,1 @@
-export { sceneState, actions, sceneRegistry } from './Ideorama.store';
+export { sceneState, actions, sceneRegistry } from './ideorama.store';
