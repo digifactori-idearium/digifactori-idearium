@@ -7,7 +7,7 @@ import AvatarSelector from './AvatarSelector';
 import ProfileForm from './ProfileForm';
 import ProfileHeader from './ProfileHeader';
 
-import { Button } from '@/components/ui/button';
+import { VoiceButton } from '@/components/global';
 import { useProfile } from '@/hooks/useProfile';
 
 const AVATAR_OPTIONS = [
@@ -98,10 +98,13 @@ const Profile: React.FC = () => {
           onUpdate={handleUpdate}
           onDelete={handleDelete}
         >
-          <Button className="flex items-center gap-2 form-button">
+          <VoiceButton
+            voiceText={"Le paramètre avancé, c'est pour les grands."}
+            className="flex items-center gap-2 form-button"
+          >
             <Lock className="w-4 h-4" />
             Paramètres avancés
-          </Button>
+          </VoiceButton>
         </AdvancedSettingsDialog>
       </ProfileHeader>
 

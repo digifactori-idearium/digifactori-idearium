@@ -1,5 +1,6 @@
 import { Play, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
+import { VoiceLink } from '../global';
 
 export default function Hero() {
   return (
@@ -36,22 +37,24 @@ export default function Hero() {
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
-          <Link
+          <VoiceLink
             to="/rooms"
+            voiceText="Explorez les Ideorama"
             className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white! transition-all duration-300 bg-mauve rounded-2xl hover:bg-mauve/80 hover:shadow-[0_0_30px_-10px_rgba(79,70,229,0.6)]"
           >
-            Explorer les salles
+            Explorez les Ideorama
             <Play className="ml-2 h-5 w-5 fill-current group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </VoiceLink>
 
-          <Link
+          <VoiceLink
             to="https://www.d1g1factory.org/"
             target="_blank"
+            voiceText="En savoir plus sur digiFactory"
             rel="noopener noreferrer"
             className="px-8 py-4 font-semibold text-gray-700 dark:text-gray-300 rounded-2xl border-2 border-gray-200 dark:border-gray-800 hover:border-mauve! dark:hover:border-mauve/80! hover:text-mauve! transition-all duration-300"
           >
             Le projet digiFactory
-          </Link>
+          </VoiceLink>
         </div>
       </div>
 
