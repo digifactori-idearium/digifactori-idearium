@@ -16,12 +16,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { searchRoom } from '@/services/room.service';
+import { searchIdeorama } from '@/services/ideorama.service';
 
 export function Search({
   onSelect,
   className,
-  label = 'room',
+  label = 'ideorama',
 }: {
   onSelect: (name: string) => void;
   className?: string;
@@ -42,7 +42,7 @@ export function Search({
       }
       setLoading(true);
       try {
-        const data = await searchRoom(query);
+        const data = await searchIdeorama(query);
         setResults(data);
       } catch (err) {
         console.error('PubChem Autocomplete Error', err);

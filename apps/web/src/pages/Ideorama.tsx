@@ -7,7 +7,7 @@ import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { ObjectConfigPanel } from '@/components/panel/ObjectPanel';
 import { sceneState, actions } from '@/stores';
 
-export default function Room() {
+export default function Ideorama() {
   const snap = useSnapshot(sceneState);
 
   const isEditMode = snap.mode === 'edit';

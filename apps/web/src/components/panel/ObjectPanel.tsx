@@ -20,7 +20,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { objectConfigInputs } from '@/lib/input';
-import { sceneState, actions } from '@/stores/room.store';
+import { sceneState, actions } from '@/stores/ideorama.store';
 
 type ConfigSlice = 'transform' | 'style' | 'advanced';
 

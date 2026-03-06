@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { useSnapshot } from 'valtio';
 
-import { sceneState, sceneRegistry, actions } from '@/stores/room.store';
+import { sceneState, sceneRegistry, actions } from '@/stores/ideorama.store';
 
 export function Controls() {
   const { isDragging, selectedObjectId, transformMode } = useSnapshot(

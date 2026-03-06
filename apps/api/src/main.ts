@@ -4,9 +4,10 @@ import express from 'express';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
+
 import authRoutes from './modules/auth/auth.route';
+import ideoramasRoutes from './modules/ideorama/ideorama.route';
 import profileRoutes from './modules/profile/profile.route';
-import roomsRoutes from './modules/rooms/rooms.route';
 
 // Env variables
 dotenv.config();
@@ -31,7 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
-app.use('/api/rooms', roomsRoutes);
+app.use('/api/ideoramas', ideoramasRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

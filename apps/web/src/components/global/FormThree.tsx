@@ -96,7 +96,7 @@ export function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
   }, [watchedValues, sliceKey, objectId]);
 
   return (
-    <div className="w-full room-form flex flex-col gap-2">
+    <div className="w-full ideorama-form flex flex-col gap-2">
       {inputs.map((input, index) => {
         // IMAGE / FILE
         if (input.type === 'file' || input.type === 'image') {

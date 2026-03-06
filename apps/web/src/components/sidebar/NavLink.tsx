@@ -9,7 +9,7 @@ import {
 
 export function NavLink() {
   const links = {
-    home: { path: '', label: 'Rooms', icon: LayoutDashboard },
+    home: { path: '', label: 'Ideoramas', icon: LayoutDashboard },
   };
 
   return (

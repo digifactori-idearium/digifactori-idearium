@@ -62,8 +62,8 @@ export const themesToColors = {
 
 const transformModes = ['translate', 'rotate', 'scale'] as const;
 
-export const sceneState = proxy<RoomState>({
-  mode: 'edit' as RoomMode,
+export const sceneState = proxy<IdeoramaState>({
+  mode: 'edit' as IdeoramaMode,
 
   transformMode: 0,
 
@@ -74,7 +74,7 @@ export const sceneState = proxy<RoomState>({
     theme: 'pink-blue' as keyof typeof themesToColors,
   },
 
-  info: { name: 'Template', description: 'New Room', category: 'none' },
+  info: { name: 'Template', description: 'New Ideorama', category: 'none' },
 
   background: { color: '#f0d400', accent: '#7d7d7d' },
   leftWall: { color: '#f45405', hidden: false, texture: 'none' },
@@ -89,7 +89,7 @@ export const sceneState = proxy<RoomState>({
 export const sceneRegistry = new Map<string, THREE.Object3D>();
 
 export const actions = {
-  setMode(mode: RoomMode) {
+  setMode(mode: IdeoramaMode) {
     sceneState.mode = mode;
   },
   getTransformMode(): TransformMode {

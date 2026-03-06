@@ -184,7 +184,7 @@ export class UserService {
     return await userTable.findUnique({
       where: { email },
       include: {
-        rooms: true,
+        ideoramas: true,
         profile: true,
       }
     })

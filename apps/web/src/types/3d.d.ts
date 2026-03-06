@@ -57,11 +57,11 @@ interface PartSettings {
   texture: string;
 }
 
-type RoomMode = 'edit' | 'play';
+type IdeoramaMode = 'edit' | 'play';
 
-interface RoomState {
+interface IdeoramaState {
   // Global State
-  mode: RoomMode;
+  mode: IdeoramaMode;
   transformMode: number;
   global: {
     brightness: 'bright' | 'dim' | 'dark';
@@ -93,8 +93,8 @@ interface RoomState {
   // setIsDragging: (isDragging: boolean) => void;
 
   // // Actions
-  // update: (path: keyof Omit<RoomState, 'update'>, values: Partial<any>) => void;
-  // setMode: (mode: RoomMode) => void;
+  // update: (path: keyof Omit<IdeoramaState, 'update'>, values: Partial<any>) => void;
+  // setMode: (mode: IdeoramaMode) => void;
 
   // //Object states managements
   // selectObject: (id?: string) => void;
@@ -150,4 +150,4 @@ interface ObjectState {
 }
 type TransformMode = 'translate' | 'rotate' | 'scale';
 type ObjectSliceKey = keyof ObjectState;
-type RootSliceKey = keyof Omit<RoomState, 'objects'>;
+type RootSliceKey = keyof Omit<IdeoramaState, 'objects'>;
