@@ -1,24 +1,27 @@
 import ProtectedRoute from './protected.routes';
 
 import BatchRegister from '@/components/auth';
+import Ideorama from '@/pages/Ideorama';
+import IdeoramaCopy from '@/pages/IdeoramaCopy';
+import Ideoramas from '@/pages/Ideoramas';
 import ProfilePage from '@/pages/Profile';
-import Room from '@/pages/Room';
-import RoomCopy from '@/pages/RoomCopy';
-import Rooms from '@/pages/Rooms';
 import Voxel from '@/pages/Voxel';
 
 const appRoutes = [
   {
     path: '',
-    element: <ProtectedRoute element={<Rooms />} />,
+    element: <ProtectedRoute element={<Ideoramas />} />,
     exact: true,
   },
   {
     path: 'profile',
     element: <ProtectedRoute element={<ProfilePage />} />,
   },
-  { path: 'room', element: <ProtectedRoute element={<Room />} /> },
-  { path: 'roomCopy', element: <ProtectedRoute element={<RoomCopy />} /> },
+  { path: 'ideorama', element: <ProtectedRoute element={<Ideorama />} /> },
+  {
+    path: 'ideoramaCopy',
+    element: <ProtectedRoute element={<IdeoramaCopy />} />,
+  },
   {
     path: 'batch_register',
     element: <ProtectedRoute element={<BatchRegister />} />,

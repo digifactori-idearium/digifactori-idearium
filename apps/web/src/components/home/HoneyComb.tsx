@@ -1,11 +1,33 @@
 const ExpandedHoneycomb = () => {
-  // Expanded rooms: added 2 to each layer for a larger grid
-  const rooms = [
-    ['Room 1', 'Room 2', 'Room 3', 'Room A', 'Room B'],
-    ['Room 4', 'Room 5', 'Room 6', 'Room 7', 'Room C', 'Room D'],
-    ['Room 8', 'Room 9', 'Room 10', 'Room 11', 'Room 12', 'Room E', 'Room F'],
-    ['Room 13', 'Room 14', 'Room 15', 'Room 16', 'Room G', 'Room H'],
-    ['Room 17', 'Room 18', 'Room 19', 'Room I', 'Room J'],
+  // Expanded ideoramas: added 2 to each layer for a larger grid
+  const ideoramas = [
+    ['Ideorama 1', 'Ideorama 2', 'Ideorama 3', 'Ideorama A', 'Ideorama B'],
+    [
+      'Ideorama 4',
+      'Ideorama 5',
+      'Ideorama 6',
+      'Ideorama 7',
+      'Ideorama C',
+      'Ideorama D',
+    ],
+    [
+      'Ideorama 8',
+      'Ideorama 9',
+      'Ideorama 10',
+      'Ideorama 11',
+      'Ideorama 12',
+      'Ideorama E',
+      'Ideorama F',
+    ],
+    [
+      'Ideorama 13',
+      'Ideorama 14',
+      'Ideorama 15',
+      'Ideorama 16',
+      'Ideorama G',
+      'Ideorama H',
+    ],
+    ['Ideorama 17', 'Ideorama 18', 'Ideorama 19', 'Ideorama I', 'Ideorama J'],
   ];
 
   // Geometric Constants
@@ -16,7 +38,7 @@ const ExpandedHoneycomb = () => {
   return (
     <div className=" flex items-center justify-center md:my-10! p-4 overflow-auto opacity-75 ">
       <div className="flex flex-col items-center scale-75 md:scale-100 transition-transform">
-        {rooms.map((row, rowIndex) => (
+        {ideoramas.map((row, rowIndex) => (
           <div
             key={rowIndex}
             className="flex justify-center"
@@ -24,7 +46,7 @@ const ExpandedHoneycomb = () => {
               marginTop: rowIndex === 0 ? 0 : `-${hexHeight * 0.25 - gap}px`,
             }}
           >
-            {row.map((room, colIndex) => (
+            {row.map((ideorama, colIndex) => (
               <div
                 key={`${rowIndex}-${colIndex}`}
                 className="relative group cursor-pointer transition-transform duration-300 hover:z-50 hover:scale-110"
@@ -44,13 +66,13 @@ const ExpandedHoneycomb = () => {
                   <div className="relative w-full h-full">
                     <div className="absolute inset-0 flex items-center justify-center text-center p-4">
                       <span className="text-white font-bold text-xs uppercase tracking-widest group-hover:text-white/70 transition-colors">
-                        {room}
+                        {ideorama}
                       </span>
                     </div>
 
                     {/* 
                     <img 
-                      src={`/path/to/${room}.jpg`} 
+                      src={`/path/to/${ideorama}.jpg`} 
                       className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
                     /> 
                     */}

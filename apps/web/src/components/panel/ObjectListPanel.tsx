@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
 import { getContrastColor } from '@/lib/3d';
-import { sceneState, actions } from '@/stores/room.store';
+import { sceneState, actions } from '@/stores/ideorama.store';
 
 function useSelectedId() {
   const snap = useSnapshot(sceneState, { sync: false });

@@ -1,6 +1,6 @@
 import { useSnapshot } from 'valtio';
 
-import FormThree from '../global/FormThree';
+import { FormThree } from '@/components/global';
 
 import {
   Accordion,
@@ -11,10 +11,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { roomConfigInputs } from '@/lib/input';
+import { ideoramaConfigInputs } from '@/lib/input';
 import { sceneState } from '@/stores';
 
-type RoomSliceKey =
+type IdeoramaSliceKey =
   | 'global'
   | 'info'
   | 'leftWall'
@@ -23,9 +23,9 @@ type RoomSliceKey =
   | 'background';
 
 interface AccordionSection {
-  id: RoomSliceKey;
+  id: IdeoramaSliceKey;
   label: string;
-  input: keyof typeof roomConfigInputs;
+  input: keyof typeof ideoramaConfigInputs;
 }
 
 const accordionSections: AccordionSection[] = [
@@ -43,13 +43,16 @@ export const ConfigPanel = () => {
     <Card className="flex flex-col p-4 gap-2! h-full w-full bg-sidebar sm:max-w-md border-none! shadow-2xl overflow-hidden rounded-none">
       <CardHeader className="p-0">
         <CardTitle className="text-xl font-bold">
-          {snap.info.name || 'Room'}
+          {snap.info.name || 'Ideorama'}
         </CardTitle>
       </CardHeader>
 
       <CardContent className="flex flex-col flex-1 min-h-0 p-0">
         <div className="pt-2">
-          <FormThree inputs={roomConfigInputs['global']} sliceKey="global" />
+          <FormThree
+            inputs={ideoramaConfigInputs['global']}
+            sliceKey="global"
+          />
         </div>
 
         <Separator className="mt-3! bg-border!" />
@@ -68,7 +71,7 @@ export const ConfigPanel = () => {
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pl-5 pt-2">
                     <FormThree
-                      inputs={roomConfigInputs[section.input]}
+                      inputs={ideoramaConfigInputs[section.input]}
                       sliceKey={section.id}
                     />
                   </AccordionContent>

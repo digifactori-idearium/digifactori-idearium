@@ -12,7 +12,7 @@ import {
 import React from 'react';
 import { SubmitHandler, FieldValues } from 'react-hook-form';
 
-import Form from '@/components/global/Form';
+import { Form } from '@/components/global';
 import { FormInputData } from '@/components/global/Input';
 
 const TestFormPage: React.FC = () => {

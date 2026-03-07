@@ -1,15 +1,15 @@
 import Home from '@/pages/Home';
-import Rooms from '@/pages/Rooms';
-import RoomsPlayground from '@/pages/RoomsPlayground';
+import Ideoramas from '@/pages/Ideoramas';
+import IdeoramasPlayground from '@/pages/IdeoramasPlayground';
 import Voxel from '@/pages/Voxel';
 
 const publicRoutes = [
   { path: '', element: <Home />, exact: true },
   {
-    path: 'rooms',
+    path: 'ideoramas',
     children: [
-      { index: true, element: <Rooms /> },
-      { path: 'playground', element: <RoomsPlayground /> },
+      { index: true, element: <Ideoramas /> },
+      { path: 'playground', element: <IdeoramasPlayground /> },
     ],
   },
   {

@@ -95,25 +95,25 @@
 
   /* ROOM FORM */
 
-  .room-form .form-input-container {
+  .ideorama-form .form-input-container {
     @apply gap-0.5!;
   }
 
-  .room-form label {
+  .ideorama-form label {
     @apply text-sm;
   }
-  .room-form .form-input {
+  .ideorama-form .form-input {
     @apply rounded-sm! text-sm!;
   }
 
-  .room-form .form-select {
+  .ideorama-form .form-select {
     @apply py-1!;
   }
-  .room-form textarea {
+  .ideorama-form textarea {
     @apply max-h-16!;
   }
 
-  .room-form input {
+  .ideorama-form input {
     @apply py-1.5!;
   }
 

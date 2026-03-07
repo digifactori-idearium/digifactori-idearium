@@ -134,7 +134,7 @@ export const resetInputs = [
 ========================= */
 
 //Tags
-const roomTags = [
+const ideoramaTags = [
   { value: 'none', text: 'Aucun' },
   { value: 'music', text: 'Musique' },
   { value: 'lofi', text: 'Lo-Fi' },
@@ -230,7 +230,12 @@ const partConfigInput = [
 ];
 const infoConfig = [
   { name: 'description', label: 'Description', type: 'textarea' },
-  { name: 'category', label: 'Catégorie', type: 'select', options: roomTags },
+  {
+    name: 'category',
+    label: 'Catégorie',
+    type: 'select',
+    options: ideoramaTags,
+  },
 ];
 
 const backConfig = [
@@ -238,7 +243,7 @@ const backConfig = [
   { name: 'accent', label: 'Accent', type: 'color' },
 ];
 
-export const roomConfigInputs = {
+export const ideoramaConfigInputs = {
   global: globalConfigInputs,
   info: infoConfig,
   background: backConfig,

@@ -6,8 +6,8 @@ import UnamurLogo from '../assets/images/unamur.png';
 import Card from '../components/home/Card';
 import CardText from '../components/home/CardText';
 
-import Hero from '@/components/home/Hero';
 import VoxelColor from '@/components/3d/VoxelColor';
+import Hero from '@/components/home/Hero';
 import HoneycombGrid from '@/components/home/HoneyComb';
 
 const Home: React.FC = () => {
@@ -25,7 +25,7 @@ const Home: React.FC = () => {
           Démonstration 3D interactive
         </h2>
 
-        <div className="w-full h-[400px] rounded-xl overflow-hidden border">
+        <div className="w-full h-100 rounded-xl overflow-hidden border">
           <VoxelColor />
         </div>
 

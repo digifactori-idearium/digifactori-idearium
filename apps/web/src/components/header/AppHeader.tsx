@@ -1,8 +1,9 @@
 import { House, LogOutIcon, Moon, Sun } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom'; // Assuming you use react-router
+import { useNavigate } from 'react-router-dom';
 
-import { Button } from '../ui/button';
-
+import { VoiceLink } from '@/components/global';
+import { VoiceButton } from '@/components/global';
+import { SuperButton } from '@/components/global';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,25 +44,27 @@ export function AppHeader() {
               orientation="vertical"
               className="mx-2 data-[orientation=vertical]:h-4"
             />
-            <Link
+            <VoiceLink
               to="/"
+              voiceText="Mon Espace"
               className="text-base text-foreground! hover:text-foreground/80! font-medium flex items-center gap-1.5"
             >
-              <House className="h-5" /> <span className="text-base">Home</span>
-            </Link>
+              <House className="h-5" />{' '}
+              <span className="text-base">Mon Espace</span>
+            </VoiceLink>
           </div>
 
           <div className="flex gap-1 md:gap-2">
             {getUser() && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
+                  <VoiceButton
                     className="side-btn text-foreground! flex gap-2"
+                    voiceText="Me déconnecter"
                   >
                     <LogOutIcon className="w-5 h-5 text-red-500" />
-                    <span className="hidden sm:inline">Me Déconnecter</span>
-                  </Button>
+                    <span className="hidden sm:inline">Me déconnecter</span>
+                  </VoiceButton>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="rounded-4xl border-mauve! bg-sidebar!  shadow-2xl p-8">
                   <AlertDialogHeader>
@@ -86,13 +89,18 @@ export function AppHeader() {
               </AlertDialog>
             )}
 
-            <Button onClick={handleTheme} className="side-btn">
+            <SuperButton
+              tooltip="Changez le theme"
+              voiceText={`Changez le theme en ${theme === 'dark' ? 'blanc' : 'noir'}`}
+              onClick={handleTheme}
+              className="side-btn"
+            >
               {theme === 'dark' ? (
                 <Sun className="text-foreground! w-5! h-5!" />
               ) : (
                 <Moon className="text-foreground! w-5! h-5!" />
               )}
-            </Button>
+            </SuperButton>
           </div>
         </div>
       </header>

@@ -9,9 +9,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
-import FormThree from '../global/FormThree';
-import { Button } from '../ui/button';
-
+import { FormThree } from '@/components/global';
+import { SuperButton } from '@/components/global';
 import {
   Accordion,
   AccordionContent,
@@ -21,7 +20,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { objectConfigInputs } from '@/lib/input';
-import { sceneState, actions } from '@/stores/room.store';
+import { sceneState, actions } from '@/stores/ideorama.store';
 
 type ConfigSlice = 'transform' | 'style' | 'advanced';
 
@@ -59,15 +58,21 @@ export const ObjectConfigPanel = () => {
 
       {/* Top Action Bar */}
       <div className="w-full border-b flex gap-2 items-center justify-center px-4 py-2">
-        <Button
+        <SuperButton
+          tooltip="Modifier l'objet"
+          voiceText="Modifier l'objet"
           className="icon-round-btn"
           onClick={() => navigate('/app/voxel')}
         >
           <Cuboid className="size-6!" />
-        </Button>
-        <Button className="icon-round-btn">
+        </SuperButton>
+        <SuperButton
+          className="icon-round-btn"
+          tooltip="Ajouter des actions"
+          voiceText="Ajouter des actions"
+        >
           <Hand className="size-6!" />
-        </Button>
+        </SuperButton>
       </div>
 
       <CardContent className="flex-1 overflow-y-auto p-0 custom-scrollbar">
@@ -110,25 +115,36 @@ export const ObjectConfigPanel = () => {
 
       {/* Bottom Sticky Action Bar */}
       <div className="w-full p-2 border-t bg-sidebar flex gap-2 items-center justify-center">
-        <Button className="icon-round-btn">
-          <ArrowBigDown className="size-6!" />
-        </Button>
-        <Button className="icon-round-btn">
-          <ArrowBigUp className="size-6!" />
-        </Button>
-        <Button
+        <SuperButton
           className="icon-round-btn"
+          tooltip="Télécharger l'objet"
+          voiceText="Télécharger l'objet"
+        >
+          <ArrowBigDown className="size-6!" />
+        </SuperButton>
+        <SuperButton
+          className="icon-round-btn"
+          tooltip="Ajouter un objet"
+          voiceText="Ajouter un objet"
+        >
+          <ArrowBigUp className="size-6!" />
+        </SuperButton>
+        <SuperButton
+          className="icon-round-btn"
+          tooltip="Copier l'objet"
+          voiceText="Copier l'objet"
           // onClick={() => actions.duplicateObject(selectedId)}
         >
           <Copy className="size-6!" />
-        </Button>
-        <Button
-          variant="destructive"
+        </SuperButton>
+        <SuperButton
+          tooltip="Supprimer l'objet"
+          voiceText="Supprimer l'objet"
           className="icon-round-btn bg-red-900/20! hover:bg-red-900/40! text-red-500!"
           onClick={handleDelete}
         >
           <Trash className="size-6!" />
-        </Button>
+        </SuperButton>
       </div>
     </Card>
   );

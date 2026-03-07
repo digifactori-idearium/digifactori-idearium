@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+
+import { VoiceLink } from '../global';
 
 import { NavBrand } from './NavBrand';
 import { NavLink } from './NavLink';
@@ -36,13 +37,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {getUser() && (
         <SidebarFooter>
           <SidebarMenuButton asChild>
-            <Link
+            <VoiceLink
               to="/app/profile"
+              voiceText="Voir mon profile"
               role="button"
               className="flex justify-center items-center py-6 text-xl text-white! bg-[#6F51B0]! hover:bg-[#6F51B0]/80! rounded-4xl!"
             >
               <span>😊 Profile</span>
-            </Link>
+            </VoiceLink>
           </SidebarMenuButton>
         </SidebarFooter>
       )}

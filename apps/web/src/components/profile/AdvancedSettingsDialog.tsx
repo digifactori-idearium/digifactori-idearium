@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 
 import DeleteProfileDialog from './DeleteProfileDialog';
 
-import Form from '@/components/global/Form';
+import { Form } from '@/components/global';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

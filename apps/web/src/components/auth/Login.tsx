@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { login as loginService } from '../../services/auth.service';
-import Form from '../global/Form';
 
+import { Form } from '@/components/global';
 import { loginInputs } from '@/lib/input';
 import { useAuth } from '@/providers/AuthProvider';
 import { useUser } from '@/providers/UserProvider';

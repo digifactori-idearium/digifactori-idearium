@@ -2,8 +2,9 @@ import { LogOutIcon, Moon, Sun, LogIn, Play } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import logo from '../../assets/images/logo.png';
-import { Button } from '../ui/button';
 
+import { VoiceButton } from '@/components/global';
+import { SuperButton } from '@/components/global';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,28 +70,28 @@ export const Header = () => {
 
         <div className="flex items-center space-x-4">
           {!user && (
-            <Button
+            <VoiceButton
               onClick={() => {
                 openAuth('login');
               }}
               role="button"
+              voiceText="Se connecter à Idéarium"
               className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
             >
-              {' '}
               Se connecter <LogIn />{' '}
-            </Button>
+            </VoiceButton>
           )}
           {user && (
             <div className="flex gap-1 md:gap-2">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
+                  <VoiceButton
+                    voiceText="Me déconnecter"
                     className="side-btn text-foreground! flex gap-2"
                   >
                     <LogOutIcon className="w-5 h-5 text-red-500" />
-                    <span className="hidden sm:inline">Me Déconnecter</span>
-                  </Button>
+                    <span className="hidden sm:inline">Me déconnecter</span>
+                  </VoiceButton>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="rounded-4xl border-mauve! bg-sidebar!  shadow-2xl p-8">
                   <AlertDialogHeader>
@@ -131,13 +132,18 @@ export const Header = () => {
           )}
 
           <div>
-            <Button onClick={handleTheme} className="side-btn">
+            <SuperButton
+              tooltip="Changez le theme"
+              voiceText={`Changez le theme en ${theme === 'dark' ? 'blanc' : 'noir'}`}
+              onClick={handleTheme}
+              className="side-btn"
+            >
               {theme == 'dark' ? (
                 <Sun className=" text-foreground! w-5! h-5!" />
               ) : (
                 <Moon className=" text-foreground! w-5! h-5!" />
               )}
-            </Button>
+            </SuperButton>
           </div>
         </div>
       </div>
