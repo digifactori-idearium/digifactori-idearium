@@ -33,9 +33,7 @@ export const Header = () => {
     }
   };
 
-  const { getUser } = useUser();
-
-  const user = getUser();
+  const { user } = useUser();
 
   const navigate = useNavigate();
 
