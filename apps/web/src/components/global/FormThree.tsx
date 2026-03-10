@@ -160,7 +160,8 @@ export function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
                     checked={field.value}
                     onCheckedChange={field.onChange}
                     id={input.name}
-                    className="bg-zinc-800! data-[state=checked]:bg-mauve! border! border-zinc-700!"
+                    className="bg-zinc-800! data-[state=checked]:bg-mauve! border-none! outline-none! 
+                    shadow-none!    [&>span]:bg-gray-400! data-[state=checked]:[&>span]:bg-white!"
                   />
                 )}
               />
@@ -214,7 +215,7 @@ export function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
                       step={input.step ?? 0.1}
                       value={[field.value ?? 0]}
                       onValueChange={val => field.onChange(val[0])}
-                      className="flex-1 py-4 cursor-pointer"
+                      className="sliderer flex-1 py-4 cursor-pointer"
                     />
                   </div>
                 )}
@@ -235,7 +236,7 @@ export function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
                 <DialogTrigger asChild>
                   <button
                     type="button"
-                    className="px-3 py-1 flex justify-between items-center form-input bg-transparent! text-muted-foreground!"
+                    className="px-3 py-1 flex justify-between items-center form-input bg-transparent! text-white!"
                   >
                     <span>Choisir {input.label}</span>
                     <SquareArrowOutUpRight size={16} />

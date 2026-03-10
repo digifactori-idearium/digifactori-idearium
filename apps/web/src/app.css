@@ -4,12 +4,25 @@
   body {
     overflow-x: hidden;
     background-color: var(--color-sidebar);
+    touch-action: none;
   }
 
   #root {
     width: 100%;
     margin: 0;
     padding: 0;
+  }
+
+  [draggable='true'] {
+    user-select: none;
+    -webkit-user-drag: element;
+  }
+
+  .img-3d-thumb {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
   }
 
   ::-webkit-scrollbar {
@@ -64,10 +77,10 @@
   }
 
   .form-input {
-    @apply w-full pr-10!  border-mauve! border-2! rounded-2xl! outline! focus:border-dashed;
+    @apply w-full pr-10!  border-zinc-400/40! border-2! rounded-2xl! outline! focus:border-dashed;
   }
   .slider-input {
-    @apply w-14 text-center rounded-md border-mauve! border-2! outline! focus:border-dashed;
+    @apply w-14 text-center rounded-md border-zinc-400/40! border-2! outline! focus:border-dashed;
   }
   .form-icon {
     @apply w-12 h-12 rounded-full bg-mauve! flex justify-center items-center;
@@ -95,6 +108,9 @@
 
   /* ROOM FORM */
 
+  .ideorama-form {
+    @apply text-white!;
+  }
   .ideorama-form .form-input-container {
     @apply gap-0.5!;
   }
@@ -107,7 +123,22 @@
   }
 
   .ideorama-form .form-select {
-    @apply py-1!;
+    @apply py-1! bg-transparent!;
+  }
+
+  .ideorama-form .sliderer {
+    & [data-orientation='horizontal'] {
+      @apply bg-zinc-800!;
+    }
+    & .bg-primary {
+      @apply bg-zinc-100!;
+    }
+    & [role='slider'] {
+      @apply bg-zinc-100! border-zinc-100 ring-offset-zinc-100!;
+    }
+  }
+  .ideorama-form .form-select svg {
+    @apply text-white!;
   }
   .ideorama-form textarea {
     @apply max-h-16!;

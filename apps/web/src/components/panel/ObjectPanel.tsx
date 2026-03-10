@@ -49,7 +49,7 @@ export const ObjectConfigPanel = () => {
   };
 
   return (
-    <Card className="flex flex-col gap-2! p-4 h-full w-full sm:max-w-md border-l bg-sidebar shadow-2xl overflow-hidden rounded-none">
+    <Card className="flex flex-col gap-2! p-4 h-full w-full sm:max-w-md border-none! bg-sidebar-dark/25 text-white! shadow-2xl overflow-hidden rounded-none">
       <CardHeader>
         <CardTitle className="text-xl font-bold">
           {selectedObjectData?.info.name || 'Object Configuration'}
@@ -57,7 +57,7 @@ export const ObjectConfigPanel = () => {
       </CardHeader>
 
       {/* Top Action Bar */}
-      <div className="w-full border-b flex gap-2 items-center justify-center px-4 py-2">
+      <div className="w-full border-b border-zinc-400/40! flex gap-2 items-center justify-center px-4 py-2">
         <SuperButton
           tooltip="Modifier l'objet"
           voiceText="Modifier l'objet"
@@ -85,7 +85,7 @@ export const ObjectConfigPanel = () => {
           />
         </div>
 
-        <Separator className="my-3! bg-border" />
+        <Separator className="my-3! bg-zinc-400/40!" />
 
         {/* Style & Advanced Sections (Accordion) */}
         <div className="px-1">
@@ -114,7 +114,7 @@ export const ObjectConfigPanel = () => {
       </CardContent>
 
       {/* Bottom Sticky Action Bar */}
-      <div className="w-full p-2 border-t bg-sidebar flex gap-2 items-center justify-center">
+      <div className="w-full p-2 border-t border-zinc-400/40! flex gap-2 items-center justify-center">
         <SuperButton
           className="icon-round-btn"
           tooltip="Télécharger l'objet"
