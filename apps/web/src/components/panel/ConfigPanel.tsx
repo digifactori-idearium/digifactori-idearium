@@ -1,7 +1,6 @@
 import { useSnapshot } from 'valtio';
 
 import { FormThree } from '@/components/global';
-
 import {
   Accordion,
   AccordionContent,
@@ -40,7 +39,7 @@ export const ConfigPanel = () => {
   const snap = useSnapshot(sceneState);
 
   return (
-    <Card className="flex flex-col p-4 gap-2! h-full w-full bg-sidebar sm:max-w-md border-none! shadow-2xl overflow-hidden rounded-none">
+    <Card className="flex flex-col p-4 gap-2! h-full w-full bg-sidebar-dark/25 text-white! border-none! border-transparent! outline-none! sm:max-w-md shadow-2xl overflow-hidden rounded-none">
       <CardHeader className="p-0">
         <CardTitle className="text-xl font-bold">
           {snap.info.name || 'Ideorama'}
@@ -55,7 +54,7 @@ export const ConfigPanel = () => {
           />
         </div>
 
-        <Separator className="mt-3! bg-border!" />
+        <Separator className="mt-3! border-zinc-400/40!" />
 
         <div className="flex-1 min-h-0 mt-3">
           <ScrollArea className="h-full">

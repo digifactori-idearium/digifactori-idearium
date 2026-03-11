@@ -10,14 +10,6 @@ interface LoginResponse {
   role?: string;
 }
 
-interface ErrorResponse {
-  status: string;
-  error: {
-    code: string;
-    message: string;
-  };
-}
-
 export const login = async (
   pseudo: string,
   password: string
@@ -31,15 +23,24 @@ export const login = async (
       );
     }
 
+    console.log(response.data);
+
     const { accessToken, user } = response.data.data;
     return { token: accessToken, role: user.role };
   } catch (error: any) {
-    if (error.response && error.response.data) {
-      const serverError: ErrorResponse = error.response.data;
-      throw new Error(serverError.error.message);
-    } else {
-      throw new Error('An unexpected error occurred');
+    if (error.response?.data) {
+      const data = error.response.data;
+
+      const message = data?.errors?.[0]
+        ? `${data.errors[0].field ? data.errors[0].field + ':' : ''} ${data.errors[0].message}`
+        : data?.error?.message ||
+          data?.message ||
+          "Une erreur inattendue s'est produite.";
+
+      throw new Error(message);
     }
+
+    throw new Error('Erreur réseau');
   }
 };
 
@@ -56,11 +57,18 @@ export const register = async (userData: any): Promise<RegisterResponse> => {
     const { accessToken, user } = response.data.data;
     return { token: accessToken, role: user.role };
   } catch (error: any) {
-    if (error.response && error.response.data) {
-      const serverError: ErrorResponse = error.response.data;
-      throw new Error(serverError.error.message);
-    } else {
-      throw new Error('An unexpected error occurred');
+    if (error.response?.data) {
+      const data = error.response.data;
+
+      const message = data?.errors?.[0]
+        ? `${data.errors[0].field ? data.errors[0].field + ':' : ''} ${data.errors[0].message}`
+        : data?.error?.message ||
+          data?.message ||
+          "Une erreur inattendue s'est produite.";
+
+      throw new Error(message);
     }
+
+    throw new Error('Erreur réseau');
   }
 };

@@ -21,7 +21,7 @@ async function register(req: UserRequest, res: Response) {
       message: err.message,
     }));
 
-    return res.status(400).json({ errors });
+    return res.status(400).json({ status: 'error', errors });
   }
 
   try {
@@ -60,7 +60,7 @@ async function login(req: Request, res: Response) {
       message: err.message,
     }));
 
-    return res.status(400).json({ errors });
+    return res.status(400).json({ status: 'error', errors });
   }
 
   const { pseudo, email, password } = result.data;

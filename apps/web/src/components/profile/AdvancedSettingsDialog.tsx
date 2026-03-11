@@ -31,10 +31,10 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
   onDelete,
   children,
 }) => {
-  const { getUser, removeToken } = useUser();
+  const { user: sessionUser, removeToken } = useUser();
   const [user, setUser] = useState<any>();
   const [open, setOpen] = useState(false);
-  const [isUnlocked, setIsUnlocked] = useState(getUser()?.role !== 'CHILD');
+  const [isUnlocked, setIsUnlocked] = useState(sessionUser?.role !== 'CHILD');
   const [code, setCode] = useState('');
 
   const effectiveUser = propUser || user;
@@ -63,9 +63,9 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
       await onUpdate(userData, profile);
 
       if (
-        getUser()?.role &&
+        sessionUser?.role &&
         formData.role &&
-        getUser()?.role !== formData.role
+        sessionUser?.role !== formData.role
       ) {
         toast.success('Rôle mis à jour. Veuillez vous reconnecter.');
         removeToken();
@@ -85,13 +85,13 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
       onOpenChange={val => {
         setOpen(val);
         if (!val) {
-          setIsUnlocked(getUser()?.role !== 'CHILD');
+          setIsUnlocked(sessionUser?.role !== 'CHILD');
           setCode('');
         }
       }}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden bg-sidebar! border-mauve! dialog-btn">
+      <DialogContent className="sm:max-w-md max-h-[85vh] z-1000 flex flex-col overflow-hidden bg-sidebar! border-mauve! dialog-btn">
         <DialogHeader>
           <DialogTitle>
             {isUnlocked ? 'Paramètres du compte' : 'Code Parental Requis'}

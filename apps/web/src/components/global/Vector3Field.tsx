@@ -25,7 +25,7 @@ export function Vector3Field({ input, control }: Vector3FieldProps) {
             name={`${input.name}.${axis}`}
             control={control}
             render={({ field }) => (
-              <div className="flex flex-col items-center bg-muted rounded-xl p-2 gap-1">
+              <div className="flex flex-col items-center bg-sidebar-dark/30 rounded-xl p-2 gap-1">
                 <Button
                   type="button"
                   size="icon"
@@ -68,7 +68,7 @@ export function Vector3Field({ input, control }: Vector3FieldProps) {
                   <ChevronDown className="w-3! h-3!" />
                 </Button>
 
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                <span className="text-[10px] font-bold text-white uppercase">
                   {axis}
                 </span>
               </div>

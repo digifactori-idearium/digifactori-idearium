@@ -18,7 +18,7 @@ interface UserSession {
 }
 
 interface UserContextType {
-  getUser: () => UserSession | null;
+  user: UserSession | null;
   removeToken: () => void;
   setToken: (newToken: string | null) => void;
 }
@@ -44,10 +44,6 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     setToken(null);
   }, [setToken]);
 
-  /**
-   * Returns decoded token if valid.
-   * Automatically removes token if expired or invalid.
-   */
   const getDecodedToken = useCallback(() => {
     if (!token) return null;
 
@@ -56,18 +52,24 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       const currentTime = Date.now() / 1000;
 
       if (!decoded.exp || decoded.exp < currentTime) {
-        removeToken();
         return null;
       }
 
       return decoded;
     } catch {
-      removeToken();
       return null;
     }
-  }, [token, removeToken]);
+  }, [token]);
 
-  const getUser = useCallback((): UserSession | null => {
+  useEffect(() => {
+    const decoded = getDecodedToken();
+
+    if (!decoded && token) {
+      removeToken();
+    }
+  }, [getDecodedToken, token, removeToken]);
+
+  const user = useMemo<UserSession | null>(() => {
     const decoded = getDecodedToken();
 
     if (!decoded) return null;
@@ -80,18 +82,13 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     };
   }, [getDecodedToken, token]);
 
-  // Automatically remove expired token on mount or token change
-  useEffect(() => {
-    getDecodedToken();
-  }, [getDecodedToken]);
-
   const contextValue = useMemo(
     () => ({
-      getUser,
+      user,
       removeToken,
       setToken,
     }),
-    [getUser, removeToken, setToken]
+    [user, removeToken, setToken]
   );
 
   return (
