@@ -10,9 +10,8 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ role, element }) => {
-  const { getUser } = useUser();
+  const { user } = useUser();
   const navigate = useNavigate();
-  const user = getUser();
 
   useEffect(() => {
     if (!user || !user.token) {

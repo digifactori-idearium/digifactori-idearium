@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 import { useSnapshot } from 'valtio';
 
@@ -55,7 +56,7 @@ const ObjectNode = memo(
         <div
           onClick={handleClick}
           className={`
-          p-1.5 rounded-md cursor-pointer transition-all w-fit!
+          p-1.5 mb-1 rounded-sm cursor-pointer transition-all w-full!
           ${isActive ? 'bg-white/20' : 'hover:bg-white/10'}
         `}
         >
@@ -69,8 +70,8 @@ const ObjectNode = memo(
         <AccordionTrigger
           onClick={handleClick}
           className={`
-          p-1.5 hover:no-underline w-fit!
-          ${isActive ? 'bg-white/20 rounded-md' : ''}
+          p-1.5 rounded-sm hover:no-underline w-full!
+          ${isActive ? 'bg-white/20' : ''}
         `}
         >
           {node.info.name}
@@ -86,20 +87,41 @@ const ObjectNode = memo(
 );
 
 export const ObjectListPanel = memo(() => {
+  const snap = useSnapshot(sceneState);
   const textColor = useTextColor();
   const hierarchy = useObjectsHierarchy();
 
+  if (!snap.assetsTreeOpen) return null;
+
   return (
-    <Card
-      className={`h-full bg-transparent border-none! shadow-none p-0! pt-3! ${textColor}`}
-    >
-      <CardContent className="overflow-y-auto custom-scrollbar p-0!">
-        <Accordion type="multiple" className="w-full">
-          {hierarchy.map(node => (
-            <ObjectNode key={node.id} node={node} />
-          ))}
-        </Accordion>
-      </CardContent>
-    </Card>
+    <div className="absolute left-4 bottom-5 w-[320px] h-145 z-60 animate-in slide-in-from-bottom-10">
+      <div className="flex flex-col h-full backdrop-blur-xl bg-neutral-600/5 border border-white/20 rounded-2xl shadow-2xl text-white overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/20">
+          <h2 className="font-semibold text-lg">Ma list D'object</h2>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => actions.toggleAssetsTree(false)}
+              className="hover:bg-white/10 p-1! bg-transparent! rounded border border-white/20!"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
+        </div>
+
+        <Card
+          className={`h-full bg-transparent border-none! shadow-none p-2! pt-3! ${textColor}`}
+        >
+          <CardContent className="overflow-y-auto custom-scrollbar p-0!">
+            <Accordion type="multiple" className="w-full">
+              {hierarchy.map(node => (
+                <ObjectNode key={node.id} node={node} />
+              ))}
+            </Accordion>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 });

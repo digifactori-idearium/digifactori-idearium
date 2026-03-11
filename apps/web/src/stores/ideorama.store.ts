@@ -84,29 +84,25 @@ export const sceneState = proxy<IdeoramaState>({
   objects: {} as Record<string, ObjectState>,
   selectedObjectId: null as string | null,
   isDragging: false,
+  assetsPanelOpen: false,
+  assetsTreeOpen: false,
 });
 
 export const sceneRegistry = new Map<string, THREE.Object3D>();
 
 export const actions = {
+  // SCENE MANAGEMENT ACTIONS
+
   setMode(mode: IdeoramaMode) {
     sceneState.mode = mode;
   },
+
   getTransformMode(): TransformMode {
     return transformModes[sceneState.transformMode];
   },
+
   setTransformMode(mode: number) {
     sceneState.transformMode = mode;
-  },
-  setIsDragging(value: boolean) {
-    sceneState.isDragging = value;
-  },
-  selectObject: (id: string | null) => {
-    sceneState.selectedObjectId = id;
-  },
-
-  clearSelection() {
-    sceneState.selectedObjectId = null;
   },
 
   updateSlice<K extends ObjectSliceKey | RootSliceKey>(
@@ -158,6 +154,20 @@ export const actions = {
     }
   },
 
+  // Model/Object MANAGEMENT ACTIONS
+
+  setIsDragging(value: boolean) {
+    sceneState.isDragging = value;
+  },
+
+  selectObject: (id: string | null) => {
+    sceneState.selectedObjectId = id;
+  },
+
+  clearSelection() {
+    sceneState.selectedObjectId = null;
+  },
+
   addObject(name: string, type?: string) {
     const id = crypto.randomUUID();
 
@@ -181,4 +191,59 @@ export const actions = {
   registerObject: (id: string, obj: THREE.Object3D) =>
     sceneRegistry.set(id, ref(obj)),
   unregisterObject: (id: string) => sceneRegistry.delete(id),
+
+  // ASSETS MANAGEMENT ACTIONS
+  toggleAssetsPanel(open?: boolean) {
+    if (open !== undefined) {
+      sceneState.assetsPanelOpen = open;
+    } else {
+      sceneState.assetsPanelOpen = !sceneState.assetsPanelOpen;
+    }
+  },
+
+  toggleAssetsTree(open?: boolean) {
+    if (open !== undefined) {
+      sceneState.assetsTreeOpen = open;
+    } else {
+      sceneState.assetsTreeOpen = !sceneState.assetsTreeOpen;
+    }
+  },
+
+  spawnAssetAtPosition(asset: AssetItem, position: THREE.Vector3) {
+    const id = crypto.randomUUID();
+
+    sceneState.objects[id] = {
+      info: {
+        name: asset.name,
+        category: asset.category,
+        file: asset.file,
+      },
+
+      transform: {
+        position: {
+          x: position.x,
+          y: position.y,
+          z: position.z,
+        },
+        rotation: { x: 0, y: 0, z: 0 },
+        scale: 8,
+      },
+
+      style: {
+        tint: '#ffffff',
+        opacity: 1,
+        glow: 0,
+        threshold: 0,
+      },
+
+      advanced: {
+        parent: null,
+        physics: false,
+        hidden: false,
+        locked: false,
+      },
+    };
+
+    sceneState.selectedObjectId = id;
+  },
 };

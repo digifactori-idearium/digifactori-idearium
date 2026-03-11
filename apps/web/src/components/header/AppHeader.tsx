@@ -22,7 +22,7 @@ import { useUser } from '@/providers/UserProvider';
 
 export function AppHeader() {
   const { theme, setTheme } = useTheme();
-  const { removeToken, getUser } = useUser();
+  const { removeToken, user } = useUser();
   const navigate = useNavigate();
 
   const handleTheme = () => {
@@ -55,7 +55,7 @@ export function AppHeader() {
           </div>
 
           <div className="flex gap-1 md:gap-2">
-            {getUser() && (
+            {user && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <VoiceButton

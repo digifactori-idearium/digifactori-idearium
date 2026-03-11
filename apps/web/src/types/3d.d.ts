@@ -91,24 +91,8 @@ interface IdeoramaState {
 
   //Objects movement managemet
   isDragging: boolean;
-  // setIsDragging: (isDragging: boolean) => void;
-
-  // // Actions
-  // update: (path: keyof Omit<IdeoramaState, 'update'>, values: Partial<any>) => void;
-  // setMode: (mode: IdeoramaMode) => void;
-
-  // //Object states managements
-  // selectObject: (id?: string) => void;
-  // clearSelection: () => void;
-  // // addObject: (id: string, object: ObjectState) => void;
-  // addObject: (type?: string) => void;
-
-  // updateObjectSlice: (
-  //   id: string,
-  //   slice: keyof ObjectState,
-  //   values: Partial<any>
-  // ) => void;
-  // removeObject: (id: string) => void;
+  assetsPanelOpen: boolean;
+  assetsTreeOpen: boolean;
 }
 
 // OBJECT ASSETS TYPES
@@ -138,6 +122,7 @@ interface ObjectState {
   info: {
     name: string;
     category?: string;
+    file?: string;
   };
 
   // Transform
@@ -152,3 +137,12 @@ interface ObjectState {
 type TransformMode = 'translate' | 'rotate' | 'scale';
 type ObjectSliceKey = keyof ObjectState;
 type RootSliceKey = keyof Omit<IdeoramaState, 'objects'>;
+interface Transform {
+  position: THREE.Vector3;
+  rotation: THREE.Euler;
+  scale: THREE.Vector3;
+}
+
+// ASSESTS MANAGEMENT TYPES
+
+type AssetItem = { id: string; name: string; category?: string; file: string };

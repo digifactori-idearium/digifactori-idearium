@@ -19,7 +19,7 @@
   -moz-osx-font-smoothing: grayscale;
   --radius: 0.625rem;
   /* --background: oklch(1 0 0); */
-  --background: #ef73a3;
+  --background: #f3bee1;
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
@@ -44,7 +44,7 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   /* --sidebar: oklch(0.985 0 0); */
-  --sidebar: #ffe2ee;
+  --sidebar: #f3e6ff;
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.21 0.006 285.885);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -54,6 +54,7 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
   /* Custom */
   --mauve: #6f51b0;
+  --sidebar-dark: #120d1d;
 }
 
 a {
@@ -80,21 +81,21 @@ h1 {
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #6f51b0;
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px auto -webkit-focus-ring-color;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .btn-hex {
@@ -130,6 +131,7 @@ button:focus-visible {
   --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-mauve: var(--mauve);
+  --color-sidebar-dark: var(--sidebar-dark);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);

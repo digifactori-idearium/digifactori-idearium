@@ -16,6 +16,8 @@ import { GLTF } from 'three-stdlib';
 import { SkeletonUtils } from 'three-stdlib';
 import { useSnapshot } from 'valtio';
 
+import { Controls } from './Controls';
+
 import { sceneState, actions } from '@/stores';
 
 interface ModelProps extends Omit<
@@ -32,19 +34,6 @@ type GLTFResult = GLTF & {
   materials: Record<string, THREE.Material>;
 };
 
-function useObjectTransform(id: string) {
-  return useSnapshot(sceneState.objects[id].transform);
-}
-
-function useObjectStyle(id: string) {
-  return useSnapshot(sceneState.objects[id].style);
-}
-
-function useIsSelected(id: string) {
-  const snap = useSnapshot(sceneState, { sync: false });
-  return snap.selectedObjectId === id;
-}
-
 function collectMeshes(scene: THREE.Object3D): THREE.Mesh[] {
   const meshes: THREE.Mesh[] = [];
   scene.traverse(child => {
@@ -53,17 +42,31 @@ function collectMeshes(scene: THREE.Object3D): THREE.Mesh[] {
   return meshes;
 }
 
+function useIsSelected(id: string) {
+  const snap = useSnapshot(sceneState, { sync: false });
+  return snap.selectedObjectId === id;
+}
+
 export const Model = memo(function Model({
   id,
   name,
   file,
   ...props
 }: ModelProps) {
-  const transform = useObjectTransform(id);
-  const style = useObjectStyle(id);
   const isSelected = useIsSelected(id);
 
   const { scene: gltfScene } = useGLTF(file) as unknown as GLTFResult;
+
+  const modelRef = useRef<THREE.Object3D>(null);
+  const meshesRef = useRef<THREE.Mesh[]>([]);
+
+  const isDragging = useRef(false);
+
+  const transform = useSnapshot(sceneState.objects[id].transform);
+  const style = useSnapshot(sceneState.objects[id].style);
+
+  const [hovered, setHovered] = useState(false);
+  useCursor(hovered);
 
   const scene = useMemo(() => {
     const clone = SkeletonUtils.clone(gltfScene);
@@ -78,24 +81,9 @@ export const Model = memo(function Model({
     return clone;
   }, [gltfScene]);
 
-  const meshesRef = useRef<THREE.Mesh[]>([]);
-
   useEffect(() => {
     meshesRef.current = collectMeshes(scene);
   }, [scene]);
-
-  const registeredRef = useRef(false);
-
-  useLayoutEffect(() => {
-    if (!registeredRef.current) {
-      actions.registerObject(id, scene);
-      registeredRef.current = true;
-    }
-    return () => {
-      actions.unregisterObject(id);
-      registeredRef.current = false;
-    };
-  }, [id, scene]);
 
   useEffect(() => {
     const tint = style.tint || 'white';
@@ -110,8 +98,13 @@ export const Model = memo(function Model({
     }
   }, [isSelected, style.tint]);
 
-  const [hovered, setHovered] = useState(false);
-  useCursor(hovered);
+  useLayoutEffect(() => {
+    if (!modelRef.current) return;
+    actions.registerObject(id, modelRef.current);
+    return () => {
+      actions.unregisterObject(id);
+    };
+  }, [id]);
 
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
@@ -128,38 +121,73 @@ export const Model = memo(function Model({
 
   const handlePointerOut = useCallback(() => setHovered(false), []);
 
-  const handleContextMenu = useCallback(
-    (e: ThreeEvent<MouseEvent>) => {
-      e.stopPropagation();
-      actions.selectObject(id);
-      const nextMode = (sceneState.transformMode + 1) % 3;
-      actions.setTransformMode(nextMode);
+  const handleDragStart = useCallback(() => {
+    isDragging.current = true;
+    actions.setIsDragging(true);
+  }, []);
+
+  const handleDrag = useCallback(
+    (matrix: THREE.Matrix4) => {
+      if (!modelRef?.current) return;
+
+      const _pos = new THREE.Vector3();
+      const _quat = new THREE.Quaternion();
+      const _scale = new THREE.Vector3();
+      const _euler = new THREE.Euler();
+
+      matrix.decompose(_pos, _quat, _scale);
+      _euler.setFromQuaternion(_quat);
+
+      actions.updateSlice(
+        'transform',
+        {
+          position: { x: _pos.x, y: _pos.y, z: _pos.z },
+          rotation: { x: _euler.x, y: _euler.y, z: _euler.z },
+        },
+        id
+      );
     },
     [id]
   );
 
+  const handleDragEnd = useCallback(() => {
+    actions.setIsDragging(false);
+    isDragging.current = false;
+  }, []);
+
   return (
-    <primitive
-      {...props}
-      object={scene}
-      name={name}
-      userData={{ id }}
-      position={[
-        transform.position.x,
-        transform.position.y,
-        transform.position.z,
-      ]}
-      rotation={[
-        transform.rotation.x,
-        transform.rotation.y,
-        transform.rotation.z,
-      ]}
-      scale={transform.scale}
-      onClick={handleClick}
-      onPointerOver={handlePointerOver}
-      onPointerOut={handlePointerOut}
-      onContextMenu={handleContextMenu}
-      dispose={null}
-    />
+    <Controls
+      selected={isSelected}
+      initialTransform={transform}
+      objectRef={modelRef}
+      onDragEnd={handleDragEnd}
+      onDragStart={handleDragStart}
+      onDrag={handleDrag}
+    >
+      <primitive
+        receiveShadow
+        castShadow
+        {...props}
+        ref={modelRef}
+        object={scene}
+        userData={{ id }}
+        name={name}
+        position={[
+          transform.position.x,
+          transform.position.y,
+          transform.position.z,
+        ]}
+        rotation={[
+          transform.rotation.x,
+          transform.rotation.y,
+          transform.rotation.z,
+        ]}
+        scale={transform.scale}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+        dispose={null}
+      />
+    </Controls>
   );
 });

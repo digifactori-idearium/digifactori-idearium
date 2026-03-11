@@ -18,7 +18,7 @@ import {
 import { useUser } from '@/providers/UserProvider';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { getUser } = useUser();
+  const { user } = useUser();
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -34,7 +34,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      {getUser() && (
+      {user && (
         <SidebarFooter>
           <SidebarMenuButton asChild>
             <VoiceLink

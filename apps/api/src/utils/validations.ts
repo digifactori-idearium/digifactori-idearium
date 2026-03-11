@@ -58,13 +58,10 @@ export const userSchema = z
     }),
     password: z
       .string('Le mot de passe est requis')
-      .min(
-        8,
-        'Le mot de passe est trop petit, il doit comporter au moins 8 caractères'
-      )
+      .min(6, 'Le mot de passe doit comporter au moins 6 caractères')
       .regex(
         passwordRegex,
-        'Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule et un chiffre.'
+        'Il faut au moins 1 majuscule, 1 minuscule et 1 chiffre.'
       ),
     parental_code: z.coerce.number().optional(),
   })
@@ -153,13 +150,12 @@ export const loginSchema = z
       .min(3, 'Le pseudo doit comporter au moins 3 caractères')
       .optional()
       .or(z.literal('')),
-    password: z
-      .string()
-      .min(6, 'Le mot de passe doit comporter au moins 6 caractères')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/,
-        'Need 1 upper, 1 lower, and 1 number'
-      ),
+    password: z.string('Mot de passe requis'),
+    // .min(6, 'Le mot de passe doit comporter au moins 6 caractères')
+    // .regex(
+    //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/,
+    //   'Il faut au moins 1 majuscule, 1 minuscule et 1 chiffre.'
+    // ),
   })
   .refine(data => !!data.email !== !!data.pseudo, {
     message:
