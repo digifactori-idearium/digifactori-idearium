@@ -1,9 +1,12 @@
+import { useDroppable } from '@dnd-kit/core';
+import { GizmoHelper, GizmoViewport, OrbitControls } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
 import React, { Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 import { useSnapshot } from 'valtio';
 
-import { Controls } from './Controls';
+import { AssetsDropHandler } from '../assets/AssetsDropHandler';
+
 import { Model } from './Model';
 import { SceneAudio } from './SceneAudio';
 import { SceneGradient } from './SceneGradient';
@@ -33,8 +36,16 @@ export const Scene: React.FC = () => {
     dark: 0.5,
   };
 
+  const { isOver, setNodeRef } = useDroppable({
+    id: 'canvas-droppable',
+  });
+
   return (
-    <div id="canvas-container" className="w-full h-full">
+    <div
+      id="canvas-container"
+      ref={setNodeRef}
+      className={`w-full h-full ${isOver ? 'droppable active' : 'droppable'}`}
+    >
       <Canvas
         shadows
         orthographic
@@ -44,7 +55,11 @@ export const Scene: React.FC = () => {
           near: 0.1,
           far: 1000,
         }}
+        onDragOver={e => e.preventDefault()}
+        onDrop={e => e.preventDefault()}
+        frameloop="demand"
       >
+        <AssetsDropHandler />
         {soundTrack && <SceneAudio soundTrack={soundTrack} />}
 
         <SceneGradient
@@ -73,24 +88,22 @@ export const Scene: React.FC = () => {
             <Model
               key={id}
               id={id}
-              //   file={objectData.file || '/Table.gltf'}
-              name={objectData.info.name || 'table'}
-              file={'/models/Table.gltf'}
-              //   name={'table'}
+              name={objectData.info.name || 'persone'}
+              file={objectData.info.file || '/models/person.glb'}
             />
           ))}
         </Suspense>
 
         {/* Floor */}
-        {!snap.floor.hidden && (
+        {/* {!snap.floor.hidden && (
           <mesh name="floor" receiveShadow position={[50, -5, 50]}>
             <boxGeometry args={[100, 10, 100]} />
             <meshPhongMaterial color={snap.floor.color} />
           </mesh>
-        )}
+        )} */}
 
         {/* RIGHT WALL */}
-        {!snap.rightWall.hidden && (
+        {/* {!snap.rightWall.hidden && (
           <mesh
             name="rightWall"
             position={[45, 45, -5]}
@@ -99,10 +112,10 @@ export const Scene: React.FC = () => {
             <boxGeometry args={[110, 10, 110]} />
             <meshPhongMaterial color={snap.rightWall.color} />
           </mesh>
-        )}
+        )} */}
 
         {/* LEFT WALL */}
-        {!snap.leftWall.hidden && (
+        {/* {!snap.leftWall.hidden && (
           <mesh
             name="leftWall"
             position={[-5, 45, 50]}
@@ -111,7 +124,7 @@ export const Scene: React.FC = () => {
             <boxGeometry args={[110, 10, 100]} />
             <meshPhongMaterial color={snap.leftWall.color} />
           </mesh>
-        )}
+        )} */}
 
         {/* Backdrop / Click Surface to Clear Selection */}
         <mesh
@@ -128,8 +141,16 @@ export const Scene: React.FC = () => {
           <planeGeometry args={[1000, 1000]} />
           <meshBasicMaterial visible={false} />
         </mesh>
+        <GizmoHelper alignment="bottom-right" margin={[100, 100]}>
+          <GizmoViewport labelColor="white" axisHeadScale={1} />
+        </GizmoHelper>
 
-        <Controls />
+        <OrbitControls
+          makeDefault
+          enabled={!snap.isDragging}
+          minPolarAngle={0}
+          maxPolarAngle={Math.PI / 1.75}
+        />
       </Canvas>
     </div>
   );
