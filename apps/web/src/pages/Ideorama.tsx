@@ -1,22 +1,47 @@
 import { CirclePlay, Plus, SquarePen } from 'lucide-react';
+import { useRef } from 'react';
+import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { useSnapshot } from 'valtio';
+
+
 
 import Scene from '@/components/3d';
 import { ConfigPanel } from '@/components/panel/ConfigPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { ObjectConfigPanel } from '@/components/panel/ObjectPanel';
-import { sceneState, actions } from '@/stores';
+import { useUser } from '@/providers/UserProvider';
+import { saveIdeorama } from '@/services/ideorama.service';
+import { actions, sceneState } from '@/stores';
+
+const DownloadAndSaveIdeorama = (scene: any, userId: string|undefined) => {
+
+    const exporter = new GLTFExporter();
+    exporter.parse(
+      scene,
+      (result: any) => {
+        // const blob = new Blob([JSON.stringify(result)], { type: "application/json" });
+        console.log("saving...")
+        // saveIdeorama(scene.toJSON(), userId).then(res => {sceneState.id = res.data.id; console.log("sceneState.id: ", sceneState.id)})
+        saveIdeorama(scene.toJSON(), userId).then(res => {console.log("sceneState.id: ", sceneState.id)})
+
+      },
+      { binary: false }
+    );
+}
 
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
+   const sceneRef = useRef(null);
 
   const isEditMode = snap.mode === 'edit';
   const selectedObject = snap.selectedObjectId;
+  const userId = useUser().getUser()?.id;
+
 
   return (
     <div className="flex lg:h-full lg:flex-row flex-col w-full overflow-hidden relative">
       <div className="w-full h-full overflow-hidden flex flex-col">
-        <Scene />
+        <Scene sceneRef={sceneRef}/>
 
         <button
           onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
@@ -44,6 +69,17 @@ export default function Ideorama() {
             <span>Add object</span>
           </span>
         </button>
+
+        <button
+          onClick={() => DownloadAndSaveIdeorama(sceneRef.current, userId)}
+          className="absolute top-3 left-1/2 z-50 p-2! main-small-btn"
+        >
+          <span className="flex items-center gap-1">
+            <Plus className="w-4 h-4 text-white!" />
+            <span>Save</span>
+          </span>
+        </button>
+
       </div>
 
       {isEditMode && (

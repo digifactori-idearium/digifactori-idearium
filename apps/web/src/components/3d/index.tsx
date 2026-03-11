@@ -8,7 +8,17 @@ import { Model } from './Model';
 import { SceneAudio } from './SceneAudio';
 import { SceneGradient } from './SceneGradient';
 
-import { sceneState, actions } from '@/stores';
+import { actions, sceneState } from '@/stores';
+
+const SceneBridge: React.FC<{ sceneRef: any }> = ({ sceneRef }) => {
+  const { scene } = useThree();
+
+  useEffect(() => {
+    sceneRef.current = scene; // expose la scène à l’extérieur
+  }, [scene, sceneRef]);
+
+  return null;
+}
 
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   const { scene } = useThree();
@@ -21,7 +31,7 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   return null;
 };
 
-export const Scene: React.FC = () => {
+export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
   const snap = useSnapshot(sceneState);
 
   const soundTrack = snap.global.music.currentTrack;
@@ -45,6 +55,7 @@ export const Scene: React.FC = () => {
           far: 1000,
         }}
       >
+        <SceneBridge sceneRef={sceneRef} />
         {soundTrack && <SceneAudio soundTrack={soundTrack} />}
 
         <SceneGradient

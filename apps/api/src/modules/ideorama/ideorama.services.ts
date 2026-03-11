@@ -1,17 +1,23 @@
+import { Ideorama } from '@prisma/client';
+
 import { prisma } from '../../config/client.config';
 
-export const createIdeorama = async (userId: string) => {
-  const ideorama = await prisma.ideorama.create({
-    data: {
-      name: 'New Ideorama',
-      userId: userId,
-    },
+export const createIdeorama = async (ideoramaData: Ideorama, uploadPath: string) => {
+  const newIdeorama = await prisma.ideorama.create({
+    data: {...ideoramaData, model: uploadPath},
   });
-
-  return ideorama;
+  return newIdeorama;
 };
 
-export const getMyIdeoramas = async (userId: string) => {
+export const getIdeoramaById = async (ideoramaId: string, userId: string) => {
+  return prisma.ideorama.findFirst({
+    where: {
+      id: ideoramaId,
+    },
+  });
+};
+
+export const getUserIdeoramas = async (userId: string) => {
   return prisma.ideorama.findMany({
     where: {
       userId: userId,
@@ -22,19 +28,9 @@ export const getMyIdeoramas = async (userId: string) => {
   });
 };
 
-export const getIdeoramaById = async (ideoramaId: string, userId: string) => {
-  return prisma.ideorama.findFirst({
-    where: {
-      id: ideoramaId,
-      userId: userId,
-    },
-  });
-};
-
 export const updateIdeorama = async (
   ideoramaId: string,
-  userId: string,
-  data: any
+  data: Ideorama
 ) => {
   return prisma.ideorama.update({
     where: {
@@ -43,3 +39,17 @@ export const updateIdeorama = async (
     data,
   });
 };
+
+export const isIdeoramaInBD = async (
+  ideoramaId: string
+) => {
+  const ideorama = await prisma.ideorama.findUnique({
+    where: {
+      id: ideoramaId
+    }
+  })
+  if (ideorama) {
+    return true
+  }
+  return false
+}

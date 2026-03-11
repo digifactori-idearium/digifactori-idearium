@@ -37,5 +37,6 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "digifactori-idearium",
     "projectKey": "digifactori-idearium"
-  }
+  },
+  "cSpell.words": ["ideoramas"]
 }

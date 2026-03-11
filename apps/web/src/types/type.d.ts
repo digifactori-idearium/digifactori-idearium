@@ -1,3 +1,4 @@
+
 interface Option {
   text: string;
   value: string;
@@ -33,3 +34,21 @@ type Profile = {
 };
 
 type Role = 'CHILD' | 'SUPERVISOR';
+
+
+type Ideorama = {
+  id: string;
+  name: string;
+  description: string | null;
+  theme: string;
+  brightness: string;
+  isPublic: boolean;
+  backgroundColor: string;
+  leftWallColor: string;
+  rightWallColor: string;
+  floorColor: string;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  model: string;
+}
