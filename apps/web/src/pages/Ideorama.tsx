@@ -6,30 +6,30 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  pointerWithin,
 } from '@dnd-kit/core';
-import { CirclePlay, ListTree, Plus, SquarePen } from 'lucide-react';
+import { snapCenterToCursor } from '@dnd-kit/modifiers';
+import { CirclePlay, ListTree, Plus, Settings2, SquarePen } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import Scene from '@/components/3d';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
 import { AssetsPanel } from '@/components/panel/AssetsPanel';
-import { ConfigPanel } from '@/components/panel/ConfigPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
-import { ObjectConfigPanel } from '@/components/panel/ObjectPanel';
+import { SettingPanel } from '@/components/panel/SettingPanel';
 import { sceneState, actions } from '@/stores';
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
 
   const isEditMode = snap.mode === 'edit';
-  const selectedObject = snap.selectedObjectId;
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
       },
     })
   );
@@ -39,36 +39,36 @@ export default function Ideorama() {
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { over, activatorEvent } = event;
-    const draggedData = event.active.data.current;
+    const { over, active } = event;
+    const draggedData = active.data.current;
 
     if (over?.id === 'canvas-droppable' && draggedData) {
-      let clientX = 0;
-      let clientY = 0;
+      const rect = active.rect.current.translated;
 
-      if (activatorEvent instanceof MouseEvent) {
-        clientX = activatorEvent.clientX;
-        clientY = activatorEvent.clientY;
-      } else if (window.TouchEvent && activatorEvent instanceof TouchEvent) {
-        clientX = (activatorEvent as TouchEvent).changedTouches[0].clientX;
-        clientY = (activatorEvent as TouchEvent).changedTouches[0].clientY;
+      if (rect) {
+        const clientX = rect.left + rect.width / 2;
+
+        const clientY = rect.top + rect.height / 2;
+
+        window.dispatchEvent(
+          new CustomEvent('canvas-drop', {
+            detail: { asset: draggedData, x: clientX, y: clientY },
+          })
+        );
       }
-
-      window.dispatchEvent(
-        new CustomEvent('canvas-drop', {
-          detail: { asset: draggedData, x: clientX, y: clientY },
-        })
-      );
     }
+
     setActiveAsset(null);
   }, []);
+
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={pointerWithin}
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
     >
-      <div className="flex lg:h-full lg:flex-row flex-col w-full overflow-hidden relative">
+      <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
         <div className="w-full h-full overflow-hidden flex flex-col">
           <Scene />
           <button
@@ -123,24 +123,41 @@ export default function Ideorama() {
             </button>
           )}
           {isEditMode && <ObjectListPanel />}
+
+          {/* Right Panel */}
+          {isEditMode && (
+            <button
+              onClick={() => {
+                actions.toggleSettingPanel();
+              }}
+              className="absolute bottom-3 right-5 -translate-x-1/2 z-50 main-small-btn p-3!"
+            >
+              <Settings2 className="w-5 h-5 text-white!" />
+            </button>
+          )}
+          {isEditMode && <SettingPanel />}
         </div>
 
-        <DragOverlay dropAnimation={null}>
-          {activeAsset ? (
-            <div className="w-full h-full rounded-xl border shadow-2xl overflow-hidden cursor-grabbing opacity-80 p-0 flex items-center justify-center">
-              <AssetThumbnail file={activeAsset.file} />
+        <DragOverlay
+          dropAnimation={null}
+          adjustScale={false}
+          modifiers={[snapCenterToCursor]}
+          style={{ pointerEvents: 'none', cursor: 'grabbing' }}
+        >
+          {activeAsset && (
+            <div className="w-24 h-24 cursor-grabbing rounded-xl overflow-hidden opacity-90 flex items-center justify-center">
+              {activeAsset.thumbnail ? (
+                <img
+                  src={activeAsset.thumbnail}
+                  alt="Dragging Asset"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <AssetThumbnail file={activeAsset.file} />
+              )}
             </div>
-          ) : null}
+          )}
         </DragOverlay>
-
-        {/* Right Panel */}
-        {isEditMode && (
-          <aside className="fixed right-3 top-20 bottom-3 w-80 z-50 animate-in slide-in-from-right duration-500">
-            <div className="h-full w-full flex flex-col backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden text-white">
-              {selectedObject ? <ObjectConfigPanel /> : <ConfigPanel />}
-            </div>
-          </aside>
-        )}
       </div>
     </DndContext>
   );

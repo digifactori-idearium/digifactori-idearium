@@ -1,6 +1,7 @@
+import { X } from 'lucide-react';
 import { useSnapshot } from 'valtio';
 
-import { FormThree } from '@/components/global';
+import { FormThree, TooltipButton } from '@/components/global';
 import {
   Accordion,
   AccordionContent,
@@ -11,15 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { ideoramaConfigInputs } from '@/lib/input';
-import { sceneState } from '@/stores';
+import { actions, sceneState } from '@/stores';
 
-type IdeoramaSliceKey =
-  | 'global'
-  | 'info'
-  | 'leftWall'
-  | 'rightWall'
-  | 'floor'
-  | 'background';
+type IdeoramaSliceKey = 'global' | 'info' | 'background';
 
 interface AccordionSection {
   id: IdeoramaSliceKey;
@@ -30,9 +25,6 @@ interface AccordionSection {
 const accordionSections: AccordionSection[] = [
   { id: 'info', label: 'Information', input: 'info' },
   { id: 'background', label: 'Arrière-plan', input: 'background' },
-  { id: 'leftWall', label: 'Mur Gauche', input: 'part' },
-  { id: 'rightWall', label: 'Mur Droit', input: 'part' },
-  { id: 'floor', label: 'Sol', input: 'part' },
 ];
 
 export const ConfigPanel = () => {
@@ -40,10 +32,17 @@ export const ConfigPanel = () => {
 
   return (
     <Card className="flex flex-col p-4 gap-2! h-full w-full bg-sidebar-dark/25 text-white! border-none! border-transparent! outline-none! sm:max-w-md shadow-2xl overflow-hidden rounded-none">
-      <CardHeader className="p-0">
+      <CardHeader className="p-0 flex justify-between items-center">
         <CardTitle className="text-xl font-bold">
           {snap.info.name || 'Ideorama'}
         </CardTitle>
+        <TooltipButton
+          tooltip="Fermer"
+          onClick={() => actions.toggleSettingPanel(false)}
+          className="hover:bg-white/10 p-1! bg-transparent! rounded border border-white/20!"
+        >
+          <X className="size-5 text-white!" />
+        </TooltipButton>
       </CardHeader>
 
       <CardContent className="flex flex-col flex-1 min-h-0 p-0">
@@ -54,7 +53,7 @@ export const ConfigPanel = () => {
           />
         </div>
 
-        <Separator className="mt-3! border-zinc-400/40!" />
+        <Separator className="mt-3! bg-zinc-400/40!" />
 
         <div className="flex-1 min-h-0 mt-3">
           <ScrollArea className="h-full">

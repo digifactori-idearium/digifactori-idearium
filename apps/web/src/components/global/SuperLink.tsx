@@ -36,7 +36,7 @@ export function SuperLink({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>{linkWithVoice}</TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent className="z-1000!">
           <p>{tooltip}</p>
         </TooltipContent>
       </Tooltip>
