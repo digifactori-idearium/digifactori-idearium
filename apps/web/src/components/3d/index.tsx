@@ -50,10 +50,10 @@ export const Scene: React.FC = () => {
         shadows
         orthographic
         camera={{
-          zoom: 3,
-          position: [200, 200, 200],
+          zoom: 50,
+          position: [3, 2.5, 3],
           near: 0.1,
-          far: 1000,
+          far: 2000,
         }}
         onDragOver={e => e.preventDefault()}
         onDrop={e => e.preventDefault()}
@@ -128,28 +128,34 @@ export const Scene: React.FC = () => {
 
         {/* Backdrop / Click Surface to Clear Selection */}
         <mesh
-          position={[50, 50, -50]}
+          position={[50, 50, -500]}
           rotation={[0, 0, 0]}
+          renderOrder={-1}
           onPointerDown={e => {
             e.stopPropagation();
-            // Only clear if we aren't currently moving an object
             if (!snap.isDragging) {
               actions.selectObject(null);
             }
           }}
         >
-          <planeGeometry args={[1000, 1000]} />
-          <meshBasicMaterial visible={false} />
+          <planeGeometry args={[5000, 5000]} />
+          <meshBasicMaterial visible={false} depthTest={false} />
         </mesh>
-        <GizmoHelper alignment="bottom-right" margin={[100, 100]}>
+
+        <GizmoHelper alignment="top-left" margin={[50, 50]}>
           <GizmoViewport labelColor="white" axisHeadScale={1} />
         </GizmoHelper>
 
         <OrbitControls
           makeDefault
+          target={[0, 0, 0]}
           enabled={!snap.isDragging}
+          enablePan={false}
+          enableRotate
           minPolarAngle={0}
           maxPolarAngle={Math.PI / 1.75}
+          minZoom={30}
+          maxZoom={100}
         />
       </Canvas>
     </div>

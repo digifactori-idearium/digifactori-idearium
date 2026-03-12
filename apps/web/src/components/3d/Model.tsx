@@ -76,6 +76,9 @@ export const Model = memo(function Model({
         mesh.material = Array.isArray(mesh.material)
           ? mesh.material.map(m => m.clone())
           : mesh.material.clone();
+
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
       }
     });
     return clone;
@@ -86,17 +89,61 @@ export const Model = memo(function Model({
   }, [scene]);
 
   useEffect(() => {
-    const tint = style.tint || 'white';
+    const tintColor = style.tint || '#ffffff';
+    const tint = new THREE.Color(tintColor);
+    const alpha = style.opacity ?? 1.0;
+    const glow = style.glow ?? 0;
+    const glowThreshold = style.threshold ?? 0.5;
+
     for (const mesh of meshesRef.current) {
-      const mat = mesh.material as any;
+      const mat = mesh.material as THREE.MeshStandardMaterial;
       if (!mat) continue;
-      mat.color.set(isSelected ? '#ff6080' : tint);
-      if (mat.emissive) {
-        mat.emissive.set(isSelected ? '#ff6080' : '#000000');
-        mat.emissiveIntensity = isSelected ? 0.2 : 0;
+
+      if (!mat.userData.originalColor) {
+        mat.userData.originalColor = mat.color.clone();
       }
+
+      if (isSelected) {
+        mat.color.set('#ff6080');
+        mat.emissive.set('#ff6080');
+        mat.emissiveIntensity = 0.2;
+      } else {
+        const originalColor = mat.userData.originalColor || mat.color.clone();
+
+        mat.color.copy(originalColor).multiply(tint);
+
+        if (glow > 0) {
+          const brightness =
+            0.299 * originalColor.r +
+            0.587 * originalColor.g +
+            0.114 * originalColor.b;
+
+          if (brightness > glowThreshold) {
+            const glowFactor = Math.min(
+              1,
+              (brightness - glowThreshold) / (1 - glowThreshold)
+            );
+            const glowIntensity = glow * glowFactor;
+
+            mat.emissive.copy(tint);
+            mat.emissiveIntensity = glowIntensity;
+          } else {
+            mat.emissive.set('#000000');
+            mat.emissiveIntensity = 0;
+          }
+        } else {
+          mat.emissive.set('#000000');
+          mat.emissiveIntensity = 0;
+        }
+      }
+
+      mat.transparent = alpha < 1.0;
+      mat.opacity = isSelected ? 1.0 : alpha;
+      mat.depthWrite = alpha > 0.85;
+
+      mat.needsUpdate = true;
     }
-  }, [isSelected, style.tint]);
+  }, [isSelected, style.tint, style.opacity, style.glow, style.threshold]);
 
   useLayoutEffect(() => {
     if (!modelRef.current) return;
@@ -164,14 +211,11 @@ export const Model = memo(function Model({
       onDragStart={handleDragStart}
       onDrag={handleDrag}
     >
-      <primitive
-        receiveShadow
-        castShadow
-        {...props}
+      <group
         ref={modelRef}
-        object={scene}
-        userData={{ id }}
-        name={name}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
         position={[
           transform.position.x,
           transform.position.y,
@@ -183,11 +227,17 @@ export const Model = memo(function Model({
           transform.rotation.z,
         ]}
         scale={transform.scale}
-        onClick={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
-        dispose={null}
-      />
+      >
+        <primitive
+          receiveShadow
+          castShadow
+          {...props}
+          object={scene}
+          userData={{ id }}
+          name={name}
+          dispose={null}
+        />
+      </group>
     </Controls>
   );
 });
