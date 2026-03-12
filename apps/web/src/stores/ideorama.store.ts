@@ -3,62 +3,42 @@ import { proxy, ref } from 'valtio';
 
 export const themesToColors = {
   customized: {
-    leftWall: '#f45405',
-    rightWall: '#e80606',
-    floor: '#100101',
     background: '#f0d400',
     accent: '#fcca44',
   },
   white: {
-    leftWall: '#747488',
-    rightWall: '#747488',
-    floor: '#25252f',
     background: '#c5c3c3',
     accent: '#cfcbcc',
   },
   black: {
-    leftWall: '#e0e0ff',
-    rightWall: '#e0e0ff',
-    floor: '#9898ba',
     background: '#313133',
     accent: '#2a2a33',
   },
   night: {
-    leftWall: '#c0b7bb',
-    rightWall: '#c0b7bb',
-    floor: '#4f4788',
     background: '#201333',
-    accent: '#231437',
+    accent: '#7d7d7d',
   },
   'black-orange': {
-    leftWall: '#ffcc55',
-    rightWall: '#ffcc55',
-    floor: '#9898ba',
     background: '#313133',
     accent: '#2a2a33',
   },
   'pink-blue': {
-    leftWall: '#3d61ee',
-    rightWall: '#3d61ee',
-    floor: '#dccece',
     background: '#f72585',
     accent: '#b70999',
   },
   'blue-yellow': {
-    leftWall: '#ffcc55',
-    rightWall: '#ffcc55',
-    floor: '#3d4255',
     background: '#3d61ee',
     accent: '#3d61ee',
   },
   'yellow-gray': {
-    leftWall: '#c8daee',
-    rightWall: '#c8daee',
-    floor: '#414e66',
     background: '#f6b022',
     accent: '#fcca44',
   },
 };
+
+const INITIAL_THEME = 'night' as keyof typeof themesToColors;
+
+const initialThemeData = themesToColors[INITIAL_THEME];
 
 export const sceneState = proxy<IdeoramaState>({
   mode: 'edit' as IdeoramaMode,
@@ -67,15 +47,17 @@ export const sceneState = proxy<IdeoramaState>({
     brightness: 'bright' as 'bright' | 'dim' | 'dark',
     visible: true,
     music: { currentTrack: '', volume: 0.5 },
-    theme: 'pink-blue' as keyof typeof themesToColors,
+    theme: INITIAL_THEME,
   },
 
   info: { name: 'Template', description: 'New Ideorama', category: 'none' },
 
-  background: { color: '#f0d400', accent: '#7d7d7d' },
+  background: {
+    color: initialThemeData.background,
+    accent: initialThemeData.accent,
+  },
 
   settingPanelOpen: false,
-
   objects: {} as Record<string, ObjectState>,
   selectedObjectId: null as string | null,
   isDragging: false,
