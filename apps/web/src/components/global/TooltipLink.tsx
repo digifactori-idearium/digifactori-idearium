@@ -20,7 +20,7 @@ export function TooltipLink({ children, tooltip, ...props }: TooltipLinkProps) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>{link}</TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent className="z-1000!">
           <p>{tooltip}</p>
         </TooltipContent>
       </Tooltip>
