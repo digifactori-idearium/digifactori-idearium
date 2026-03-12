@@ -60,12 +60,8 @@ export const themesToColors = {
   },
 };
 
-const transformModes = ['translate', 'rotate', 'scale'] as const;
-
 export const sceneState = proxy<IdeoramaState>({
   mode: 'edit' as IdeoramaMode,
-
-  transformMode: 0,
 
   global: {
     brightness: 'bright' as 'bright' | 'dim' | 'dark',
@@ -77,9 +73,8 @@ export const sceneState = proxy<IdeoramaState>({
   info: { name: 'Template', description: 'New Ideorama', category: 'none' },
 
   background: { color: '#f0d400', accent: '#7d7d7d' },
-  leftWall: { color: '#f45405', hidden: false, texture: 'none' },
-  rightWall: { color: '#e80606', hidden: false, texture: 'none' },
-  floor: { color: '#100101', hidden: false, texture: 'none' },
+
+  settingPanelOpen: false,
 
   objects: {} as Record<string, ObjectState>,
   selectedObjectId: null as string | null,
@@ -95,14 +90,6 @@ export const actions = {
 
   setMode(mode: IdeoramaMode) {
     sceneState.mode = mode;
-  },
-
-  getTransformMode(): TransformMode {
-    return transformModes[sceneState.transformMode];
-  },
-
-  setTransformMode(mode: number) {
-    sceneState.transformMode = mode;
   },
 
   updateSlice<K extends ObjectSliceKey | RootSliceKey>(
@@ -133,13 +120,10 @@ export const actions = {
           if (themeData) {
             sceneState.background.color = themeData.background;
             sceneState.background.accent = themeData.accent;
-            sceneState.leftWall.color = themeData.leftWall;
-            sceneState.rightWall.color = themeData.rightWall;
-            sceneState.floor.color = themeData.floor;
           }
         }
 
-        const colorSlices = ['leftWall', 'rightWall', 'floor', 'background'];
+        const colorSlices = ['background'];
         if (colorSlices.includes(sliceKey as string) && values.color) {
           if (
             target.color !== values.color &&
@@ -192,6 +176,15 @@ export const actions = {
     sceneRegistry.set(id, ref(obj)),
   unregisterObject: (id: string) => sceneRegistry.delete(id),
 
+  // Setting Mangament
+  toggleSettingPanel(open?: boolean) {
+    if (open !== undefined) {
+      sceneState.settingPanelOpen = open;
+    } else {
+      sceneState.settingPanelOpen = !sceneState.settingPanelOpen;
+    }
+  },
+
   // ASSETS MANAGEMENT ACTIONS
   toggleAssetsPanel(open?: boolean) {
     if (open !== undefined) {
@@ -226,7 +219,7 @@ export const actions = {
           z: position.z,
         },
         rotation: { x: 0, y: 0, z: 0 },
-        scale: 8,
+        scale: 1,
       },
 
       style: {
