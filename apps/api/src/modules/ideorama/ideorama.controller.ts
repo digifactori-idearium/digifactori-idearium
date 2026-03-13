@@ -22,7 +22,7 @@ const getUploadPath = (ideoramaId: string) => {
   if (!/^[a-z0-9]+$/i.test(id)) {
     throw new Error("Invalid ideoramaId");
   }
-  const fileName = `scene-${ideoramaId}.json`
+  const fileName = `scene-${id}.json`
   return path.join(process.cwd(), "uploads", fileName)
 }
 
