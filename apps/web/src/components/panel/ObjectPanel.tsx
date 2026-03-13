@@ -79,6 +79,7 @@ export const ObjectConfigPanel = () => {
           className="icon-round-btn"
           tooltip="Ajouter des actions"
           voiceText="Ajouter des actions"
+          onClick={() => actions.setSettingView('actions')}
         >
           <Hand className="size-6!" />
         </SuperButton>
