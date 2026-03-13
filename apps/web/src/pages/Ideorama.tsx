@@ -9,10 +9,11 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
-import { CirclePlay, ListTree, Plus, Settings2, SquarePen } from 'lucide-react';
+import { ArrowDownToLine, CirclePlay, ListTree, Plus, RotateCcw, Settings2, SquarePen } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Object3D, Object3DEventMap, ObjectLoader } from 'three';
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { useSnapshot } from 'valtio';
 
@@ -23,27 +24,35 @@ import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { SettingPanel } from '@/components/panel/SettingPanel';
 import { useUser } from '@/providers/UserProvider';
-import { saveIdeorama } from '@/services/ideorama.service';
+import { getEmptyIdeorama, saveIdeorama } from "@/services/ideorama.service";
 import { actions, sceneState } from '@/stores';
 
-const DownloadAndSaveIdeorama = (scene: any, ideoramaId: string|undefined, userId: string|undefined) => {
+const downloadAndSaveIdeorama = (scene: any, ideoramaId: string|undefined, userId: string|undefined) => {
 
     const exporter = new GLTFExporter();
     exporter.parse(
       scene,
       () => {
-        console.log("saving...")
         saveIdeorama(scene.toJSON(), ideoramaId, userId)
         toast.success('Sauvegarde de l\'idéorama réussie');
-
       },
       { binary: false }
     );
 }
 
+const resetIdeorama = (setScene: (children: {children: Object3D<Object3DEventMap>[]}) => void) => {
+  getEmptyIdeorama().then(res => {
+        const model = res.data.model
+        const loader = new ObjectLoader()
+        setScene(loader.parse(model))
+        toast.success('Idéorama réinitialisé');
+      })
+}
+
 
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
+  const [scene, setScene] = useState<{children: Object3D<Object3DEventMap>[]}>({children: []});
   const sceneRef = useRef(null);
 
   const {ideoramaid} = useParams();
@@ -98,7 +107,7 @@ export default function Ideorama() {
     >
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
         <div className="w-full h-full overflow-hidden flex flex-col">
-          <Scene sceneRef={sceneRef}/>
+          <Scene scene={scene} setScene={setScene} sceneRef={sceneRef}/>
           <button
             onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
             className="absolute top-3 left-[calc(50%-100px)] z-50 p-2! main-small-btn"
@@ -122,6 +131,24 @@ export default function Ideorama() {
             <span className="flex items-center gap-1">
               <Plus className="w-4 h-4 text-white!" />
               <span>Add object</span>
+            </span>
+          </button>
+          <button
+            onClick={() => downloadAndSaveIdeorama(sceneRef.current, ideoramaid, userId)}
+            className="absolute top-3 left-[calc(50%+130px)] z-50 p-2! main-small-btn"
+          >
+            <span className="flex items-center gap-1">
+              <ArrowDownToLine className="w-4 h-4 text-white!" />
+              <span>Sauvegarder</span>
+            </span>
+          </button>
+          <button
+            onClick={() => resetIdeorama(setScene)}
+            className="absolute top-3 left-[calc(50%+270px)] z-50 p-2! main-small-btn"
+          >
+            <span className="flex items-center gap-1">
+              <RotateCcw className="w-4 h-4 text-white!" />
+              <span>Réinitialiser</span>
             </span>
           </button>
           {/* Assets Button */}
@@ -152,10 +179,7 @@ export default function Ideorama() {
             
           )}
           {isEditMode && <ObjectListPanel />}
-          <button
-          onClick={() => DownloadAndSaveIdeorama(sceneRef.current, ideoramaid, userId)}
-          className="absolute top-3 left-[calc(50%+150px)] z-50 p-2! main-small-btn"
-        >Sauvegarder</button>
+          
 
           {/* Right Panel */}
           {isEditMode && (
