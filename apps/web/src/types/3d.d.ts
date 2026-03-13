@@ -62,6 +62,7 @@ type IdeoramaMode = 'edit' | 'play';
 interface IdeoramaState {
   // Global State
   mode: IdeoramaMode;
+  id: string|null,
   global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;

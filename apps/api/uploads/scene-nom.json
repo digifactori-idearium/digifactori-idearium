@@ -1,0 +1,486 @@
+{
+  "metadata": {
+    "version": 4.7,
+    "type": "Object",
+    "generator": "Object3D.toJSON"
+  },
+  "geometries": [
+    {
+      "uuid": "dd8f02f5-b98c-4b4a-80e1-1bf35c7e0677",
+      "type": "PlaneGeometry",
+      "width": 2,
+      "height": 2,
+      "widthSegments": 1,
+      "heightSegments": 1
+    },
+    {
+      "uuid": "40a79a42-ed46-4b1a-96b8-5ac4f9cfcfa6",
+      "type": "BoxGeometry",
+      "width": 100,
+      "height": 10,
+      "depth": 100,
+      "widthSegments": 1,
+      "heightSegments": 1,
+      "depthSegments": 1
+    },
+    {
+      "uuid": "fb96ebcf-fab0-4e8c-b945-5ae9c7347238",
+      "type": "BoxGeometry",
+      "width": 110,
+      "height": 10,
+      "depth": 110,
+      "widthSegments": 1,
+      "heightSegments": 1,
+      "depthSegments": 1
+    },
+    {
+      "uuid": "d2a3ebb6-0dd4-492d-8a3d-733b552417f1",
+      "type": "BoxGeometry",
+      "width": 110,
+      "height": 10,
+      "depth": 100,
+      "widthSegments": 1,
+      "heightSegments": 1,
+      "depthSegments": 1
+    },
+    {
+      "uuid": "3a0d1ebd-75db-46d0-8ae0-d74d442afb9f",
+      "type": "PlaneGeometry",
+      "width": 1000,
+      "height": 1000,
+      "widthSegments": 1,
+      "heightSegments": 1
+    }
+  ],
+  "materials": [
+    {
+      "uuid": "de420c09-2979-4c9a-8100-d2ced17ae5a8",
+      "type": "ShaderMaterial",
+      "blendColor": 0,
+      "depthTest": false,
+      "depthWrite": false,
+      "forceSinglePass": true,
+      "fog": false,
+      "glslVersion": null,
+      "uniforms": {
+        "uBaseColor": {
+          "type": "c",
+          "value": 13308264
+        },
+        "uAccentColor": {
+          "type": "c",
+          "value": 15584830
+        }
+      },
+      "vertexShader": "\n        varying vec2 vUv;\n        void main() {\n          vUv = uv;\n          gl_Position = vec4(position.xy, 1.0, 1.0);\n        }\n      ",
+      "fragmentShader": "\n        uniform vec3 uBaseColor;\n        uniform vec3 uAccentColor;\n        varying vec2 vUv;\n\n        void main() {\n\n          // Radial center glow\n          float dist = distance(vUv, vec2(0.5));\n          float radial = 1.0 - smoothstep(0.2, 0.8, dist);\n\n          // Vertical lift (subtle sky feel)\n          float vertical = smoothstep(0.0, 1.0, vUv.y);\n\n          // Blend base → accent in center\n          vec3 radialBlend = mix(uBaseColor, uAccentColor, radial * 0.6);\n\n          // Slight vertical brightness\n          vec3 finalColor = mix(radialBlend, uAccentColor, vertical * 0.15);\n\n          gl_FragColor = vec4(finalColor, 1.0);\n        }\n      ",
+      "lights": false,
+      "clipping": false
+    },
+    {
+      "uuid": "97d63e26-39ea-4c74-a6bb-f3e2e44a6bb9",
+      "type": "MeshPhongMaterial",
+      "color": 4014677,
+      "emissive": 0,
+      "specular": 1118481,
+      "shininess": 30,
+      "envMapRotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "envMapIntensity": 1,
+      "reflectivity": 1,
+      "refractionRatio": 0.98,
+      "blendColor": 0
+    },
+    {
+      "uuid": "a9224068-4aac-4e1a-af80-e1e94fab04f8",
+      "type": "MeshPhongMaterial",
+      "color": 16763989,
+      "emissive": 0,
+      "specular": 1118481,
+      "shininess": 30,
+      "envMapRotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "envMapIntensity": 1,
+      "reflectivity": 1,
+      "refractionRatio": 0.98,
+      "blendColor": 0
+    },
+    {
+      "uuid": "7d1704f6-7154-46bf-8718-e6e5a6573da6",
+      "type": "MeshPhongMaterial",
+      "color": 16763989,
+      "emissive": 0,
+      "specular": 1118481,
+      "shininess": 30,
+      "envMapRotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "envMapIntensity": 1,
+      "reflectivity": 1,
+      "refractionRatio": 0.98,
+      "blendColor": 0
+    },
+    {
+      "uuid": "330a8e38-80bb-4959-95c6-c20736e9f601",
+      "type": "MeshBasicMaterial",
+      "color": 16777215,
+      "envMapRotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "reflectivity": 1,
+      "refractionRatio": 0.98,
+      "blendColor": 0,
+      "visible": false
+    }
+  ],
+  "object": {
+    "uuid": "bc6bb8ea-9d0e-43ef-b1f8-23ceb6112083",
+    "type": "Scene",
+    "layers": 1,
+    "matrix": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "background": 13308264,
+    "children": [
+      {
+        "uuid": "35453f36-45df-4775-9524-f49867c74c7f",
+        "type": "Mesh",
+        "frustumCulled": false,
+        "renderOrder": -10000,
+        "layers": 1,
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "geometry": "dd8f02f5-b98c-4b4a-80e1-1bf35c7e0677",
+        "material": "de420c09-2979-4c9a-8100-d2ced17ae5a8"
+      },
+      {
+        "uuid": "a2207231-ceb1-4f91-ba25-92c52aa4449a",
+        "type": "AmbientLight",
+        "layers": 1,
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "color": 16777215,
+        "intensity": 0.5
+      },
+      {
+        "uuid": "31a8d56b-a2a5-4ce1-8660-fb57361a178b",
+        "type": "DirectionalLight",
+        "castShadow": true,
+        "layers": 1,
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          50,
+          100,
+          100,
+          1
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "color": 16777215,
+        "intensity": 2,
+        "shadow": {
+          "mapSize": [
+            1024,
+            1024
+          ],
+          "camera": {
+            "uuid": "36be61ce-3793-4d8b-b0f1-5ef4ae0d4ab0",
+            "type": "OrthographicCamera",
+            "layers": 1,
+            "up": [
+              0,
+              1,
+              0
+            ],
+            "zoom": 1,
+            "left": -5,
+            "right": 5,
+            "top": 5,
+            "bottom": -5,
+            "near": 0.5,
+            "far": 500
+          }
+        },
+        "target": "e75bf51e-ca86-4ff9-bfed-12fbc72adaa4"
+      },
+      {
+        "uuid": "0ef56f34-b2b6-41ba-adb7-9729f221383c",
+        "type": "PointLight",
+        "layers": 1,
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -10,
+          -10,
+          -10,
+          1
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "color": 255,
+        "intensity": 5,
+        "distance": 0,
+        "decay": 2,
+        "shadow": {
+          "camera": {
+            "uuid": "7e1ff824-5325-4994-a475-0b7c03426ae5",
+            "type": "PerspectiveCamera",
+            "layers": 1,
+            "up": [
+              0,
+              1,
+              0
+            ],
+            "fov": 90,
+            "zoom": 1,
+            "near": 0.5,
+            "far": 500,
+            "focus": 10,
+            "aspect": 1,
+            "filmGauge": 35,
+            "filmOffset": 0
+          }
+        }
+      },
+      {
+        "uuid": "c4337196-6595-4332-8a65-1ff9b53f019c",
+        "type": "Mesh",
+        "name": "floor",
+        "receiveShadow": true,
+        "layers": 1,
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          50,
+          -5,
+          50,
+          1
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "geometry": "40a79a42-ed46-4b1a-96b8-5ac4f9cfcfa6",
+        "material": "97d63e26-39ea-4c74-a6bb-f3e2e44a6bb9"
+      },
+      {
+        "uuid": "18f6a380-4b99-4f77-ab7b-558c9e8f2c66",
+        "type": "Mesh",
+        "name": "rightWall",
+        "layers": 1,
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          2.220446049250313e-16,
+          1,
+          0,
+          0,
+          -1,
+          2.220446049250313e-16,
+          0,
+          45,
+          45,
+          -5,
+          1
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "geometry": "fb96ebcf-fab0-4e8c-b945-5ae9c7347238",
+        "material": "a9224068-4aac-4e1a-af80-e1e94fab04f8"
+      },
+      {
+        "uuid": "6786d895-6376-4b8b-bc41-1ff82730ee88",
+        "type": "Mesh",
+        "name": "leftWall",
+        "layers": 1,
+        "matrix": [
+          2.220446049250313e-16,
+          1,
+          0,
+          0,
+          -1,
+          2.220446049250313e-16,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          -5,
+          45,
+          50,
+          1
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "geometry": "d2a3ebb6-0dd4-492d-8a3d-733b552417f1",
+        "material": "7d1704f6-7154-46bf-8718-e6e5a6573da6"
+      },
+      {
+        "uuid": "14392cbb-50d5-47aa-9ab3-93ddd11c1eb8",
+        "type": "Mesh",
+        "layers": 1,
+        "matrix": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          50,
+          50,
+          -50,
+          1
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "geometry": "3a0d1ebd-75db-46d0-8ae0-d74d442afb9f",
+        "material": "330a8e38-80bb-4959-95c6-c20736e9f601"
+      }
+    ],
+    "backgroundRotation": [
+      0,
+      0,
+      0,
+      "XYZ"
+    ],
+    "environmentRotation": [
+      0,
+      0,
+      0,
+      "XYZ"
+    ]
+  }
+}

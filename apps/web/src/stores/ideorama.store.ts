@@ -42,6 +42,7 @@ const initialThemeData = themesToColors[INITIAL_THEME];
 
 export const sceneState = proxy<IdeoramaState>({
   mode: 'edit' as IdeoramaMode,
+  id: "",
 
   global: {
     brightness: 'bright' as 'bright' | 'dim' | 'dark',
