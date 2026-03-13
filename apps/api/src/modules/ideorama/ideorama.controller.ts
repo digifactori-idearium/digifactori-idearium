@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { AuthenticatedRequest } from '../../types';
 import {
@@ -183,7 +183,7 @@ const saveIdeoramaController = async (
       await updateIdeoramaModelPath(newIdeorama.id, uploadPath)
 
       // Save in uploads dir
-      const emptyScene = fs.readFileSync('uploads/scene-empty.json')
+      const emptyScene = fs.readFileSync('uploads/scene-000.json')
       fs.writeFileSync(uploadPath, emptyScene)
 
       return res.status(200).json({
@@ -254,5 +254,17 @@ const deleteIdeoramaController = async (
   }
 };
 
-export { deleteIdeoramaController, getIdeoramaByIdController, getUserIdeoramasController, saveIdeoramaController };
+const getEmptyIdeorama = async(
+  req: Request,
+  res: Response
+) => {
+  return res.status(200).json({
+    status: 'success',
+    data: {model: JSON.parse(fs.readFileSync(getUploadPath("empty"), "utf-8"))},
+    status_code: 200,
+  });
+}
+
+
+export { deleteIdeoramaController, getEmptyIdeorama, getIdeoramaByIdController, getUserIdeoramasController, saveIdeoramaController };
 

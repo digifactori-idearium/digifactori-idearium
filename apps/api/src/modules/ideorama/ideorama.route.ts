@@ -4,6 +4,7 @@ import authenticate from '../../middlewares/authenticate';
 
 import {
   deleteIdeoramaController,
+  getEmptyIdeorama,
   getIdeoramaByIdController,
   getUserIdeoramasController,
   saveIdeoramaController
@@ -15,5 +16,6 @@ ideoramasRoutes.post('/', authenticate, getIdeoramaByIdController);
 ideoramasRoutes.post('/save', authenticate, saveIdeoramaController);
 ideoramasRoutes.post('/all', authenticate, getUserIdeoramasController);
 ideoramasRoutes.post('/delete', authenticate, deleteIdeoramaController);
+ideoramasRoutes.get('/empty', getEmptyIdeorama);
 
 export default ideoramasRoutes;
