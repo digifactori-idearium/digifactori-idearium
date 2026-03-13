@@ -4,6 +4,7 @@ import {
   KeyRound,
   Lock,
   Mail,
+  Pencil,
   ShieldCheck,
   User,
   Users,
@@ -128,6 +129,18 @@ export const resetInputs = [
     icon: KeyRound,
   },
 ];
+
+/* =========================
+   ROOM CREATION FORM INPUTS
+========================= */
+export const IdeoramaCreationInputs = [
+  { label: 'Nom de l\'idéorama',
+    type: 'text',
+    name: 'name',
+    placeholder: 'Monstre bleu',
+    required: true,
+    icon: Pencil,}
+]
 
 /* =========================
    ROOM CONFIGURATION FORM INPUTS

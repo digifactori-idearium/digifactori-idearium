@@ -10,9 +10,10 @@ import {
 
 import {
   createIdeorama,
+  deleteIdeorama,
   getIdeoramaById,
   getUserIdeoramas,
-  updateIdeorama
+  updateIdeoramaModelPath
 } from './ideorama.services';
 
 const createIdeoramaController = async (
@@ -33,7 +34,7 @@ const createIdeoramaController = async (
   }
 
   try {
-    const ideorama = await createIdeorama(req.body.ideorama, "uploadPath");
+    const ideorama = await createIdeorama(req.body.ideorama);
 
     return res.status(201).json({
       status: 'success',
@@ -102,7 +103,6 @@ const getIdeoramaByIdController = async (
   res: Response
 ) => {
   const user = req.user;
-  const { id } = req.params;
 
   if (!user) {
     return res.status(401).json({
@@ -128,12 +128,8 @@ const getIdeoramaByIdController = async (
         status_code: 404,
       });
     }
-    // const filePath = path.join(ideorama.model)
-
-    console.log("path.join(process.cwd(), ideorama.model): ", path.join(process.cwd(), ideorama.model))
     const fileContent = fs.readFileSync(path.join(process.cwd(), ideorama.model), "utf-8")
     ideorama.model = JSON.parse(fileContent)
-    console.log("get: ", ideorama)
     return res.status(200).json({
       status: 'success',
       data: ideorama,
@@ -174,15 +170,16 @@ const saveIdeoramaController = async (
     // const neww = true
     if (!req.body.ideoramaId) {
       console.log("create, ideoramaId = ", req.body.ideoramaId)
+      // Save in BD
+      const newIdeorama = await createIdeorama(req.body.ideorama)
+      const fileName = `scene-${newIdeorama.id}.json`
+      await updateIdeoramaModelPath(newIdeorama.id, `/uploads/${fileName}`)
 
-      const fileName = `scene-${req.body.ideorama.name}.json`
+      // Save in uploads dir
       const uploadPath = path.join(process.cwd(), "uploads", fileName)
-      console.log(uploadPath)
-      fs.writeFileSync(uploadPath, JSON.stringify(req.body.ideorama.model, null, 2))
+      const emptyScene = fs.readFileSync('uploads/scene-empty.json')
+      fs.writeFileSync(uploadPath, emptyScene)
 
-
-      const newIdeorama = await createIdeorama(req.body.ideorama, `/uploads/${fileName}`)
-      console.log("created: ", newIdeorama)
       return res.status(200).json({
         status: 'success',
         message: 'Ideorama mise à jour avec succès',
@@ -190,13 +187,14 @@ const saveIdeoramaController = async (
         status_code: 200,
       });
     } else {
-      console.log("update, ideoramaId = ", req.body.ideoramaId)
-      const updatedIdeorama = await updateIdeorama(req.body.ideoramaId, req.body.ideorama)
-      console.log("updated: ", updatedIdeorama)
+      const fileName = `scene-${req.body.ideoramaId}.json`
+      const uploadPath = path.join(process.cwd(), "uploads", fileName)
+
+      fs.writeFileSync(uploadPath, JSON.stringify(req.body.ideorama.model, null, 2))
       return res.status(200).json({
         status: 'success',
-        message: 'Ideorama mise à jour avec succès',
-        data: updatedIdeorama,
+        message: 'Ideorama mis à jour avec succès',
+        data: null,
         status_code: 200,
       });
     }
@@ -206,7 +204,7 @@ const saveIdeoramaController = async (
       status: 'error',
       error: {
         code: 'Internal Server Error',
-        message: 'Erreur lors de la mise à jour de la ideorama',
+        message: 'Erreur lors de la mise à jour de l\'idéorama',
         error,
       },
       status_code: 500,
@@ -214,7 +212,44 @@ const saveIdeoramaController = async (
   }
 };
 
-export {
-  getIdeoramaByIdController, getUserIdeoramasController, saveIdeoramaController
+const deleteIdeoramaController = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  if (!req.user) {
+    return res.status(401).json({
+      status: 'error',
+      error: {
+        code: 'Unauthorized',
+        message: "Vous n'avez pas les droits d'accès",
+      },
+      status_code: 401,
+    });
+  }
+  try {
+    deleteIdeorama(req.body.ideoramaId)
+    const fileName = `scene-${req.body.ideoramaId}.json`
+    const uploadPath = path.join(process.cwd(), "uploads", fileName)
+
+    fs.unlink(uploadPath, (err) => {if (err) {console.log(err)}})
+    return res.status(200).json({
+        status: 'success',
+        message: 'Ideorama supprimer avec succès',
+        data: null,
+        status_code: 200,
+      });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      error: {
+        code: 'Internal Server Error',
+        message: 'Erreur lors de la suppression de l\'idéorama',
+        error,
+      },
+      status_code: 500,
+    });
+  }
 };
+
+export { deleteIdeoramaController, getIdeoramaByIdController, getUserIdeoramasController, saveIdeoramaController };
 

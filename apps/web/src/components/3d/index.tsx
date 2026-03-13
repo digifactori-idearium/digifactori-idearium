@@ -1,9 +1,11 @@
 import { useDroppable } from '@dnd-kit/core';
 import { GizmoHelper, GizmoViewport, OrbitControls } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import * as THREE from 'three';
 import { useSnapshot } from 'valtio';
+
 
 import { AssetsDropHandler } from '../assets/AssetsDropHandler';
 
@@ -11,6 +13,7 @@ import { Model } from './Model';
 import { SceneAudio } from './SceneAudio';
 import { SceneGradient } from './SceneGradient';
 
+import { searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
 const SceneBridge: React.FC<{ sceneRef: any }> = ({ sceneRef }) => {
@@ -34,7 +37,46 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   return null;
 };
 
+function Cube({ position }: {position: [number, number, number]}) {
+  return (
+    <mesh position={position}>
+      <boxGeometry args={[10, 10, 10]} />
+      <meshStandardMaterial color="orange" />
+    </mesh>
+  );
+}
+
 export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
+
+
+  const {ideoramaid} = useParams();
+  const [scene, setScene] = useState<{children: THREE.Object3D<THREE.Object3DEventMap>[]}>({children: []});
+  const [color, setColor] = useState("green")
+
+  useEffect(() => {
+    // console.log("sceneID: ", sceneState.id)
+    console.log("ideoramaid: ", ideoramaid)
+    
+    searchIdeorama(ideoramaid as string).then(res => {
+      console.log("res.data.model: ", res.data.model);
+      const model = res.data.model
+      console.log("res.data.model: ", typeof res.data.model)
+      const loader = new THREE.ObjectLoader()
+      setScene(loader.parse(model))
+      console.log(scene)
+    })
+    
+  }, [])
+
+  const [cubes, setCubes] = useState<{id: string|number, position: [number, number, number]}[]>([
+    
+  ])
+
+  const addCube = () => {
+    setCubes([...cubes, { id: cubes.length, position: [5, 10, 15] }]);
+  };
+
+
   const snap = useSnapshot(sceneState);
 
   const soundTrack = snap.global.music.currentTrack;
@@ -56,6 +98,7 @@ export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
       ref={setNodeRef}
       className={`w-full h-full ${isOver ? 'droppable active' : 'droppable'}`}
     >
+      {/* <button onClick={addCube}>Ajouter un cube</button> */}
       <Canvas
         shadows
         orthographic
@@ -69,6 +112,14 @@ export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
         onDrop={e => e.preventDefault()}
         frameloop="demand"
       >
+        <primitive object={scene} />
+        <mesh position={[0, 10, 0]} onClick={() => {addCube(); setColor("blue")}}>
+          <boxGeometry args={[10, 10, 10]} />
+          <meshStandardMaterial color={color} />
+        </mesh>
+        {cubes.map(cube => (
+          <Cube key={cube.id} position={cube.position} />
+        ))}
         <SceneBridge sceneRef={sceneRef} />
         <AssetsDropHandler />
         {soundTrack && <SceneAudio soundTrack={soundTrack} />}

@@ -64,7 +64,7 @@ const transformModes = ['translate', 'rotate', 'scale'] as const;
 
 export const sceneState = proxy<IdeoramaState>({
   mode: 'edit' as IdeoramaMode,
-
+  id: "",
   transformMode: 0,
 
   global: {
@@ -76,7 +76,7 @@ export const sceneState = proxy<IdeoramaState>({
 
   info: { name: 'Template', description: 'New Ideorama', category: 'none' },
 
-  background: { color: '#f0d400', accent: '#7d7d7d' },
+  background: { color: '#68f000', accent: '#7d7d7d' },
   leftWall: { color: '#f45405', hidden: false, texture: 'none' },
   rightWall: { color: '#e80606', hidden: false, texture: 'none' },
   floor: { color: '#100101', hidden: false, texture: 'none' },

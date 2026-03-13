@@ -20,6 +20,10 @@ const appRoutes = [
   },
   { path: 'ideorama', element: <ProtectedRoute element={<Ideorama />} /> },
   {
+    path: 'ideorama/:ideoramaid',
+    element: <ProtectedRoute element={<Ideorama />} />,
+  },
+  {
     path: 'ideoramacopy/:ideoramaid',
     element: <ProtectedRoute element={<IdeoramaCopy />} />,
   },

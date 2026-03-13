@@ -9,6 +9,8 @@ import {
 } from '@dnd-kit/core';
 import { CirclePlay, ListTree, Plus, SquarePen } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { useSnapshot } from 'valtio';
 
@@ -23,16 +25,15 @@ import { useUser } from '@/providers/UserProvider';
 import { saveIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
-const DownloadAndSaveIdeorama = (scene: any, userId: string|undefined) => {
+const DownloadAndSaveIdeorama = (scene: any, ideoramaId: string|undefined, userId: string|undefined) => {
 
     const exporter = new GLTFExporter();
     exporter.parse(
       scene,
       (result: any) => {
-        // const blob = new Blob([JSON.stringify(result)], { type: "application/json" });
         console.log("saving...")
-        // saveIdeorama(scene.toJSON(), userId).then(res => {sceneState.id = res.data.id; console.log("sceneState.id: ", sceneState.id)})
-        saveIdeorama(scene.toJSON(), userId).then(res => {console.log("sceneState.id: ", sceneState.id)})
+        saveIdeorama(scene.toJSON(), ideoramaId, userId).then(res => {console.log("sceneState.id: ", sceneState.id)})
+        toast.success('Sauvegarde de l\'idéorama réussie');
 
       },
       { binary: false }
@@ -41,7 +42,9 @@ const DownloadAndSaveIdeorama = (scene: any, userId: string|undefined) => {
 
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
-   const sceneRef = useRef(null);
+  const sceneRef = useRef(null);
+
+  const {ideoramaid} = useParams();
 
   const isEditMode = snap.mode === 'edit';
   const selectedObject = snap.selectedObjectId;
@@ -149,9 +152,9 @@ export default function Ideorama() {
           )}
           {isEditMode && <ObjectListPanel />}
           <button
-          onClick={() => DownloadAndSaveIdeorama(sceneRef.current, userId)}
-          className="absolute top-3 left-1/2 z-50 p-2! main-small-btn"
-        ></button>
+          onClick={() => DownloadAndSaveIdeorama(sceneRef.current, ideoramaid, userId)}
+          className="absolute top-3 left-[calc(50%+150px)] z-50 p-2! main-small-btn"
+        >Sauvegarder</button>
         </div>
 
         <DragOverlay dropAnimation={null}>
