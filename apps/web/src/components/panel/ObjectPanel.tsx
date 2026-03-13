@@ -5,12 +5,14 @@ import {
   Cuboid,
   Hand,
   Trash,
+  X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
 import { FormThree } from '@/components/global';
 import { SuperButton } from '@/components/global';
+import { TooltipButton } from '@/components/global';
 import {
   Accordion,
   AccordionContent,
@@ -50,10 +52,17 @@ export const ObjectConfigPanel = () => {
 
   return (
     <Card className="flex flex-col gap-2! p-4 h-full w-full sm:max-w-md border-none! bg-sidebar-dark/25 text-white! shadow-2xl overflow-hidden rounded-none">
-      <CardHeader>
+      <CardHeader className="p-0 flex justify-between items-center">
         <CardTitle className="text-xl font-bold">
           {selectedObjectData?.info.name || 'Object Configuration'}
         </CardTitle>
+        <TooltipButton
+          tooltip="Fermer"
+          onClick={() => actions.toggleSettingPanel(false)}
+          className="hover:bg-white/10 p-1! bg-transparent! rounded border border-white/20!"
+        >
+          <X className="size-5 text-white!" />
+        </TooltipButton>
       </CardHeader>
 
       {/* Top Action Bar */}

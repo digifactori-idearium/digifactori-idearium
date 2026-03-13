@@ -36,7 +36,7 @@ export function SuperButton({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>{buttonWithVoice}</TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent className="z-1000!">
           <p>{tooltip}</p>
         </TooltipContent>
       </Tooltip>

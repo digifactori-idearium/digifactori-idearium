@@ -30,7 +30,15 @@ export function AssetTile({ asset }: Props) {
           ${isDragging ? 'opacity-30' : ''}`}
       >
         <div className="w-full h-full pointer-events-none">
-          <AssetThumbnail file={asset.file} />
+          {asset.thumbnail ? (
+            <img
+              src={asset.thumbnail}
+              loading="lazy"
+              className="w-full h-full object-contain mix-blend-multiply bg-transparent contrast-125"
+            />
+          ) : (
+            <AssetThumbnail file={asset.file} />
+          )}
         </div>
       </div>
 

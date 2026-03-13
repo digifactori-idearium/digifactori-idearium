@@ -24,7 +24,7 @@ export function TooltipButton({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent className="z-1000!">
           <p>{tooltip}</p>
         </TooltipContent>
       </Tooltip>

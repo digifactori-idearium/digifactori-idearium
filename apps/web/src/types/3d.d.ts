@@ -63,7 +63,6 @@ interface IdeoramaState {
   // Global State
   mode: IdeoramaMode;
   id: string|null,
-  transformMode: number;
   global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
@@ -80,14 +79,12 @@ interface IdeoramaState {
     category?: string;
   };
 
-  // Environment Parts
-  leftWall: PartSettings;
-  rightWall: PartSettings;
-  floor: PartSettings;
-
   // Objects managements
   objects: Record<string, ObjectState>;
   selectedObjectId: string | null;
+
+  //setting
+  settingPanelOpen: boolean;
 
   //Objects movement managemet
   isDragging: boolean;
@@ -145,4 +142,10 @@ interface Transform {
 
 // ASSESTS MANAGEMENT TYPES
 
-type AssetItem = { id: string; name: string; category?: string; file: string };
+type AssetItem = {
+  id: string;
+  name: string;
+  category?: string;
+  file: string;
+  thumbnail?: string;
+};

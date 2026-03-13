@@ -19,7 +19,7 @@ export function AssetsDropHandler() {
 
       const mouse = new THREE.Vector2(
         (canvasX / rect.width) * 2 - 1,
-        -((canvasY / rect.height) * 2 - 1)
+        -(canvasY / rect.height) * 2 + 1
       );
 
       raycaster.current.setFromCamera(mouse, camera);
@@ -30,12 +30,12 @@ export function AssetsDropHandler() {
       );
 
       if (intersects.length > 0) {
-        const targetPoint = intersects[0].point;
-        actions.spawnAssetAtPosition(asset, targetPoint);
+        const hit = intersects.find(i => i.object.visible) || intersects[0];
+        actions.spawnAssetAtPosition(asset, hit.point);
       } else {
-        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         const targetVector = new THREE.Vector3();
-        raycaster.current.ray.intersectPlane(plane, targetVector);
+        raycaster.current.ray.intersectPlane(groundPlane, targetVector);
         actions.spawnAssetAtPosition(asset, targetVector);
       }
     };
