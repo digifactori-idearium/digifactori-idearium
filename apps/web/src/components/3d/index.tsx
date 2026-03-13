@@ -98,7 +98,6 @@ export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
       ref={setNodeRef}
       className={`w-full h-full ${isOver ? 'droppable active' : 'droppable'}`}
     >
-      {/* <button onClick={addCube}>Ajouter un cube</button> */}
       <Canvas
         shadows
         orthographic
