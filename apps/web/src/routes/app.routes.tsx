@@ -2,7 +2,6 @@ import ProtectedRoute from './protected.routes';
 
 import BatchRegister from '@/components/auth';
 import Ideorama from '@/pages/Ideorama';
-import IdeoramaCopy from '@/pages/IdeoramaCopy';
 import Ideoramas from '@/pages/Ideoramas';
 import MyIdeoramas from '@/pages/MyIdeoramas';
 import ProfilePage from '@/pages/Profile';
@@ -22,10 +21,6 @@ const appRoutes = [
   {
     path: 'ideorama/:ideoramaid',
     element: <ProtectedRoute element={<Ideorama />} />,
-  },
-  {
-    path: 'ideoramacopy/:ideoramaid',
-    element: <ProtectedRoute element={<IdeoramaCopy />} />,
   },
   {
     path: 'myIdeoramas',

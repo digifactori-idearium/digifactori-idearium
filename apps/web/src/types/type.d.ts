@@ -4,6 +4,13 @@ interface Option {
   value: string;
 }
 
+interface ApiResponse<T> {
+  status: string;
+  message: string;
+  data: T;
+  status_code: number;
+}
+
 type User = {
   id: string;
   createdAt: Date;

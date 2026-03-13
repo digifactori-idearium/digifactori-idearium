@@ -1,5 +1,5 @@
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { searchIdeorama } from '@/services/ideorama.service';
+import { searchIdeoramas } from '@/services/ideorama.service';
 
 export function Search({
   onSelect,
@@ -42,7 +42,7 @@ export function Search({
       }
       setLoading(true);
       try {
-        const data = await searchIdeorama(query);
+        const data = await searchIdeoramas(query);
         setResults(data);
       } catch (err) {
         console.error('PubChem Autocomplete Error', err);

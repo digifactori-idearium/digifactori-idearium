@@ -13,7 +13,6 @@ interface ApiResponse<T> {
 export const searchIdeorama = async (
   ideoramaId: string
 ): Promise<ApiResponse<Ideorama>> => {
-  console.log("ideoramaIiiid: ", ideoramaId)
   try {
     const response = await axios.post(
       `http://localhost:3001/api/ideorama/`,{
@@ -31,6 +30,10 @@ export const searchIdeorama = async (
     throw new Error(error.response?.data?.error?.message || 'Échec lors de la récupération de l\'idéorama');
   }
 };
+
+export const searchIdeoramas = async (query: string) => {
+  return [query]
+}
 
 
 export const createIdeorama = async (

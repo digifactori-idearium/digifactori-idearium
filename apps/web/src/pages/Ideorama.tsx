@@ -31,9 +31,9 @@ const DownloadAndSaveIdeorama = (scene: any, ideoramaId: string|undefined, userI
     const exporter = new GLTFExporter();
     exporter.parse(
       scene,
-      (result: any) => {
+      () => {
         console.log("saving...")
-        saveIdeorama(scene.toJSON(), ideoramaId, userId).then(res => {console.log("sceneState.id: ", sceneState.id)})
+        saveIdeorama(scene.toJSON(), ideoramaId, userId)
         toast.success('Sauvegarde de l\'idéorama réussie');
 
       },
