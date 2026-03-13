@@ -17,8 +17,9 @@ import {
 } from './ideorama.services';
 
 const getUploadPath = (ideoramaId: string) => {
+  const id = String(ideoramaId)
   // The id must be alphanumerical
-  if (!/^[a-z0-9]+$/i.test(ideoramaId)) {
+  if (!/^[a-z0-9]+$/i.test(id)) {
     throw new Error("Invalid ideoramaId");
   }
   const fileName = `scene-${ideoramaId}.json`
