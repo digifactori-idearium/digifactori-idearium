@@ -20,21 +20,18 @@ export interface FormInputData {
   max?: number;
   min?: number;
   step?: number;
+
+  //default
+  default?: any;
 }
 
 export interface FormInputProps {
   input: FormInputData;
-  id: number;
   register: UseFormRegister<FieldValues>;
   errors?: FieldErrors<FieldValues>;
 }
 
-const FormInput: React.FC<FormInputProps> = ({
-  input,
-  id,
-  register,
-  errors,
-}) => {
+const FormInput: React.FC<FormInputProps> = ({ input, register, errors }) => {
   const getNestedError = (errors: FieldErrors<FieldValues>, path: string) => {
     return path.split('.').reduce((obj, key) => (obj as any)?.[key], errors);
   };
@@ -44,13 +41,13 @@ const FormInput: React.FC<FormInputProps> = ({
 
   const registerOptions = input.required ? { required: true } : {};
 
-  // Render different input types
+  // Render different html input types
   const renderInput = () => {
     switch (input.type) {
       case 'textarea':
         return (
           <textarea
-            id={`Input${id}`}
+            id={`Input${input.name}`}
             rows={5}
             placeholder={input.placeholder}
             {...register(input.name, registerOptions)}
@@ -62,7 +59,7 @@ const FormInput: React.FC<FormInputProps> = ({
         return (
           <div className="flex items-center">
             <input
-              id={`Input${id}`}
+              id={`Input${input.name}`}
               type="checkbox"
               {...register(input.name, registerOptions)}
               className={`form-checkbox relative peer shrink-0 cursor-pointer appearance-none rounded  checked:bg-[#6F51B0]! h-5 w-5 
@@ -84,7 +81,7 @@ const FormInput: React.FC<FormInputProps> = ({
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
             <label
-              htmlFor={`Input${id}`}
+              htmlFor={`Input${input.name}`}
               className="ml-2 text-sm text-gray-700"
             >
               {input.placeholder || input.label}
@@ -173,7 +170,7 @@ const FormInput: React.FC<FormInputProps> = ({
       default:
         return (
           <input
-            id={`Input${id}`}
+            id={`Input${input.name}`}
             type={input.type}
             placeholder={input.placeholder}
             {...register(input.name, registerOptions)}
@@ -185,7 +182,7 @@ const FormInput: React.FC<FormInputProps> = ({
 
   return (
     <div className="form-input-container flex flex-col gap-2">
-      <label htmlFor={`Input${id}`}>
+      <label htmlFor={`Input${input.name}`}>
         <b>{input.label}</b>
         {input.required && <span className=" text-red-600">*</span>}
       </label>
