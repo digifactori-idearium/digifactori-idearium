@@ -41,36 +41,44 @@ const INITIAL_THEME = 'night' as keyof typeof themesToColors;
 const initialThemeData = themesToColors[INITIAL_THEME];
 
 export const sceneState = proxy<IdeoramaState>({
+  // Global State
+  id: '',
   mode: 'edit' as IdeoramaMode,
-  id: "",
-
   global: {
     brightness: 'bright' as 'bright' | 'dim' | 'dark',
     visible: true,
     music: { currentTrack: '', volume: 0.5 },
     theme: INITIAL_THEME,
   },
-
-  info: { name: 'Template', description: 'New Ideorama', category: 'none' },
-
   background: {
     color: initialThemeData.background,
     accent: initialThemeData.accent,
   },
 
+  // Info State
+  info: { name: 'Template', description: 'New Ideorama', category: 'none' },
+
+  //setting
   settingPanelOpen: false,
+
+  // Objects managements
   objects: {} as Record<string, ObjectState>,
   selectedObjectId: null as string | null,
+
+  //Objects movement managemet
   isDragging: false,
   assetsPanelOpen: false,
   assetsTreeOpen: false,
+
+  //Action management
+  activeSettingView: 'model',
+  actionPickerOpen: false,
 });
 
 export const sceneRegistry = new Map<string, THREE.Object3D>();
 
 export const actions = {
   // SCENE MANAGEMENT ACTIONS
-
   setMode(mode: IdeoramaMode) {
     sceneState.mode = mode;
   },
@@ -122,7 +130,6 @@ export const actions = {
   },
 
   // Model/Object MANAGEMENT ACTIONS
-
   setIsDragging(value: boolean) {
     sceneState.isDragging = value;
   },
@@ -147,6 +154,7 @@ export const actions = {
       },
       style: { tint: '#ffffff', opacity: 1, glow: 0, threshold: 0 },
       advanced: { parent: null, physics: false, hidden: false, locked: false },
+      actions: [],
     };
 
     sceneState.selectedObjectId = id;
@@ -218,8 +226,37 @@ export const actions = {
         hidden: false,
         locked: false,
       },
+      actions: [],
     };
 
     sceneState.selectedObjectId = id;
+  },
+
+  // ACTIONS NAMAGEMENT
+  addAction(objectId: string, action: ActionConfig) {
+    const obj = sceneState.objects[objectId];
+
+    if (!obj) {
+      console.warn(`Object ${objectId} not found`);
+      return;
+    }
+
+    if (!obj.actions) obj.actions = [];
+
+    obj.actions.push(action);
+  },
+
+  removeAction(objectId: string, actionId: string) {
+    const obj = sceneState.objects[objectId];
+
+    if (!obj || !obj.actions) return;
+
+    obj.actions = obj.actions.filter(a => a.id !== actionId);
+  },
+  setSettingView: (view: 'model' | 'actions') => {
+    sceneState.activeSettingView = view;
+  },
+  openActionPicker: (open: boolean) => {
+    sceneState.actionPickerOpen = open;
   },
 };

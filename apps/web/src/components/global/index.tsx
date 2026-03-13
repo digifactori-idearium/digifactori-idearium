@@ -8,3 +8,4 @@ export { TooltipLink } from './TooltipLink';
 export { SuperLink } from './SuperLink';
 export { Form } from './Form';
 export { FormThree } from './FormThree';
+export { ActionConfigForm } from './ActionConfigForm';

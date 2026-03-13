@@ -118,7 +118,6 @@ export const Form: React.FC<FormProps> = ({
               <FormInput
                 key={index}
                 input={input}
-                id={index + 1}
                 register={register}
                 errors={errors}
               />
