@@ -37,10 +37,10 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   return null;
 };
 
-function Cube({ position }: {position: [number, number, number]}) {
+function Cube({ position, name }: {name: string, position: [number, number, number]}) {
   return (
-    <mesh position={position}>
-      <boxGeometry args={[10, 10, 10]} />
+    <mesh name={name} position={position}>
+      <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial color="orange" />
     </mesh>
   );
@@ -50,18 +50,19 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
 
   const {ideoramaid} = useParams();
   const [color, setColor] = useState("green")
-  const [cubes, setCubes] = useState<{id: string|number, position: [number, number, number]}[]>([])
+  const [cubes, setCubes] = useState<{id: string|number, name: string, position: [number, number, number]}[]>([])
 
   useEffect(() => {
     searchIdeorama(ideoramaid as string).then(res => {
       const model = res.data.model
       const loader = new THREE.ObjectLoader()
       setScene(loader.parse(model))
+      console.log("scene: ")
     })
   }, [])
 
   const addCube = () => {
-    setCubes([...cubes, { id: cubes.length, position: [5, 10, 15] }]);
+    setCubes([...cubes, { id: cubes.length, position: [2, 0.5, 2], name: "Bob2"}]);
   };
 
 
@@ -91,7 +92,7 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
         orthographic
         camera={{
           zoom: 50,
-          position: [3, 2.5, 3],
+          position: [-50, 30, -50],
           near: 0.1,
           far: 2000,
         }}
@@ -101,12 +102,17 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
       >
         <primitive object={scene} />
         <SceneBridge sceneRef={sceneRef} />
-        <mesh position={[0, 10, 0]} onClick={() => {addCube(); setColor("blue")}}>
-          <boxGeometry args={[10, 10, 10]} />
+        {/* Basic Floor */}
+        {/* <mesh name="floor" position={[0, -0.25, 0]} >
+          <boxGeometry args={[10, 0.5, 10]} />
           <meshStandardMaterial color={color} />
+        </mesh> */}
+        <mesh position={[0, 0.5, 0]} onClick={() => {addCube(); setColor("blue")}}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial color={"blue"} />
         </mesh>
         {cubes.map(cube => (
-          <Cube key={cube.id} position={cube.position} />
+          <Cube name={cube.name} key={cube.id} position={cube.position} />
         ))}
         <AssetsDropHandler />
         {soundTrack && <SceneAudio soundTrack={soundTrack} />}
@@ -203,7 +209,7 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
           enableRotate
           minPolarAngle={0}
           maxPolarAngle={Math.PI / 1.75}
-          minZoom={30}
+          minZoom={0}
           maxZoom={100}
         />
       </Canvas>
