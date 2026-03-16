@@ -35,11 +35,27 @@ export const searchIdeoramas = async (query: string) => {
   return [query]
 }
 
+export const getEmptyIdeorama = async(): Promise<ApiResponse<{model: string}>> => {
+  try {
+    const response = await axios.get(
+      `http://localhost:3001/api/ideorama/empty`
+    );
+
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error?.message || 'Échec lors de la récupération de l\'idéorama vide');
+  }
+}
+
 
 export const createIdeorama = async (
   name: string, userId: string|undefined,
 ): Promise<ApiResponse<Ideorama>> => {
-  console.log("name: ", name)
   try {
     const response = await axios.post(
       `http://localhost:3001/api/ideorama/save`, {
@@ -89,11 +105,10 @@ export const saveIdeorama = async (
 export const getAllIdeoramas = async (
   userId :string | undefined
 ): Promise<ApiResponse<{ideoramas: Ideorama[], profile: Profile}>> => {
-  console.log("userId: ", userId)
   try {
   const response = await axios.post(
       `http://localhost:3001/api/ideorama/all`, {
-          userId: "cmltz3dgo000174utepn5f7zo"
+          userId: userId
         }
   );
  if (response.data.status === 'error') {
@@ -101,7 +116,6 @@ export const getAllIdeoramas = async (
         response.data.errors[0]?.message || response.data.error?.message
       );
     }
-    console.log("response: ", response)
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error?.message || 'Échec lors de la récupération des idéoramas');
