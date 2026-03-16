@@ -1,54 +1,108 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { TooltipButton } from '../global';
 
 import { AssetTile } from './AssetTile';
 
 import { useAssets } from '@/hooks/useAssets';
+import { CATEGORIES } from '@/lib/constants';
 
-export function AssetsGrid() {
-  const { assets, loading, fetchNextPage } = useAssets();
+export function AssetsGrid({ query }: { query?: string }) {
+  // Use number for the API state
+  const [selectedCategoryId, setSelectedCategoryId] = useState<
+    number | undefined
+  >(undefined);
+
+  const { assets, loading, fetchNextPage, hasMore } = useAssets(
+    query,
+    selectedCategoryId
+  );
+
   const observerRef = useRef<HTMLDivElement>(null);
 
   const grouped = useMemo(() => {
     return assets.reduce(
       (acc, asset) => {
-        const category = asset.category || 'Uncategorized';
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(asset);
+        const catConfig = CATEGORIES.find(c => c.en === asset.category);
+
+        const categoryName = catConfig ? catConfig.fr : 'Autre';
+
+        if (!acc[categoryName]) acc[categoryName] = [];
+        acc[categoryName].push(asset);
         return acc;
       },
       {} as Record<string, AssetItem[]>
     );
   }, [assets]);
 
+  const activeCategoryLabel = useMemo(() => {
+    return CATEGORIES.find(c => c.id === selectedCategoryId)?.fr;
+  }, [selectedCategoryId]);
+
   useEffect(() => {
+    if (loading || !hasMore) return;
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) fetchNextPage();
       },
       { threshold: 0.1 }
     );
-
-    if (observerRef.current) observer.observe(observerRef.current);
-    return () => observer.disconnect();
-  }, [fetchNextPage]);
+    const current = observerRef.current;
+    if (current) observer.observe(current);
+    return () => {
+      if (current) observer.unobserve(current);
+    };
+  }, [fetchNextPage, loading, hasMore]);
 
   return (
-    <div className="flex flex-col gap-1 p-2 overflow-y-auto">
-      {Object.entries(grouped).map(([category, assets]) => (
-        <div key={category} className="flex flex-col gap-1">
-          <h3 className="text-sm font-semibold text-white/80 capitalize">
-            {category}
-          </h3>
+    <div className="flex flex-col gap-2 p-2 overflow-y-auto">
+      {selectedCategoryId !== undefined ? (
+        <>
+          {/* DETAIL VIEW: Shows when a category is clicked */}
+          <div className="flex justify-between items-center">
+            <TooltipButton
+              onClick={() => setSelectedCategoryId(undefined)}
+              tooltip="Retour"
+              className="bg-transparent hover:bg-transparent text-white/80 hover:text-mauve p-0!"
+            >
+              <ArrowLeft size={16} />
+            </TooltipButton>
+            <h3 className="text-sm font-semibold text-white/80 capitalize">
+              {activeCategoryLabel}
+            </h3>
+          </div>
+
           <div className="grid grid-cols-3 gap-2">
-            {assets.map((asset, idx) => (
+            {grouped[activeCategoryLabel || '']?.map((asset, idx) => (
               <AssetTile key={idx} asset={asset} />
             ))}
           </div>
-        </div>
-      ))}
+        </>
+      ) : (
+        Object.entries(grouped).map(([categoryName, items]) => (
+          <div key={categoryName} className="flex flex-col gap-1">
+            <h3
+              onClick={() => {
+                const catObj = CATEGORIES.find(c => c.fr === categoryName);
+                setSelectedCategoryId(catObj?.id);
+              }}
+              className="text-sm font-semibold p-1! w-fit rounded hover:bg-white/5 text-white/80 capitalize cursor-pointer hover:text-white transition-colors"
+            >
+              {categoryName + ' ›'}
+            </h3>
 
-      {/* Sentinel element for Infinite Scroll */}
-      <div ref={observerRef} className="h-20 flex items-center justify-center">
+            <div className="grid grid-cols-3 gap-2">
+              {items.map((asset, idx) => (
+                <AssetTile key={idx} asset={asset} />
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+
+      {/* INFINITE SCROLL OBSERVER */}
+      <div ref={observerRef} className="h-fit flex items-center justify-center">
         {loading && (
           <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
         )}
