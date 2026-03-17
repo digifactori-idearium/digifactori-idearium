@@ -297,6 +297,9 @@ importers:
       three-stdlib:
         specifier: ^2.36.1
         version: 2.36.1(three@0.183.1)
+      translate:
+        specifier: ^3.0.1
+        version: 3.0.1
       valtio:
         specifier: ^2.3.1
         version: 2.3.1(@types/react@19.2.7)(react@19.2.3)
@@ -6234,6 +6237,9 @@ packages:
   tr46@6.0.0:
     resolution: {integrity: sha512-bLVMLPtstlZ4iMQHpFHTR7GAGj2jxi8Dg0s2h2MafAE4uSWF98FC/3MomU51iQAMf8/qDUbKWf5GxuvvVcXEhw==}
     engines: {node: '>=20'}
+
+  translate@3.0.1:
+    resolution: {integrity: sha512-ZePIRh2uuN7ofL6V2KfRh71525pwPCC8CtoWJg29tQcr3vhGTFXzz2nYG+rmRxlZ5PCcMza/GDXqxLFx5omVpQ==}
 
   troika-three-text@0.52.4:
     resolution: {integrity: sha512-V50EwcYGruV5rUZ9F4aNsrytGdKcXKALjEtQXIOBfhVoZU9VAqZNIoGQ3TMiooVqFAbR1w15T+f+8gkzoFzawg==}
@@ -13387,6 +13393,8 @@ snapshots:
   tr46@6.0.0:
     dependencies:
       punycode: 2.3.1
+
+  translate@3.0.1: {}
 
   troika-three-text@0.52.4(three@0.183.1):
     dependencies:

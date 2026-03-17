@@ -13,7 +13,6 @@ import { deleteIdeorama } from '@/services/ideorama.service';
 const IdeoramasGroup: React.FC<{ideoramas: Ideorama[], profile: Partial<Profile>, setIdeoramas: React.Dispatch<React.SetStateAction<Ideorama[]>>}> = ({ideoramas, profile, setIdeoramas}) => {
   const navigate = useNavigate()
   const [ideoramaToDelete, setIdeoramaToDelete] = useState<Ideorama|null>(null)
-  console.log(ideoramaToDelete)
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       {ideoramas.map((ideorama, index) => (

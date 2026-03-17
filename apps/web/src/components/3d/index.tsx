@@ -46,31 +46,19 @@ function Cube({ position }: {position: [number, number, number]}) {
   );
 }
 
-export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
-
+export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEventMap>[]}, setScene: (scene: {children: THREE.Object3D<THREE.Object3DEventMap>[]}) => void, sceneRef: any}> = ({scene, sceneRef, setScene}) => {
 
   const {ideoramaid} = useParams();
-  const [scene, setScene] = useState<{children: THREE.Object3D<THREE.Object3DEventMap>[]}>({children: []});
   const [color, setColor] = useState("green")
+  const [cubes, setCubes] = useState<{id: string|number, position: [number, number, number]}[]>([])
 
   useEffect(() => {
-    // console.log("sceneID: ", sceneState.id)
-    console.log("ideoramaid: ", ideoramaid)
-    
     searchIdeorama(ideoramaid as string).then(res => {
-      console.log("res.data.model: ", res.data.model);
       const model = res.data.model
-      console.log("res.data.model: ", typeof res.data.model)
       const loader = new THREE.ObjectLoader()
       setScene(loader.parse(model))
-      console.log(scene)
     })
-    
   }, [])
-
-  const [cubes, setCubes] = useState<{id: string|number, position: [number, number, number]}[]>([
-    
-  ])
 
   const addCube = () => {
     setCubes([...cubes, { id: cubes.length, position: [5, 10, 15] }]);
@@ -112,6 +100,7 @@ export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
         frameloop="demand"
       >
         <primitive object={scene} />
+        <SceneBridge sceneRef={sceneRef} />
         <mesh position={[0, 10, 0]} onClick={() => {addCube(); setColor("blue")}}>
           <boxGeometry args={[10, 10, 10]} />
           <meshStandardMaterial color={color} />
@@ -119,7 +108,6 @@ export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
         {cubes.map(cube => (
           <Cube key={cube.id} position={cube.position} />
         ))}
-        <SceneBridge sceneRef={sceneRef} />
         <AssetsDropHandler />
         {soundTrack && <SceneAudio soundTrack={soundTrack} />}
 

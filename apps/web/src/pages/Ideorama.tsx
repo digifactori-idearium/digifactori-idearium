@@ -9,13 +9,21 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
-import { CirclePlay, ListTree, Plus, Settings2, SquarePen } from 'lucide-react';
+import {
+  ArrowDownToLine,
+  CirclePlay,
+  ListTree,
+  Plus,
+  RotateCcw,
+  Settings2,
+  SquarePen,
+} from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
+import { Object3D, Object3DEventMap, ObjectLoader } from 'three';
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import { useSnapshot } from 'valtio';
-
 
 import Scene from '@/components/3d';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
@@ -23,34 +31,47 @@ import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { SettingPanel } from '@/components/panel/SettingPanel';
 import { useUser } from '@/providers/UserProvider';
-import { saveIdeorama } from '@/services/ideorama.service';
+import { getEmptyIdeorama, saveIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
-const DownloadAndSaveIdeorama = (scene: any, ideoramaId: string|undefined, userId: string|undefined) => {
+const downloadAndSaveIdeorama = (
+  scene: any,
+  ideoramaId: string | undefined,
+  userId: string | undefined
+) => {
+  const exporter = new GLTFExporter();
+  exporter.parse(
+    scene,
+    () => {
+      saveIdeorama(scene.toJSON(), ideoramaId, userId);
+      toast.success("Sauvegarde de l'idéorama réussie");
+    },
+    { binary: false }
+  );
+};
 
-    const exporter = new GLTFExporter();
-    exporter.parse(
-      scene,
-      () => {
-        console.log("saving...")
-        saveIdeorama(scene.toJSON(), ideoramaId, userId)
-        toast.success('Sauvegarde de l\'idéorama réussie');
-
-      },
-      { binary: false }
-    );
-}
-
+const resetIdeorama = (
+  setScene: (children: { children: Object3D<Object3DEventMap>[] }) => void
+) => {
+  getEmptyIdeorama().then(res => {
+    const model = res.data.model;
+    const loader = new ObjectLoader();
+    setScene(loader.parse(model));
+    toast.success('Idéorama réinitialisé');
+  });
+};
 
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
+  const [scene, setScene] = useState<{
+    children: Object3D<Object3DEventMap>[];
+  }>({ children: [] });
   const sceneRef = useRef(null);
 
-  const {ideoramaid} = useParams();
+  const { ideoramaid } = useParams();
 
   const isEditMode = snap.mode === 'edit';
   const userId = useUser().user?.id;
-
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
 
@@ -98,10 +119,10 @@ export default function Ideorama() {
     >
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
         <div className="w-full h-full overflow-hidden flex flex-col">
-          <Scene sceneRef={sceneRef}/>
+          <Scene scene={scene} setScene={setScene} sceneRef={sceneRef} />
           <button
             onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
-            className="absolute top-3 left-[calc(50%-100px)] z-50 p-2! main-small-btn"
+            className="absolute top-3 left-[calc(50%-80px)] z-50 p-2! main-small-btn"
           >
             {isEditMode ? (
               <span className="flex items-center gap-1">
@@ -116,12 +137,23 @@ export default function Ideorama() {
             )}
           </button>
           <button
-            onClick={() => actions.addObject('table')}
-            className="absolute top-3 left-1/2 z-50 p-2! main-small-btn"
+            onClick={() =>
+              downloadAndSaveIdeorama(sceneRef.current, ideoramaid, userId)
+            }
+            className="absolute top-3 left-[calc(50%)] z-50 p-2! main-small-btn"
           >
             <span className="flex items-center gap-1">
-              <Plus className="w-4 h-4 text-white!" />
-              <span>Add object</span>
+              <ArrowDownToLine className="w-4 h-4 text-white!" />
+              <span>Sauvegarder</span>
+            </span>
+          </button>
+          <button
+            onClick={() => resetIdeorama(setScene)}
+            className="absolute top-3 left-[calc(50%+125px)] z-50 p-2! main-small-btn"
+          >
+            <span className="flex items-center gap-1">
+              <RotateCcw className="w-4 h-4 text-white!" />
+              <span>Réinitialiser</span>
             </span>
           </button>
           {/* Assets Button */}
@@ -131,7 +163,7 @@ export default function Ideorama() {
                 actions.toggleAssetsPanel();
                 actions.toggleAssetsTree(false);
               }}
-              className="absolute bottom-6 left-10 -translate-x-1/2 z-50 main-small-btn p-3!"
+              className="absolute md:bottom-6 bottom-15 left-10 -translate-x-1/2 z-50 main-small-btn p-3!"
             >
               <Plus className="w-5 h-5 text-white!" />
             </button>
@@ -145,17 +177,12 @@ export default function Ideorama() {
                 actions.toggleAssetsTree();
                 actions.toggleAssetsPanel(false);
               }}
-              className="absolute bottom-6 left-25 -translate-x-1/2 z-50 main-small-btn p-3!"
+              className="absolute md:bottom-6 bottom-15 left-25 -translate-x-1/2 z-50 main-small-btn p-3!"
             >
               <ListTree className="w-5 h-5 text-white!" />
             </button>
-            
           )}
           {isEditMode && <ObjectListPanel />}
-          <button
-          onClick={() => DownloadAndSaveIdeorama(sceneRef.current, ideoramaid, userId)}
-          className="absolute top-3 left-[calc(50%+150px)] z-50 p-2! main-small-btn"
-        >Sauvegarder</button>
 
           {/* Right Panel */}
           {isEditMode && (
@@ -163,7 +190,7 @@ export default function Ideorama() {
               onClick={() => {
                 actions.toggleSettingPanel();
               }}
-              className="absolute bottom-3 right-5 -translate-x-1/2 z-50 main-small-btn p-3!"
+              className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn p-3!"
             >
               <Settings2 className="w-5 h-5 text-white!" />
             </button>
