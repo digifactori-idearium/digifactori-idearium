@@ -183,7 +183,7 @@ const saveIdeoramaController = async (
       await updateIdeoramaModelPath(newIdeorama.id, uploadPath)
 
       // Save in uploads dir
-      const emptyScene = fs.readFileSync('uploads/scene-000.json')
+      const emptyScene = fs.readFileSync('uploads/scene-empty.json')
       fs.writeFileSync(uploadPath, emptyScene)
 
       return res.status(200).json({
@@ -204,6 +204,7 @@ const saveIdeoramaController = async (
       });
     }
   } catch (error) {
+    console.log(error)
     return res.status(500).json({
       status: 'error',
       error: {
