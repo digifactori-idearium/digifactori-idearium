@@ -1,3 +1,5 @@
+import path from 'path';
+
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -32,7 +34,9 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
-app.use('/api/ideoramas', ideoramasRoutes);
+app.use('/api/ideorama', ideoramasRoutes);
+
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")))
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

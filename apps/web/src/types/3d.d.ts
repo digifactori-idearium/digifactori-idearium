@@ -62,6 +62,7 @@ type IdeoramaMode = 'edit' | 'play';
 interface IdeoramaState {
   // Global State
   mode: IdeoramaMode;
+  id: string | null;
   global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
@@ -89,6 +90,10 @@ interface IdeoramaState {
   isDragging: boolean;
   assetsPanelOpen: boolean;
   assetsTreeOpen: boolean;
+
+  //Action management
+  activeSettingView: 'model' | 'actions';
+  actionPickerOpen: boolean;
 }
 
 // OBJECT ASSETS TYPES
@@ -129,6 +134,8 @@ interface ObjectState {
 
   // Advanced
   advanced: AdvancedSettings;
+
+  actions?: ActionConfig[];
 }
 type TransformMode = 'translate' | 'rotate' | 'scale';
 type ObjectSliceKey = keyof ObjectState;
@@ -148,3 +155,24 @@ type AssetItem = {
   file: string;
   thumbnail?: string;
 };
+
+// ACTIONS ON ASSETS MODEL
+
+type TriggerType = 'onStart' | 'onTap';
+
+type ActionType =
+  | 'motion'
+  | 'sound' // subtype play sound, stopsound
+  | 'say' // subtype say
+  | 'physics' //Subtype  velocity, force
+  | 'particles' //subtype explosion, fauset, flame,puff, rain, smoke, snow, steam, waterfall, stop particle
+  | 'appearance' // tint, size, opacity, glow
+  | 'stop';
+
+interface ActionConfig {
+  id: string;
+  type: ActionType;
+  subType: string;
+  trigger: TriggerType;
+  config: Record<string, any>;
+}

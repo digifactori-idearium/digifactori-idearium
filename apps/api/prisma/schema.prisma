@@ -18,34 +18,35 @@ enum Role {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String     @id @default(cuid())
+  email         String     @unique
   first_name    String
   last_name     String
   password      String
   parental_code String?
   role          Role
-  profil        Profile? 
-  ideoramas         Ideorama[] 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime @updatedAt
+  profil        Profile?
+  ideoramas     Ideorama[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
 model Profile {
-  id        String    @id @default(cuid())
-  userId    String   @unique
-  pseudo    String   @unique
-  avatar    String?
-  bio       String?
-  followers  Follows[]   @relation("followers")
-  following  Follows[]  @relation("following")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id])
+  id            String          @id @default(cuid())
+  userId        String          @unique
+  pseudo        String          @unique
+  avatar        String?
+  bio           String?
+  followers     Follows[]       @relation("followers")
+  following     Follows[]       @relation("following")
+  ideoramaLiked IdeoramaLikes[] @relation("ideoramaLiked")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  user          User            @relation(fields: [userId], references: [id])
 }
 
 model Follows {
-  followers   Profile @relation("followers", fields: [followedById], references: [id])
+  followers    Profile @relation("followers", fields: [followedById], references: [id])
   followedById String
   following    Profile @relation("following", fields: [followingId], references: [id])
   followingId  String
@@ -53,39 +54,51 @@ model Follows {
   @@id([followingId, followedById])
 }
 
-
 // use metadata
 model Ideorama {
-  id          String   @id @default(cuid())
-  name        String   @default("New Ideorama")
+  id          String  @id @default(cuid())
+  name        String  @default("New Ideorama")
   description String?
-  theme       String   @default("black-orange")
-  brightness  String   @default("bright")
-  isPublic    Boolean  @default(true)
+  theme       String  @default("black-orange")
+  brightness  String  @default("bright")
+  isPublic    Boolean @default(true)
 
   backgroundColor String @default("#f0d400")
   leftWallColor   String @default("#f45405")
   rightWallColor  String @default("#e80606")
   floorColor      String @default("#100101")
 
+  model String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  likers IdeoramaLikes[] @relation("likers")
+
+  voxels Voxel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IdeoramaLikes {
+  profile    Profile  @relation("ideoramaLiked", fields: [userId], references: [id])
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  ideorama   Ideorama @relation("likers", fields: [ideoramaId], references: [id])
+  ideoramaId String
 
-  voxels     Voxel[]
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  @@id([ideoramaId, userId])
 }
 
 model Voxel {
-  id      String @id @default(cuid())
-  x       Int
-  y       Int
-  z       Int
-  color   String
+  id    String @id @default(cuid())
+  x     Int
+  y     Int
+  z     Int
+  color String
 
-  ideoramaId  String
-  ideorama    Ideorama   @relation(fields: [ideoramaId], references: [id])
+  ideoramaId String
+  ideorama   Ideorama @relation(fields: [ideoramaId], references: [id])
 
   createdAt DateTime @default(now())
 }

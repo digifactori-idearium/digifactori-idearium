@@ -1,28 +1,56 @@
 import {
   DndContext,
   DragEndEvent,
-  DragStartEvent,
   DragOverlay,
+  DragStartEvent,
   PointerSensor,
+  pointerWithin,
   useSensor,
   useSensors,
-  pointerWithin,
 } from '@dnd-kit/core';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import { CirclePlay, ListTree, Plus, Settings2, SquarePen } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { useSnapshot } from 'valtio';
+
 
 import Scene from '@/components/3d';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
 import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { SettingPanel } from '@/components/panel/SettingPanel';
-import { sceneState, actions } from '@/stores';
+import { useUser } from '@/providers/UserProvider';
+import { saveIdeorama } from '@/services/ideorama.service';
+import { actions, sceneState } from '@/stores';
+
+const DownloadAndSaveIdeorama = (scene: any, ideoramaId: string|undefined, userId: string|undefined) => {
+
+    const exporter = new GLTFExporter();
+    exporter.parse(
+      scene,
+      () => {
+        console.log("saving...")
+        saveIdeorama(scene.toJSON(), ideoramaId, userId)
+        toast.success('Sauvegarde de l\'idéorama réussie');
+
+      },
+      { binary: false }
+    );
+}
+
+
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
+  const sceneRef = useRef(null);
+
+  const {ideoramaid} = useParams();
 
   const isEditMode = snap.mode === 'edit';
+  const userId = useUser().user?.id;
+
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
 
@@ -70,7 +98,7 @@ export default function Ideorama() {
     >
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
         <div className="w-full h-full overflow-hidden flex flex-col">
-          <Scene />
+          <Scene sceneRef={sceneRef}/>
           <button
             onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
             className="absolute top-3 left-[calc(50%-100px)] z-50 p-2! main-small-btn"
@@ -121,8 +149,13 @@ export default function Ideorama() {
             >
               <ListTree className="w-5 h-5 text-white!" />
             </button>
+            
           )}
           {isEditMode && <ObjectListPanel />}
+          <button
+          onClick={() => DownloadAndSaveIdeorama(sceneRef.current, ideoramaid, userId)}
+          className="absolute top-3 left-[calc(50%+150px)] z-50 p-2! main-small-btn"
+        >Sauvegarder</button>
 
           {/* Right Panel */}
           {isEditMode && (
