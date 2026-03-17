@@ -23,6 +23,7 @@ const SceneBridge: React.FC<{ sceneRef: any }> = ({ sceneRef }) => {
     sceneRef.current = scene; // expose la scène à l’extérieur
   }, [scene, sceneRef]);
 
+
   return null;
 }
 
@@ -49,7 +50,6 @@ function Cube({ position, name }: {name: string, position: [number, number, numb
 export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEventMap>[]}, setScene: (scene: {children: THREE.Object3D<THREE.Object3DEventMap>[]}) => void, sceneRef: any}> = ({scene, sceneRef, setScene}) => {
 
   const {ideoramaid} = useParams();
-  const [color, setColor] = useState("green")
   const [cubes, setCubes] = useState<{id: string|number, name: string, position: [number, number, number]}[]>([])
 
   useEffect(() => {
@@ -57,12 +57,11 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
       const model = res.data.model
       const loader = new THREE.ObjectLoader()
       setScene(loader.parse(model))
-      console.log("scene: ")
     })
   }, [])
 
   const addCube = () => {
-    setCubes([...cubes, { id: cubes.length, position: [2, 0.5, 2], name: "Bob2"}]);
+    setCubes([...cubes, { id: cubes.length, position: [-2, 0.5, 2], name: "Bob2"}]);
   };
 
 
@@ -107,7 +106,7 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
           <boxGeometry args={[10, 0.5, 10]} />
           <meshStandardMaterial color={color} />
         </mesh> */}
-        <mesh position={[0, 0.5, 0]} onClick={() => {addCube(); setColor("blue")}}>
+        <mesh position={[0, 0.5, 0]} onClick={() => {addCube()}}>
           <boxGeometry args={[1, 1, 1]} />
           <meshStandardMaterial color={"blue"} />
         </mesh>
