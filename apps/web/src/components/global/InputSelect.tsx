@@ -50,7 +50,7 @@ export default function InputSelect({
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
 
-              <SelectContent position="popper">
+              <SelectContent position="popper" className="z-999!">
                 <SelectGroup>
                   {options.map(option => (
                     <SelectItem key={option.value} value={option.value}>

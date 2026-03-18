@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { ideoramaConfigInputs } from '@/lib/input';
 import { actions, sceneState } from '@/stores';
 
-type IdeoramaSliceKey = 'global' | 'info' | 'background';
+type IdeoramaSliceKey = 'global' | 'floor' | 'info' | 'background';
 
 interface AccordionSection {
   id: IdeoramaSliceKey;
@@ -24,6 +24,7 @@ interface AccordionSection {
 
 const accordionSections: AccordionSection[] = [
   { id: 'info', label: 'Information', input: 'info' },
+  { id: 'floor', label: 'Sol', input: 'part' },
   { id: 'background', label: 'Arrière-plan', input: 'background' },
 ];
 

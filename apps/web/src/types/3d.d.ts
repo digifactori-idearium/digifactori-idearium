@@ -79,6 +79,9 @@ interface IdeoramaState {
     category?: string;
   };
 
+  //Part
+  floor: PartSettings;
+
   // Objects managements
   objects: Record<string, ObjectState>;
   selectedObjectId: string | null;
