@@ -1,16 +1,10 @@
-import { Loader2, House } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
-import { CircularImage } from '@/components/ui/CircularImage';
+import { IdeoramaCreator } from '@/components/ideorama/IdeoramaCreator';
+import RoundCard from '@/components/myspace/RoundCard';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { useProfile } from '@/hooks/useProfile';
-
 const MySpace: React.FC = () => {
   const { fetchProfile, loading } = useProfile();
 
@@ -18,6 +12,8 @@ const MySpace: React.FC = () => {
     profile: any;
     user: any;
   } | null>(null);
+
+  const [createsNew, setCreatesNew] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -41,61 +37,56 @@ const MySpace: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <h1 className="magic-text flex items-center gap-2 text-3xl font-bold text-gray-800 mb-6 dark:text-white">
-        <House /> Bienvenue {acc.profile.pseudo}
-      </h1>
+    <div className="w-full min-h-screen p-6 flex flex-col relative ">
+      <div className="magic-text text-center md:text-5xl text-3xl justify-center flex items-center gap-4 font-bold">
+        Espace de {acc.profile.pseudo}{' '}
+        <Avatar className="h-[1em] w-[1em] border-2 border-white/20">
+          <AvatarImage
+            src={acc.profile.avatar}
+            alt="Profile Picture"
+            className="object-cover"
+          />
+        </Avatar>
+      </div>
 
-      <Carousel
-        orientation="vertical"
-        // Increased height to h-[400px] so the arrows + image have room
-        className="w-full max-w-md mx-auto h-[400px] flex flex-col items-center justify-center p-6 overflow-visible"
-      >
-        <CarouselPrevious className="static translate-y-0 rotate-90 mb-4 hover:bg-gray-100 shrink-0" />
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 max-w-4xl mx-auto z-1 place-items-center">
+        <RoundCard
+          title="Mes Idéoramas"
+          link="/app/myIdeoramas"
+          imageSrc="https://rooms.xyz/honeycomb-v2.webp"
+          onActionClick={() => setCreatesNew(true)}
+          toolTip="Créer un idéorama"
+        />
+        <RoundCard
+          title="Mes Modèles"
+          link="/app/voxel"
+          imageSrc="https://techcrunch.com/wp-content/uploads/2023/05/Screenshot-2023-05-15-at-3.08.50-PM.jpg?w=680"
+          onActionClick={() => {}}
+          toolTip="Créer un modèle"
+        />
+        <RoundCard
+          title="Mon éditeur de texte"
+          link="/app/text-editor"
+          imageSrc="https://collegeinfogeek.com/wp-content/uploads/2018/11/Essential-Books.jpg"
+          onActionClick={() => {}}
+          toolTip="Écrire un nouveau texte"
+        />
+        <RoundCard
+          title="Mon éditeur audio"
+          link="/app/audio-editor"
+          imageSrc="https://images.newscientist.com/wp-content/uploads/2018/08/07151255/gettyimages-937069350.jpg"
+          onActionClick={() => {}}
+          toolTip="Créer un nouvel audio"
+        />
 
-        <CarouselContent className="h-[200px] w-full overflow-visible">
-          {/* Corrected: CircularImage is now INSIDE the CarouselItem */}
-          <CarouselItem className="flex justify-center items-center overflow-visible">
-            <CircularImage
-              src="https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&w=2000&q=85"
-              alt="monImage"
-            />
-          </CarouselItem>
-
-          <CarouselItem className="flex justify-center items-center overflow-visible">
-            <CircularImage
-              src="https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&w=2000&q=85"
-              alt="monImage"
-            />
-          </CarouselItem>
-
-          <CarouselItem className="flex justify-center items-center overflow-visible">
-            <CircularImage
-              src="https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&w=2000&q=85"
-              alt="monImage"
-            />
-          </CarouselItem>
-        </CarouselContent>
-
-        <CarouselNext className="static translate-y-0 rotate-90 mt-4 hover:bg-gray-100 shrink-0" />
-      </Carousel>
-
-      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-lg font-semibold text-gray-700">Ideorama 1</h2>
-          <p className="text-2xl font-bold mt-2 dark:text-black">La fôret</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-lg font-semibold text-gray-700">Ideorama 2</h2>
-          <p className="text-2xl font-bold mt-2 dark:text-black">L'espace</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-lg font-semibold text-gray-700">Ideorama 3</h2>
-          <p className="text-2xl font-bold mt-2 dark:text-black">Le volcan</p>
-        </div>
-      </div> */}
+        {createsNew && (
+          <IdeoramaCreator
+            isOpen={createsNew}
+            setIsOpen={setCreatesNew}
+            userId={acc.user?.id}
+          />
+        )}
+      </div>
     </div>
   );
 };

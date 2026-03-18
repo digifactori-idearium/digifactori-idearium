@@ -4,7 +4,6 @@ import React from 'react';
 import IdeoramasGroup from '@/components/ideorama/IdeoramasGroup';
 
 const Ideoramas: React.FC = () => {
-
   const ideoramas = [
     {
       name: 'Mystical Blue Swirl',
@@ -34,17 +33,20 @@ const Ideoramas: React.FC = () => {
 
   const testIdeoramas = Array(8).fill(ideoramas).flat();
 
-
   return (
     <div className="min-h-screen p-6">
       <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-800 mb-6 dark:text-white">
         Ideoramas <House />
       </h1>
 
-      <IdeoramasGroup ideoramas={testIdeoramas} profile={{
-  pseudo: "RobLaMenace",
-  avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix'
-  }} setIdeoramas={() => {}}/>
+      <IdeoramasGroup
+        ideoramas={testIdeoramas}
+        profile={{
+          pseudo: 'RobLaMenace',
+          avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix',
+        }}
+        setIdeoramas={() => {}}
+      />
     </div>
   );
 };
