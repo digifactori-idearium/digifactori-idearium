@@ -92,8 +92,8 @@ export const Scene: React.FC<{
         }}
         frameloop="demand"
       >
-        {/* <primitive object={scene} />
-        <SceneBridge sceneRef={sceneRef} /> */}
+        <primitive object={scene} />
+        <SceneBridge sceneRef={sceneRef} />
 
         {/* Scene Property */}
         <SceneGradient
