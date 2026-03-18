@@ -175,7 +175,7 @@ export const Model = memo(function Model({
 
   const handleDrag = useCallback(
     (matrix: THREE.Matrix4) => {
-      if (!modelRef?.current) return;
+      if (!modelRef?.current || !isSelected) return;
 
       const _pos = new THREE.Vector3();
       const _quat = new THREE.Quaternion();
@@ -194,7 +194,7 @@ export const Model = memo(function Model({
         id
       );
     },
-    [id]
+    [id, isSelected]
   );
 
   const handleDragEnd = useCallback(() => {
@@ -204,6 +204,7 @@ export const Model = memo(function Model({
 
   return (
     <Controls
+      key={id}
       selected={isSelected}
       initialTransform={transform}
       objectRef={modelRef}

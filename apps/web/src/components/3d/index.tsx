@@ -1,11 +1,10 @@
 import { useDroppable } from '@dnd-kit/core';
 import { GizmoHelper, GizmoViewport, OrbitControls } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import * as THREE from 'three';
 import { useSnapshot } from 'valtio';
-
 
 import { AssetsDropHandler } from '../assets/AssetsDropHandler';
 
@@ -23,9 +22,8 @@ const SceneBridge: React.FC<{ sceneRef: any }> = ({ sceneRef }) => {
     sceneRef.current = scene; // expose la scène à l’extérieur
   }, [scene, sceneRef]);
 
-
   return null;
-}
+};
 
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   const { scene } = useThree();
@@ -38,32 +36,22 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   return null;
 };
 
-function Cube({ position, name }: {name: string, position: [number, number, number]}) {
-  return (
-    <mesh name={name} position={position}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="orange" />
-    </mesh>
-  );
-}
-
-export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEventMap>[]}, setScene: (scene: {children: THREE.Object3D<THREE.Object3DEventMap>[]}) => void, sceneRef: any}> = ({scene, sceneRef, setScene}) => {
-
-  const {ideoramaid} = useParams();
-  const [cubes, setCubes] = useState<{id: string|number, name: string, position: [number, number, number]}[]>([])
+export const Scene: React.FC<{
+  scene: { children: THREE.Object3D<THREE.Object3DEventMap>[] };
+  setScene: (scene: {
+    children: THREE.Object3D<THREE.Object3DEventMap>[];
+  }) => void;
+  sceneRef: any;
+}> = ({ scene, sceneRef, setScene }) => {
+  const { ideoramaid } = useParams();
 
   useEffect(() => {
     searchIdeorama(ideoramaid as string).then(res => {
-      const model = res.data.model
-      const loader = new THREE.ObjectLoader()
-      setScene(loader.parse(model))
-    })
-  }, [])
-
-  const addCube = () => {
-    setCubes([...cubes, { id: cubes.length, position: [-2, 0.5, 2], name: "Bob2"}]);
-  };
-
+      const model = res.data.model;
+      const loader = new THREE.ObjectLoader();
+      setScene(loader.parse(model));
+    });
+  }, [ideoramaid, setScene]);
 
   const snap = useSnapshot(sceneState);
 
@@ -97,46 +85,57 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
         }}
         onDragOver={e => e.preventDefault()}
         onDrop={e => e.preventDefault()}
+        onPointerMissed={() => {
+          if (!snap.isDragging) {
+            actions.selectObject(null);
+          }
+        }}
         frameloop="demand"
       >
-        <primitive object={scene} />
-        <SceneBridge sceneRef={sceneRef} />
-        {/* Basic Floor */}
-        {/* <mesh name="floor" position={[0, -0.25, 0]} >
-          <boxGeometry args={[10, 0.5, 10]} />
-          <meshStandardMaterial color={color} />
-        </mesh> */}
-        <mesh position={[0, 0.5, 0]} onClick={() => {addCube()}}>
-          <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color={"blue"} />
-        </mesh>
-        {cubes.map(cube => (
-          <Cube name={cube.name} key={cube.id} position={cube.position} />
-        ))}
-        <AssetsDropHandler />
-        {soundTrack && <SceneAudio soundTrack={soundTrack} />}
+        {/* <primitive object={scene} />
+        <SceneBridge sceneRef={sceneRef} /> */}
 
+        {/* Scene Property */}
         <SceneGradient
           baseColor={snap.background.color}
           accentColor={snap.background.accent}
         />
-
         <SceneBackground color={snap.background.color} />
+        {soundTrack && <SceneAudio soundTrack={soundTrack} />}
+        <AssetsDropHandler />
 
-        <ambientLight intensity={0.5} color="white" />
+        {/* Basic Floor */}
+        <mesh
+          name="floor"
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, -0.01, 0]}
+          receiveShadow
+          visible={!snap.floor.hidden}
+        >
+          <planeGeometry args={[20, 20]} />
+          <meshStandardMaterial
+            color={snap.floor.color}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
 
+        {/*  Lights  */}
+        <ambientLight intensity={0.6} />
         <directionalLight
-          position={[50, 100, 100]}
-          castShadow={true}
+          position={[50, 100, 50]}
+          castShadow
           intensity={
             intensities[snap.global.brightness as keyof typeof intensities] ?? 1
           }
-          color="white"
-          shadow-mapSize={[1024, 1024]}
-        />
+          shadow-mapSize={[2048, 2048]}
+        >
+          <orthographicCamera
+            attach="shadow-camera"
+            args={[-100, 100, 100, -100, 0.5, 500]}
+          />
+        </directionalLight>
 
-        <pointLight position={[-10, -10, -10]} intensity={5} color="blue" />
-
+        {/*  Objects/Assets  */}
         <Suspense fallback={null}>
           {Object.entries(objects).map(([id, objectData]) => (
             <Model
@@ -148,58 +147,7 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
           ))}
         </Suspense>
 
-        {/* Floor */}
-        {/* {!snap.floor.hidden && (
-          <mesh name="floor" receiveShadow position={[50, -5, 50]}>
-            <boxGeometry args={[100, 10, 100]} />
-            <meshPhongMaterial color={snap.floor.color} />
-          </mesh>
-        )} */}
-
-        {/* RIGHT WALL */}
-        {/* {!snap.rightWall.hidden && (
-          <mesh
-            name="rightWall"
-            position={[45, 45, -5]}
-            rotation={[Math.PI / 2, 0, 0]}
-          >
-            <boxGeometry args={[110, 10, 110]} />
-            <meshPhongMaterial color={snap.rightWall.color} />
-          </mesh>
-        )} */}
-
-        {/* LEFT WALL */}
-        {/* {!snap.leftWall.hidden && (
-          <mesh
-            name="leftWall"
-            position={[-5, 45, 50]}
-            rotation={[0, 0, Math.PI / 2]}
-          >
-            <boxGeometry args={[110, 10, 100]} />
-            <meshPhongMaterial color={snap.leftWall.color} />
-          </mesh>
-        )} */}
-
-        {/* Backdrop / Click Surface to Clear Selection */}
-        <mesh
-          position={[50, 50, -500]}
-          rotation={[0, 0, 0]}
-          renderOrder={-1}
-          onPointerDown={e => {
-            e.stopPropagation();
-            if (!snap.isDragging) {
-              actions.selectObject(null);
-            }
-          }}
-        >
-          <planeGeometry args={[5000, 5000]} />
-          <meshBasicMaterial visible={false} depthTest={false} />
-        </mesh>
-
-        <GizmoHelper alignment="top-left" margin={[50, 50]}>
-          <GizmoViewport labelColor="white" axisHeadScale={1} />
-        </GizmoHelper>
-
+        {/* Orbit Control */}
         <OrbitControls
           makeDefault
           target={[0, 0, 0]}
@@ -208,9 +156,14 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
           enableRotate
           minPolarAngle={0}
           maxPolarAngle={Math.PI / 1.75}
-          minZoom={0}
-          maxZoom={100}
+          minZoom={20}
+          maxZoom={150}
         />
+
+        {/* Gizmo*/}
+        <GizmoHelper alignment="top-left" margin={[50, 50]}>
+          <GizmoViewport labelColor="white" axisHeadScale={1} />
+        </GizmoHelper>
       </Canvas>
     </div>
   );
