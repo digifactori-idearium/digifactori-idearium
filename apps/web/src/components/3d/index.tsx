@@ -80,8 +80,6 @@ export const Scene: React.FC = () => {
         frameloop="demand"
       >
 
-        {/* <SceneBridge /> */}
-
         {/* Scene Property */}
         <SceneGradient
           baseColor={snap.background.color}

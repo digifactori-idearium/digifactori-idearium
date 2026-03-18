@@ -18,7 +18,7 @@ import {
   Settings2,
   SquarePen,
 } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSnapshot } from 'valtio';
@@ -50,7 +50,6 @@ const resetIdeorama = () => {
 
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
-  const sceneRef = useRef(null);
 
   const { ideoramaid } = useParams();
 
