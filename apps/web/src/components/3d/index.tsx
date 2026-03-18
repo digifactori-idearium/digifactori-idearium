@@ -31,7 +31,7 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   const { scene } = useThree();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
+     
     scene.background = new THREE.Color(color);
   }, [color, scene]);
 
@@ -47,25 +47,27 @@ function Cube({ position, name }: {name: string, position: [number, number, numb
   );
 }
 
-export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEventMap>[]}, setScene: (scene: {children: THREE.Object3D<THREE.Object3DEventMap>[]}) => void, sceneRef: any}> = ({scene, sceneRef, setScene}) => {
+export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
 
   const {ideoramaid} = useParams();
   const [cubes, setCubes] = useState<{id: string|number, name: string, position: [number, number, number]}[]>([])
-
+  const snap = useSnapshot(sceneState);
+  
   useEffect(() => {
     searchIdeorama(ideoramaid as string).then(res => {
       const model = res.data.model
-      const loader = new THREE.ObjectLoader()
-      setScene(loader.parse(model))
-    })
+      sceneState.objects = model
+  })
   }, [])
+
+  useEffect(() => {
+  }, [snap.objects])
 
   const addCube = () => {
     setCubes([...cubes, { id: cubes.length, position: [-2, 0.5, 2], name: "Bob2"}]);
   };
 
 
-  const snap = useSnapshot(sceneState);
 
   const soundTrack = snap.global.music.currentTrack;
   const objects = snap.objects;
@@ -79,7 +81,6 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
   const { isOver, setNodeRef } = useDroppable({
     id: 'canvas-droppable',
   });
-
   return (
     <div
       id="canvas-container"
@@ -99,7 +100,7 @@ export const Scene: React.FC<{scene:{children: THREE.Object3D<THREE.Object3DEven
         onDrop={e => e.preventDefault()}
         frameloop="demand"
       >
-        <primitive object={scene} />
+
         <SceneBridge sceneRef={sceneRef} />
         {/* Basic Floor */}
         {/* <mesh name="floor" position={[0, -0.25, 0]} >

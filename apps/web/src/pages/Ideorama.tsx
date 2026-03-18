@@ -21,7 +21,6 @@ import {
 import { useCallback, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Object3D, Object3DEventMap, ObjectLoader } from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import { useSnapshot } from 'valtio';
 
@@ -43,29 +42,23 @@ const downloadAndSaveIdeorama = (
   exporter.parse(
     scene,
     () => {
-      saveIdeorama(scene.toJSON(), ideoramaId, userId);
+      saveIdeorama(JSON.stringify(sceneState.objects), ideoramaId, userId);
       toast.success("Sauvegarde de l'idéorama réussie");
     },
     { binary: false }
   );
 };
 
-const resetIdeorama = (
-  setScene: (children: { children: Object3D<Object3DEventMap>[] }) => void
-) => {
+const resetIdeorama = () => {
   getEmptyIdeorama().then(res => {
     const model = res.data.model;
-    const loader = new ObjectLoader();
-    setScene(loader.parse(model));
+    sceneState.objects = model
     toast.success('Idéorama réinitialisé');
   });
 };
 
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
-  const [scene, setScene] = useState<{
-    children: Object3D<Object3DEventMap>[];
-  }>({ children: [] });
   const sceneRef = useRef(null);
 
   const { ideoramaid } = useParams();
@@ -82,6 +75,22 @@ export default function Ideorama() {
       },
     })
   );
+
+  // useEffect(() => {
+
+  //   const exporter = new GLTFExporter();
+  //   if(sceneRef.current) {
+  //     exporter.parse(
+  //       scene,
+  //       () => {
+  //         saveIdeorama(JSON.stringify(sceneState.objects), ideoramaid, userId)
+  //         toast.success('Sauvegarde de l\'idéorama réussie');
+  //       },
+  //       { binary: false }
+  //     );
+  // }
+  //   console.log("cc", sceneRef.current)
+  // }, [snap.objects])
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveAsset(event.active.data.current);
@@ -119,7 +128,7 @@ export default function Ideorama() {
     >
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
         <div className="w-full h-full overflow-hidden flex flex-col">
-          <Scene scene={scene} setScene={setScene} sceneRef={sceneRef} />
+          <Scene sceneRef={sceneRef} />
           <button
             onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
             className="absolute top-3 left-[calc(50%-80px)] z-50 p-2! main-small-btn"
@@ -148,7 +157,7 @@ export default function Ideorama() {
             </span>
           </button>
           <button
-            onClick={() => resetIdeorama(setScene)}
+            onClick={() => resetIdeorama()}
             className="absolute top-3 left-[calc(50%+125px)] z-50 p-2! main-small-btn"
           >
             <span className="flex items-center gap-1">

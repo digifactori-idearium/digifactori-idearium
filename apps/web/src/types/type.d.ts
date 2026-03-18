@@ -57,5 +57,5 @@ type Ideorama = {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
-  model: string;
+  model: Record<string, ObjectState>;
 }
