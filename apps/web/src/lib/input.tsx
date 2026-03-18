@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import { MusicSelector } from './MusicDialog';
+import { themeOptions } from './theme';
 
 /* =========================
    LOGIN INPUTS
@@ -134,13 +135,15 @@ export const resetInputs = [
    ROOM CREATION FORM INPUTS
 ========================= */
 export const IdeoramaCreationInputs = [
-  { label: 'Nom de l\'idéorama',
+  {
+    label: "Nom de l'idéorama",
     type: 'text',
     name: 'name',
     placeholder: 'Monstre bleu',
     required: true,
-    icon: Pencil,}
-]
+    icon: Pencil,
+  },
+];
 
 /* =========================
    ROOM CONFIGURATION FORM INPUTS
@@ -213,16 +216,7 @@ const globalConfigInputs = [
     type: 'select',
     name: 'theme',
     placeholder: 'Choisir le thème',
-    options: [
-      { value: 'white', text: 'Blanc' },
-      { value: 'black', text: 'Noir' },
-      { value: 'night', text: 'Nuit' },
-      { value: 'black-orange', text: 'Noir Orange' },
-      { value: 'pink-blue', text: 'Rose Bleu' },
-      { value: 'yellow-gray', text: 'Jaune Gris' },
-      { value: 'blue-yellow', text: 'Blue Jaune' },
-      { value: 'customized', text: 'Personnalisé' },
-    ],
+    options: themeOptions,
     required: false,
   },
 ];
