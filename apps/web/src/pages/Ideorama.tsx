@@ -21,7 +21,6 @@ import {
 import { useCallback, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import { useSnapshot } from 'valtio';
 
 import Scene from '@/components/3d';
@@ -34,19 +33,11 @@ import { getEmptyIdeorama, saveIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
 const downloadAndSaveIdeorama = (
-  scene: any,
   ideoramaId: string | undefined,
   userId: string | undefined
 ) => {
-  const exporter = new GLTFExporter();
-  exporter.parse(
-    scene,
-    () => {
-      saveIdeorama(JSON.stringify(sceneState.objects), ideoramaId, userId);
+  saveIdeorama(JSON.stringify(sceneState.objects), ideoramaId, userId);
       toast.success("Sauvegarde de l'idéorama réussie");
-    },
-    { binary: false }
-  );
 };
 
 const resetIdeorama = () => {
@@ -128,7 +119,7 @@ export default function Ideorama() {
     >
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
         <div className="w-full h-full overflow-hidden flex flex-col">
-          <Scene sceneRef={sceneRef} />
+          <Scene/>
           <button
             onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
             className="absolute top-3 left-[calc(50%-80px)] z-50 p-2! main-small-btn"
@@ -147,7 +138,7 @@ export default function Ideorama() {
           </button>
           <button
             onClick={() =>
-              downloadAndSaveIdeorama(sceneRef.current, ideoramaid, userId)
+              downloadAndSaveIdeorama(ideoramaid, userId)
             }
             className="absolute top-3 left-[calc(50%)] z-50 p-2! main-small-btn"
           >

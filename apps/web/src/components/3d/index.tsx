@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { GizmoHelper, GizmoViewport, OrbitControls } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import * as THREE from 'three';
 import { useSnapshot } from 'valtio';
@@ -15,15 +15,6 @@ import { SceneGradient } from './SceneGradient';
 import { searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
-const SceneBridge: React.FC<{ sceneRef: any }> = ({ sceneRef }) => {
-  const { scene } = useThree();
-
-  useEffect(() => {
-    sceneRef.current = scene; // expose la scène à l’extérieur
-  }, [scene, sceneRef]);
-
-  return null;
-};
 
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   const { scene } = useThree();
@@ -37,10 +28,9 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   return null;
 };
 
-export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
+export const Scene: React.FC = () => {
 
   const {ideoramaid} = useParams();
-  const [cubes, setCubes] = useState<{id: string|number, name: string, position: [number, number, number]}[]>([])
   const snap = useSnapshot(sceneState);
   
   useEffect(() => {
@@ -52,12 +42,6 @@ export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
 
   useEffect(() => {
   }, [snap.objects])
-
-  const addCube = () => {
-    setCubes([...cubes, { id: cubes.length, position: [-2, 0.5, 2], name: "Bob2"}]);
-  };
-
-
 
   const soundTrack = snap.global.music.currentTrack;
   const objects = snap.objects;
@@ -96,7 +80,7 @@ export const Scene: React.FC<{sceneRef: any}> = ({sceneRef}) => {
         frameloop="demand"
       >
 
-        <SceneBridge sceneRef={sceneRef} />
+        {/* <SceneBridge /> */}
 
         {/* Scene Property */}
         <SceneGradient
