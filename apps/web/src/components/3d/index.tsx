@@ -32,6 +32,7 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
 
   useEffect(() => {
      
+    // eslint-disable-next-line react-hooks/immutability
     scene.background = new THREE.Color(color);
   }, [color, scene]);
 
