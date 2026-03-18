@@ -1,40 +1,7 @@
 import * as THREE from 'three';
 import { proxy, ref } from 'valtio';
 
-export const themesToColors = {
-  customized: {
-    background: '#f0d400',
-    accent: '#fcca44',
-  },
-  white: {
-    background: '#c5c3c3',
-    accent: '#cfcbcc',
-  },
-  black: {
-    background: '#313133',
-    accent: '#2a2a33',
-  },
-  night: {
-    background: '#201333',
-    accent: '#7d7d7d',
-  },
-  'black-orange': {
-    background: '#313133',
-    accent: '#2a2a33',
-  },
-  'pink-blue': {
-    background: '#f72585',
-    accent: '#b70999',
-  },
-  'blue-yellow': {
-    background: '#3d61ee',
-    accent: '#3d61ee',
-  },
-  'yellow-gray': {
-    background: '#f6b022',
-    accent: '#fcca44',
-  },
-};
+import { themesToColors } from '@/lib/theme';
 
 const INITIAL_THEME = 'night' as keyof typeof themesToColors;
 
@@ -57,6 +24,7 @@ export const sceneState = proxy<IdeoramaState>({
 
   // Info State
   info: { name: 'Template', description: 'New Ideorama', category: 'none' },
+  floor: { color: initialThemeData.floor, hidden: false, texture: 'none' },
 
   //setting
   settingPanelOpen: false,
@@ -111,10 +79,11 @@ export const actions = {
           if (themeData) {
             sceneState.background.color = themeData.background;
             sceneState.background.accent = themeData.accent;
+            sceneState.floor.color = themeData.floor;
           }
         }
 
-        const colorSlices = ['background'];
+        const colorSlices = ['background', 'floor'];
         if (colorSlices.includes(sliceKey as string) && values.color) {
           if (
             target.color !== values.color &&
