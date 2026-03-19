@@ -74,7 +74,7 @@ export default function Ideorama() {
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false)
-  const [isFirstRender, setIsFirstRender] = useState(true);
+  // const [isFirstRender, setIsFirstRender] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
