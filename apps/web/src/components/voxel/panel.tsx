@@ -9,33 +9,34 @@ interface EditPanelProps {
   setRotation: React.Dispatch<React.SetStateAction<number>>
 }
 
-export default function EditPanel({mode, setMode, shape, setShape, rotation, setRotation}: EditPanelProps) {
+interface ButtonProps {
+  value: "add" | "remove" | "paint"
+  label: string
+  color: string
+  mode: "add" | "remove" | "paint"
+  setMode: (m: "add" | "remove" | "paint") => void
+}
 
+const Button = ({ value, label, color, mode, setMode }: ButtonProps) => (
+  <button
+    onClick={() => setMode(value)}
+    style={{
+      padding: "10px 16px",
+      borderRadius: 12,
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 600,
+      background: mode === value ? color : "#444",
+      color: "white",
+      boxShadow: mode === value ? `0 0 12px ${color}` : "none",
+    }}
+  >
+    {label}
+  </button>
+)
+
+export default function EditPanel({ mode, setMode, shape, setShape, rotation, setRotation }: EditPanelProps) {
   const [open, setOpen] = useState(false)
-
-  interface ButtonProps {
-    value: "add" | "remove" | "paint"
-    label: string
-    color: string
-  }
-
-  const Button = ({ value, label, color }: ButtonProps) => (
-    <button
-      onClick={() => setMode(value)}
-      style={{
-        padding: "10px 16px",
-        borderRadius: 12,
-        border: "none",
-        cursor: "pointer",
-        fontWeight: 600,
-        background: mode === value ? color : "#444",
-        color: "white",
-        boxShadow: mode === value ? `0 0 12px ${color}` : "none"
-      }}
-    >
-      {label}
-    </button>
-  )
 
   return (
     <div style={{
@@ -48,7 +49,6 @@ export default function EditPanel({mode, setMode, shape, setShape, rotation, set
       gap: 12,
       color: "white"
     }}>
-
       <b>🧱 Edition</b>
 
       {/* DROPDOWN */}
@@ -99,6 +99,7 @@ export default function EditPanel({mode, setMode, shape, setShape, rotation, set
         )}
       </div>
 
+      {/* Rotation */}
       <div style={{ marginTop: 6 }}>
         <div style={{ fontSize: 14, marginBottom: 4 }}>
           🔄 Rotation : {(rotation % 4 + 4) % 4 * 90}°
@@ -139,10 +140,10 @@ export default function EditPanel({mode, setMode, shape, setShape, rotation, set
         </div>
       </div>
 
-      <Button value="add" label="Ajouter bloc" color="#4ade80" />
-      <Button value="remove" label="Supprimer bloc" color="#f87171" />
-      <Button value="paint" label="Peindre" color="#60a5fa" />
-
+      {/* Boutons Mode */}
+      <Button value="add" label="Ajouter bloc" color="#4ade80" mode={mode} setMode={setMode} />
+      <Button value="remove" label="Supprimer bloc" color="#f87171" mode={mode} setMode={setMode} />
+      <Button value="paint" label="Peindre" color="#60a5fa" mode={mode} setMode={setMode} />
     </div>
   )
 }
