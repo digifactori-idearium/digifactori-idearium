@@ -52,13 +52,13 @@ const downloadAndSaveIdeorama = (
 
 const resetIdeorama = () => {
   getEmptyIdeorama().then(res => {
-    const model = res.data;
+    const model = res.data.model;
     sceneState.global = model.global
     sceneState.background = model.background
     sceneState.info = model.info
     sceneState.floor = model.floor
     sceneState.objects = model.objects
-    console.log("reset: ", sceneState.objects)
+    console.log("reset: ", sceneState)
     toast.success('Idéorama réinitialisé');
   });
 };
