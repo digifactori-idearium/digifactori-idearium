@@ -15,20 +15,12 @@ import { SceneGradient } from './SceneGradient';
 import { searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
-const SceneBridge: React.FC<{ sceneRef: any }> = ({ sceneRef }) => {
-  const { scene } = useThree();
-
-  useEffect(() => {
-    sceneRef.current = scene; // expose la scène à l’extérieur
-  }, [scene, sceneRef]);
-
-  return null;
-};
 
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   const { scene } = useThree();
 
   useEffect(() => {
+     
     // eslint-disable-next-line react-hooks/immutability
     scene.background = new THREE.Color(color);
   }, [color, scene]);
@@ -36,24 +28,25 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   return null;
 };
 
-export const Scene: React.FC<{
-  scene: { children: THREE.Object3D<THREE.Object3DEventMap>[] };
-  setScene: (scene: {
-    children: THREE.Object3D<THREE.Object3DEventMap>[];
-  }) => void;
-  sceneRef: any;
-}> = ({ scene, sceneRef, setScene }) => {
-  const { ideoramaid } = useParams();
+export const Scene: React.FC = () => {
 
+  const {ideoramaid} = useParams();
+  const snap = useSnapshot(sceneState);
+  
   useEffect(() => {
     searchIdeorama(ideoramaid as string).then(res => {
-      const model = res.data.model;
-      const loader = new THREE.ObjectLoader();
-      setScene(loader.parse(model));
-    });
-  }, [ideoramaid, setScene]);
+      const model = res.data.model
+      sceneState.global = model.global
+      sceneState.background = model.background
+      sceneState.info = model.info
+      sceneState.floor = model.floor
+      sceneState.objects = model.objects
+      console.log("downloaded: ", sceneState.objects)
+  })
+  }, [])
 
-  const snap = useSnapshot(sceneState);
+  useEffect(() => {
+  }, [snap.objects])
 
   const soundTrack = snap.global.music.currentTrack;
   const objects = snap.objects;
@@ -67,7 +60,6 @@ export const Scene: React.FC<{
   const { isOver, setNodeRef } = useDroppable({
     id: 'canvas-droppable',
   });
-
   return (
     <div
       id="canvas-container"
@@ -92,8 +84,6 @@ export const Scene: React.FC<{
         }}
         frameloop="demand"
       >
-        <primitive object={scene} />
-        <SceneBridge sceneRef={sceneRef} />
 
         {/* Scene Property */}
         <SceneGradient
