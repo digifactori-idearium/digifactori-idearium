@@ -42,6 +42,7 @@ const RoundCard: React.FC<RoundCardProps> = ({
       <div className="absolute bottom-0 left-0 w-full h-1/4 flex items-center justify-center">
         <SuperButton
           tooltip={toolTip}
+          voiceText={toolTip}
           className="main-btn px-4 py-2 rounded-full"
           onClick={e => {
             e.preventDefault();
