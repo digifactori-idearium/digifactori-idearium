@@ -3,7 +3,7 @@ import { proxy } from 'valtio';
 
 import { themesToColors } from '@/lib/theme';
 
-const INITIAL_THEME = 'night' as keyof typeof themesToColors;
+const INITIAL_THEME = 'day' as keyof typeof themesToColors;
 
 const initialThemeData = themesToColors[INITIAL_THEME];
 
@@ -192,3 +192,22 @@ export const actions = {
     sceneState.actionPickerOpen = open;
   },
 };
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(data => {
+    data.sceneState = JSON.parse(JSON.stringify(sceneState));
+  });
+
+  if (import.meta.hot.data.sceneState) {
+    const saved = import.meta.hot.data.sceneState;
+    if (saved.global) Object.assign(sceneState.global, saved.global);
+    if (saved.background)
+      Object.assign(sceneState.background, saved.background);
+    if (saved.info) Object.assign(sceneState.info, saved.info);
+    if (saved.floor) Object.assign(sceneState.floor, saved.floor);
+    if (saved.objects) sceneState.objects = saved.objects;
+    if (saved.selectedObjectId !== undefined) {
+      sceneState.selectedObjectId = saved.selectedObjectId;
+    }
+  }
+}

@@ -31,19 +31,20 @@ export const Scene: React.FC = () => {
   const snap = useSnapshot(sceneState);
 
   useEffect(() => {
-    searchIdeorama(ideoramaid as string).then(res => {
-      const model = res.data.model;
-      sceneState.global = model.global ? model.global : sceneState.global;
-      sceneState.background = model.background
-        ? model.background
-        : sceneState.background;
-      sceneState.info = model.info ? model.info : sceneState.info;
-      sceneState.floor = model.floor ? model.floor : sceneState.floor;
-      sceneState.objects = model.objects ? model.objects : sceneState.objects;
-    });
-  }, []);
+    if (!ideoramaid) return;
 
-  useEffect(() => {}, [snap.objects]);
+    searchIdeorama(ideoramaid).then(res => {
+      const model = res.data.model;
+      if (!model) return;
+
+      if (model.global) Object.assign(sceneState.global, model.global);
+      if (model.background)
+        Object.assign(sceneState.background, model.background);
+      if (model.info) Object.assign(sceneState.info, model.info);
+      if (model.floor) Object.assign(sceneState.floor, model.floor);
+      if (model.objects) sceneState.objects = model.objects;
+    });
+  }, [ideoramaid]);
 
   const soundTrack = snap.global.music.currentTrack;
   const objects = snap.objects;

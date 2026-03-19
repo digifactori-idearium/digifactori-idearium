@@ -92,11 +92,15 @@ export const Model = memo(function Model({
   //  Derived state
   const transform = useMemo(
     () => ({
-      position: { ...objectState.transform.position },
-      rotation: { ...objectState.transform.rotation },
-      scale: objectState.transform.scale,
+      position: {
+        ...(objectState?.transform?.position ?? { x: 0, y: 0, z: 0 }),
+      },
+      rotation: {
+        ...(objectState?.transform?.rotation ?? { x: 0, y: 0, z: 0 }),
+      },
+      scale: objectState?.transform?.scale ?? 1,
     }),
-    [objectState.transform]
+    [objectState?.transform]
   );
 
   const style = objectState?.style ?? {
@@ -231,7 +235,7 @@ export const Model = memo(function Model({
       e.stopPropagation();
       actions.selectObject(id);
 
-      objectState.actions
+      objectState?.actions
         ?.filter(a => a.trigger === 'onTap')
         .forEach(a => {
           const handler = ActionRegistry[a.subType];
@@ -240,7 +244,7 @@ export const Model = memo(function Model({
           }
         });
     },
-    [id, objectState.actions]
+    [id, objectState?.actions]
   );
 
   const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {
@@ -277,6 +281,8 @@ export const Model = memo(function Model({
     actions.setIsDragging(false);
     isDragging.current = false;
   }, []);
+
+  if (!objectState) return null;
 
   return (
     <Controls
