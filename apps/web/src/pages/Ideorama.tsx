@@ -50,8 +50,7 @@ const downloadAndSaveIdeorama = (
   // toast.success("Sauvegarde de l'idéorama réussie");
 };
 
-const resetIdeorama = (setIsFirstRender: (arg: boolean) => void) => {
-  setIsFirstRender(false)
+const resetIdeorama = () => {
   getEmptyIdeorama().then(res => {
     const model = res.data;
     sceneState.global = model.global
@@ -182,7 +181,7 @@ export default function Ideorama() {
             </span>
           </button>}
           <button
-            onClick={() => resetIdeorama(setIsFirstRender)}
+            onClick={() => resetIdeorama()}
             className="absolute top-3 left-[calc(50%+125px)] z-50 p-2! main-small-btn"
           >
             <span className="flex items-center gap-1">
