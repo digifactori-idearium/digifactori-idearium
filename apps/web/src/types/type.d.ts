@@ -57,22 +57,26 @@ type Ideorama = {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
-  model: IdeoramaModel;
+  model: ModelsInfo;
 }
 
 type IdeoramaModel = {
-    global: {
+    model: ModelsInfo;
+}
+
+type ModelsInfo = {
+  global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
     music: { currentTrack: string; volume: number };
     theme: string;
   }
-    background:  { color: string; accent: string }
-    info: {
+  background:  { color: string; accent: string }
+  info: {
     name: string;
     description: string;
     category?: string;
   }
-    floor: PartSettings
-    objects: Record<string, ObjectState>
-  };
+  floor: PartSettings
+  objects: Record<string, ObjectState>
+}

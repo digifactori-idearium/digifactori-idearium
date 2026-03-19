@@ -19,7 +19,7 @@ export const searchIdeorama = async (
         ideoramaId: ideoramaId,
       }
     );
-
+    console.log("search Ideorama: ", response)
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -40,7 +40,7 @@ export const getEmptyIdeorama = async(): Promise<ApiResponse<IdeoramaModel>> => 
     const response = await axios.get(
       `http://localhost:3001/api/ideorama/empty`
     );
-
+    console.log("response: ", response)
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
