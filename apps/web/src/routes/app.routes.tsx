@@ -4,6 +4,7 @@ import BatchRegister from '@/components/auth';
 import AudioEditor from '@/pages/AudioEditor';
 import Ideorama from '@/pages/Ideorama';
 import Ideoramas from '@/pages/Ideoramas';
+import MyIdeas from '@/pages/MyIdeas';
 import MyIdeoramas from '@/pages/MyIdeoramas';
 import MySpace from '@/pages/MySpace';
 import ProfilePage from '@/pages/Profile';
@@ -39,6 +40,10 @@ const appRoutes = [
   {
     path: 'audio-editor',
     element: <ProtectedRoute element={<AudioEditor />} />,
+  },
+  {
+    path: 'my-Ideas',
+    element: <ProtectedRoute element={<MyIdeas />} />,
   },
 ];
 
