@@ -36,11 +36,11 @@ export const Scene: React.FC = () => {
   useEffect(() => {
     searchIdeorama(ideoramaid as string).then(res => {
       const model = res.data.model
-      sceneState.global = model.global
-      sceneState.background = model.background
-      sceneState.info = model.info
-      sceneState.floor = model.floor
-      sceneState.objects = model.objects
+      sceneState.global = model.global ? model.global : sceneState.global
+      sceneState.background = model.background ? model.background : sceneState.background
+      sceneState.info = model.info ? model.info : sceneState.info
+      sceneState.floor = model.floor ? model.floor : sceneState.floor
+      sceneState.objects = model.objects ? model.objects : sceneState.objects
       console.log("downloaded: ", sceneState)
   })
   }, [])
