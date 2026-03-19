@@ -30,7 +30,7 @@ const appRoutes = [
     path: 'batch_register',
     element: <ProtectedRoute element={<BatchRegister />} />,
   },
-  { path: 'voxel', element: <ProtectedRoute element={<Voxel />} /> },
+  { path: 'voxel', element: <ProtectedRoute element={<Voxel mode="add" shape="cube" rotation={0}/>} /> },
 ];
 
 export default appRoutes;

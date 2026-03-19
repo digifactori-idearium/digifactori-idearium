@@ -1,7 +1,7 @@
 import Home from '@/pages/Home';
 import Ideoramas from '@/pages/Ideoramas';
 import IdeoramasPlayground from '@/pages/IdeoramasPlayground';
-import Voxel from '@/pages/Voxel';
+import VoxelLayout from '@/pages/VoxelLayout';
 
 const publicRoutes = [
   { path: '', element: <Home />, exact: true },
@@ -15,8 +15,8 @@ const publicRoutes = [
   {
     path: 'voxel',
     children: [
-      { index: true, element: <Voxel /> },
-      { path: 'playground', element: <Voxel /> },
+      { index: true, element: <VoxelLayout /> },
+      { path: 'playground', element: <VoxelLayout /> },
     ],
   },
 ];
