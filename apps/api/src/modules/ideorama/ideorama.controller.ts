@@ -236,7 +236,7 @@ const deleteIdeoramaController = async (
     fs.unlink(uploadPath, (err) => {if (err) {console.log(err)}})
     return res.status(200).json({
         status: 'success',
-        message: 'Ideorama supprimer avec succès',
+        message: 'Ideorama supprimé avec succès',
         data: null,
         status_code: 200,
       });

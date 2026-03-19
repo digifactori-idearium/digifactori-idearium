@@ -33,21 +33,18 @@ import { getEmptyIdeorama, saveIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
 const downloadAndSaveIdeorama = (
-  ideoramaId: string | undefined,
-  userId: string | undefined,
   setIsSaving: (arg: boolean) => void
 ) => {
   setIsSaving(true)
-  saveIdeorama(JSON.stringify(
-    {
+  localStorage.setItem("sceneState", JSON.stringify({
       global: sceneState.global,
       background: sceneState.background,
       info: sceneState.info,
       floor: sceneState.floor,
       objects: sceneState.objects,
-    }
-  ), ideoramaId, userId).then(() => setIsSaving(false));
+    }))
   // toast.success("Sauvegarde de l'idéorama réussie");
+  setIsSaving(false)
 };
 
 const resetIdeorama = () => {
@@ -58,7 +55,6 @@ const resetIdeorama = () => {
     sceneState.info = model.info ? model.info : sceneState.info
     sceneState.floor = model.floor ? model.floor : sceneState.floor
     sceneState.objects = model.objects ? model.objects : sceneState.objects
-    console.log("reset: ", sceneState)
     toast.success('Idéorama réinitialisé');
   });
 };
@@ -73,7 +69,7 @@ export default function Ideorama() {
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false)
-  // const [isFirstRender, setIsFirstRender] = useState(true);
+  const [isFirstRender, setIsFirstRender] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -82,31 +78,31 @@ export default function Ideorama() {
       },
     })
   );
+
+  useEffect(() => {
+    return () => {
+      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId)
+    }
+  }, [])
   
   useEffect(() => {
-    // if (!isFirstRender && !snap.isDragging) {
-    //   downloadAndSaveIdeorama(ideoramaid, userId, setIsSaving)
-    //   console.log("autoSaving", snap.objects)
-    // } else {
-    //   console.log("empty")
-       
-    //   // eslint-disable-next-line react-hooks/set-state-in-effect
-    //   setIsFirstRender(false);
-    // }
-    console.log("objects changeddd: ", snap.objects)
-  }, [snap.objects])
+    if (!isFirstRender && !snap.isDragging) {
+      downloadAndSaveIdeorama(setIsSaving)
+    } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsFirstRender(false);
+    }
+  }, [snap.global, snap.background, snap.info, snap.floor, snap.objects])
 
 
-  // useEffect(() => {
-  //   if (!isFirstRender && !snap.isDragging) {
-  //     downloadAndSaveIdeorama(ideoramaid, userId, setIsSaving)
-  //     console.log("autoSaving", snap.objects)
-  //   } else {
-  //     console.log("empty")
-  //     // eslint-disable-next-line react-hooks/set-state-in-effect
-  //     setIsFirstRender(false);
-  //   }
-  // }, [snap.isDragging])
+  useEffect(() => {
+    if (!isFirstRender && !snap.isDragging) {
+      downloadAndSaveIdeorama(setIsSaving)
+    } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsFirstRender(false);
+    }
+  }, [snap.isDragging])
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveAsset(event.active.data.current);
@@ -163,7 +159,7 @@ export default function Ideorama() {
           </button>
           {!isSaving && <button
             onClick={() =>
-              downloadAndSaveIdeorama(ideoramaid, userId, setIsSaving)
+              downloadAndSaveIdeorama(setIsSaving)
             }
             className="absolute top-3 left-[calc(50%)] z-50 p-2! main-small-btn"
           >

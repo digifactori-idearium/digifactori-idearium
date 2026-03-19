@@ -41,7 +41,6 @@ export const Scene: React.FC = () => {
       sceneState.info = model.info ? model.info : sceneState.info
       sceneState.floor = model.floor ? model.floor : sceneState.floor
       sceneState.objects = model.objects ? model.objects : sceneState.objects
-      console.log("downloaded: ", sceneState)
   })
   }, [])
 
