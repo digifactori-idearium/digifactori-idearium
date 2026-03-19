@@ -36,7 +36,12 @@ export const Scene: React.FC = () => {
   useEffect(() => {
     searchIdeorama(ideoramaid as string).then(res => {
       const model = res.data.model
-      sceneState.objects = model
+      sceneState.global = model.global
+      sceneState.background = model.background
+      sceneState.info = model.info
+      sceneState.floor = model.floor
+      sceneState.objects = model.objects
+      console.log("downloaded: ", sceneState.objects)
   })
   }, [])
 
@@ -79,8 +84,6 @@ export const Scene: React.FC = () => {
         }}
         frameloop="demand"
       >
-
-        {/* <SceneBridge /> */}
 
         {/* Scene Property */}
         <SceneGradient

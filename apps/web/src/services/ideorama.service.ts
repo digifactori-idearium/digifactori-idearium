@@ -35,7 +35,7 @@ export const searchIdeoramas = async (query: string) => {
   return [query]
 }
 
-export const getEmptyIdeorama = async(): Promise<ApiResponse<{model: Record<string, ObjectState>}>> => {
+export const getEmptyIdeorama = async(): Promise<ApiResponse<IdeoramaModel>> => {
   try {
     const response = await axios.get(
       `http://localhost:3001/api/ideorama/empty`
