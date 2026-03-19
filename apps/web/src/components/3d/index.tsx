@@ -15,12 +15,10 @@ import { SceneGradient } from './SceneGradient';
 import { searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
-
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   const { scene } = useThree();
 
   useEffect(() => {
-     
     // eslint-disable-next-line react-hooks/immutability
     scene.background = new THREE.Color(color);
   }, [color, scene]);
@@ -29,24 +27,23 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
 };
 
 export const Scene: React.FC = () => {
-
-  const {ideoramaid} = useParams();
+  const { ideoramaid } = useParams();
   const snap = useSnapshot(sceneState);
-  
+
   useEffect(() => {
     searchIdeorama(ideoramaid as string).then(res => {
-      const model = res.data.model
-      sceneState.global = model.global ? model.global : sceneState.global
-      sceneState.background = model.background ? model.background : sceneState.background
-      sceneState.info = model.info ? model.info : sceneState.info
-      sceneState.floor = model.floor ? model.floor : sceneState.floor
-      sceneState.objects = model.objects ? model.objects : sceneState.objects
-      console.log("downloaded: ", sceneState)
-  })
-  }, [])
+      const model = res.data.model;
+      sceneState.global = model.global ? model.global : sceneState.global;
+      sceneState.background = model.background
+        ? model.background
+        : sceneState.background;
+      sceneState.info = model.info ? model.info : sceneState.info;
+      sceneState.floor = model.floor ? model.floor : sceneState.floor;
+      sceneState.objects = model.objects ? model.objects : sceneState.objects;
+    });
+  }, []);
 
-  useEffect(() => {
-  }, [snap.objects])
+  useEffect(() => {}, [snap.objects]);
 
   const soundTrack = snap.global.music.currentTrack;
   const objects = snap.objects;
@@ -84,7 +81,6 @@ export const Scene: React.FC = () => {
         }}
         frameloop="demand"
       >
-
         {/* Scene Property */}
         <SceneGradient
           baseColor={snap.background.color}

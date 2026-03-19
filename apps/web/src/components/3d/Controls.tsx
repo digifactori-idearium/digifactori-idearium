@@ -8,6 +8,7 @@ interface Props {
   onDragStart: () => void;
   onDrag: (matrix: THREE.Matrix4) => void;
   objectRef?: React.RefObject<THREE.Object3D | null>;
+  objectID?: string;
   children: ReactNode;
   initialTransform?: Transform;
 }
@@ -21,6 +22,7 @@ export function Controls({
 }: Props) {
   return (
     <PivotControls
+      autoTransform={false}
       renderOrder={1}
       disableScaling={true}
       rotation={[0, 0, 0]}
@@ -30,7 +32,7 @@ export function Controls({
       depthTest={false}
       anchor={[0, 0, 0]}
       onDragStart={onDragStart}
-      onDrag={worldMatrix => {
+      onDrag={(_l, _d, worldMatrix, _dw) => {
         onDrag(worldMatrix);
       }}
       onDragEnd={onDragEnd}
