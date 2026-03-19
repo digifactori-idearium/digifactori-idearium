@@ -10,7 +10,7 @@ export function runCleanup(actionId: string) {
   cleanupMap.delete(actionId);
 }
 
-export function runAllCleanups(objectId: string, actions: ActionConfig[]) {
+export function runAllCleanups(actions: ActionConfig[]) {
   actions.forEach(a => runCleanup(a.id));
 }
 

@@ -19,29 +19,6 @@ function collectMeshes(ref: THREE.Object3D): THREE.Mesh[] {
   return meshes;
 }
 
-function makeParticle(
-  scene: THREE.Scene,
-  position: THREE.Vector3,
-  color: number
-): {
-  mesh: THREE.Mesh;
-  velocity: THREE.Vector3;
-} {
-  const geo = new THREE.SphereGeometry(0.05, 4, 4);
-  const mat = new THREE.MeshBasicMaterial({ color });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.copy(position);
-  scene.add(mesh);
-  return {
-    mesh,
-    velocity: new THREE.Vector3(
-      (Math.random() - 0.5) * 0.2,
-      Math.random() * 0.2,
-      (Math.random() - 0.5) * 0.2
-    ),
-  };
-}
-
 export const ActionRegistry: Record<
   string,
   {
