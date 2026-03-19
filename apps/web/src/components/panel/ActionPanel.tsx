@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ActionRegistry } from '@/lib/actionsRegistery';
+import { ActionRegistry } from '@/lib/actionsRegistry';
 import { actions, sceneState } from '@/stores';
 
 export const ActionPanel = () => {
@@ -86,7 +86,7 @@ export const ActionPanel = () => {
                   <button
                     onClick={() => actions.removeAction(selectedId!, action.id)}
                   >
-                    <Trash2 className="size-4 text-zinc-500 hover:text-red-400" />
+                    <Trash2 className="size-4 text-white hover:text-red-400" />
                   </button>
                 </div>
                 <AccordionContent className="pt-2 border-t border-white/5">

@@ -50,11 +50,13 @@ const downloadAndSaveIdeorama = (
 const resetIdeorama = () => {
   getEmptyIdeorama().then(res => {
     const model = res.data.model;
-    sceneState.global = model.global ? model.global : sceneState.global
-    sceneState.background = model.background ? model.background : sceneState.background
-    sceneState.info = model.info ? model.info : sceneState.info
-    sceneState.floor = model.floor ? model.floor : sceneState.floor
-    sceneState.objects = model.objects ? model.objects : sceneState.objects
+    sceneState.global = model.global ? model.global : sceneState.global;
+    sceneState.background = model.background
+      ? model.background
+      : sceneState.background;
+    sceneState.info = model.info ? model.info : sceneState.info;
+    sceneState.floor = model.floor ? model.floor : sceneState.floor;
+    sceneState.objects = model.objects ? model.objects : sceneState.objects;
     toast.success('Idéorama réinitialisé');
   });
 };
@@ -89,8 +91,8 @@ export default function Ideorama() {
     if (!isFirstRender && !snap.isDragging) {
       downloadAndSaveIdeorama(setIsSaving)
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsFirstRender(false);
+       
+      // setIsFirstRender(false);
     }
   }, [snap.global, snap.background, snap.info, snap.floor, snap.objects])
 
@@ -140,7 +142,7 @@ export default function Ideorama() {
     >
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
         <div className="w-full h-full overflow-hidden flex flex-col">
-          <Scene/>
+          <Scene />
           <button
             onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
             className="absolute top-3 left-[calc(50%-80px)] z-50 p-2! main-small-btn"

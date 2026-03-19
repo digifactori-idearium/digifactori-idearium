@@ -45,7 +45,7 @@ export function AppHeader() {
               className="mx-2 data-[orientation=vertical]:h-4"
             />
             <VoiceLink
-              to="/"
+              to="my-space"
               voiceText="Mon Espace"
               className="text-base text-foreground! hover:text-foreground/80! font-medium flex items-center gap-1.5"
             >

@@ -165,11 +165,11 @@ type TriggerType = 'onStart' | 'onTap';
 
 type ActionType =
   | 'motion'
-  | 'sound' // subtype play sound, stopsound
-  | 'say' // subtype say
-  | 'physics' //Subtype  velocity, force
-  | 'particles' //subtype explosion, fauset, flame,puff, rain, smoke, snow, steam, waterfall, stop particle
-  | 'appearance' // tint, size, opacity, glow
+  | 'sound'
+  | 'say'
+  | 'physics'
+  | 'particles'
+  | 'appearance'
   | 'stop';
 
 interface ActionConfig {

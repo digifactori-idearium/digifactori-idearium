@@ -1,4 +1,4 @@
-import { LayoutDashboard } from 'lucide-react';
+import { House, LayoutDashboard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import {
@@ -9,7 +9,12 @@ import {
 
 export function NavLink() {
   const links = {
-    home: { path: '', label: 'Ideoramas', icon: LayoutDashboard },
+    home: {
+      path: 'myIdeoramas',
+      label: 'Mes Idéoramas',
+      icon: LayoutDashboard,
+    },
+    mySpace: { path: 'my-space', label: 'Mon Espace', icon: House },
   };
 
   return (
