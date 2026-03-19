@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/immutability */
 import { useGLTF, useCursor } from '@react-three/drei';
-import { ThreeEvent } from '@react-three/fiber';
+import { ThreeEvent, useFrame } from '@react-three/fiber';
 import {
   JSX,
   useEffect,
@@ -18,8 +18,18 @@ import { useSnapshot } from 'valtio';
 
 import { Controls } from './Controls';
 
+import { useTrigger } from '@/hooks/useTrigger';
+import { setCleanup } from '@/lib/actionRuntime';
+import { ActionRegistry } from '@/lib/actionsRegistry';
 import { sceneState, actions } from '@/stores';
 
+// ─── Reusable decomposition scratch objects (avoids per-frame allocation) ────
+const _initPos = new THREE.Vector3();
+const _initQuat = new THREE.Quaternion();
+const _initScale = new THREE.Vector3();
+const _initEuler = new THREE.Euler();
+
+// Types
 interface ModelProps extends Omit<
   JSX.IntrinsicElements['mesh'],
   'name' | 'id'
@@ -34,17 +44,13 @@ type GLTFResult = GLTF & {
   materials: Record<string, THREE.Material>;
 };
 
-function collectMeshes(scene: THREE.Object3D): THREE.Mesh[] {
+//  Helpers
+function collectMeshes(obj: THREE.Object3D): THREE.Mesh[] {
   const meshes: THREE.Mesh[] = [];
-  scene.traverse(child => {
+  obj.traverse(child => {
     if ((child as THREE.Mesh).isMesh) meshes.push(child as THREE.Mesh);
   });
   return meshes;
-}
-
-function useIsSelected(id: string) {
-  const snap = useSnapshot(sceneState, { sync: false });
-  return snap.selectedObjectId === id;
 }
 
 export const Model = memo(function Model({
@@ -53,21 +59,15 @@ export const Model = memo(function Model({
   file,
   ...props
 }: ModelProps) {
-  const isSelected = useIsSelected(id);
+  //  Store
+  const snap = useSnapshot(sceneState, { sync: false });
+  const isSelected = snap.selectedObjectId === id;
+  const objectState = snap.objects[id];
 
+  // ── GLTF scene
   const { scene: gltfScene } = useGLTF(file) as unknown as GLTFResult;
 
-  const modelRef = useRef<THREE.Object3D>(null);
-  const meshesRef = useRef<THREE.Mesh[]>([]);
-
-  const isDragging = useRef(false);
-
-  const transform = useSnapshot(sceneState.objects[id].transform);
-  const style = useSnapshot(sceneState.objects[id].style);
-
-  const [hovered, setHovered] = useState(false);
-  useCursor(hovered);
-
+  // cloned model scene
   const scene = useMemo(() => {
     const clone = SkeletonUtils.clone(gltfScene);
     clone.traverse(child => {
@@ -76,7 +76,6 @@ export const Model = memo(function Model({
         mesh.material = Array.isArray(mesh.material)
           ? mesh.material.map(m => m.clone())
           : mesh.material.clone();
-
         mesh.castShadow = true;
         mesh.receiveShadow = true;
       }
@@ -84,13 +83,105 @@ export const Model = memo(function Model({
     return clone;
   }, [gltfScene]);
 
+  //  Refs
+  const modelRef = useRef<THREE.Object3D>(null);
+  const meshesRef = useRef<THREE.Mesh[]>([]);
+  const boxRef = useRef<THREE.LineSegments | null>(null);
+  const isDragging = useRef(false);
+
+  //  Derived state
+  const transform = useMemo(
+    () => ({
+      position: {
+        ...(objectState?.transform?.position ?? { x: 0, y: 0, z: 0 }),
+      },
+      rotation: {
+        ...(objectState?.transform?.rotation ?? { x: 0, y: 0, z: 0 }),
+      },
+      scale: objectState?.transform?.scale ?? 1,
+    }),
+    [objectState?.transform]
+  );
+
+  const style = objectState?.style ?? {
+    tint: '#ffffff',
+    opacity: 1,
+    glow: 0,
+    threshold: 0.5,
+  };
+
+  //  Cursor on hover
+  const [hovered, setHovered] = useState(false);
+  useCursor(hovered);
+
+  // Populate meshesRef
   useEffect(() => {
     meshesRef.current = collectMeshes(scene);
   }, [scene]);
 
+  //  Register / unregister
+  useLayoutEffect(() => {
+    if (!modelRef.current) return;
+    actions.registerObject(id, modelRef.current);
+    return () => {
+      actions.unregisterObject(id);
+    };
+  }, [id]);
+
+  // Selection box
   useEffect(() => {
-    const tintColor = style.tint || '#ffffff';
-    const tint = new THREE.Color(tintColor);
+    if (!modelRef.current) return;
+    const parent = modelRef.current.parent;
+    if (!parent) return;
+
+    if (isSelected) {
+      const box = new THREE.Box3().setFromObject(modelRef.current);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+
+      const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
+      const edges = new THREE.EdgesGeometry(boxGeo);
+      boxGeo.dispose(); // no longer needed after edges are built
+
+      const mat = new THREE.LineBasicMaterial({
+        color: 0x00ff88,
+        transparent: true,
+        opacity: 0.9,
+        // depthTest defaults to true → box is correctly occluded by the mesh
+      });
+
+      const lines = new THREE.LineSegments(edges, mat);
+      lines.position.copy(center);
+      parent.add(lines);
+      boxRef.current = lines;
+
+      return () => {
+        parent.remove(lines);
+        edges.dispose();
+        mat.dispose();
+        boxRef.current = null;
+      };
+    }
+  }, [isSelected]);
+
+  useFrame(() => {
+    if (!isSelected || !boxRef.current || !modelRef.current) return;
+
+    const box = new THREE.Box3().setFromObject(modelRef.current);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+
+    const geo = new THREE.EdgesGeometry(
+      new THREE.BoxGeometry(size.x, size.y, size.z)
+    );
+    boxRef.current.geometry.dispose();
+    boxRef.current.geometry = geo;
+    boxRef.current.position.copy(center);
+  });
+
+  //  Material style (tint / opacity / glow)
+  useEffect(() => {
+    const tint = new THREE.Color(style.tint || '#ffffff');
     const alpha = style.opacity ?? 1.0;
     const glow = style.glow ?? 0;
     const glowThreshold = style.threshold ?? 0.5;
@@ -102,63 +193,58 @@ export const Model = memo(function Model({
       if (!mat.userData.originalColor) {
         mat.userData.originalColor = mat.color.clone();
       }
+      const originalColor = mat.userData.originalColor as THREE.Color;
 
-      if (isSelected) {
-        mat.color.set('#ff6080');
-        mat.emissive.set('#ff6080');
-        mat.emissiveIntensity = 0.2;
-      } else {
-        const originalColor = mat.userData.originalColor || mat.color.clone();
+      mat.color.copy(originalColor).multiply(tint);
 
-        mat.color.copy(originalColor).multiply(tint);
+      if (glow > 0) {
+        const brightness =
+          0.299 * originalColor.r +
+          0.587 * originalColor.g +
+          0.114 * originalColor.b;
 
-        if (glow > 0) {
-          const brightness =
-            0.299 * originalColor.r +
-            0.587 * originalColor.g +
-            0.114 * originalColor.b;
-
-          if (brightness > glowThreshold) {
-            const glowFactor = Math.min(
-              1,
-              (brightness - glowThreshold) / (1 - glowThreshold)
-            );
-            const glowIntensity = glow * glowFactor;
-
-            mat.emissive.copy(tint);
-            mat.emissiveIntensity = glowIntensity;
-          } else {
-            mat.emissive.set('#000000');
-            mat.emissiveIntensity = 0;
-          }
+        if (brightness > glowThreshold) {
+          const glowFactor = Math.min(
+            1,
+            (brightness - glowThreshold) / (1 - glowThreshold)
+          );
+          mat.emissive.copy(tint);
+          mat.emissiveIntensity = glow * glowFactor;
         } else {
           mat.emissive.set('#000000');
           mat.emissiveIntensity = 0;
         }
+      } else {
+        mat.emissive.set('#000000');
+        mat.emissiveIntensity = 0;
       }
 
       mat.transparent = alpha < 1.0;
-      mat.opacity = isSelected ? 1.0 : alpha;
+      mat.opacity = alpha;
       mat.depthWrite = alpha > 0.85;
-
       mat.needsUpdate = true;
     }
-  }, [isSelected, style.tint, style.opacity, style.glow, style.threshold]);
+  }, [style.tint, style.opacity, style.glow, style.threshold]);
 
-  useLayoutEffect(() => {
-    if (!modelRef.current) return;
-    actions.registerObject(id, modelRef.current);
-    return () => {
-      actions.unregisterObject(id);
-    };
-  }, [id]);
+  // Action triggers
+  useTrigger(id, modelRef, 'onStart');
 
+  // Event handlers
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
       actions.selectObject(id);
+
+      objectState?.actions
+        ?.filter(a => a.trigger === 'onTap')
+        .forEach(a => {
+          const handler = ActionRegistry[a.subType];
+          if (handler?.execute && modelRef.current) {
+            setCleanup(a.id, handler.execute(modelRef.current, a.config));
+          }
+        });
     },
-    [id]
+    [id, objectState?.actions]
   );
 
   const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {
@@ -175,21 +261,15 @@ export const Model = memo(function Model({
 
   const handleDrag = useCallback(
     (matrix: THREE.Matrix4) => {
-      if (!modelRef?.current || !isSelected) return;
-
-      const _pos = new THREE.Vector3();
-      const _quat = new THREE.Quaternion();
-      const _scale = new THREE.Vector3();
-      const _euler = new THREE.Euler();
-
-      matrix.decompose(_pos, _quat, _scale);
-      _euler.setFromQuaternion(_quat);
-
+      if (!isSelected) return;
+      matrix.decompose(_initPos, _initQuat, _initScale);
+      _initEuler.setFromQuaternion(_initQuat);
       actions.updateSlice(
         'transform',
         {
-          position: { x: _pos.x, y: _pos.y, z: _pos.z },
-          rotation: { x: _euler.x, y: _euler.y, z: _euler.z },
+          position: { x: _initPos.x, y: _initPos.y, z: _initPos.z },
+          rotation: { x: _initEuler.x, y: _initEuler.y, z: _initEuler.z },
+          scale: _initScale.x,
         },
         id
       );
@@ -202,15 +282,17 @@ export const Model = memo(function Model({
     isDragging.current = false;
   }, []);
 
+  if (!objectState) return null;
+
   return (
     <Controls
-      key={id}
       selected={isSelected}
       initialTransform={transform}
       objectRef={modelRef}
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
       onDrag={handleDrag}
+      objectID={id}
     >
       <group
         ref={modelRef}

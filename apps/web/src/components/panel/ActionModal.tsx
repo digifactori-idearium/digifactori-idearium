@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ActionRegistry } from '@/lib/actionsRegistery';
+import { ActionRegistry } from '@/lib/actionsRegistry';
 import { sceneState, actions } from '@/stores';
 
 export const ActionPickerModal = () => {
@@ -16,10 +16,12 @@ export const ActionPickerModal = () => {
   const [category, setCategory] = useState<ActionType | null>(null);
 
   const categories = [
-    { id: 'motion', label: 'Motion', emoji: '🏃', color: '#22c55e' },
-    { id: 'sound', label: 'Sound', emoji: '🔊', color: '#ef4444' },
-    { id: 'particles', label: 'Particles', emoji: '🌧️', color: '#3b82f6' },
-    // ... add more
+    { id: 'motion', label: 'Mouvement', emoji: '🏃', color: '#22c55e' },
+    { id: 'appearance', label: 'Apparence', emoji: '🎨', color: '#3b82f6' },
+    { id: 'say', label: 'Parole', emoji: '💬', color: '#a855f7' },
+    { id: 'sound', label: 'Son', emoji: '🔊', color: '#ef4444' },
+    { id: 'particles', label: 'Effets', emoji: '✨', color: '#f59e0b' },
+    { id: 'physics', label: 'Physique', emoji: '🧲', color: '#14b8a6' },
   ];
 
   const handleAdd = (subType: string) => {
