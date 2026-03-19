@@ -61,7 +61,6 @@ type Ideorama = {
 }
 
 type IdeoramaModel = {
-  model: {
     global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
@@ -77,4 +76,3 @@ type IdeoramaModel = {
     floor: PartSettings
     objects: Record<string, ObjectState>
   };
-}

@@ -53,7 +53,7 @@ const downloadAndSaveIdeorama = (
 const resetIdeorama = (setIsFirstRender: (arg: boolean) => void) => {
   setIsFirstRender(false)
   getEmptyIdeorama().then(res => {
-    const model = res.data.model;
+    const model = res.data;
     sceneState.global = model.global
     sceneState.background = model.background
     sceneState.info = model.info
