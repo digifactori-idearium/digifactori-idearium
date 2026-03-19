@@ -9,7 +9,7 @@ import MyIdeoramas from '@/pages/MyIdeoramas';
 import MySpace from '@/pages/MySpace';
 import ProfilePage from '@/pages/Profile';
 import TextEditor from '@/pages/TextEditor';
-import Voxel from '@/pages/Voxel';
+import VoxelLayout from '@/pages/VoxelLayout';
 
 const appRoutes = [
   {
@@ -34,7 +34,6 @@ const appRoutes = [
     path: 'batch_register',
     element: <ProtectedRoute element={<BatchRegister />} />,
   },
-  { path: 'voxel', element: <ProtectedRoute element={<Voxel />} /> },
   { path: 'my-space', element: <ProtectedRoute element={<MySpace />} /> },
   { path: 'text-editor', element: <ProtectedRoute element={<TextEditor />} /> },
   {
@@ -44,6 +43,13 @@ const appRoutes = [
   {
     path: 'my-Ideas',
     element: <ProtectedRoute element={<MyIdeas />} />,
+  },
+  {
+    path: 'voxel',
+    children: [
+      { index: true, element: <VoxelLayout /> },
+      { path: 'playground', element: <VoxelLayout /> },
+    ],
   },
 ];
 

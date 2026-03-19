@@ -18,11 +18,9 @@ import {
   Settings2,
   SquarePen,
 } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Object3D, Object3DEventMap, ObjectLoader } from 'three';
-import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import { useSnapshot } from 'valtio';
 
 import Scene from '@/components/3d';
@@ -35,38 +33,38 @@ import { getEmptyIdeorama, saveIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
 const downloadAndSaveIdeorama = (
-  scene: any,
   ideoramaId: string | undefined,
-  userId: string | undefined
+  userId: string | undefined,
+  setIsSaving: (arg: boolean) => void
 ) => {
-  const exporter = new GLTFExporter();
-  exporter.parse(
-    scene,
-    () => {
-      saveIdeorama(scene.toJSON(), ideoramaId, userId);
-      toast.success("Sauvegarde de l'idéorama réussie");
-    },
-    { binary: false }
-  );
+  setIsSaving(true)
+  saveIdeorama(JSON.stringify(
+    {
+      global: sceneState.global,
+      background: sceneState.background,
+      info: sceneState.info,
+      floor: sceneState.floor,
+      objects: sceneState.objects,
+    }
+  ), ideoramaId, userId).then(() => setIsSaving(false));
+  // toast.success("Sauvegarde de l'idéorama réussie");
 };
 
-const resetIdeorama = (
-  setScene: (children: { children: Object3D<Object3DEventMap>[] }) => void
-) => {
+const resetIdeorama = () => {
   getEmptyIdeorama().then(res => {
-    const model = res.data.model;
-    const loader = new ObjectLoader();
-    setScene(loader.parse(model));
+    const model = res.data;
+    sceneState.global = model.global
+    sceneState.background = model.background
+    sceneState.info = model.info
+    sceneState.floor = model.floor
+    sceneState.objects = model.objects
+    console.log("reset: ", sceneState.objects)
     toast.success('Idéorama réinitialisé');
   });
 };
 
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
-  const [scene, setScene] = useState<{
-    children: Object3D<Object3DEventMap>[];
-  }>({ children: [] });
-  const sceneRef = useRef(null);
 
   const { ideoramaid } = useParams();
 
@@ -74,6 +72,8 @@ export default function Ideorama() {
   const userId = useUser().user?.id;
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false)
+  // const [isFirstRender, setIsFirstRender] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -82,6 +82,31 @@ export default function Ideorama() {
       },
     })
   );
+  
+  useEffect(() => {
+    // if (!isFirstRender && !snap.isDragging) {
+    //   downloadAndSaveIdeorama(ideoramaid, userId, setIsSaving)
+    //   console.log("autoSaving", snap.objects)
+    // } else {
+    //   console.log("empty")
+       
+    //   // eslint-disable-next-line react-hooks/set-state-in-effect
+    //   setIsFirstRender(false);
+    // }
+    console.log("objects changeddd: ", snap.objects)
+  }, [snap.objects])
+
+
+  // useEffect(() => {
+  //   if (!isFirstRender && !snap.isDragging) {
+  //     downloadAndSaveIdeorama(ideoramaid, userId, setIsSaving)
+  //     console.log("autoSaving", snap.objects)
+  //   } else {
+  //     console.log("empty")
+  //     // eslint-disable-next-line react-hooks/set-state-in-effect
+  //     setIsFirstRender(false);
+  //   }
+  // }, [snap.isDragging])
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveAsset(event.active.data.current);
@@ -119,7 +144,7 @@ export default function Ideorama() {
     >
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
         <div className="w-full h-full overflow-hidden flex flex-col">
-          <Scene scene={scene} setScene={setScene} sceneRef={sceneRef} />
+          <Scene/>
           <button
             onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
             className="absolute top-3 left-[calc(50%-80px)] z-50 p-2! main-small-btn"
@@ -136,9 +161,9 @@ export default function Ideorama() {
               </span>
             )}
           </button>
-          <button
+          {!isSaving && <button
             onClick={() =>
-              downloadAndSaveIdeorama(sceneRef.current, ideoramaid, userId)
+              downloadAndSaveIdeorama(ideoramaid, userId, setIsSaving)
             }
             className="absolute top-3 left-[calc(50%)] z-50 p-2! main-small-btn"
           >
@@ -146,9 +171,17 @@ export default function Ideorama() {
               <ArrowDownToLine className="w-4 h-4 text-white!" />
               <span>Sauvegarder</span>
             </span>
-          </button>
+          </button>}
+          {isSaving && <button
+            className="absolute top-3 left-[calc(50%)] z-50 p-2! main-small-btn"
+          >
+            <span className="flex items-center gap-1">
+              <ArrowDownToLine className="w-4 h-4 text-white!" />
+              <span>En train de sauvegarder</span>
+            </span>
+          </button>}
           <button
-            onClick={() => resetIdeorama(setScene)}
+            onClick={() => resetIdeorama()}
             className="absolute top-3 left-[calc(50%+125px)] z-50 p-2! main-small-btn"
           >
             <span className="flex items-center gap-1">
