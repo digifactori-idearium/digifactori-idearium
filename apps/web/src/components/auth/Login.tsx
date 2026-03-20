@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SubmitHandler, FieldValues } from 'react-hook-form';
+import { FieldValues, SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -22,7 +22,7 @@ export default function Login() {
       const response = await loginService(data.pseudo, data.password);
       setToken(response.token);
 
-      navigate('/app');
+      navigate('/app/my-space');
       setIsOpen(false);
       toast.success('Connexion réussie');
     } catch (error: any) {

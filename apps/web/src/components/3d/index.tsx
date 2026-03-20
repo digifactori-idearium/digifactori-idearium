@@ -34,6 +34,7 @@ export const Scene: React.FC = () => {
     if (!ideoramaid) return;
 
     searchIdeorama(ideoramaid).then(res => {
+      res.data.model.info.name = res.data.name
       const model = res.data.model;
       if (!model) return;
 

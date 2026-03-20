@@ -78,7 +78,7 @@ export const createIdeorama = async (
 };
 
 export const saveIdeorama = async (
-  model: string, ideoramaId: string|undefined, userId: string|undefined,
+  model: string|null, ideoramaId: string|undefined, userId: string|undefined,
 ): Promise<ApiResponse<Ideorama>> => {
   try {
     const response = await axios.post(
