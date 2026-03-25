@@ -2,6 +2,9 @@ import { PivotControls } from '@react-three/drei';
 import { ReactNode } from 'react';
 import * as THREE from 'three';
 
+// THIS CONTROL IS KEPT IN CASE
+// IT HAD MANY PROBLEM, IT WAS COPYING THE WORLD MATRIX ACCROSS OBJECTS ON THE SCENE
+// I BUILD A SCRATCH GISMO TO REPLACE IT
 interface Props {
   selected: boolean;
   onDragEnd: () => void;
