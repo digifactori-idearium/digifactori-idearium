@@ -29,7 +29,7 @@ import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { SettingPanel } from '@/components/panel/SettingPanel';
 import { useUser } from '@/providers/UserProvider';
-import { getEmptyIdeorama, saveIdeorama } from '@/services/ideorama.service';
+import { getEmptyIdeorama, saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
 const downloadAndSaveIdeorama = (
@@ -82,17 +82,44 @@ export default function Ideorama() {
   );
 
   useEffect(() => {
+    console.log("effect");
+    const handleBeforeUnload = () => {
+      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId).then(() => console.log("ha ha ha ha"));
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
-      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId)
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId).then(() => console.log("hi hi hi ha"))
+      // localStorage.setItem("sceneState", `{"global":{"brightness":"bright","visible":true,"music":{"currentTrack":"","volume":0.5},"theme":"day"},"background":{"color":"#8ecae6","accent":"#8ecae6"},"info":{"name":"Template","description":"New Ideorama","category":"none"},"floor":{"color":"#53ED83","hidden":false,"texture":"none"},"objects":{}}`)
+      console.log("cleanup");
     }
   }, [])
+
+   useEffect(() => {
+      if (!ideoramaid) return;
+    
+      console.log("here")
+      searchIdeorama(ideoramaid).then(res => {
+      console.log("in")
+        localStorage.setItem("sceneState", JSON.stringify(res.data.model))
+        res.data.model.info.name = res.data.name
+        const model = res.data.model;
+        if (!model) return;
+  
+        if (model.global) Object.assign(sceneState.global, model.global);
+        if (model.background)
+          Object.assign(sceneState.background, model.background);
+        if (model.info) Object.assign(sceneState.info, model.info);
+        if (model.floor) Object.assign(sceneState.floor, model.floor);
+        if (model.objects) sceneState.objects = model.objects;
+      });
+      console.log("there")
+    }, [ideoramaid]);
   
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
       downloadAndSaveIdeorama(setIsSaving)
-    } else {
-       
-      // setIsFirstRender(false);
     }
   }, [snap.global, snap.background, snap.info, snap.floor, snap.objects])
 
@@ -101,6 +128,7 @@ export default function Ideorama() {
     if (!isFirstRender && !snap.isDragging) {
       downloadAndSaveIdeorama(setIsSaving)
     } else {
+       
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFirstRender(false);
     }

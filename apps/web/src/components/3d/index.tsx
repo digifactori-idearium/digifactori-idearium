@@ -1,10 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
-import { GizmoHelper, GizmoViewport, OrbitControls } from '@react-three/drei';
-import { RoundedBox } from '@react-three/drei';
+import { GizmoHelper, GizmoViewport, OrbitControls, RoundedBox } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Physics, RigidBody } from '@react-three/rapier';
 import React, { Suspense, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import * as THREE from 'three';
 import { useSnapshot } from 'valtio';
 
@@ -14,7 +12,6 @@ import { Model } from './Model';
 import { SceneAudio } from './SceneAudio';
 import { SceneGradient } from './SceneGradient';
 
-import { searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
@@ -29,25 +26,7 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
 };
 
 export const Scene: React.FC = () => {
-  const { ideoramaid } = useParams();
   const snap = useSnapshot(sceneState);
-
-  useEffect(() => {
-    if (!ideoramaid) return;
-
-    searchIdeorama(ideoramaid).then(res => {
-      res.data.model.info.name = res.data.name;
-      const model = res.data.model;
-      if (!model) return;
-
-      if (model.global) Object.assign(sceneState.global, model.global);
-      if (model.background)
-        Object.assign(sceneState.background, model.background);
-      if (model.info) Object.assign(sceneState.info, model.info);
-      if (model.floor) Object.assign(sceneState.floor, model.floor);
-      if (model.objects) sceneState.objects = model.objects;
-    });
-  }, [ideoramaid]);
 
   const soundTrack = snap.global.music.currentTrack;
   const objects = snap.objects;
