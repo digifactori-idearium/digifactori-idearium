@@ -62,7 +62,7 @@ export const Model = memo(function Model({
 }: ModelProps) {
   // Store
   const snap = useSnapshot(sceneState, { sync: false });
-  const isSelected = snap.selectedObjectId === id;
+  const isSelected = snap.selectedObjectId === id && snap.mode == 'edit';
   const objectState = snap.objects[id];
 
   // GLTF

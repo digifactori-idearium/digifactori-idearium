@@ -10,7 +10,7 @@ const initialThemeData = themesToColors[INITIAL_THEME];
 export const sceneState = proxy<IdeoramaState>({
   // Global State
   id: '',
-  mode: 'edit' as IdeoramaMode,
+  mode: 'play' as IdeoramaMode,
   global: {
     brightness: 'bright' as 'bright' | 'dim' | 'dark',
     visible: true,
@@ -146,6 +146,30 @@ export const actions = {
     } else {
       sceneState.assetsTreeOpen = !sceneState.assetsTreeOpen;
     }
+  },
+
+  copyObject(object: ObjectState) {
+    const id = crypto.randomUUID();
+
+    const OFFSET = 2;
+
+    sceneState.objects[id] = {
+      info: { ...object.info },
+      transform: {
+        position: {
+          x: object.transform.position.x + OFFSET,
+          y: object.transform.position.y,
+          z: object.transform.position.z + OFFSET,
+        },
+        rotation: { ...object.transform.rotation },
+        scale: object.transform.scale,
+      },
+      style: { ...object.style },
+      advanced: { ...object.advanced },
+      actions: object.actions?.map(action => ({ ...action })) ?? [],
+    };
+
+    sceneState.selectedObjectId = id;
   },
 
   spawnAssetAtPosition(asset: AssetItem, position: THREE.Vector3) {
