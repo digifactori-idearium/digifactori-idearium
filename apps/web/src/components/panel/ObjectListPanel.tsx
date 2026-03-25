@@ -2,6 +2,8 @@ import { X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 import { useSnapshot } from 'valtio';
 
+import { SuperButton } from '../global';
+
 import {
   Accordion,
   AccordionContent,
@@ -9,7 +11,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
-import { getContrastColor } from '@/lib/3d';
 import { sceneState, actions } from '@/stores/ideorama.store';
 
 function useSelectedId() {
@@ -17,10 +18,10 @@ function useSelectedId() {
   return snap.selectedObjectId;
 }
 
-function useTextColor() {
-  const snap = useSnapshot(sceneState.background);
-  return getContrastColor(snap.color);
-}
+// function useTextColor() {
+//   const snap = useSnapshot(sceneState.background);
+//   return getContrastColor(snap.color);
+// }
 
 function useObjectsHierarchy() {
   const snap = useSnapshot(sceneState.objects);
@@ -88,7 +89,6 @@ const ObjectNode = memo(
 
 export const ObjectListPanel = memo(() => {
   const snap = useSnapshot(sceneState);
-  const textColor = useTextColor();
   const hierarchy = useObjectsHierarchy();
 
   if (!snap.assetsTreeOpen) return null;
@@ -101,17 +101,18 @@ export const ObjectListPanel = memo(() => {
           <h2 className="font-semibold text-lg">Ma list D'object</h2>
 
           <div className="flex items-center gap-2">
-            <button
+            <SuperButton
+              tooltip="Fermer"
               onClick={() => actions.toggleAssetsTree(false)}
               className="hover:bg-white/10 p-1! bg-transparent! rounded border border-white/20!"
             >
-              <X className="size-5" />
-            </button>
+              <X className="size-5 text-white!" />
+            </SuperButton>
           </div>
         </div>
 
         <Card
-          className={`h-full bg-transparent border-none! shadow-none p-2! pt-3! ${textColor}`}
+          className={`h-full bg-transparent border-none! shadow-none p-2! pt-3! text-white!`}
         >
           <CardContent className="overflow-y-auto custom-scrollbar p-0!">
             <Accordion type="multiple" className="w-full">

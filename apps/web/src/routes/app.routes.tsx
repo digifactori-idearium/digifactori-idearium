@@ -27,7 +27,7 @@ const appRoutes = [
     element: <ProtectedRoute element={<Ideorama />} />,
   },
   {
-    path: 'myIdeoramas',
+    path: 'my-ideoramas',
     element: <ProtectedRoute element={<MyIdeoramas />} />,
   },
   {
@@ -41,7 +41,7 @@ const appRoutes = [
     element: <ProtectedRoute element={<AudioEditor />} />,
   },
   {
-    path: 'my-Ideas',
+    path: 'my-ideas',
     element: <ProtectedRoute element={<MyIdeas />} />,
   },
   {

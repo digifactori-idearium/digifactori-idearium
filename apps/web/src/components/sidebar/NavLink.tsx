@@ -9,12 +9,12 @@ import {
 
 export function NavLink() {
   const links = {
+    mySpace: { path: 'my-space', label: 'Mon Espace', icon: House },
     home: {
-      path: 'myIdeoramas',
+      path: 'my-ideoramas',
       label: 'Mes Idéoramas',
       icon: LayoutDashboard,
     },
-    mySpace: { path: 'my-space', label: 'Mon Espace', icon: House },
   };
 
   return (
