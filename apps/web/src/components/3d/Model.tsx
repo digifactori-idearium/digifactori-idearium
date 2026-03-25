@@ -16,20 +16,20 @@ import { GLTF } from 'three-stdlib';
 import { SkeletonUtils } from 'three-stdlib';
 import { useSnapshot } from 'valtio';
 
-import { Controls } from './Controls';
+import { Controls } from './Gismo';
 
 import { useTrigger } from '@/hooks/useTrigger';
 import { setCleanup } from '@/lib/actionRuntime';
 import { ActionRegistry } from '@/lib/actionsRegistry';
 import { sceneState, actions } from '@/stores';
 
-// ─── Reusable decomposition scratch objects (avoids per-frame allocation) ────
+// ─── Scratch objects
 const _initPos = new THREE.Vector3();
 const _initQuat = new THREE.Quaternion();
 const _initScale = new THREE.Vector3();
 const _initEuler = new THREE.Euler();
 
-// Types
+// ─── Types
 interface ModelProps extends Omit<
   JSX.IntrinsicElements['mesh'],
   'name' | 'id'
@@ -44,7 +44,7 @@ type GLTFResult = GLTF & {
   materials: Record<string, THREE.Material>;
 };
 
-//  Helpers
+// ─── Helpers
 function collectMeshes(obj: THREE.Object3D): THREE.Mesh[] {
   const meshes: THREE.Mesh[] = [];
   obj.traverse(child => {
@@ -53,21 +53,21 @@ function collectMeshes(obj: THREE.Object3D): THREE.Mesh[] {
   return meshes;
 }
 
+// ─── Model Component
 export const Model = memo(function Model({
   id,
   name,
   file,
   ...props
 }: ModelProps) {
-  //  Store
+  // Store
   const snap = useSnapshot(sceneState, { sync: false });
   const isSelected = snap.selectedObjectId === id;
   const objectState = snap.objects[id];
 
-  // ── GLTF scene
+  // GLTF
   const { scene: gltfScene } = useGLTF(file) as unknown as GLTFResult;
 
-  // cloned model scene
   const scene = useMemo(() => {
     const clone = SkeletonUtils.clone(gltfScene);
     clone.traverse(child => {
@@ -83,13 +83,14 @@ export const Model = memo(function Model({
     return clone;
   }, [gltfScene]);
 
-  //  Refs
+  // Refs
   const modelRef = useRef<THREE.Object3D>(null);
   const meshesRef = useRef<THREE.Mesh[]>([]);
   const boxRef = useRef<THREE.LineSegments | null>(null);
+
   const isDragging = useRef(false);
 
-  //  Derived state
+  // model transform
   const transform = useMemo(
     () => ({
       position: {
@@ -110,16 +111,16 @@ export const Model = memo(function Model({
     threshold: 0.5,
   };
 
-  //  Cursor on hover
+  //  Cursor
   const [hovered, setHovered] = useState(false);
   useCursor(hovered);
 
-  // Populate meshesRef
+  //  Collect meshes
   useEffect(() => {
     meshesRef.current = collectMeshes(scene);
   }, [scene]);
 
-  //  Register / unregister
+  //  Register / unregister in scene registry
   useLayoutEffect(() => {
     if (!modelRef.current) return;
     actions.registerObject(id, modelRef.current);
@@ -141,13 +142,12 @@ export const Model = memo(function Model({
 
       const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
       const edges = new THREE.EdgesGeometry(boxGeo);
-      boxGeo.dispose(); // no longer needed after edges are built
+      boxGeo.dispose();
 
       const mat = new THREE.LineBasicMaterial({
         color: 0x00ff88,
         transparent: true,
         opacity: 0.9,
-        // depthTest defaults to true → box is correctly occluded by the mesh
       });
 
       const lines = new THREE.LineSegments(edges, mat);
@@ -194,7 +194,6 @@ export const Model = memo(function Model({
         mat.userData.originalColor = mat.color.clone();
       }
       const originalColor = mat.userData.originalColor as THREE.Color;
-
       mat.color.copy(originalColor).multiply(tint);
 
       if (glow > 0) {
@@ -202,7 +201,6 @@ export const Model = memo(function Model({
           0.299 * originalColor.r +
           0.587 * originalColor.g +
           0.114 * originalColor.b;
-
         if (brightness > glowThreshold) {
           const glowFactor = Math.min(
             1,
@@ -226,15 +224,14 @@ export const Model = memo(function Model({
     }
   }, [style.tint, style.opacity, style.glow, style.threshold]);
 
-  // Action triggers
+  // ── Action triggers
   useTrigger(id, modelRef, 'onStart');
 
-  // Event handlers
+  // ── Event handlers
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
       actions.selectObject(id);
-
       objectState?.actions
         ?.filter(a => a.trigger === 'onTap')
         .forEach(a => {
@@ -287,12 +284,12 @@ export const Model = memo(function Model({
   return (
     <Controls
       selected={isSelected}
-      initialTransform={transform}
+      objectID={id}
       objectRef={modelRef}
-      onDragEnd={handleDragEnd}
+      initialTransform={transform}
       onDragStart={handleDragStart}
       onDrag={handleDrag}
-      objectID={id}
+      onDragEnd={handleDragEnd}
     >
       <group
         ref={modelRef}
