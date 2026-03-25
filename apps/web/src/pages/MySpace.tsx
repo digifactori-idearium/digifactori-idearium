@@ -65,7 +65,7 @@ const MySpace: React.FC = () => {
   const roundCards = [
     {
       title: 'Mes Idéoramas',
-      link: '/app/myIdeoramas',
+      link: '/app/my-ideoramas',
       imageSrc: 'https://rooms.xyz/honeycomb-v2.webp',
       onActionClick: () => setCreatesNew(true),
       toolTip: 'Créer un nouveau idéorama',
