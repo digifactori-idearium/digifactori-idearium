@@ -25,6 +25,7 @@
     "@react-three/fiber": "^9.5.0",
     "@react-three/rapier": "^2.2.0",
     "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-table": "^8.21.3",
     "aos": "^2.3.4",
     "axios": "^1.13.5",
     "class-variance-authority": "^0.7.1",

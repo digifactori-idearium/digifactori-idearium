@@ -26,7 +26,7 @@ export function NavLink() {
       icon: LayoutDashboard,
     },
     userHandling: {
-      path: 'userHandling',
+      path: 'users',
       label: 'Gestion stagiaires',
       icon: Users,
       role: 'SUPERVISOR',

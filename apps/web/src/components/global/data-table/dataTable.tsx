@@ -34,11 +34,13 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  filterColumn?: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  filterColumn,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -68,16 +70,24 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="w-full max-w-6xl mx-auto sm:px-6 lg:px-8 py-10">
       <DataTablePagination table={table} />
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn('avatar')?.getFilterValue() as string) ?? ''}
-          onChange={event =>
-            table.getColumn('avatar')?.setFilterValue(event.target.value)
+          placeholder={
+            filterColumn ? `Filtrer les ${filterColumn}...` : 'Filtrer...'
           }
-          className="w-full sm:max-w-sm"
+          value={
+            filterColumn
+              ? ((table.getColumn(filterColumn)?.getFilterValue() as string) ??
+                '')
+              : ''
+          }
+          onChange={event => {
+            if (!filterColumn) return;
+            table.getColumn(filterColumn)?.setFilterValue(event.target.value);
+          }}
+          className="w-full sm:max-w-sm !border-mauve/80"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -85,7 +95,7 @@ export function DataTable<TData, TValue>({
               variant="outline"
               className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! !border-mauve"
             >
-              Columns
+              Colonnes
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -151,7 +161,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  Aucun résultat.
                 </TableCell>
               </TableRow>
             )}

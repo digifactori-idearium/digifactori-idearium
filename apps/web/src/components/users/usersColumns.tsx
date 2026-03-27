@@ -1,7 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 
-import { DataTableColumnHeader } from './dataTableColumnHeader';
+import { DataTableColumnHeader } from '../global/data-table/dataTableColumnHeader';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -20,18 +20,18 @@ export const columns: ColumnDef<Profile>[] = [
     header: ({ table }: { table: any }) => (
       <Checkbox
         className="
-      !h-5 !w-5
-      flex justify-center items-center
-      !border-1 !border-mauve
-      !bg-transparent 
-      data-[state=checked]:!bg-mauve
-      data-[state=indeterminate]:!bg-mauve
-      data-[state=checked]:!border-mauve
-      data-[state=indeterminate]:!border-mauve
-      data-[state=checked]:!text-white
-      data-[state=indeterminate]:!text-white
-      [&>svg]:!text-white
-    "
+          !h-5 !w-5
+          flex justify-center items-center
+          !border-1 !border-mauve
+          !bg-transparent 
+          data-[state=checked]:!bg-mauve
+          data-[state=indeterminate]:!bg-mauve
+          data-[state=checked]:!border-mauve
+          data-[state=indeterminate]:!border-mauve
+          data-[state=checked]:!text-white
+          data-[state=indeterminate]:!text-white
+          [&>svg]:!text-white
+        "
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && 'indeterminate')
@@ -43,16 +43,16 @@ export const columns: ColumnDef<Profile>[] = [
     cell: ({ row }: { row: any }) => (
       <Checkbox
         className="
-      !h-5 !w-5
-      flex justify-center items-center
-      !border-1 !border-mauve
-      data-[state=checked]:!bg-mauve
-      data-[state=checked]:!border-mauve
-      data-[state=checked]:!text-white
-      data-[state=unchecked]:!bg-transparent
-      data-[state=unchecked]:!border-mauve
-      [&>svg]:!text-white
-    "
+          !h-5 !w-5
+          flex justify-center items-center
+          !border-1 !border-mauve
+          data-[state=checked]:!bg-mauve
+          data-[state=checked]:!border-mauve
+          data-[state=checked]:!text-white
+          data-[state=unchecked]:!bg-transparent
+          data-[state=unchecked]:!border-mauve
+          [&>svg]:!text-white
+        "
         checked={row.getIsSelected()}
         onCheckedChange={value => row.toggleSelected(!!value)}
         aria-label="Select row"
@@ -71,7 +71,7 @@ export const columns: ColumnDef<Profile>[] = [
   },
   {
     accessorKey: 'pseudo',
-    header: 'user pseudo',
+    header: 'pseudo',
   },
   {
     accessorKey: 'avatar',
@@ -80,12 +80,8 @@ export const columns: ColumnDef<Profile>[] = [
     ),
   },
   {
-    accessorKey: 'bio',
-    header: 'biography',
-  },
-  {
     accessorKey: 'createdAt',
-    header: 'date de création',
+    header: 'Date de création',
     cell: ({ row }: { row: any }) => {
       const date = new Date(row.getValue('createdAt') as string);
 
@@ -99,7 +95,7 @@ export const columns: ColumnDef<Profile>[] = [
   },
   {
     accessorKey: 'updatedAt',
-    header: 'date de mise à jour',
+    header: 'Date de mise à jour',
     cell: ({ row }: { row: any }) => {
       const date = new Date(row.getValue('updatedAt') as string);
 

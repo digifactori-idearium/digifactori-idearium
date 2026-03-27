@@ -1,6 +1,6 @@
 import ProtectedRoute from './protected.routes';
 
-import BatchRegister from '@/components/auth';
+import UserHandling from '@/components/users/userHandling';
 import AudioEditor from '@/pages/AudioEditor';
 import Ideorama from '@/pages/Ideorama';
 import Ideoramas from '@/pages/Ideoramas';
@@ -31,8 +31,8 @@ const appRoutes = [
     element: <ProtectedRoute element={<MyIdeoramas />} />,
   },
   {
-    path: 'batch_register',
-    element: <ProtectedRoute element={<BatchRegister />} />,
+    path: 'users',
+    element: <ProtectedRoute element={<UserHandling />} />,
   },
   { path: 'my-space', element: <ProtectedRoute element={<MySpace />} /> },
   { path: 'text-editor', element: <ProtectedRoute element={<TextEditor />} /> },
