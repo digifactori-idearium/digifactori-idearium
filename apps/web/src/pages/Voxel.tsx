@@ -7,16 +7,18 @@ interface VoxelProps {
   mode: "add" | "remove" | "paint"
   shape: "cube" | "mur" | "plateforme" | "escalier"
   rotation: number
+  taille: number
 }
 
 interface VoxelPainterProps {
   mode: "add" | "remove" | "paint"
   shape: "cube" | "mur" | "plateforme" | "escalier"
   rotation: number
+  taille: number
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-function VoxelPainter({ mode, shape, rotation, setIsDragging }: VoxelPainterProps) {
+function VoxelPainter({ mode, shape, rotation, taille, setIsDragging }: VoxelPainterProps) {
 
   const planeRef = useRef<THREE.Mesh>(null!)
   const rollOverRef = useRef<THREE.Group>(null!)
@@ -127,16 +129,16 @@ function VoxelPainter({ mode, shape, rotation, setIsDragging }: VoxelPainterProp
       offsets.push([0,0,0])
   
     if (shape === "mur")
-      for (let i=0;i<5;i++)
+      for (let i=0;i<taille;i++)
         offsets.push([i*50,0,0])
   
     if (shape === "plateforme")
-      for (let x=0;x<3;x++)
-        for (let z=0;z<3;z++)
+      for (let x=0;x<taille;x++)
+        for (let z=0;z<taille;z++)
           offsets.push([x*50,0,z*50])
   
     if (shape === "escalier")
-      for (let i=0;i<5;i++)
+      for (let i=0;i<taille;i++)
         offsets.push([i*50,i*50,0])
   
     return offsets.map(o => rotateOffset(o[0],o[1],o[2]))
@@ -189,7 +191,7 @@ function VoxelPainter({ mode, shape, rotation, setIsDragging }: VoxelPainterProp
   )
 }
 
-export default function Voxel({ mode, shape, rotation }: VoxelProps) {
+export default function Voxel({ mode, shape, rotation, taille }: VoxelProps) {
 
   const [isDragging, setIsDragging] = useState(false)
 
@@ -202,6 +204,7 @@ export default function Voxel({ mode, shape, rotation }: VoxelProps) {
         mode={mode}
         shape={shape}
         rotation={rotation}
+        taille={taille}
         setIsDragging={setIsDragging}
       />
       <OrbitControls enabled={isDragging} target={[0, 25, 0]} />

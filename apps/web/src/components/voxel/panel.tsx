@@ -7,6 +7,8 @@ interface EditPanelProps {
   setShape: (s: "cube" | "mur" | "plateforme" | "escalier") => void
   rotation: number
   setRotation: React.Dispatch<React.SetStateAction<number>>
+  taille: number
+  setTaille: (n: number) => void
 }
 
 interface ButtonProps {
@@ -35,7 +37,7 @@ const Button = ({ value, label, color, mode, setMode }: ButtonProps) => (
   </button>
 )
 
-export default function EditPanel({ mode, setMode, shape, setShape, rotation, setRotation }: EditPanelProps) {
+export default function EditPanel({ mode, setMode, shape, setShape, rotation, setRotation, taille, setTaille }: EditPanelProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -50,6 +52,26 @@ export default function EditPanel({ mode, setMode, shape, setShape, rotation, se
       color: "white"
     }}>
       <b>🧱 Edition</b>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <label style={{ fontSize: 14 }}>
+          🔢 Taille des formes :
+        </label>
+      
+        <input
+          type="number"
+          value={taille}
+          onChange={(e) => setTaille(Number(e.target.value))}
+          min={1}
+          style={{
+            padding: 8,
+            borderRadius: 10,
+            border: "none",
+            background: "#333",
+            color: "white"
+          }}
+        />
+      </div>
 
       {/* DROPDOWN */}
       <div style={{ position: "relative" }}>

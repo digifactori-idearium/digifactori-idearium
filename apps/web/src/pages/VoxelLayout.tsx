@@ -7,6 +7,7 @@ export default function VoxelLayout() {
   const [mode, setMode] = useState<"add" | "remove" | "paint">("add")
   const [shape, setShape] = useState<"cube" | "mur" | "plateforme" | "escalier">("cube")
   const [rotation, setRotation] = useState(0)
+  const [taille, setTaille] = useState(1)
 
   return (
     <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
@@ -19,6 +20,8 @@ export default function VoxelLayout() {
           setShape={setShape}
           rotation={rotation}
           setRotation={setRotation}
+          taille={taille}
+          setTaille={setTaille}
         />
       </div>
 
@@ -27,6 +30,7 @@ export default function VoxelLayout() {
           mode={mode}
           shape={shape}
           rotation={rotation}
+          taille={taille}
         />
       </div>
 
