@@ -23,7 +23,7 @@ const getUploadPath = (ideoramaId: string) => {
     throw new Error("Invalid ideoramaId");
   }
   const fileName = `scene-${id}.json`
-  return path.join(process.cwd(), "uploads", fileName)
+  return path.join(process.cwd(), "uploads/scenes", fileName)
 }
 
 const createIdeoramaController = async (
@@ -85,7 +85,6 @@ const getUserIdeoramasController = async (
   try {
     const ideoramas = await getUserIdeoramas(user.userId);
     const response = await getSingleProfile(user.userId, null)
-    console.log("len: ", ideoramas.length)
 
     return res.status(200).json({
       status: 'success',
@@ -183,7 +182,7 @@ const saveIdeoramaController = async (
       await updateIdeoramaModelPath(newIdeorama.id, uploadPath)
 
       // Save in uploads dir
-      const emptyScene = fs.readFileSync('uploads/scene-empty.json')
+      const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json')
       fs.writeFileSync(uploadPath, emptyScene)
 
       return res.status(200).json({
@@ -195,7 +194,7 @@ const saveIdeoramaController = async (
     } else {
       const uploadPath = getUploadPath(req.body.ideoramaId)
 
-      fs.writeFileSync(uploadPath, JSON.stringify(req.body.ideorama.model, null, 2))
+      fs.writeFileSync(uploadPath, req.body.ideorama.model)
       return res.status(200).json({
         status: 'success',
         message: 'Ideorama mis à jour avec succès',
@@ -204,7 +203,6 @@ const saveIdeoramaController = async (
       });
     }
   } catch (error) {
-    console.log(error)
     return res.status(500).json({
       status: 'error',
       error: {
