@@ -10,6 +10,7 @@ import morgan from 'morgan';
 import authRoutes from './modules/auth/auth.route';
 import ideoramasRoutes from './modules/ideorama/ideorama.route';
 import profileRoutes from './modules/profile/profile.route';
+import voxelRoutes from './modules/voxel/voxel.route';
 
 // Env variables
 dotenv.config();
@@ -35,6 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/ideorama', ideoramasRoutes);
+app.use('/api/voxel', voxelRoutes);
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")))
 
