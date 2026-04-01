@@ -1,9 +1,16 @@
+import { gsap } from 'gsap';
 import * as THREE from 'three';
 
+import { clearTweens, addTween } from './actionRuntime';
 import { MusicSelector } from './MusicDialog';
 
 import { FormInputData } from '@/components/global/Input';
-import { addTicker } from '@/lib/actionRuntime';
+import {
+  createExplosion,
+  createRain,
+  createSnow,
+  createFlame,
+} from '@/lib/particles';
 
 export type ActionExecuteFn = (
   ref: THREE.Object3D,
@@ -38,6 +45,20 @@ export const ActionRegistry: Record<
     description: "Fait bouger l'objet dans une direction.",
     inputs: [
       {
+        name: 'direction',
+        label: 'Direction',
+        type: 'select',
+        options: [
+          { value: 'forward', text: 'Avant' },
+          { value: 'backward', text: 'Arrière' },
+          { value: 'left', text: 'Gauche' },
+          { value: 'right', text: 'Droite' },
+          { value: 'up', text: 'En Haut' },
+          { value: 'down', text: 'En Bas' },
+        ],
+        default: 'forward',
+      },
+      {
         name: 'distance',
         label: 'Distance',
         type: 'slider',
@@ -46,22 +67,49 @@ export const ActionRegistry: Record<
         default: 10,
       },
       {
-        name: 'speed',
-        label: 'Vitesse',
+        name: 'duration',
+        label: 'Temps',
         type: 'slider',
         min: 1,
-        max: 10,
+        max: 15,
+        step: 1,
         default: 5,
       },
     ],
-    execute(ref, { distance, speed }) {
-      let travelled = 0;
-      return addTicker(delta => {
-        if (travelled >= distance) return;
-        const step = speed * delta;
-        ref.position.x += step;
-        travelled += step;
+    execute(ref, { direction, distance, duration }) {
+      // clearTweens(ref);
+      let x = ref.position.x;
+      let y = ref.position.y;
+      let z = ref.position.z;
+      switch (direction) {
+        case 'forward':
+          x = ref.position.x - distance;
+          break;
+        case 'backward':
+          x = ref.position.x + distance;
+          break;
+        case 'left':
+          z = ref.position.z - distance;
+          break;
+        case 'right':
+          z = ref.position.z + distance;
+          break;
+        case 'up':
+          y = ref.position.y + distance;
+          break;
+        case 'down':
+          y = ref.position.y - distance;
+          break;
+      }
+      const tween = gsap.to(ref.position, {
+        x,
+        y,
+        z,
+        duration,
+        ease: 'power1.out',
       });
+      addTween(ref, tween);
+      return () => tween.kill();
     },
   },
 
@@ -81,20 +129,18 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { angle }) {
-      const target = ref.rotation.y + (angle * Math.PI) / 180;
-      const rotSpeed = Math.PI;
-      let done = false;
-      return addTicker(delta => {
-        if (done) return;
-        const diff = target - ref.rotation.y;
-        if (Math.abs(diff) < 0.001) {
-          ref.rotation.y = target;
-          done = true;
-          return;
-        }
-        ref.rotation.y +=
-          Math.sign(diff) * Math.min(rotSpeed * delta, Math.abs(diff));
+      // clearTweens(ref);
+
+      const radians = (angle * Math.PI) / 180;
+      const tween = gsap.to(ref.rotation, {
+        y: ref.rotation.y + radians,
+        duration: 0.5,
+        ease: 'power2.out',
       });
+
+      addTween(ref, tween);
+
+      return () => tween.kill();
     },
   },
 
@@ -110,13 +156,36 @@ export const ActionRegistry: Record<
         type: 'slider',
         min: -10,
         max: 10,
+        step: 1,
         default: 2,
       },
+      {
+        name: 'axis',
+        label: 'Comment tourner',
+        type: 'select',
+        options: [
+          { value: 'x', text: 'En Haut en Bas' },
+          { value: 'y', text: 'En Avant en Arrière' },
+          { value: 'z', text: 'Gauche Droite' },
+        ],
+        default: 'y',
+      },
     ],
-    execute(ref, { speed }) {
-      return addTicker(delta => {
-        ref.rotation.y += speed * delta;
+    execute(ref, { speed, axis }) {
+      // clearTweens(ref);
+
+      const duration = 2 / Math.abs(speed || 1);
+
+      const tween = gsap.to(ref.rotation, {
+        [axis]: `+=${Math.PI * 2}`,
+        duration,
+        ease: 'linear',
+        repeat: -1,
       });
+
+      addTween(ref, tween);
+
+      return () => tween.kill();
     },
   },
 
@@ -145,14 +214,26 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { amplitude, frequency }) {
-      const base = ref.scale.x;
-      let t = 0;
-      return addTicker(delta => {
-        t += delta;
-        ref.scale.setScalar(
-          base + Math.sin(t * frequency * Math.PI * 2) * amplitude
-        );
+      // clearTweens(ref);
+
+      const base = ref.scale.clone();
+
+      const tween = gsap.to(ref.scale, {
+        x: base.x * (1 + amplitude),
+        y: base.y * (1 + amplitude),
+        z: base.z * (1 + amplitude),
+        duration: 1 / frequency,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut',
       });
+
+      addTween(ref, tween);
+
+      return () => {
+        tween.kill();
+        ref.scale.copy(base);
+      };
     },
   },
 
@@ -180,12 +261,23 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { amplitude, speed }) {
+      // clearTweens(ref);
+
       const base = ref.rotation.z;
-      let t = 0;
-      return addTicker(delta => {
-        t += delta;
-        ref.rotation.z = base + Math.sin(t * speed) * amplitude;
+      const tween = gsap.to(ref.rotation, {
+        z: base + amplitude,
+        duration: 1 / speed,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut',
       });
+
+      addTween(ref, tween);
+
+      return () => {
+        tween.kill();
+        ref.rotation.z = base;
+      };
     },
   },
 
@@ -213,13 +305,25 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { amplitude, speed }) {
-      const base = ref.rotation.y;
+      // clearTweens(ref);
+
       const radians = (amplitude * Math.PI) / 180;
-      let t = 0;
-      return addTicker(delta => {
-        t += delta;
-        ref.rotation.y = base + Math.sin(t * speed) * radians;
+      const base = ref.rotation.y;
+
+      const tween = gsap.to(ref.rotation, {
+        y: base + radians,
+        duration: 1 / speed,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut',
       });
+
+      addTween(ref, tween);
+
+      return () => {
+        tween.kill();
+        ref.rotation.y = base;
+      };
     },
   },
 
@@ -294,14 +398,32 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { text, duration }) {
-      // Attach a CSS2D-style label via a custom userData flag.
-      // Your renderer layer reads ref.userData.speechBubble to render the bubble.
-      ref.userData.speechBubble = text;
-      const timer = setTimeout(() => {
-        ref.userData.speechBubble = null;
-      }, duration * 1000);
+      ref.userData.speechBubble = {
+        text,
+        opacity: 0,
+      };
+
+      const bubble = ref.userData.speechBubble;
+
+      // Fade in
+      const fadeIn = gsap.to(bubble, {
+        opacity: 1,
+        duration: 0.3,
+      });
+
+      // Fade out after delay
+      const fadeOut = gsap.to(bubble, {
+        opacity: 0,
+        delay: duration,
+        duration: 0.5,
+        onComplete: () => {
+          ref.userData.speechBubble = null;
+        },
+      });
+
       return () => {
-        clearTimeout(timer);
+        fadeIn.kill();
+        fadeOut.kill();
         ref.userData.speechBubble = null;
       };
     },
@@ -373,55 +495,18 @@ export const ActionRegistry: Record<
         default: 5,
       },
     ],
+
     execute(ref, { size }) {
-      const scene = ref.parent;
-      if (!scene) return () => {};
-      const count = Math.floor(size * 8);
-      const particles = Array.from({ length: count }, () => {
-        const geo = new THREE.SphereGeometry(0.05, 4, 4);
-        const mat = new THREE.MeshBasicMaterial({
-          color: Math.random() * 0xffffff,
-          transparent: true,
-        });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.copy(ref.position);
-        (scene as THREE.Scene).add(mesh);
-        return {
-          mesh,
-          vel: new THREE.Vector3(
-            (Math.random() - 0.5) * 4,
-            Math.random() * 4,
-            (Math.random() - 0.5) * 4
-          ),
-          life: 0,
-        };
+      if (!ref) return () => {};
+      return createExplosion(ref, {
+        count: Math.floor(size * 24),
+        speed: 2 + size * 0.3,
+        gravity: 5,
+        lifespan: 0.8 + size * 0.06,
+        colorA: '#ff6600',
+        colorB: '#ffdd00',
+        pointSize: 4 + size * 0.4,
       });
-
-      const gravity = new THREE.Vector3(0, -4, 0); // units/sec²
-      const duration = 0.8; // seconds
-
-      const removeTicker = addTicker(delta => {
-        let allDone = true;
-        particles.forEach(p => {
-          if (p.life > duration) return;
-          allDone = false;
-          p.life += delta;
-          p.vel.addScaledVector(gravity, delta);
-          p.mesh.position.addScaledVector(p.vel, delta);
-          (p.mesh.material as THREE.MeshBasicMaterial).opacity =
-            1 - p.life / duration;
-        });
-        if (allDone) cleanup();
-      });
-
-      const cleanup = () => {
-        removeTicker();
-        particles.forEach(p => {
-          (scene as THREE.Scene).remove(p.mesh);
-          p.mesh.geometry.dispose();
-        });
-      };
-      return cleanup;
     },
   },
 
@@ -441,49 +526,14 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { intensity }) {
-      const scene = ref.parent;
-      if (!scene) return () => {};
-      const drops: { mesh: THREE.Mesh; vy: number }[] = [];
-      let accumulator = 0;
-      const spawnInterval = 1 / intensity; // seconds between spawns
-
-      const removeTicker = addTicker(delta => {
-        accumulator += delta;
-        while (accumulator >= spawnInterval) {
-          accumulator -= spawnInterval;
-          const geo = new THREE.CylinderGeometry(0.01, 0.01, 0.15, 4);
-          const mat = new THREE.MeshBasicMaterial({
-            color: 0x88ccff,
-            transparent: true,
-            opacity: 0.7,
-          });
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(
-            ref.position.x + (Math.random() - 0.5) * 2,
-            ref.position.y + 3,
-            ref.position.z + (Math.random() - 0.5) * 2
-          );
-          (scene as THREE.Scene).add(mesh);
-          drops.push({ mesh, vy: 3 + Math.random() });
-        }
-
-        for (let i = drops.length - 1; i >= 0; i--) {
-          drops[i].mesh.position.y -= drops[i].vy * delta;
-          if (drops[i].mesh.position.y < ref.position.y - 1) {
-            (scene as THREE.Scene).remove(drops[i].mesh);
-            drops[i].mesh.geometry.dispose();
-            drops.splice(i, 1);
-          }
-        }
+      if (!ref) return () => {};
+      return createRain(ref, {
+        count: Math.floor(intensity * 20),
+        speed: 2 + intensity * 0.15,
+        spread: 3,
+        height: 5,
+        color: '#88ccff',
       });
-
-      return () => {
-        removeTicker();
-        drops.forEach(d => {
-          (scene as THREE.Scene).remove(d.mesh);
-          d.mesh.geometry.dispose();
-        });
-      };
     },
   },
 
@@ -503,62 +553,13 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { speed }) {
-      const scene = ref.parent;
-      if (!scene) return () => {};
-      const flakes: {
-        mesh: THREE.Mesh;
-        vy: number;
-        drift: number;
-        t: number;
-      }[] = [];
-      let accumulator = 0;
-
-      const removeTicker = addTicker(delta => {
-        accumulator += delta;
-        while (accumulator >= 0.25) {
-          // spawn every 250ms
-          accumulator -= 0.25;
-          const geo = new THREE.SphereGeometry(0.04, 4, 4);
-          const mat = new THREE.MeshBasicMaterial({
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.85,
-          });
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(
-            ref.position.x + (Math.random() - 0.5) * 3,
-            ref.position.y + 3,
-            ref.position.z + (Math.random() - 0.5) * 3
-          );
-          (scene as THREE.Scene).add(mesh);
-          flakes.push({
-            mesh,
-            vy: speed * (0.5 + Math.random() * 0.5),
-            drift: Math.random() * 2,
-            t: 0,
-          });
-        }
-
-        for (let i = flakes.length - 1; i >= 0; i--) {
-          const f = flakes[i];
-          f.t += delta;
-          f.mesh.position.y -= f.vy * delta;
-          f.mesh.position.x += Math.sin(f.t * f.drift) * 0.01;
-          if (f.mesh.position.y < ref.position.y - 1) {
-            (scene as THREE.Scene).remove(f.mesh);
-            f.mesh.geometry.dispose();
-            flakes.splice(i, 1);
-          }
-        }
+      if (!ref) return () => {};
+      return createSnow(ref, {
+        count: 120,
+        speed,
+        spread: 3.5,
+        height: 5,
       });
-
-      return () => {
-        removeTicker();
-        flakes.forEach(f => {
-          (scene as THREE.Scene).remove(f.mesh);
-          f.mesh.geometry.dispose();
-        });
-      };
     },
   },
 
@@ -578,76 +579,13 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { height }) {
-      const scene = ref.parent;
-      if (!scene) return () => {};
-      const embers: {
-        mesh: THREE.Mesh;
-        vel: THREE.Vector3;
-        life: number;
-        maxLife: number;
-      }[] = [];
-      let accumulator = 0;
-
-      const removeTicker = addTicker(delta => {
-        accumulator += delta;
-        while (accumulator >= 0.05) {
-          // spawn every 50ms
-          accumulator -= 0.05;
-          const geo = new THREE.SphereGeometry(
-            0.04 + Math.random() * 0.04,
-            4,
-            4
-          );
-          const mat = new THREE.MeshBasicMaterial({
-            color: Math.random() > 0.5 ? 0xff4400 : 0xff8800,
-            transparent: true,
-          });
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position
-            .copy(ref.position)
-            .add(
-              new THREE.Vector3(
-                (Math.random() - 0.5) * 0.3,
-                0,
-                (Math.random() - 0.5) * 0.3
-              )
-            );
-          (scene as THREE.Scene).add(mesh);
-          embers.push({
-            mesh,
-            vel: new THREE.Vector3(
-              (Math.random() - 0.5) * 0.3,
-              height * 0.8,
-              (Math.random() - 0.5) * 0.3
-            ),
-            life: 0,
-            maxLife: 0.4 + Math.random() * 0.4, // seconds
-          });
-        }
-
-        for (let i = embers.length - 1; i >= 0; i--) {
-          const e = embers[i];
-          e.life += delta;
-          e.mesh.position.addScaledVector(e.vel, delta);
-          e.vel.x += (Math.random() - 0.5) * 0.1 * delta;
-          const progress = e.life / e.maxLife;
-          (e.mesh.material as THREE.MeshBasicMaterial).opacity = 1 - progress;
-          e.mesh.scale.setScalar(1 - progress * 0.5);
-          if (e.life >= e.maxLife) {
-            (scene as THREE.Scene).remove(e.mesh);
-            e.mesh.geometry.dispose();
-            embers.splice(i, 1);
-          }
-        }
+      if (!ref) return () => {};
+      return createFlame(ref, {
+        count: 80,
+        height: height * 0.5,
+        spread: 0.15,
+        lifespan: 0.5 + height * 0.06,
       });
-
-      return () => {
-        removeTicker();
-        embers.forEach(e => {
-          (scene as THREE.Scene).remove(e.mesh);
-          e.mesh.geometry.dispose();
-        });
-      };
     },
   },
 
@@ -781,6 +719,15 @@ export const ActionRegistry: Record<
     category: 'stop',
     description: 'Arrête toutes les animations de cet objet.',
     inputs: [],
-    execute: () => () => {},
+    execute(ref) {
+      clearTweens(ref);
+
+      const cleanups = ref.userData.cleanups || [];
+      cleanups.forEach((fn: () => void) => fn());
+
+      ref.userData.cleanups = [];
+
+      return () => {};
+    },
   },
 };

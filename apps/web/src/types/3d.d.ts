@@ -97,6 +97,7 @@ interface IdeoramaState {
   //Action management
   activeSettingView: 'model' | 'actions';
   actionPickerOpen: boolean;
+  pendingTrigger: TriggerType;
 }
 
 // OBJECT ASSETS TYPES
@@ -139,6 +140,7 @@ interface ObjectState {
   advanced: AdvancedSettings;
 
   actions?: ActionConfig[];
+  actionsVersion?: number;
 }
 type TransformMode = 'translate' | 'rotate' | 'scale';
 type ObjectSliceKey = keyof ObjectState;
