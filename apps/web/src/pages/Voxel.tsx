@@ -60,10 +60,10 @@ function VoxelPainter({
   const isPainting = useRef(false);
 
   const cubeGeo = useMemo(() => new THREE.BoxGeometry(50, 50, 50), []);
-  const cubeMaterial = useMemo(
-    () => new THREE.MeshLambertMaterial({ color: 0xfeb74c }),
-    []
-  );
+  // const cubeMaterial = useMemo(
+  //   () => new THREE.MeshLambertMaterial({ color: 0xfeb74c }),
+  //   []
+  // );
 
   const snapPosition = (pos: THREE.Vector3) => {
     pos.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
