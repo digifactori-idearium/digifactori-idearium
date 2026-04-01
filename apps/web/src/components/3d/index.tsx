@@ -1,5 +1,10 @@
 import { useDroppable } from '@dnd-kit/core';
-import { GizmoHelper, GizmoViewport, OrbitControls, RoundedBox } from '@react-three/drei';
+import {
+  GizmoHelper,
+  GizmoViewport,
+  OrbitControls,
+  RoundedBox,
+} from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Physics, RigidBody } from '@react-three/rapier';
 import React, { Suspense, useEffect } from 'react';
@@ -12,6 +17,7 @@ import { Model } from './Model';
 import { SceneAudio } from './SceneAudio';
 import { SceneGradient } from './SceneGradient';
 
+import { ActionTicker } from '@/lib/actionRuntime';
 import { actions, sceneState } from '@/stores';
 
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
@@ -62,8 +68,10 @@ export const Scene: React.FC = () => {
             actions.selectObject(null);
           }
         }}
-        frameloop="demand"
       >
+        {/* Action Ticker */}
+        <ActionTicker />
+
         {/* Scene Property */}
         <SceneGradient
           baseColor={snap.background.color}

@@ -7,6 +7,7 @@ export interface VoxelPoint {
   x: number;
   y: number;
   z: number;
+  color?: string;
 }
 
 interface BaseVoxelProps {
@@ -22,6 +23,7 @@ interface VoxelProps extends BaseVoxelProps {}
 
 interface VoxelMotorProps extends BaseVoxelProps {
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
+  selectedColor: string;
 }
 
 
@@ -47,6 +49,7 @@ function VoxelMotor({
   rotation,
   voxels,
   taille,
+  selectedColor,
   onVoxelsChange,
   setIsDragging,
 }: VoxelMotorProps) {
@@ -54,12 +57,13 @@ function VoxelMotor({
   const rollOverRef = useRef<THREE.Group>(null!);
 
   const clickStartTime = useRef(0);
+  const isPainting = useRef(false);
 
   const cubeGeo = useMemo(() => new THREE.BoxGeometry(50, 50, 50), []);
-  const cubeMaterial = useMemo(
-    () => new THREE.MeshLambertMaterial({ color: 0xfeb74c }),
-    []
-  );
+  // const cubeMaterial = useMemo(
+  //   () => new THREE.MeshLambertMaterial({ color: 0xfeb74c }),
+  //   []
+  // );
 
   const snapPosition = (pos: THREE.Vector3) => {
     pos.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
@@ -86,16 +90,41 @@ function VoxelMotor({
     }
 
     snapPosition(pos);
+    if (mode === 'paint' && isPainting.current && event.object !== planeRef.current) {
+      const basePosition = event.object.position.clone();
+      const positionsToPaint: VoxelPoint[] = [];
+
+      getShapeOffsets().forEach(o => {
+        const p = basePosition.clone().add(new THREE.Vector3(o[0], o[1], o[2]));
+        snapPosition(p);
+        positionsToPaint.push(vector3ToVoxelPoint(p));
+      });
+
+      onVoxelsChange(prev =>
+        prev.map(v =>
+          positionsToPaint.some(p => sameVoxel(p, v))
+            ? { ...v, color: selectedColor }
+            : v
+        )
+      );
+    }
+
+
   };
 
   const onPointerDown = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
     clickStartTime.current = performance.now();
+
+    if (mode === 'paint') {
+      isPainting.current = true;
+    }
   };
 
   const onPointerUp = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
     setIsDragging(false);
+    isPainting.current = false;
 
     const clickDuration = performance.now() - clickStartTime.current;
     if (clickDuration > 150) return;
@@ -129,7 +158,7 @@ function VoxelMotor({
       getShapeOffsets().forEach(o => {
         const p = position.clone().add(new THREE.Vector3(o[0], o[1], o[2]));
         snapPosition(p);
-        newVoxels.push(vector3ToVoxelPoint(p));
+        newVoxels.push({ ...vector3ToVoxelPoint(p), color: '#feb74c', });
       });
 
       onVoxelsChange(prev => {
@@ -147,6 +176,22 @@ function VoxelMotor({
 
         return merged;
       });
+    } else if (mode === 'paint') {
+      const positionsToPaint: VoxelPoint[] = [];
+
+      getShapeOffsets().forEach(o => {
+        const p = position.clone().add(new THREE.Vector3(o[0], o[1], o[2]));
+        snapPosition(p);
+        positionsToPaint.push(vector3ToVoxelPoint(p));
+      });
+
+      onVoxelsChange(prev =>
+        prev.map(v =>
+          positionsToPaint.some(p => sameVoxel(p, v))
+            ? { ...v, color: selectedColor }
+            : v
+        )
+      );
     }
   };
 
@@ -194,7 +239,7 @@ function VoxelMotor({
         {getShapeOffsets().map((o, i) => (
           <mesh key={i} position={o as [number, number, number]}>
             <boxGeometry args={[50, 50, 50]} />
-            <meshBasicMaterial color={0xff0000} transparent opacity={0.35} />
+            <meshBasicMaterial color={selectedColor} transparent opacity={0.4} />
           </mesh>
         ))}
       </group>
@@ -220,8 +265,9 @@ function VoxelMotor({
           onPointerDown={onPointerDown}
           onPointerUp={onPointerUp}
           geometry={cubeGeo}
-          material={cubeMaterial}
-        />
+        >
+          <meshStandardMaterial color={voxel.color || '#feb74c'} />
+        </mesh>
       ))}
     </>
   );
@@ -230,8 +276,19 @@ function VoxelMotor({
 export default function Voxel({mode, shape, rotation, taille, voxels, onVoxelsChange,}: VoxelProps) {
   
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('#f97316');
+  const COLORS = [
+    '#f97316', '#fb923c', '#fdba74',
+    '#3b82f6', '#60a5fa', '#93c5fd',
+    '#10b981', '#34d399', '#6ee7b7',
+    '#ef4444', '#f87171', '#fca5a5',
+    '#eab308', '#fde047', '#fef08a',
+    '#8b5cf6', '#a78bfa', '#c4b5fd',
+    '#000000', '#374151', '#9ca3af', '#ffffff'
+  ];
 
   return (
+  <div className="w-full h-full relative">
     <Canvas
       style={{ width: '100%', height: '100%' }}
       camera={{ position: [500, 800, 1300], fov: 45, near: 1, far: 10000 }}
@@ -240,12 +297,31 @@ export default function Voxel({mode, shape, rotation, taille, voxels, onVoxelsCh
         mode={mode}
         shape={shape}
         rotation={rotation}
-        taille={taille}
+        taille={taille} // ✅ IMPORTANT (manquait)
         voxels={voxels}
         onVoxelsChange={onVoxelsChange}
         setIsDragging={setIsDragging}
+        selectedColor={selectedColor}
       />
       <OrbitControls enabled={isDragging} target={[0, 25, 0]} />
     </Canvas>
-  );
-}
+
+    {/* 🎨 PALETTE */}
+    {mode === 'paint' && (
+      <div className="absolute top-4 right-4 grid grid-cols-4 gap-2 p-4 bg-black/40 backdrop-blur-md rounded-xl shadow-xl">
+        {COLORS.map((c) => (
+          <div
+            key={c}
+            onClick={() => setSelectedColor(c)}
+            className={`w-8 h-8 rounded-lg cursor-pointer border-2 transition ${
+              selectedColor === c
+                ? 'border-white scale-110'
+                : 'border-transparent'
+            }`}
+            style={{ backgroundColor: c }}
+          />
+        ))}
+      </div>
+    )}
+  </div>
+)

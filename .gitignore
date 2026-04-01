@@ -145,3 +145,5 @@ vite.config.ts.timestamp-*
 .temp/
 
 ZNOTE.md
+zm.md
+**/uploads/

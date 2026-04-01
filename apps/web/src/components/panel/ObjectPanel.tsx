@@ -157,7 +157,7 @@ export const ObjectConfigPanel = () => {
         <SuperButton
           tooltip="Supprimer l'objet"
           voiceText="Supprimer l'objet"
-          className="icon-round-btn bg-red-900/20! hover:bg-red-900/40! text-red-500!"
+          className="icon-round-btn"
           onClick={handleDelete}
         >
           <Trash className="size-6!" />

@@ -1,9 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { subscribe } from 'valtio';
+import { subscribeKey } from 'valtio/utils';
 
-import { setCleanup, runCleanup } from '@/lib/actionRuntime';
+import {
+  setCleanup,
+  runCleanup,
+  cleanObject,
+  clearTweens,
+} from '@/lib/actionRuntime';
 import { ActionRegistry } from '@/lib/actionsRegistry';
 import { sceneState } from '@/stores';
 
@@ -11,46 +16,96 @@ export function useTrigger(
   objectId: string,
   ref: React.RefObject<THREE.Object3D | null>,
   trigger: TriggerType
-) {
-  const prevKeyRef = useRef<string>('');
+): void {
+  const prevVersionRef = useRef<number>(-1);
   const runningIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!ref.current) return;
-
-    const runActions = () => {
-      const obj = sceneState.objects[objectId];
-      if (!ref.current) return;
-
-      const triggered = obj?.actions?.filter(a => a.trigger === trigger) ?? [];
-
-      const key = JSON.stringify(
-        triggered.map(a => ({ id: a.id, config: a.config }))
-      );
-      if (key === prevKeyRef.current) return;
-      prevKeyRef.current = key;
-
+    //  Stop every action this hook started
+    function stopOwned(): void {
       runningIdsRef.current.forEach(id => runCleanup(id));
       runningIdsRef.current.clear();
+    }
 
-      triggered.forEach(a => {
-        const handler = ActionRegistry[a.subType];
-        if (handler?.execute && ref.current) {
-          setCleanup(a.id, handler.execute(ref.current, { ...a.config }));
-          runningIdsRef.current.add(a.id);
+    // Full object stop: tweens + all registered cleanups + particles
+    function stopObject(): void {
+      stopOwned();
+
+      if (ref.current) {
+        clearTweens(ref.current);
+
+        const obj = sceneState.objects[objectId];
+        if (obj?.transform) {
+          const t = obj.transform;
+
+          // Restore ref from store
+          ref.current.position.set(t.position.x, t.position.y, t.position.z);
+          ref.current.rotation.set(t.rotation.x, t.rotation.y, t.rotation.z);
+          ref.current.scale.set(t.scale, t.scale, t.scale);
         }
+      }
+
+      cleanObject(objectId);
+    }
+
+    //  Start all matching actions
+    function startActions(): void {
+      if (!ref.current) return;
+      const obj = sceneState.objects[objectId];
+      if (!obj) return;
+
+      const version = obj.actionsVersion ?? 0;
+      if (version === prevVersionRef.current) return;
+      prevVersionRef.current = version;
+
+      stopOwned();
+
+      const triggered: ActionConfig[] =
+        obj.actions?.filter((a: ActionConfig) => a.trigger === trigger) ?? [];
+
+      triggered.forEach((a: ActionConfig) => {
+        const handler = ActionRegistry[a.subType];
+        if (!handler?.execute || !ref.current) return;
+
+        const cleanup = handler.execute(ref.current, { ...a.config });
+        setCleanup(a.id, cleanup, objectId);
+        runningIdsRef.current.add(a.id);
       });
-    };
+    }
 
-    runActions();
+    // Mode subscription
+    const unsubMode = subscribeKey(sceneState, 'mode', (mode: string) => {
+      if (mode === 'edit') {
+        stopObject();
+        prevVersionRef.current = -1;
+        return;
+      }
+      if (mode === 'play') {
+        prevVersionRef.current = -1;
+        startActions();
+      }
+    });
 
-    const unsub = subscribe(sceneState, () => runActions());
+    // Object subscription
+    const unsubObject = subscribeKey(
+      sceneState.objects,
+      objectId as keyof typeof sceneState.objects,
+      () => {
+        if (sceneState.mode === 'play') startActions();
+      }
+    );
+
+    // Initial run
+    if (sceneState.mode === 'play') {
+      prevVersionRef.current = -1;
+      startActions();
+    }
 
     return () => {
-      unsub();
-      runningIdsRef.current.forEach(id => runCleanup(id));
-      runningIdsRef.current.clear();
-      prevKeyRef.current = '';
+      unsubMode();
+      unsubObject();
+      stopObject();
+      prevVersionRef.current = -1;
     };
   }, [objectId, trigger]);
 }

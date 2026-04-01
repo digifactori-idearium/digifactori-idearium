@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { proxy } from 'valtio';
 
 import { themesToColors } from '@/lib/theme';
+import { round } from '@/lib/utils';
 
 const INITIAL_THEME = 'day' as keyof typeof themesToColors;
 
@@ -41,6 +42,7 @@ export const sceneState = proxy<IdeoramaState>({
   //Action management
   activeSettingView: 'model',
   actionPickerOpen: false,
+  pendingTrigger: 'onStart' as TriggerType,
 });
 
 export const sceneRegistry = new Map<string, THREE.Object3D>();
@@ -167,6 +169,7 @@ export const actions = {
       style: { ...object.style },
       advanced: { ...object.advanced },
       actions: object.actions?.map(action => ({ ...action })) ?? [],
+      actionsVersion: 0,
     };
 
     sceneState.selectedObjectId = id;
@@ -182,38 +185,51 @@ export const actions = {
         file: asset.file,
       },
       transform: {
-        position: { x: position.x, y: position.y, z: position.z },
+        position: {
+          x: round(position.x),
+          y: round(position.y),
+          z: round(position.z),
+        },
         rotation: { x: 0, y: 0, z: 0 },
         scale: 1,
       },
       style: { tint: '#ffffff', opacity: 1, glow: 0, threshold: 0 },
       advanced: { parent: null, physics: false, hidden: false, locked: false },
       actions: [],
+      actionsVersion: 0,
     };
 
     sceneState.selectedObjectId = id;
   },
+
   // ACTIONS NAMAGEMENT
   addAction(objectId: string, action: ActionConfig) {
     const obj = sceneState.objects[objectId];
     if (!obj) return;
     (obj.actions ??= []).push(action);
+    obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
   },
 
   removeAction(objectId: string, actionId: string) {
     const obj = sceneState.objects[objectId];
     if (!obj?.actions) return;
+    obj.actions = obj.actions.filter(a => a.id !== actionId);
+    obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
+  },
 
-    const idx = obj.actions.findIndex(a => a.id === actionId);
-    if (idx !== -1) obj.actions.splice(idx, 1);
+  bumpActionsVersion(objectId: string) {
+    const obj = sceneState.objects[objectId];
+    if (!obj) return;
+    obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
   },
 
   // Views
   setSettingView: (view: 'model' | 'actions') => {
     sceneState.activeSettingView = view;
   },
-  openActionPicker: (open: boolean) => {
+  openActionPicker: (open: boolean, trigger: TriggerType = 'onStart') => {
     sceneState.actionPickerOpen = open;
+    sceneState.pendingTrigger = trigger;
   },
 };
 
