@@ -4,6 +4,7 @@ import { ArrowDown } from 'lucide-react';
 import { useRef, useState, useCallback, useEffect } from 'react';
 import * as THREE from 'three';
 
+import { round } from '@/lib/utils';
 import { actions } from '@/stores';
 
 // ─── Types
@@ -34,7 +35,7 @@ export interface ControlsProps {
   onDragEnd?: () => void;
 }
 
-// ─── Design tokens
+// Design tokens
 const OFFSET_GAP = 0.2;
 const PILL_GAP = 0.15;
 
@@ -61,7 +62,7 @@ const _scaleVec = new THREE.Vector3();
 const _raycaster = new THREE.Raycaster();
 const _ndc = new THREE.Vector2();
 
-// ─── Pill label
+// Pill label
 function Pill({
   children,
   color,
@@ -82,10 +83,10 @@ function Pill({
       onPointerLeave={() => setHovered(false)}
       style={{
         display: 'inline-block',
-        background: lit || hovered ? `${color}ee` : `${color}22`,
+        background: lit || hovered ? `${color}ee` : `${color}33`,
         border: `2px solid ${color}`,
         outline: '1px solid rgba(255,255,255,0.3)',
-        color: lit || hovered ? '#000' : color,
+        color: lit || hovered ? '#000' : '#fff',
         borderRadius: 24,
         padding: '3px 12px',
         fontSize: 12,
@@ -115,7 +116,7 @@ function Pill({
   );
 }
 
-// ─── Handle Components
+// Handle Components
 
 // To change the arrow direction based on the camera
 const _originWorld = new THREE.Vector3();
@@ -214,7 +215,7 @@ function RotateHandle({ radius, isActive, onPointerDown }: any) {
   );
 }
 
-// ─── Main Controls Component
+// Main Controls Component
 export function Controls({
   selected,
   objectID,
@@ -379,14 +380,14 @@ export function Controls({
         'transform',
         {
           position: {
-            x: livePos.current.x,
-            y: livePos.current.y,
-            z: livePos.current.z,
+            x: round(livePos.current.x),
+            y: round(livePos.current.y),
+            z: round(livePos.current.z),
           },
           rotation: {
-            x: obj.rotation.x,
-            y: liveRotY.current,
-            z: obj.rotation.z,
+            x: round(obj.rotation.x),
+            y: round(liveRotY.current),
+            z: round(obj.rotation.z),
           },
           scale: initialTransform.scale,
         },
