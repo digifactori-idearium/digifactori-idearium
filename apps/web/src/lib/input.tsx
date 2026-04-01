@@ -280,8 +280,8 @@ const objectInfoInputs = [
 ];
 
 const transformInputs = [
-  { name: 'position', label: 'Position (x,y,z)', type: 'vector3' },
-  { name: 'rotation', label: 'Rotation (x,y,z)', type: 'vector3' },
+  { name: 'position', label: 'Position (x,y,z)', type: 'vector3', step: 0.1 },
+  { name: 'rotation', label: 'Rotation (x,y,z)', type: 'vector3', step: 0.1 },
   { name: 'scale', label: 'Échelle', type: 'slider', max: 8 },
 ];
 

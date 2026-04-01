@@ -1,8 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
-import { GizmoHelper, GizmoViewport, OrbitControls } from '@react-three/drei';
+import { GizmoHelper, GizmoViewport, OrbitControls, RoundedBox } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
+import { Physics, RigidBody } from '@react-three/rapier';
 import React, { Suspense, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import * as THREE from 'three';
 import { useSnapshot } from 'valtio';
 
@@ -12,15 +12,12 @@ import { Model } from './Model';
 import { SceneAudio } from './SceneAudio';
 import { SceneGradient } from './SceneGradient';
 
-import { searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
-
 
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
   const { scene } = useThree();
 
   useEffect(() => {
-     
     // eslint-disable-next-line react-hooks/immutability
     scene.background = new THREE.Color(color);
   }, [color, scene]);
@@ -29,24 +26,7 @@ const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
 };
 
 export const Scene: React.FC = () => {
-
-  const {ideoramaid} = useParams();
   const snap = useSnapshot(sceneState);
-  
-  useEffect(() => {
-    searchIdeorama(ideoramaid as string).then(res => {
-      const model = res.data.model
-      sceneState.global = model.global
-      sceneState.background = model.background
-      sceneState.info = model.info
-      sceneState.floor = model.floor
-      sceneState.objects = model.objects
-      console.log("downloaded: ", sceneState.objects)
-  })
-  }, [])
-
-  useEffect(() => {
-  }, [snap.objects])
 
   const soundTrack = snap.global.music.currentTrack;
   const objects = snap.objects;
@@ -84,7 +64,6 @@ export const Scene: React.FC = () => {
         }}
         frameloop="demand"
       >
-
         {/* Scene Property */}
         <SceneGradient
           baseColor={snap.background.color}
@@ -94,20 +73,41 @@ export const Scene: React.FC = () => {
         {soundTrack && <SceneAudio soundTrack={soundTrack} />}
         <AssetsDropHandler />
 
-        {/* Basic Floor */}
-        <mesh
-          name="floor"
-          rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, -0.01, 0]}
-          receiveShadow
-          visible={!snap.floor.hidden}
-        >
-          <planeGeometry args={[20, 20]} />
-          <meshStandardMaterial
-            color={snap.floor.color}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
+        {/* Physics to continue after */}
+        <Physics gravity={[0, -9.81, 0]}>
+          {/* Basic Floor */}
+          <RigidBody type="fixed" colliders="cuboid">
+            <RoundedBox
+              name="floor"
+              args={[20, 0.3, 20]}
+              radius={0.15}
+              smoothness={4}
+              position={[0, -0.15, 0]}
+              receiveShadow
+              castShadow
+              visible={!snap.floor.hidden}
+            >
+              <meshStandardMaterial
+                color={snap.floor.color}
+                roughness={0.9}
+                metalness={0}
+                envMapIntensity={0} //kills reflections
+              />
+            </RoundedBox>
+          </RigidBody>
+
+          {/*  Objects/Assets  */}
+          <Suspense fallback={null}>
+            {Object.entries(objects).map(([id, objectData]) => (
+              <Model
+                key={id}
+                id={id}
+                name={objectData.info.name || 'persone'}
+                file={objectData.info.file || '/models/person.glb'}
+              />
+            ))}
+          </Suspense>
+        </Physics>
 
         {/*  Lights  */}
         <ambientLight intensity={0.6} />
@@ -124,18 +124,6 @@ export const Scene: React.FC = () => {
             args={[-100, 100, 100, -100, 0.5, 500]}
           />
         </directionalLight>
-
-        {/*  Objects/Assets  */}
-        <Suspense fallback={null}>
-          {Object.entries(objects).map(([id, objectData]) => (
-            <Model
-              key={id}
-              id={id}
-              name={objectData.info.name || 'persone'}
-              file={objectData.info.file || '/models/person.glb'}
-            />
-          ))}
-        </Suspense>
 
         {/* Orbit Control */}
         <OrbitControls

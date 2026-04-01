@@ -9,11 +9,11 @@ import { NavLinkSkeleton } from './NavSkeleton';
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroupContent,
+  SidebarFooter,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarHeader,
   SidebarMenuButton,
-  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { useUser } from '@/providers/UserProvider';
 

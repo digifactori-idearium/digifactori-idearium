@@ -1,11 +1,15 @@
 import ProtectedRoute from './protected.routes';
 
 import BatchRegister from '@/components/auth';
+import AudioEditor from '@/pages/AudioEditor';
 import Ideorama from '@/pages/Ideorama';
 import Ideoramas from '@/pages/Ideoramas';
+import MyIdeas from '@/pages/MyIdeas';
 import MyIdeoramas from '@/pages/MyIdeoramas';
+import MySpace from '@/pages/MySpace';
 import ProfilePage from '@/pages/Profile';
-import Voxel from '@/pages/Voxel';
+import TextEditor from '@/pages/TextEditor';
+import VoxelLayout from '@/pages/VoxelLayout';
 
 const appRoutes = [
   {
@@ -23,14 +27,30 @@ const appRoutes = [
     element: <ProtectedRoute element={<Ideorama />} />,
   },
   {
-    path: 'myIdeoramas',
+    path: 'my-ideoramas',
     element: <ProtectedRoute element={<MyIdeoramas />} />,
   },
   {
     path: 'batch_register',
     element: <ProtectedRoute element={<BatchRegister />} />,
   },
-  { path: 'voxel', element: <ProtectedRoute element={<Voxel mode="add" shape="cube" rotation={0}/>} /> },
+  { path: 'my-space', element: <ProtectedRoute element={<MySpace />} /> },
+  { path: 'text-editor', element: <ProtectedRoute element={<TextEditor />} /> },
+  {
+    path: 'audio-editor',
+    element: <ProtectedRoute element={<AudioEditor />} />,
+  },
+  {
+    path: 'my-ideas',
+    element: <ProtectedRoute element={<MyIdeas />} />,
+  },
+  {
+    path: 'voxel',
+    children: [
+      { index: true, element: <VoxelLayout /> },
+      { path: 'playground', element: <VoxelLayout /> },
+    ],
+  },
 ];
 
 export default appRoutes;

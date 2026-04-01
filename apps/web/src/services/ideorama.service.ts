@@ -19,7 +19,7 @@ export const searchIdeorama = async (
         ideoramaId: ideoramaId,
       }
     );
-
+    console.log("search Ideorama: ", response)
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -40,7 +40,7 @@ export const getEmptyIdeorama = async(): Promise<ApiResponse<IdeoramaModel>> => 
     const response = await axios.get(
       `http://localhost:3001/api/ideorama/empty`
     );
-
+    console.log("response: ", response)
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -78,7 +78,7 @@ export const createIdeorama = async (
 };
 
 export const saveIdeorama = async (
-  model: string, ideoramaId: string|undefined, userId: string|undefined,
+  model: string|null, ideoramaId: string|undefined, userId: string|undefined,
 ): Promise<ApiResponse<Ideorama>> => {
   try {
     const response = await axios.post(

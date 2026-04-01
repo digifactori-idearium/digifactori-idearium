@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { AssetsGrid } from '../assets/AssetsGrid';
+import { SuperButton } from '../global';
 
 import { sceneState, actions } from '@/stores';
 
@@ -44,12 +45,13 @@ export const AssetsPanel = () => {
               onClick={() => setSearchOpen(true)}
             />
 
-            <button
+            <SuperButton
+              tooltip="Fermer"
               onClick={() => actions.toggleAssetsPanel(false)}
               className="hover:bg-white/10 p-1! bg-transparent! rounded border border-white/20!"
             >
-              <X className="size-5" />
-            </button>
+              <X className="size-5 text-white" />
+            </SuperButton>
           </div>
 
           {/* Animated Search Bar */}

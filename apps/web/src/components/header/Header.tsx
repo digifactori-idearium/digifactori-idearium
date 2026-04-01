@@ -116,7 +116,7 @@ export const Header = () => {
           )}
           {user && (
             <Link
-              to="/app"
+              to="/app/my-space"
               role="button"
               className="bg-background! text-foreground! hover:bg-background/90! relative group overflow-hidden px-4 py-2 rounded-2xl"
             >

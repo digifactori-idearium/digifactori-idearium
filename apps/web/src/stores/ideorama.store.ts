@@ -1,16 +1,16 @@
 import * as THREE from 'three';
-import { proxy, ref } from 'valtio';
+import { proxy } from 'valtio';
 
 import { themesToColors } from '@/lib/theme';
 
-const INITIAL_THEME = 'night' as keyof typeof themesToColors;
+const INITIAL_THEME = 'day' as keyof typeof themesToColors;
 
 const initialThemeData = themesToColors[INITIAL_THEME];
 
 export const sceneState = proxy<IdeoramaState>({
   // Global State
   id: '',
-  mode: 'edit' as IdeoramaMode,
+  mode: 'play' as IdeoramaMode,
   global: {
     brightness: 'bright' as 'bright' | 'dim' | 'dark',
     visible: true,
@@ -51,6 +51,29 @@ export const actions = {
     sceneState.mode = mode;
   },
 
+  // (Private) applay theme management
+  applyThemeSideEffects(theme: string) {
+    if (theme === 'customized') return;
+    const themeData = themesToColors[theme as keyof typeof themesToColors];
+    if (!themeData) return;
+    sceneState.background.color = themeData.background;
+    sceneState.background.accent = themeData.accent;
+    sceneState.floor.color = themeData.floor;
+  },
+
+  markThemeCustomized(sliceKey: string, values: Partial<any>, target: any) {
+    const colorSlices = ['background', 'floor'];
+    if (!colorSlices.includes(sliceKey)) return;
+    if (!values.color) return;
+    if (
+      target.color !== values.color &&
+      sceneState.global.theme !== 'customized'
+    ) {
+      sceneState.global.theme = 'customized';
+    }
+  },
+
+  // Update Store
   updateSlice<K extends ObjectSliceKey | RootSliceKey>(
     sliceKey: K,
     values: Partial<any>,
@@ -61,41 +84,20 @@ export const actions = {
       if (!obj) return;
 
       const target = obj[sliceKey as ObjectSliceKey];
-      if (target && typeof target === 'object') {
-        Object.entries(values).forEach(([key, value]) => {
-          (target as any)[key] = value;
-        });
-      }
-    } else {
-      const target = (sceneState as any)[sliceKey];
-      if (target && typeof target === 'object') {
-        if (
-          sliceKey === 'global' &&
-          values.theme &&
-          values.theme !== 'customized'
-        ) {
-          const themeData =
-            themesToColors[values.theme as keyof typeof themesToColors];
-          if (themeData) {
-            sceneState.background.color = themeData.background;
-            sceneState.background.accent = themeData.accent;
-            sceneState.floor.color = themeData.floor;
-          }
-        }
+      if (!target || typeof target !== 'object') return;
 
-        const colorSlices = ['background', 'floor'];
-        if (colorSlices.includes(sliceKey as string) && values.color) {
-          if (
-            target.color !== values.color &&
-            sceneState.global.theme !== 'customized'
-          ) {
-            sceneState.global.theme = 'customized';
-          }
-        }
-
-        Object.assign(target, values);
-      }
+      Object.assign(target, values);
+      return;
     }
+
+    const target = (sceneState as any)[sliceKey];
+    if (!target || typeof target !== 'object') return;
+
+    if (sliceKey === 'global' && values.theme)
+      this.applyThemeSideEffects(values.theme);
+    this.markThemeCustomized(sliceKey as string, values, target);
+
+    Object.assign(target, values);
   },
 
   // Model/Object MANAGEMENT ACTIONS
@@ -111,29 +113,13 @@ export const actions = {
     sceneState.selectedObjectId = null;
   },
 
-  addObject(name: string, type?: string) {
-    const id = crypto.randomUUID();
-
-    sceneState.objects[id] = {
-      info: { name: name, category: type },
-      transform: {
-        position: { x: 45, y: 10, z: 45 },
-        rotation: { x: 0, y: 0, z: 0 },
-        scale: 8,
-      },
-      style: { tint: '#ffffff', opacity: 1, glow: 0, threshold: 0 },
-      advanced: { parent: null, physics: false, hidden: false, locked: false },
-      actions: [],
-    };
-
-    sceneState.selectedObjectId = id;
-  },
   removeObject: (id: string) => {
     delete sceneState.objects[id];
     if (sceneState.selectedObjectId === id) sceneState.selectedObjectId = null;
   },
   registerObject: (id: string, obj: THREE.Object3D) =>
-    sceneRegistry.set(id, ref(obj)),
+    sceneRegistry.set(id, obj),
+
   unregisterObject: (id: string) => sceneRegistry.delete(id),
 
   // Setting Mangament
@@ -162,6 +148,30 @@ export const actions = {
     }
   },
 
+  copyObject(object: ObjectState) {
+    const id = crypto.randomUUID();
+
+    const OFFSET = 2;
+
+    sceneState.objects[id] = {
+      info: { ...object.info },
+      transform: {
+        position: {
+          x: object.transform.position.x + OFFSET,
+          y: object.transform.position.y,
+          z: object.transform.position.z + OFFSET,
+        },
+        rotation: { ...object.transform.rotation },
+        scale: object.transform.scale,
+      },
+      style: { ...object.style },
+      advanced: { ...object.advanced },
+      actions: object.actions?.map(action => ({ ...action })) ?? [],
+    };
+
+    sceneState.selectedObjectId = id;
+  },
+
   spawnAssetAtPosition(asset: AssetItem, position: THREE.Vector3) {
     const id = crypto.randomUUID();
 
@@ -171,57 +181,34 @@ export const actions = {
         category: asset.category,
         file: asset.file,
       },
-
       transform: {
-        position: {
-          x: position.x,
-          y: position.y,
-          z: position.z,
-        },
+        position: { x: position.x, y: position.y, z: position.z },
         rotation: { x: 0, y: 0, z: 0 },
         scale: 1,
       },
-
-      style: {
-        tint: '#ffffff',
-        opacity: 1,
-        glow: 0,
-        threshold: 0,
-      },
-
-      advanced: {
-        parent: null,
-        physics: false,
-        hidden: false,
-        locked: false,
-      },
+      style: { tint: '#ffffff', opacity: 1, glow: 0, threshold: 0 },
+      advanced: { parent: null, physics: false, hidden: false, locked: false },
       actions: [],
     };
 
     sceneState.selectedObjectId = id;
   },
-
   // ACTIONS NAMAGEMENT
   addAction(objectId: string, action: ActionConfig) {
     const obj = sceneState.objects[objectId];
-
-    if (!obj) {
-      console.warn(`Object ${objectId} not found`);
-      return;
-    }
-
-    if (!obj.actions) obj.actions = [];
-
-    obj.actions.push(action);
+    if (!obj) return;
+    (obj.actions ??= []).push(action);
   },
 
   removeAction(objectId: string, actionId: string) {
     const obj = sceneState.objects[objectId];
+    if (!obj?.actions) return;
 
-    if (!obj || !obj.actions) return;
-
-    obj.actions = obj.actions.filter(a => a.id !== actionId);
+    const idx = obj.actions.findIndex(a => a.id === actionId);
+    if (idx !== -1) obj.actions.splice(idx, 1);
   },
+
+  // Views
   setSettingView: (view: 'model' | 'actions') => {
     sceneState.activeSettingView = view;
   },
@@ -229,3 +216,22 @@ export const actions = {
     sceneState.actionPickerOpen = open;
   },
 };
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(data => {
+    data.sceneState = JSON.parse(JSON.stringify(sceneState));
+  });
+
+  if (import.meta.hot.data.sceneState) {
+    const saved = import.meta.hot.data.sceneState;
+    if (saved.global) Object.assign(sceneState.global, saved.global);
+    if (saved.background)
+      Object.assign(sceneState.background, saved.background);
+    if (saved.info) Object.assign(sceneState.info, saved.info);
+    if (saved.floor) Object.assign(sceneState.floor, saved.floor);
+    if (saved.objects) sceneState.objects = saved.objects;
+    if (saved.selectedObjectId !== undefined) {
+      sceneState.selectedObjectId = saved.selectedObjectId;
+    }
+  }
+}
