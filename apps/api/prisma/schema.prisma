@@ -27,6 +27,7 @@ model User {
   role          Role
   profil        Profile?
   ideoramas     Ideorama[]
+  voxelModels   VoxelModel[]
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 }
@@ -101,4 +102,14 @@ model Voxel {
   ideorama   Ideorama @relation(fields: [ideoramaId], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+model VoxelModel {
+  id        String   @id @default(cuid())
+  name      String   @default("New Voxel Model")
+  model     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
