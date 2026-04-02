@@ -10,7 +10,6 @@ import {
 } from '@dnd-kit/core';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import {
-  ArrowDownToLine,
   CirclePlay,
   ListTree,
   Plus,
@@ -18,7 +17,7 @@ import {
   RotateCcw,
   Settings2,
   SquarePen,
-  Undo2,
+  Undo2
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -48,7 +47,6 @@ const downloadAndSaveIdeorama = (setIsSaving: (arg: boolean) => void) => {
       objects: sceneState.objects,
     })
   );
-  // toast.success("Sauvegarde de l'idéorama réussie");
   setIsSaving(false);
 };
 
@@ -181,49 +179,39 @@ export default function Ideorama() {
                 </span>
               )}
             </button>
-
-            {!isSaving ? (
-              <button
-                onClick={() => downloadAndSaveIdeorama(setIsSaving)}
+            {/* <SuperButton
+              tooltip="sauvegarder"
+              onClick={() => downloadAndSaveIdeorama(setIsSaving)}
+              className="p-2 main-small-btn"
+            >
+              <span className="flex items-center gap-1">
+                <ArrowDownToLine className="w-4 h-4 text-white" />
+              </span>
+            </SuperButton> */}
+            {snap.current != snap.oldest && (
+              <SuperButton
+                tooltip='Revenir en arrière'
+                onClick={() => actions.undo()}
                 className="p-2 main-small-btn"
               >
                 <span className="flex items-center gap-1">
-                  <ArrowDownToLine className="w-4 h-4 text-white" />
-                  <span>Sauvegarder</span>
-                </span>
-              </button>
-            ) : (
-              <button className="p-2 main-small-btn">
-                <span className="flex items-center gap-1">
-                  <ArrowDownToLine className="w-4 h-4 text-white" />
-                  <span>En train de sauvegarder</span>
-                </span>
-              </button>
-            )}
-
-            {snap.current != snap.oldest && (
-              <button
-                onClick={() => actions.undo()}
-                className="absolute top-3 left-[calc(50%+125px)] z-50 p-2! main-small-btn"
-              >
-                <span className="flex items-center gap-1">
                   <Undo2 className="w-4 h-4 text-white!" />
-                  <span>Undo </span>
                 </span>
-              </button>
+              </SuperButton>
             )}
             {snap.current != snap.newest && (
-              <button
+              <SuperButton
+                tooltip='Rétablir'
                 onClick={() => actions.redo()}
-                className="absolute top-3 left-[calc(50%+205px)] z-50 p-2! main-small-btn"
+                className="p-2 main-small-btn"
               >
                 <span className="flex items-center gap-1">
                   <Redo2 className="w-4 h-4 text-white!" />
-                  <span>Redo</span>
                 </span>
-              </button>
+              </SuperButton>
             )}
-            <button
+            <SuperButton
+              tooltip='Réinitialiser'
               onClick={() => {
                 actions.resetIdeorama().then(res => {
                   if (res) {
@@ -235,79 +223,78 @@ export default function Ideorama() {
                   }
                 });
               }}
-              className="absolute top-3 left-[calc(50%+285px)] z-50 p-2! main-small-btn"
+              className="z-50 p-2 main-small-btn"
             >
               <span className="flex items-center gap-1">
                 <RotateCcw className="w-4 h-4 text-white!" />
-                <span>Réinitialiser</span>
               </span>
-            </button>
-            {/* Assets Button */}
-            {isEditMode && (
-              <SuperButton
-                tooltip="Ajouter un objet"
-                onClick={() => {
-                  actions.toggleAssetsPanel();
-                  actions.toggleAssetsTree(false);
-                }}
-                className="absolute md:bottom-6 bottom-15 left-10 -translate-x-1/2 z-50 main-small-btn p-3!"
-              >
-                <Plus className="w-5 h-5 text-white!" />
-              </SuperButton>
-            )}
-            {isEditMode && <AssetsPanel />}
-
-            {/* Tree Explorer */}
-            {isEditMode && (
-              <SuperButton
-                tooltip="Explorez vos objets"
-                onClick={() => {
-                  actions.toggleAssetsTree();
-                  actions.toggleAssetsPanel(false);
-                }}
-                className="absolute md:bottom-6 bottom-15 left-25 -translate-x-1/2 z-50 main-small-btn p-3!"
-              >
-                <ListTree className="w-5 h-5 text-white!" />
-              </SuperButton>
-            )}
-            {isEditMode && <ObjectListPanel />}
-
-            {/* Right Panel */}
-            {isEditMode && (
-              <SuperButton
-                tooltip="Personnalise ton ideorama"
-                onClick={() => {
-                  actions.toggleSettingPanel();
-                }}
-                className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn p-3!"
-              >
-                <Settings2 className="w-5 h-5 text-white!" />
-              </SuperButton>
-            )}
-            {isEditMode && <SettingPanel />}
+            </SuperButton>
           </div>
+          {/* Assets Button */}
+          {isEditMode && (
+            <SuperButton
+              tooltip="Ajouter un objet"
+              onClick={() => {
+                actions.toggleAssetsPanel();
+                actions.toggleAssetsTree(false);
+              }}
+              className="absolute md:bottom-6 bottom-15 left-10 -translate-x-1/2 z-50 main-small-btn p-3!"
+            >
+              <Plus className="w-5 h-5 text-white!" />
+            </SuperButton>
+          )}
+          {isEditMode && <AssetsPanel />}
 
-          <DragOverlay
-            dropAnimation={null}
-            adjustScale={false}
-            modifiers={[snapCenterToCursor]}
-            style={{ pointerEvents: 'none', cursor: 'grabbing' }}
-          >
-            {activeAsset && (
-              <div className="w-24 h-24 cursor-grabbing rounded-xl overflow-hidden opacity-90 flex items-center justify-center">
-                {activeAsset.thumbnail ? (
-                  <img
-                    src={activeAsset.thumbnail}
-                    alt="Dragging Asset"
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <AssetThumbnail file={activeAsset.file} />
-                )}
-              </div>
-            )}
-          </DragOverlay>
+          {/* Tree Explorer */}
+          {isEditMode && (
+            <SuperButton
+              tooltip="Explorez vos objets"
+              onClick={() => {
+                actions.toggleAssetsTree();
+                actions.toggleAssetsPanel(false);
+              }}
+              className="absolute md:bottom-6 bottom-15 left-25 -translate-x-1/2 z-50 main-small-btn p-3!"
+            >
+              <ListTree className="w-5 h-5 text-white!" />
+            </SuperButton>
+          )}
+          {isEditMode && <ObjectListPanel />}
+
+          {/* Right Panel */}
+          {isEditMode && (
+            <SuperButton
+              tooltip="Personnalise ton ideorama"
+              onClick={() => {
+                actions.toggleSettingPanel();
+              }}
+              className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn p-3!"
+            >
+              <Settings2 className="w-5 h-5 text-white!" />
+            </SuperButton>
+          )}
+          {isEditMode && <SettingPanel />}
         </div>
+
+        <DragOverlay
+          dropAnimation={null}
+          adjustScale={false}
+          modifiers={[snapCenterToCursor]}
+          style={{ pointerEvents: 'none', cursor: 'grabbing' }}
+        >
+          {activeAsset && (
+            <div className="w-24 h-24 cursor-grabbing rounded-xl overflow-hidden opacity-90 flex items-center justify-center">
+              {activeAsset.thumbnail ? (
+                <img
+                  src={activeAsset.thumbnail}
+                  alt="Dragging Asset"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <AssetThumbnail file={activeAsset.file} />
+              )}
+            </div>
+          )}
+        </DragOverlay>
       </div>
     </DndContext>
   );

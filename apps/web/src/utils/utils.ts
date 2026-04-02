@@ -1,5 +1,4 @@
 export const deepCloneSceneState = (sceneState: IdeoramaState | ModelsInfo) => {
-    console.log("sceneState.objects: ", sceneState.objects)
     const newObjects = copyObjects(sceneState.objects)
       return {
         global: {...sceneState.global},
