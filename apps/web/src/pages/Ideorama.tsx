@@ -181,15 +181,6 @@ export default function Ideorama() {
                 </span>
               )}
             </button>
-            {/* <SuperButton
-              tooltip="sauvegarder"
-              onClick={() => downloadAndSaveIdeorama(setIsSaving)}
-              className="p-2 main-small-btn"
-            >
-              <span className="flex items-center gap-1">
-                <ArrowDownToLine className="w-4 h-4 text-white" />
-              </span>
-            </SuperButton> */}
             {snap.current != snap.oldest && (
               <SuperButton
                 tooltip='Revenir en arrière'
