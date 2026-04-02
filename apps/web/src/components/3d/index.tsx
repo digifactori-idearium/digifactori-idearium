@@ -78,7 +78,9 @@ export const Scene: React.FC = () => {
           accentColor={snap.background.accent}
         />
         <SceneBackground color={snap.background.color} />
-        {soundTrack && <SceneAudio soundTrack={soundTrack} />}
+        {soundTrack && snap.mode == 'play' && (
+          <SceneAudio soundTrack={soundTrack} />
+        )}
         <AssetsDropHandler />
 
         {/* Physics to continue after */}

@@ -100,6 +100,43 @@ export function activeTickerCount(): number {
   return _tickers.size;
 }
 
+// Say helpers
+let _ctx: AudioContext | null = null;
+function getAudioCtx(): AudioContext {
+  if (!_ctx) _ctx = new AudioContext();
+  return _ctx;
+}
+
+/**
+ * Play a short muffled blip
+ */
+export function playBlip(volume = 0.18): void {
+  const ctx = getAudioCtx();
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  // Low-pass to muffle it
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 900 + Math.random() * 400;
+
+  // Random pitch in a musical range to sounds like mumbling
+  osc.frequency.value = 180 + Math.random() * 120;
+  osc.type = 'sine';
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+
+  const now = ctx.currentTime;
+  gain.gain.setValueAtTime(volume, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+  osc.start(now);
+  osc.stop(now + 0.08);
+}
+
 /**
  * Inside <Canvas> at the top level.
  * It drives every registered ticker in sync with R3F's render loop.

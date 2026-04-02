@@ -1,7 +1,7 @@
 import { gsap } from 'gsap';
 import * as THREE from 'three';
 
-import { clearTweens, addTween } from './actionRuntime';
+import { clearTweens, addTween, playBlip } from './actionRuntime';
 import { MusicSelector } from './MusicDialog';
 
 import { FormInputData } from '@/components/global/Input';
@@ -340,7 +340,7 @@ export const ActionRegistry: Record<
         type: 'dialog',
         placeholder: 'Choisir la Music',
         required: false,
-        dialogueContent: <MusicSelector />,
+        dialogueContent: <MusicSelector type="action" />,
       },
       {
         name: 'volume',
@@ -354,13 +354,18 @@ export const ActionRegistry: Record<
     ],
     execute(_ref, { music, volume }) {
       if (!music) return () => {};
+
       const audio = new Audio(music);
       audio.volume = volume ?? 0.5;
-      audio.loop = true;
+      audio.loop = false;
+
       audio.play().catch(() => {});
+
       return () => {
         audio.pause();
+        audio.currentTime = 0;
         audio.src = '';
+        audio.load();
       };
     },
   },
@@ -388,40 +393,61 @@ export const ActionRegistry: Record<
         options: [],
         default: 'Bonjour !',
       },
-      {
-        name: 'duration',
-        label: 'Temps',
-        type: 'slider',
-        min: 1,
-        max: 10,
-        default: 3,
-      },
     ],
-    execute(ref, { text, duration }) {
+    execute(ref, { text }) {
+      const SPEED = 0.05;
+      const DURATION = 3;
+
       ref.userData.speechBubble = {
         text,
+        displayed: '',
         opacity: 0,
       };
 
       const bubble = ref.userData.speechBubble;
+      let charIndex = 0;
+      let typewriterTimer: ReturnType<typeof setTimeout> | null = null;
+      let stopped = false;
 
-      // Fade in
       const fadeIn = gsap.to(bubble, {
         opacity: 1,
-        duration: 0.3,
+        duration: 0.25,
+        ease: 'power1.out',
       });
+      addTween(ref, fadeIn);
 
-      // Fade out after delay
+      function typeNextChar() {
+        if (stopped) return;
+        if (charIndex >= text.length) return;
+
+        bubble.displayed = text.slice(0, charIndex + 1);
+        charIndex++;
+
+        if (text[charIndex - 1].trim() !== '') {
+          playBlip();
+        }
+
+        if (charIndex < text.length) {
+          typewriterTimer = setTimeout(typeNextChar, SPEED * 1000);
+        }
+      }
+
+      typewriterTimer = setTimeout(typeNextChar, 250);
+
       const fadeOut = gsap.to(bubble, {
         opacity: 0,
-        delay: duration,
-        duration: 0.5,
+        delay: DURATION,
+        duration: 0.4,
+        ease: 'power1.in',
         onComplete: () => {
           ref.userData.speechBubble = null;
         },
       });
+      addTween(ref, fadeOut);
 
       return () => {
+        stopped = true;
+        if (typewriterTimer) clearTimeout(typewriterTimer);
         fadeIn.kill();
         fadeOut.kill();
         ref.userData.speechBubble = null;

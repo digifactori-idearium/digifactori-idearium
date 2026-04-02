@@ -1,5 +1,5 @@
 import { Music, Play, Pause, Check } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,29 @@ const TRACKS = [
   { id: 'gun', name: 'Action Beats', url: '/son.mp3' },
 ];
 
-export function MusicSelector() {
+interface MusicSelectorProps {
+  type?: 'global' | 'action';
+}
+
+export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
   const snap = useSnapshot(sceneState);
-  const currentTrack = snap.global.music.currentTrack;
+  const globalTrack = snap.global.music.currentTrack;
+  const selectObjectIp = snap.selectedObjectId;
+  const trigger = snap.pendingTrigger;
+  const selectedObject = selectObjectIp ? snap.objects[selectObjectIp] : null;
+  const actionTrack = useMemo(() => {
+    if (type !== 'action' || !selectedObject?.actions) return '';
+
+    const action = selectedObject.actions.find(
+      a => a.subType === 'playSound' && a.trigger === trigger
+    );
+    return action?.config?.music ?? '';
+  }, [type, selectedObject, trigger]);
 
   const [previewId, setPreviewId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const selectedUrl = type === 'global' ? globalTrack : actionTrack;
 
   const togglePreview = (track: (typeof TRACKS)[0]) => {
     if (previewId === track.id) {
@@ -26,15 +43,30 @@ export function MusicSelector() {
       setPreviewId(null);
     } else {
       if (audioRef.current) {
+        audioRef.current.pause();
         audioRef.current.src = track.url;
         audioRef.current.play();
       }
       setPreviewId(track.id);
     }
   };
-
   const selectTrack = (url: string) => {
-    sceneState.global.music.currentTrack = currentTrack === url ? '' : url;
+    if (type === 'global') {
+      sceneState.global.music.currentTrack = globalTrack === url ? '' : url;
+      return;
+    }
+    const objId = snap.selectedObjectId;
+    const currentTrigger = snap.pendingTrigger;
+
+    if (!objId || !currentTrigger) return;
+    const actions = sceneState.objects[objId].actions;
+    const targetAction = (actions || []).find(
+      a => a.subType === 'playSound' && a.trigger === currentTrigger
+    );
+
+    if (targetAction) {
+      targetAction.config.music = targetAction.config.music === url ? '' : url;
+    }
   };
 
   return (
@@ -42,7 +74,7 @@ export function MusicSelector() {
       <ScrollArea className="h-72 pr-4">
         <div className="flex flex-col gap-2">
           {TRACKS.map(track => {
-            const isSelected = currentTrack === track.url;
+            const isSelected = selectedUrl === track.url;
 
             return (
               <div
