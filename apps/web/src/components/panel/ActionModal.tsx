@@ -30,7 +30,7 @@ export const ActionPickerModal = () => {
       id: crypto.randomUUID(),
       type: category,
       subType,
-      trigger: 'onStart',
+      trigger: snap.pendingTrigger,
       config: ActionRegistry[subType]?.inputs.reduce(
         (acc, i) => ({ ...acc, [i.name]: i.default }),
         {}

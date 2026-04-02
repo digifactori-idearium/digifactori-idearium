@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useRef } from 'react';
 import { FieldValues, useForm, useWatch } from 'react-hook-form';
@@ -20,13 +21,24 @@ function useSliceSnapshot(
   objectId?: string | null
 ) {
   if (objectId) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const snap = useSnapshot(sceneState.objects[objectId]);
-    return snap[sliceKey as keyof typeof snap];
+    const obj = sceneState.objects[objectId];
+
+    if (!obj) return {};
+
+    const snap = useSnapshot(obj);
+
+    const slice = snap[sliceKey as keyof typeof snap];
+
+    return slice ?? {};
   }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const snap = useSnapshot((sceneState as any)[sliceKey]);
-  return snap;
+
+  const rootSlice = (sceneState as any)[sliceKey];
+
+  if (!rootSlice) return {};
+
+  const snap = useSnapshot(rootSlice);
+
+  return snap ?? {};
 }
 
 export function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
@@ -46,6 +58,8 @@ export function FormThree({ inputs, sliceKey, objectId }: FormThreeProps) {
   const watcher = useRef(false);
 
   useEffect(() => {
+    if (!currentState || typeof currentState !== 'object') return;
+
     if (watcher.current) {
       watcher.current = false;
       return;

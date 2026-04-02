@@ -49,7 +49,10 @@ export const ActionPanel = () => {
 
       <Tabs
         value={activeTrigger}
-        onValueChange={v => setActiveTrigger(v as TriggerType)}
+        onValueChange={v => {
+          const nextValue = v as TriggerType;
+          setActiveTrigger(nextValue);
+        }}
         className="mt-1"
       >
         <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent">
@@ -103,7 +106,7 @@ export const ActionPanel = () => {
 
         <SuperButton
           className="w-full mt-3 form-button"
-          onClick={() => actions.openActionPicker(true)}
+          onClick={() => actions.openActionPicker(true, activeTrigger)}
         >
           <Plus className="mr-2 size-4" /> Ajouter une action
         </SuperButton>
