@@ -6,10 +6,12 @@ import Ideorama from '@/pages/Ideorama';
 import Ideoramas from '@/pages/Ideoramas';
 import MyIdeas from '@/pages/MyIdeas';
 import MyIdeoramas from '@/pages/MyIdeoramas';
+import MyModels from '@/pages/MyModels';
 import MySpace from '@/pages/MySpace';
 import ProfilePage from '@/pages/Profile';
 import TextEditor from '@/pages/TextEditor';
 import VoxelLayout from '@/pages/VoxelLayout';
+
 
 const appRoutes = [
   {
@@ -31,6 +33,10 @@ const appRoutes = [
     element: <ProtectedRoute element={<MyIdeoramas />} />,
   },
   {
+    path: 'my-models',
+    element: <ProtectedRoute element={<MyModels />} />,
+  },
+  {
     path: 'batch_register',
     element: <ProtectedRoute element={<BatchRegister />} />,
   },
@@ -47,8 +53,9 @@ const appRoutes = [
   {
     path: 'voxel',
     children: [
-      { index: true, element: <VoxelLayout /> },
-      { path: 'playground', element: <VoxelLayout /> },
+      { index: true, element: <ProtectedRoute element={<VoxelLayout />} /> },
+      { path: ':modelId', element: <ProtectedRoute element={<VoxelLayout />} /> },
+      { path: 'playground', element: <ProtectedRoute element={<VoxelLayout />} /> },
     ],
   },
 ];
