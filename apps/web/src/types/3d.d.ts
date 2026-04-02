@@ -102,6 +102,8 @@ interface IdeoramaState {
   current: number,
   oldest: number,
   newest: number
+  
+  pendingTrigger: TriggerType;
 }
 
 // OBJECT ASSETS TYPES
@@ -144,6 +146,7 @@ interface ObjectState {
   advanced: AdvancedSettings;
 
   actions?: ActionConfig[];
+  actionsVersion?: number;
 }
 type TransformMode = 'translate' | 'rotate' | 'scale';
 type ObjectSliceKey = keyof ObjectState;

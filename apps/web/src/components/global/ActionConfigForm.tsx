@@ -7,7 +7,7 @@ import { FormInputRenderer } from './FormInputRenderer';
 import { FormInputData } from './Input';
 
 import { createFormSchema } from '@/lib/validation';
-import { sceneState } from '@/stores';
+import { actions, sceneState } from '@/stores';
 
 interface ActionConfigFormProps {
   objectId: string;
@@ -21,9 +21,7 @@ export function ActionConfigForm({
   inputs,
 }: ActionConfigFormProps) {
   const snap = useSnapshot(sceneState.objects[objectId]);
-
   const action = snap.actions?.find(a => a.id === actionId);
-
   const currentConfig = action?.config || {};
 
   const formSchema = useMemo(() => createFormSchema(inputs), [inputs]);
@@ -40,41 +38,39 @@ export function ActionConfigForm({
   });
 
   const isHydrating = useRef(true);
-  const prevValues = useRef<any>(null);
+  const prevValuesRef = useRef<Record<string, any>>({});
 
   const watchedValues = useWatch({ control });
 
   useEffect(() => {
     if (!watchedValues || isHydrating.current) return;
 
-    // prevent unnecessary updates
-    if (JSON.stringify(prevValues.current) === JSON.stringify(watchedValues)) {
-      return;
+    const obj = sceneState.objects[objectId];
+    const targetAction = obj?.actions?.find(a => a.id === actionId);
+    if (!targetAction) return;
+
+    let changed = false;
+    for (const key in watchedValues) {
+      if (watchedValues[key] !== prevValuesRef.current[key]) {
+        changed = true;
+        break;
+      }
     }
+    if (!changed) return;
 
-    prevValues.current = watchedValues;
+    prevValuesRef.current = { ...watchedValues };
 
-    const targetAction = sceneState.objects[objectId].actions?.find(
-      a => a.id === actionId
-    );
+    Object.assign(targetAction.config, watchedValues);
 
-    if (targetAction) {
-      targetAction.config = {
-        ...targetAction.config,
-        ...watchedValues,
-      };
-    }
+    actions.bumpActionsVersion(objectId);
   }, [watchedValues, objectId, actionId]);
 
   useEffect(() => {
     isHydrating.current = true;
-
     reset(currentConfig);
-
-    prevValues.current = currentConfig;
-
+    prevValuesRef.current = { ...currentConfig };
     isHydrating.current = false;
-  }, [currentConfig, reset]);
+  }, [actionId]);
 
   return (
     <div className="w-full ideorama-form flex flex-col gap-4">

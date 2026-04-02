@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { proxy } from 'valtio';
 
 import { themesToColors } from '@/lib/theme';
+import { round } from '@/lib/utils';
 import { getEmptyIdeorama } from '@/services/ideorama.service';
 import { resetState, stackNewState } from '@/utils/utils';
 
@@ -12,7 +13,7 @@ const initialThemeData = themesToColors[INITIAL_THEME];
 export const sceneState = proxy<IdeoramaState>({
   // Global State
   id: '',
-  mode: 'edit' as IdeoramaMode,
+  mode: 'play' as IdeoramaMode,
   global: {
     brightness: 'bright' as 'bright' | 'dim' | 'dark',
     visible: true,
@@ -49,6 +50,8 @@ export const sceneState = proxy<IdeoramaState>({
   current: -1,
   oldest: 0,
   newest: 0,
+
+  pendingTrigger: 'onStart' as TriggerType,
 });
 
 export const sceneRegistry = new Map<string, THREE.Object3D>();
@@ -178,6 +181,31 @@ export const actions = {
     }
   },
 
+  copyObject(object: ObjectState) {
+    const id = crypto.randomUUID();
+
+    const OFFSET = 2;
+
+    sceneState.objects[id] = {
+      info: { ...object.info },
+      transform: {
+        position: {
+          x: object.transform.position.x + OFFSET,
+          y: object.transform.position.y,
+          z: object.transform.position.z + OFFSET,
+        },
+        rotation: { ...object.transform.rotation },
+        scale: object.transform.scale,
+      },
+      style: { ...object.style },
+      advanced: { ...object.advanced },
+      actions: object.actions?.map(action => ({ ...action })) ?? [],
+      actionsVersion: 0,
+    };
+
+    sceneState.selectedObjectId = id;
+  },
+
   spawnAssetAtPosition(asset: AssetItem, position: THREE.Vector3) {
     const id = crypto.randomUUID();
 
@@ -188,13 +216,18 @@ export const actions = {
         file: asset.file,
       },
       transform: {
-        position: { x: position.x, y: position.y, z: position.z },
+        position: {
+          x: round(position.x),
+          y: round(position.y),
+          z: round(position.z),
+        },
         rotation: { x: 0, y: 0, z: 0 },
         scale: 1,
       },
       style: { tint: '#ffffff', opacity: 1, glow: 0, threshold: 0 },
       advanced: { parent: null, physics: false, hidden: false, locked: false },
       actions: [],
+      actionsVersion: 0,
     };
 
     sceneState.selectedObjectId = id;
@@ -223,22 +256,29 @@ export const actions = {
     const obj = sceneState.objects[objectId];
     if (!obj) return;
     (obj.actions ??= []).push(action);
+    obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
   },
 
   removeAction(objectId: string, actionId: string) {
     const obj = sceneState.objects[objectId];
     if (!obj?.actions) return;
+    obj.actions = obj.actions.filter(a => a.id !== actionId);
+    obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
+  },
 
-    const idx = obj.actions.findIndex(a => a.id === actionId);
-    if (idx !== -1) obj.actions.splice(idx, 1);
+  bumpActionsVersion(objectId: string) {
+    const obj = sceneState.objects[objectId];
+    if (!obj) return;
+    obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
   },
 
   // Views
   setSettingView: (view: 'model' | 'actions') => {
     sceneState.activeSettingView = view;
   },
-  openActionPicker: (open: boolean) => {
+  openActionPicker: (open: boolean, trigger: TriggerType = 'onStart') => {
     sceneState.actionPickerOpen = open;
+    sceneState.pendingTrigger = trigger;
   },
 };
 

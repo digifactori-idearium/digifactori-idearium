@@ -27,26 +27,29 @@ import { useSnapshot } from 'valtio';
 
 import Scene from '@/components/3d';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
+import { SuperButton } from '@/components/global';
 import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { SettingPanel } from '@/components/panel/SettingPanel';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useUser } from '@/providers/UserProvider';
 import { saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
-const downloadAndSaveIdeorama = (
-  setIsSaving: (arg: boolean) => void
-) => {
-  setIsSaving(true)
-  localStorage.setItem("sceneState", JSON.stringify({
+const downloadAndSaveIdeorama = (setIsSaving: (arg: boolean) => void) => {
+  setIsSaving(true);
+  localStorage.setItem(
+    'sceneState',
+    JSON.stringify({
       global: sceneState.global,
       background: sceneState.background,
       info: sceneState.info,
       floor: sceneState.floor,
       objects: sceneState.objects,
-    }))
+    })
+  );
   // toast.success("Sauvegarde de l'idéorama réussie");
-  setIsSaving(false)
+  setIsSaving(false);
 };
 
 export default function Ideorama() {
@@ -58,8 +61,13 @@ export default function Ideorama() {
   const userId = useUser().user?.id;
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
-  const [isSaving, setIsSaving] = useState(false)
+  const [isSaving, setIsSaving] = useState(false);
   const [isFirstRender, setIsFirstRender] = useState(true);
+  const { setOpen } = useSidebar();
+
+  useEffect(() => {
+    setOpen(false);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -69,42 +77,38 @@ export default function Ideorama() {
     })
   );
 
-   useEffect(() => {
-    console.log("snap: ", snap)
-  }, [snap])
-
   useEffect(() => {
     const handleBeforeUnload = () => {
       saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
-  };
+    };
 
-  window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
     }
   }, [])
 
-   useEffect(() => {
-      if (!ideoramaid) return;
+  useEffect(() => {
+    if (!ideoramaid) return;
     
-      searchIdeorama(ideoramaid).then(res => {
-        localStorage.setItem("sceneState", JSON.stringify(res.data.model))
-        res.data.model.info.name = res.data.name
-        const model = res.data.model;
-        if (!model) return;
-  
-        if (model.global) Object.assign(sceneState.global, model.global);
-        if (model.background)
-          Object.assign(sceneState.background, model.background);
-        if (model.info) Object.assign(sceneState.info, model.info);
-        if (model.floor) Object.assign(sceneState.floor, model.floor);
-        if (model.objects) sceneState.objects = model.objects;
-        
-      }).then(() => {
+    searchIdeorama(ideoramaid).then(res => {
+      localStorage.setItem("sceneState", JSON.stringify(res.data.model))
+      res.data.model.info.name = res.data.name
+      const model = res.data.model;
+      if (!model) return;
+
+      if (model.global) Object.assign(sceneState.global, model.global);
+      if (model.background)
+        Object.assign(sceneState.background, model.background);
+      if (model.info) Object.assign(sceneState.info, model.info);
+      if (model.floor) Object.assign(sceneState.floor, model.floor);
+      if (model.objects) sceneState.objects = model.objects;
+      
+    }).then(() => {
         actions.stackState();
     })
-    }, [ideoramaid]);
+  }, [ideoramaid]);
   
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
@@ -121,7 +125,7 @@ export default function Ideorama() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFirstRender(false);
     }
-  }, [snap.isDragging])
+  }, [snap.isDragging]);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveAsset(event.active.data.current);
@@ -160,138 +164,150 @@ export default function Ideorama() {
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
         <div className="w-full h-full overflow-hidden flex flex-col">
           <Scene />
-          <button
-            onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
-            className="absolute top-3 left-[calc(50%-80px)] z-50 p-2! main-small-btn"
-          >
-            {isEditMode ? (
-              <span className="flex items-center gap-1">
-                <CirclePlay className="w-4 h-4 text-white!" />
-                <span>Jouer</span>
-              </span>
-            ) : (
-              <span className="flex items-center gap-1">
-                <SquarePen className="w-4 h-4 text-white!" />
-                <span>Modifier</span>
-              </span>
-            )}
-          </button>
-          {!isSaving && <button
-            onClick={() =>
-              downloadAndSaveIdeorama(setIsSaving)
-            }
-            className="absolute top-3 left-[calc(50%)] z-50 p-2! main-small-btn"
-          >
-            <span className="flex items-center gap-1">
-              <ArrowDownToLine className="w-4 h-4 text-white!" />
-              <span>Sauvegarder</span>
-            </span>
-          </button>}
-          {isSaving && <button
-            className="absolute top-3 left-[calc(50%)] z-50 p-2! main-small-btn"
-          >
-            <span className="flex items-center gap-1">
-              <ArrowDownToLine className="w-4 h-4 text-white!" />
-              <span>En train de sauvegarder</span>
-            </span>
-          </button>}
-          {snap.current != snap.oldest && <button
-            // onClick={() => undo(ideoramaStates, setIdeoramaStates, setIsUndoOrRedoing)}
-            onClick={() => actions.undo()}
-            className="absolute top-3 left-[calc(50%+125px)] z-50 p-2! main-small-btn"
-          >
-            <span className="flex items-center gap-1">
-              <Undo2 className="w-4 h-4 text-white!" />
-              <span>Undo </span>
-            </span>
-          </button>}
-          {snap.current != snap.newest && <button
-            // onClick={() => redo(ideoramaStates, setIdeoramaStates, setIsUndoOrRedoing)}
-            onClick={() => actions.redo()}
-            className="absolute top-3 left-[calc(50%+205px)] z-50 p-2! main-small-btn"
-          >
-            <span className="flex items-center gap-1">
-              <Redo2 className="w-4 h-4 text-white!" />
-              <span>Redo</span>
-            </span>
-          </button>}
-          <button
-            onClick={() => {
-              actions.resetIdeorama().then(res => {
-              if (res)
-                {toast.success('Idéorama réinitialisé');}
-              else 
-                {toast.error('Échec lors de la réinitialisation de l\'idéorama')}
-            })}}
-            className="absolute top-3 left-[calc(50%+285px)] z-50 p-2! main-small-btn"
-          >
-            <span className="flex items-center gap-1">
-              <RotateCcw className="w-4 h-4 text-white!" />
-              <span>Réinitialiser</span>
-            </span>
-          </button>
-          {/* Assets Button */}
-          {isEditMode && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
             <button
-              onClick={() => {
-                actions.toggleAssetsPanel();
-                actions.toggleAssetsTree(false);
-              }}
-              className="absolute md:bottom-6 bottom-15 left-10 -translate-x-1/2 z-50 main-small-btn p-3!"
+              onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
+              className="p-2 main-small-btn"
             >
-              <Plus className="w-5 h-5 text-white!" />
-            </button>
-          )}
-          {isEditMode && <AssetsPanel />}
-
-          {/* Tree Explorer */}
-          {isEditMode && (
-            <button
-              onClick={() => {
-                actions.toggleAssetsTree();
-                actions.toggleAssetsPanel(false);
-              }}
-              className="absolute md:bottom-6 bottom-15 left-25 -translate-x-1/2 z-50 main-small-btn p-3!"
-            >
-              <ListTree className="w-5 h-5 text-white!" />
-            </button>
-          )}
-          {isEditMode && <ObjectListPanel />}
-
-          {/* Right Panel */}
-          {isEditMode && (
-            <button
-              onClick={() => {
-                actions.toggleSettingPanel();
-              }}
-              className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn p-3!"
-            >
-              <Settings2 className="w-5 h-5 text-white!" />
-            </button>
-          )}
-          {isEditMode && <SettingPanel />}
-        </div>
-
-        <DragOverlay
-          dropAnimation={null}
-          adjustScale={false}
-          modifiers={[snapCenterToCursor]}
-          style={{ pointerEvents: 'none', cursor: 'grabbing' }}
-        >
-          {activeAsset && (
-            <div className="w-24 h-24 cursor-grabbing rounded-xl overflow-hidden opacity-90 flex items-center justify-center">
-              {activeAsset.thumbnail ? (
-                <img
-                  src={activeAsset.thumbnail}
-                  alt="Dragging Asset"
-                  className="w-full h-full object-contain"
-                />
+              {isEditMode ? (
+                <span className="flex items-center gap-1">
+                  <CirclePlay className="w-4 h-4 text-white" />
+                  <span>Jouer</span>
+                </span>
               ) : (
-                <AssetThumbnail file={activeAsset.file} />
+                <span className="flex items-center gap-1">
+                  <SquarePen className="w-4 h-4 text-white" />
+                  <span>Modifier</span>
+                </span>
               )}
-            </div>
-          )}
-        </DragOverlay>
+            </button>
+
+            {!isSaving ? (
+              <button
+                onClick={() => downloadAndSaveIdeorama(setIsSaving)}
+                className="p-2 main-small-btn"
+              >
+                <span className="flex items-center gap-1">
+                  <ArrowDownToLine className="w-4 h-4 text-white" />
+                  <span>Sauvegarder</span>
+                </span>
+              </button>
+            ) : (
+              <button className="p-2 main-small-btn">
+                <span className="flex items-center gap-1">
+                  <ArrowDownToLine className="w-4 h-4 text-white" />
+                  <span>En train de sauvegarder</span>
+                </span>
+              </button>
+            )}
+
+            {snap.current != snap.oldest && (
+              <button
+                onClick={() => actions.undo()}
+                className="absolute top-3 left-[calc(50%+125px)] z-50 p-2! main-small-btn"
+              >
+                <span className="flex items-center gap-1">
+                  <Undo2 className="w-4 h-4 text-white!" />
+                  <span>Undo </span>
+                </span>
+              </button>
+            )}
+            {snap.current != snap.newest && (
+              <button
+                onClick={() => actions.redo()}
+                className="absolute top-3 left-[calc(50%+205px)] z-50 p-2! main-small-btn"
+              >
+                <span className="flex items-center gap-1">
+                  <Redo2 className="w-4 h-4 text-white!" />
+                  <span>Redo</span>
+                </span>
+              </button>
+            )}
+            <button
+              onClick={() => {
+                actions.resetIdeorama().then(res => {
+                  if (res) {
+                    toast.success('Idéorama réinitialisé');
+                  } else {
+                    toast.error(
+                      "Échec lors de la réinitialisation de l'idéorama"
+                    );
+                  }
+                });
+              }}
+              className="absolute top-3 left-[calc(50%+285px)] z-50 p-2! main-small-btn"
+            >
+              <span className="flex items-center gap-1">
+                <RotateCcw className="w-4 h-4 text-white!" />
+                <span>Réinitialiser</span>
+              </span>
+            </button>
+            {/* Assets Button */}
+            {isEditMode && (
+              <SuperButton
+                tooltip="Ajouter un objet"
+                onClick={() => {
+                  actions.toggleAssetsPanel();
+                  actions.toggleAssetsTree(false);
+                }}
+                className="absolute md:bottom-6 bottom-15 left-10 -translate-x-1/2 z-50 main-small-btn p-3!"
+              >
+                <Plus className="w-5 h-5 text-white!" />
+              </SuperButton>
+            )}
+            {isEditMode && <AssetsPanel />}
+
+            {/* Tree Explorer */}
+            {isEditMode && (
+              <SuperButton
+                tooltip="Explorez vos objets"
+                onClick={() => {
+                  actions.toggleAssetsTree();
+                  actions.toggleAssetsPanel(false);
+                }}
+                className="absolute md:bottom-6 bottom-15 left-25 -translate-x-1/2 z-50 main-small-btn p-3!"
+              >
+                <ListTree className="w-5 h-5 text-white!" />
+              </SuperButton>
+            )}
+            {isEditMode && <ObjectListPanel />}
+
+            {/* Right Panel */}
+            {isEditMode && (
+              <SuperButton
+                tooltip="Personnalise ton ideorama"
+                onClick={() => {
+                  actions.toggleSettingPanel();
+                }}
+                className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn p-3!"
+              >
+                <Settings2 className="w-5 h-5 text-white!" />
+              </SuperButton>
+            )}
+            {isEditMode && <SettingPanel />}
+          </div>
+
+          <DragOverlay
+            dropAnimation={null}
+            adjustScale={false}
+            modifiers={[snapCenterToCursor]}
+            style={{ pointerEvents: 'none', cursor: 'grabbing' }}
+          >
+            {activeAsset && (
+              <div className="w-24 h-24 cursor-grabbing rounded-xl overflow-hidden opacity-90 flex items-center justify-center">
+                {activeAsset.thumbnail ? (
+                  <img
+                    src={activeAsset.thumbnail}
+                    alt="Dragging Asset"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <AssetThumbnail file={activeAsset.file} />
+                )}
+              </div>
+            )}
+          </DragOverlay>
+        </div>
       </div>
     </DndContext>
   );

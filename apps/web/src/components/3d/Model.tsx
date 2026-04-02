@@ -19,7 +19,7 @@ import { useSnapshot } from 'valtio';
 import { Controls } from './Gismo';
 
 import { useTrigger } from '@/hooks/useTrigger';
-import { setCleanup } from '@/lib/actionRuntime';
+import { cleanObject, setCleanup } from '@/lib/actionRuntime';
 import { ActionRegistry } from '@/lib/actionsRegistry';
 import { sceneState, actions } from '@/stores';
 
@@ -28,6 +28,9 @@ const _initPos = new THREE.Vector3();
 const _initQuat = new THREE.Quaternion();
 const _initScale = new THREE.Vector3();
 const _initEuler = new THREE.Euler();
+const _box3 = new THREE.Box3();
+const _size = new THREE.Vector3();
+const _center = new THREE.Vector3();
 
 // ─── Types
 interface ModelProps extends Omit<
@@ -62,7 +65,7 @@ export const Model = memo(function Model({
 }: ModelProps) {
   // Store
   const snap = useSnapshot(sceneState, { sync: false });
-  const isSelected = snap.selectedObjectId === id;
+  const isSelected = snap.selectedObjectId === id && snap.mode == 'edit';
   const objectState = snap.objects[id];
 
   // GLTF
@@ -125,6 +128,7 @@ export const Model = memo(function Model({
     if (!modelRef.current) return;
     actions.registerObject(id, modelRef.current);
     return () => {
+      cleanObject(id);
       actions.unregisterObject(id);
     };
   }, [id]);
@@ -136,11 +140,11 @@ export const Model = memo(function Model({
     if (!parent) return;
 
     if (isSelected) {
-      const box = new THREE.Box3().setFromObject(modelRef.current);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
+      _box3.setFromObject(modelRef.current);
+      _box3.getSize(_size);
+      _box3.getCenter(_center);
 
-      const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
+      const boxGeo = new THREE.BoxGeometry(_size.x, _size.y, _size.z);
       const edges = new THREE.EdgesGeometry(boxGeo);
       boxGeo.dispose();
 
@@ -151,7 +155,7 @@ export const Model = memo(function Model({
       });
 
       const lines = new THREE.LineSegments(edges, mat);
-      lines.position.copy(center);
+      lines.position.copy(_center);
       parent.add(lines);
       boxRef.current = lines;
 
@@ -167,16 +171,16 @@ export const Model = memo(function Model({
   useFrame(() => {
     if (!isSelected || !boxRef.current || !modelRef.current) return;
 
-    const box = new THREE.Box3().setFromObject(modelRef.current);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
+    _box3.setFromObject(modelRef.current);
+    _box3.getSize(_size);
+    _box3.getCenter(_center);
 
     const geo = new THREE.EdgesGeometry(
-      new THREE.BoxGeometry(size.x, size.y, size.z)
+      new THREE.BoxGeometry(_size.x, _size.y, _size.z)
     );
     boxRef.current.geometry.dispose();
     boxRef.current.geometry = geo;
-    boxRef.current.position.copy(center);
+    boxRef.current.position.copy(_center);
   });
 
   //  Material style (tint / opacity / glow)
@@ -231,17 +235,20 @@ export const Model = memo(function Model({
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
-      actions.selectObject(id);
+      if (snap.mode === 'edit') {
+        actions.selectObject(id);
+        return;
+      }
       objectState?.actions
         ?.filter(a => a.trigger === 'onTap')
         .forEach(a => {
           const handler = ActionRegistry[a.subType];
           if (handler?.execute && modelRef.current) {
-            setCleanup(a.id, handler.execute(modelRef.current, a.config));
+            setCleanup(a.id, handler.execute(modelRef.current, a.config), id);
           }
         });
     },
-    [id, objectState?.actions]
+    [id, snap.mode, objectState?.actions]
   );
 
   const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {

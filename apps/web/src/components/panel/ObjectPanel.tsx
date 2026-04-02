@@ -44,6 +44,13 @@ export const ObjectConfigPanel = () => {
 
   const selectedObjectData = selectedId ? snap.objects[selectedId] : null;
 
+  const handleCopy = () => {
+    if (!selectedId) return;
+    const object = snap.objects[selectedId] as ObjectState;
+    actions.copyObject(object);
+    actions.selectObject(null);
+  };
+
   const handleDelete = () => {
     if (!selectedId) return;
     actions.removeObject(selectedId);
@@ -143,14 +150,14 @@ export const ObjectConfigPanel = () => {
           className="icon-round-btn"
           tooltip="Copier l'objet"
           voiceText="Copier l'objet"
-          // onClick={() => actions.duplicateObject(selectedId)}
+          onClick={handleCopy}
         >
           <Copy className="size-6!" />
         </SuperButton>
         <SuperButton
           tooltip="Supprimer l'objet"
           voiceText="Supprimer l'objet"
-          className="icon-round-btn bg-red-900/20! hover:bg-red-900/40! text-red-500!"
+          className="icon-round-btn"
           onClick={handleDelete}
         >
           <Trash className="size-6!" />
