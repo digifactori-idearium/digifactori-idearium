@@ -35,12 +35,14 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filterColumn?: string;
+  filterColumnText?: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   filterColumn,
+  filterColumnText,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -75,7 +77,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center py-4">
         <Input
           placeholder={
-            filterColumn ? `Filtrer les ${filterColumn}...` : 'Filtrer...'
+            filterColumn ? `Filtrer les ${filterColumnText}...` : 'Filtrer...'
           }
           value={
             filterColumn
@@ -91,10 +93,7 @@ export function DataTable<TData, TValue>({
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! !border-mauve"
-            >
+            <Button className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! !border-mauve">
               Colonnes
             </Button>
           </DropdownMenuTrigger>
@@ -110,7 +109,9 @@ export function DataTable<TData, TValue>({
                     checked={column.getIsVisible()}
                     onCheckedChange={value => column.toggleVisibility(!!value)}
                   >
-                    {column.id}
+                    {typeof column.columnDef.header === 'string'
+                      ? column.columnDef.header
+                      : ((column.columnDef.meta as any)?.label ?? column.id)}
                   </DropdownMenuCheckboxItem>
                 );
               })}

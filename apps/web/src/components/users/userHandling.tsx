@@ -137,8 +137,18 @@ export default function userHandling() {
   const data = getData();
 
   return (
-    <div className="container mx-auto py-10">
-      <DataTable columns={columns} data={data} filterColumn="emails" />
+    <div className="w-full min-h-screen p-6">
+      <div className="magic-text text-center md:text-5xl text-3xl justify-center flex items-center gap-2 font-bold mb-6">
+        Gérez les stagiaires
+      </div>
+      <div className="container mx-auto py-10">
+        <DataTable
+          columns={columns}
+          data={data}
+          filterColumn="avatar"
+          filterColumnText="emails"
+        />
+      </div>
     </div>
   );
 }

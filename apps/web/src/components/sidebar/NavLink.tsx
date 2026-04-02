@@ -1,4 +1,4 @@
-import { House, LayoutDashboard, LucideIcon, Users } from 'lucide-react';
+import { House, LayoutDashboard, LucideIcon, Users, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import {
@@ -29,6 +29,12 @@ export function NavLink() {
       path: 'users',
       label: 'Gestion stagiaires',
       icon: Users,
+      role: 'SUPERVISOR',
+    },
+    assetHandling: {
+      path: 'assets',
+      label: 'Gestion assets',
+      icon: Box,
       role: 'SUPERVISOR',
     },
   };

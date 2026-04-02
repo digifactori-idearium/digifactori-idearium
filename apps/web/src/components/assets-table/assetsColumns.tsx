@@ -1,9 +1,8 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 
-import { DataTableColumnHeader } from '../global/data-table/dataTableColumnHeader';
-
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
@@ -14,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export const columns: ColumnDef<Profile>[] = [
+export const columns: ColumnDef<Asset>[] = [
   {
     id: 'select',
     header: ({ table }: { table: any }) => (
@@ -62,56 +61,43 @@ export const columns: ColumnDef<Profile>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'id',
-    header: 'id',
+    accessorKey: 'name',
+    header: 'Nom',
   },
   {
-    accessorKey: 'userId',
-    header: 'user id',
+    accessorKey: 'category',
+    header: 'Catégorie',
   },
   {
-    accessorKey: 'pseudo',
-    header: 'pseudo',
+    accessorKey: 'description',
+    header: 'Description',
   },
   {
-    accessorKey: 'avatar',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="email" />
-    ),
-    meta: { label: 'Email' },
-  },
-  {
-    accessorKey: 'createdAt',
-    header: 'Date de création',
-    cell: ({ row }: { row: any }) => {
-      const date = new Date(row.getValue('createdAt') as string);
+    accessorKey: 'preview',
+    header: 'Aperçu',
+    cell: ({ row }) => {
+      const asset = row.original;
 
-      const formatted = new Intl.DateTimeFormat('fr-FR', {
-        dateStyle: 'long',
-        timeStyle: 'short',
-      }).format(date);
-
-      return <div>{formatted}</div>;
-    },
-  },
-  {
-    accessorKey: 'updatedAt',
-    header: 'Date de mise à jour',
-    cell: ({ row }: { row: any }) => {
-      const date = new Date(row.getValue('updatedAt') as string);
-
-      const formatted = new Intl.DateTimeFormat('fr-FR', {
-        dateStyle: 'long',
-        timeStyle: 'short',
-      }).format(date);
-
-      return <div>{formatted}</div>;
+      return (
+        <div className="w-24 h-24">
+          <Card className="bg-sidebar overflow-hidden border-mauve/20 shadow-sm h-full">
+            <CardContent className="p-0 h-full">
+              <img
+                src={asset.preview}
+                alt="Asset preview"
+                className="w-full h-full object-cover"
+              />
+            </CardContent>
+          </Card>
+        </div>
+      );
     },
   },
   {
     id: 'actions',
+    header: 'Actions',
     cell: ({ row }: { row: any }) => {
-      const profile = row.original;
+      const asset = row.original;
 
       return (
         <DropdownMenu>
@@ -128,12 +114,11 @@ export const columns: ColumnDef<Profile>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(profile.userId)}
+              onClick={() => navigator.clipboard.writeText(asset.name)}
             >
-              Copier l'id du profil
+              Copier le nom de l'asset
             </DropdownMenuItem>
-            <DropdownMenuItem>Voir le profil</DropdownMenuItem>
-            <DropdownMenuItem>Supprimer le profil</DropdownMenuItem>
+            <DropdownMenuItem>Supprimer l'asset</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
