@@ -1,12 +1,16 @@
+import { toast } from 'sonner';
 import * as THREE from 'three';
 import { proxy } from 'valtio';
 
 import { themesToColors } from '@/lib/theme';
 import { round } from '@/lib/utils';
 
+//theme
 const INITIAL_THEME = 'day' as keyof typeof themesToColors;
-
 const initialThemeData = themesToColors[INITIAL_THEME];
+
+//action
+const NON_DUPLICABLE_ACTIONS = ['playSound', 'say'];
 
 export const sceneState = proxy<IdeoramaState>({
   // Global State
@@ -206,6 +210,17 @@ export const actions = {
   addAction(objectId: string, action: ActionConfig) {
     const obj = sceneState.objects[objectId];
     if (!obj) return;
+    const alreadyExists = (obj.actions ??= []).some(
+      a =>
+        a.subType === action.subType &&
+        a.trigger === action.trigger &&
+        NON_DUPLICABLE_ACTIONS.includes(action.subType)
+    );
+
+    if (alreadyExists) {
+      toast.error("C'est déjà là !");
+      return;
+    }
     (obj.actions ??= []).push(action);
     obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
   },
@@ -227,9 +242,8 @@ export const actions = {
   setSettingView: (view: 'model' | 'actions') => {
     sceneState.activeSettingView = view;
   },
-  openActionPicker: (open: boolean, trigger: TriggerType = 'onStart') => {
+  openActionPicker: (open: boolean) => {
     sceneState.actionPickerOpen = open;
-    sceneState.pendingTrigger = trigger;
   },
 };
 
