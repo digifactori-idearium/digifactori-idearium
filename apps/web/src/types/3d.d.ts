@@ -97,6 +97,12 @@ interface IdeoramaState {
   //Action management
   activeSettingView: 'model' | 'actions';
   actionPickerOpen: boolean;
+
+  history: ModelsInfo[]
+  current: number,
+  oldest: number,
+  newest: number
+  
   pendingTrigger: TriggerType;
 }
 
