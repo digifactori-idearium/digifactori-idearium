@@ -208,7 +208,7 @@ const globalConfigInputs = [
     required: false,
   },
   {
-    label: 'Music',
+    label: 'Choisir la musique de fond',
     type: 'dialog',
     name: 'music',
     placeholder: 'Choisir la Music',
