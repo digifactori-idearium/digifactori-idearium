@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { proxy } from 'valtio';
 
 import { themesToColors } from '@/lib/theme';
+import { getEmptyIdeorama } from '@/services/ideorama.service';
+import { resetState, stackNewState } from '@/utils/utils';
 
 const INITIAL_THEME = 'day' as keyof typeof themesToColors;
 
@@ -41,6 +43,12 @@ export const sceneState = proxy<IdeoramaState>({
   //Action management
   activeSettingView: 'model',
   actionPickerOpen: false,
+
+  // undo/redomanagement
+  history: [],
+  current: -1,
+  oldest: 0,
+  newest: 0,
 });
 
 export const sceneRegistry = new Map<string, THREE.Object3D>();
@@ -116,18 +124,40 @@ export const actions = {
   removeObject: (id: string) => {
     delete sceneState.objects[id];
     if (sceneState.selectedObjectId === id) sceneState.selectedObjectId = null;
+    stackNewState(sceneState)
   },
   registerObject: (id: string, obj: THREE.Object3D) =>
     sceneRegistry.set(id, obj),
 
   unregisterObject: (id: string) => sceneRegistry.delete(id),
 
-  // Setting Mangament
+  // Setting Management
   toggleSettingPanel(open?: boolean) {
     if (open !== undefined) {
       sceneState.settingPanelOpen = open;
     } else {
       sceneState.settingPanelOpen = !sceneState.settingPanelOpen;
+    }
+  },
+
+  async resetIdeorama() {
+    try {
+      await getEmptyIdeorama()
+      .then(res => {
+        const model = res.data.model;
+        sceneState.global = model.global ? model.global : sceneState.global;
+        sceneState.background = model.background
+          ? model.background
+          : sceneState.background;
+        sceneState.info = model.info ? model.info : sceneState.info;
+        sceneState.floor = model.floor ? model.floor : sceneState.floor;
+        sceneState.objects = model.objects ? model.objects : sceneState.objects;
+        stackNewState(sceneState)
+      });
+      return true
+    } catch (error) {
+      console.log("error: ", error)
+      return false;
     }
   },
 
@@ -168,8 +198,27 @@ export const actions = {
     };
 
     sceneState.selectedObjectId = id;
+
+    stackNewState(sceneState)
   },
-  // ACTIONS NAMAGEMENT
+
+  // Historic management
+  stackState() {
+    stackNewState(sceneState)
+  },
+
+  // Undo/ redo
+  undo() {
+    sceneState.current -= 1;
+    resetState(sceneState)
+  },
+  redo() {
+    sceneState.current += 1;
+    resetState(sceneState)
+
+  },
+
+  // ACTIONS MANAGEMENT
   addAction(objectId: string, action: ActionConfig) {
     const obj = sceneState.objects[objectId];
     if (!obj) return;

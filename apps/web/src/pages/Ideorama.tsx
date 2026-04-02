@@ -14,9 +14,11 @@ import {
   CirclePlay,
   ListTree,
   Plus,
+  Redo2,
   RotateCcw,
   Settings2,
   SquarePen,
+  Undo2,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -29,7 +31,7 @@ import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { SettingPanel } from '@/components/panel/SettingPanel';
 import { useUser } from '@/providers/UserProvider';
-import { getEmptyIdeorama, saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
+import { saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
 const downloadAndSaveIdeorama = (
@@ -45,20 +47,6 @@ const downloadAndSaveIdeorama = (
     }))
   // toast.success("Sauvegarde de l'idéorama réussie");
   setIsSaving(false)
-};
-
-const resetIdeorama = () => {
-  getEmptyIdeorama().then(res => {
-    const model = res.data.model;
-    sceneState.global = model.global ? model.global : sceneState.global;
-    sceneState.background = model.background
-      ? model.background
-      : sceneState.background;
-    sceneState.info = model.info ? model.info : sceneState.info;
-    sceneState.floor = model.floor ? model.floor : sceneState.floor;
-    sceneState.objects = model.objects ? model.objects : sceneState.objects;
-    toast.success('Idéorama réinitialisé');
-  });
 };
 
 export default function Ideorama() {
@@ -81,27 +69,26 @@ export default function Ideorama() {
     })
   );
 
+   useEffect(() => {
+    console.log("snap: ", snap)
+  }, [snap])
+
   useEffect(() => {
-    console.log("effect");
     const handleBeforeUnload = () => {
-      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId).then(() => console.log("ha ha ha ha"));
+      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
   };
 
   window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId).then(() => console.log("hi hi hi ha"))
-      // localStorage.setItem("sceneState", `{"global":{"brightness":"bright","visible":true,"music":{"currentTrack":"","volume":0.5},"theme":"day"},"background":{"color":"#8ecae6","accent":"#8ecae6"},"info":{"name":"Template","description":"New Ideorama","category":"none"},"floor":{"color":"#53ED83","hidden":false,"texture":"none"},"objects":{}}`)
-      console.log("cleanup");
+      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
     }
   }, [])
 
    useEffect(() => {
       if (!ideoramaid) return;
     
-      console.log("here")
       searchIdeorama(ideoramaid).then(res => {
-      console.log("in")
         localStorage.setItem("sceneState", JSON.stringify(res.data.model))
         res.data.model.info.name = res.data.name
         const model = res.data.model;
@@ -113,13 +100,15 @@ export default function Ideorama() {
         if (model.info) Object.assign(sceneState.info, model.info);
         if (model.floor) Object.assign(sceneState.floor, model.floor);
         if (model.objects) sceneState.objects = model.objects;
-      });
-      console.log("there")
+        
+      }).then(() => {
+        actions.stackState();
+    })
     }, [ideoramaid]);
   
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
-      downloadAndSaveIdeorama(setIsSaving)
+      downloadAndSaveIdeorama(setIsSaving) 
     }
   }, [snap.global, snap.background, snap.info, snap.floor, snap.objects])
 
@@ -127,8 +116,8 @@ export default function Ideorama() {
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
       downloadAndSaveIdeorama(setIsSaving)
+      actions.stackState()
     } else {
-       
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFirstRender(false);
     }
@@ -206,9 +195,35 @@ export default function Ideorama() {
               <span>En train de sauvegarder</span>
             </span>
           </button>}
-          <button
-            onClick={() => resetIdeorama()}
+          {snap.current != snap.oldest && <button
+            // onClick={() => undo(ideoramaStates, setIdeoramaStates, setIsUndoOrRedoing)}
+            onClick={() => actions.undo()}
             className="absolute top-3 left-[calc(50%+125px)] z-50 p-2! main-small-btn"
+          >
+            <span className="flex items-center gap-1">
+              <Undo2 className="w-4 h-4 text-white!" />
+              <span>Undo </span>
+            </span>
+          </button>}
+          {snap.current != snap.newest && <button
+            // onClick={() => redo(ideoramaStates, setIdeoramaStates, setIsUndoOrRedoing)}
+            onClick={() => actions.redo()}
+            className="absolute top-3 left-[calc(50%+205px)] z-50 p-2! main-small-btn"
+          >
+            <span className="flex items-center gap-1">
+              <Redo2 className="w-4 h-4 text-white!" />
+              <span>Redo</span>
+            </span>
+          </button>}
+          <button
+            onClick={() => {
+              actions.resetIdeorama().then(res => {
+              if (res)
+                {toast.success('Idéorama réinitialisé');}
+              else 
+                {toast.error('Échec lors de la réinitialisation de l\'idéorama')}
+            })}}
+            className="absolute top-3 left-[calc(50%+285px)] z-50 p-2! main-small-btn"
           >
             <span className="flex items-center gap-1">
               <RotateCcw className="w-4 h-4 text-white!" />
