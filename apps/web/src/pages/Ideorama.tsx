@@ -73,6 +73,39 @@ export default function Ideorama() {
   );
 
   useEffect(() => {
+    console.log("history: ", snap.history)
+  }, [snap.history])
+
+  const selectedObject = snap.selectedObjectId ? snap.objects[snap.selectedObjectId] :  null
+  const scale = selectedObject?.transform.scale
+
+//   const timeoutRef = useRef(100);
+
+// useEffect(() => {
+//   clearTimeout(timeoutRef.current);
+
+//   timeoutRef.current = setTimeout(() => {
+//     actions.stackState();
+//   }, 200);
+
+//   return () => clearTimeout(timeoutRef.current);
+// }, [scale]);
+  
+  // useEffect(() => {
+  //   const handleScaleUpdate = () => {
+  //     console.log("stacked")
+  //     actions.stackState();
+  //   }
+  //   const slider = document.getElementById("scale_slider_ext") as HTMLElement
+  //   console.log("slider: ", slider)
+  //   if (slider) {
+  //     slider.addEventListener("change", handleScaleUpdate)
+  //   }
+    
+  //   // return () => slider.removeEventListener("change", handleScaleUpdate)
+  // }, [snap.activeSettingView])
+
+  useEffect(() => {
     const handleBeforeUnload = () => {
       saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
     };
@@ -181,7 +214,7 @@ export default function Ideorama() {
                 </span>
               )}
             </button>
-            {snap.current != snap.oldest && (
+            {(snap.current != snap.oldest && isEditMode) && (
               <SuperButton
                 tooltip='Revenir en arrière'
                 onClick={() => actions.undo()}
@@ -192,7 +225,7 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
-            {snap.current != snap.newest && (
+            {(snap.current != snap.newest && isEditMode) && (
               <SuperButton
                 tooltip='Rétablir'
                 onClick={() => actions.redo()}
@@ -203,7 +236,7 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
-            <SuperButton
+            {isEditMode ? <SuperButton
               tooltip='Réinitialiser'
               onClick={() => {
                 actions.resetIdeorama().then(res => {
@@ -221,7 +254,7 @@ export default function Ideorama() {
               <span className="flex items-center gap-1">
                 <RotateCcw className="w-4 h-4 text-white!" />
               </span>
-            </SuperButton>
+            </SuperButton> : null}
           </div>
           {/* Assets Button */}
           {isEditMode && (

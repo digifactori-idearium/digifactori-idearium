@@ -36,7 +36,7 @@ export const sceneState = proxy<IdeoramaState>({
   objects: {} as Record<string, ObjectState>,
   selectedObjectId: null as string | null,
 
-  //Objects movement managemet
+  //Objects movement management
   isDragging: false,
   assetsPanelOpen: false,
   assetsTreeOpen: false,

@@ -1,10 +1,10 @@
 import { SquareArrowOutUpRight } from 'lucide-react';
 import {
-  Controller,
   Control,
+  Controller,
   FieldValues,
-  UseFormSetValue,
   UseFormRegister,
+  UseFormSetValue,
 } from 'react-hook-form';
 
 import { Slider } from '../ui/slider';
@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { actions } from '@/stores';
 
 interface FormInputRendererProps {
   input: FormInputData;
@@ -146,7 +147,12 @@ export function FormInputRenderer({
                 min={input.min ?? 0}
                 max={input.max ?? 10}
                 step={input.step ?? 0.1}
-                onChange={e => field.onChange(Number(e.target.value))}
+                onChange={e => {
+                  field.onChange(Number(e.target.value))
+                  if(input.name == "scale") {
+                    actions.stackState()
+                  }
+                }}
                 className="slider-input w-12 text-xs"
               />
               <Slider
@@ -155,6 +161,12 @@ export function FormInputRenderer({
                 step={input.step ?? 0.1}
                 value={[field.value ?? 0]}
                 onValueChange={val => field.onChange(val[0])}
+                onValueCommit={() => {
+                  if(input.name == "scale") {
+                    actions.stackState()
+                  }
+                }
+                }
                 className="sliderer flex-1 py-4 cursor-pointer"
               />
             </div>
