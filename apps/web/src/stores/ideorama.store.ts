@@ -243,6 +243,7 @@ export const actions = {
   // Undo/ redo
   undo() {
     sceneState.current -= 1;
+    sceneState.selectedObjectId = null;
     resetState(sceneState)
   },
   redo() {

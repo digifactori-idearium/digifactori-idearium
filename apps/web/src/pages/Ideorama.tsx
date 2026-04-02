@@ -35,8 +35,7 @@ import { useUser } from '@/providers/UserProvider';
 import { saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
-const downloadAndSaveIdeorama = (setIsSaving: (arg: boolean) => void) => {
-  setIsSaving(true);
+const downloadAndSaveIdeorama = () => {
   localStorage.setItem(
     'sceneState',
     JSON.stringify({
@@ -47,7 +46,6 @@ const downloadAndSaveIdeorama = (setIsSaving: (arg: boolean) => void) => {
       objects: sceneState.objects,
     })
   );
-  setIsSaving(false);
 };
 
 export default function Ideorama() {
@@ -59,7 +57,6 @@ export default function Ideorama() {
   const userId = useUser().user?.id;
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [isFirstRender, setIsFirstRender] = useState(true);
   const { setOpen } = useSidebar();
 
@@ -84,6 +81,11 @@ export default function Ideorama() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
+      sceneState.selectedObjectId = null;
+      sceneState.history = [];
+      sceneState.current = -1;
+      sceneState.newest = 0;
+      sceneState.oldest = 0;
     }
   }, [])
 
@@ -110,14 +112,14 @@ export default function Ideorama() {
   
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
-      downloadAndSaveIdeorama(setIsSaving) 
+      downloadAndSaveIdeorama() 
     }
   }, [snap.global, snap.background, snap.info, snap.floor, snap.objects])
 
 
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
-      downloadAndSaveIdeorama(setIsSaving)
+      downloadAndSaveIdeorama()
       actions.stackState()
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
