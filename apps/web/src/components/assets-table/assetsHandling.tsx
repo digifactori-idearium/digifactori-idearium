@@ -44,7 +44,7 @@ function getData(): Asset[] {
 
 export default function AssetHandling() {
   const data = getData();
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
 
   return (
     <div className="w-full min-h-screen p-6">
