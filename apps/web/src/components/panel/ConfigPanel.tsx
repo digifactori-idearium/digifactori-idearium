@@ -58,17 +58,17 @@ export const ConfigPanel = () => {
 
         <div className="flex-1 min-h-0 mt-3">
           <ScrollArea className="h-full">
-            <Accordion type="multiple" className="w-full">
+            <Accordion type="multiple" className="w-full pr-3 space-y-2">
               {accordionSections.map(section => (
                 <AccordionItem
                   key={section.id}
                   value={section.id}
-                  className="border-b-0"
+                  className="border border-white/10 rounded-lg bg-white/5 px-2 hover:border-yellow-400"
                 >
                   <AccordionTrigger className="accordion-btn hover:no-underline py-3">
                     {section.label}
                   </AccordionTrigger>
-                  <AccordionContent className="px-4 pl-5 pt-2">
+                  <AccordionContent className="pt-2 border-t border-white/5">
                     <FormThree
                       inputs={ideoramaConfigInputs[section.input]}
                       sliceKey={section.id}

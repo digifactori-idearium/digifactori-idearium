@@ -162,6 +162,7 @@ function ArrowHandle({
         position={pillPos.toArray() as [number, number, number]}
         center
         style={{ pointerEvents: 'auto' }}
+        zIndexRange={[50, 0]}
       >
         <Pill color={color} lit={lit} onPointerDown={handlePointerDown}>
           <ArrowDown
@@ -206,6 +207,7 @@ function RotateHandle({ radius, isActive, onPointerDown }: any) {
         position={[0, 0, -radius + 0.2]}
         center
         style={{ pointerEvents: 'auto' }}
+        zIndexRange={[50, 0]}
       >
         <Pill color={color} lit={lit} onPointerDown={handlePointerDown}>
           ↺

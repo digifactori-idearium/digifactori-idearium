@@ -93,7 +93,7 @@ export const ObjectConfigPanel = () => {
       </div>
 
       <CardContent className="flex-1 overflow-y-auto p-0 custom-scrollbar">
-        {/* Transform Section (Always visible) */}
+        {/* Transform Section */}
         <div className="px-4 pt-2">
           <FormThree
             inputs={objectConfigInputs['transform']}
@@ -104,7 +104,7 @@ export const ObjectConfigPanel = () => {
 
         <Separator className="my-3! bg-zinc-400/40!" />
 
-        {/* Style & Advanced Sections (Accordion) */}
+        {/* Style & Advanced Sections */}
         <div className="px-1">
           <Accordion type="multiple" className="w-full">
             {accordionSections.map(section => (

@@ -29,7 +29,7 @@ export function Vector3Field({ input, control }: Vector3FieldProps) {
                 <Button
                   type="button"
                   size="icon"
-                  className="h-4 w-4 main-btn"
+                  className="h-5 w-5 flex justify-center items-center main-btn"
                   onClick={() =>
                     field.onChange(
                       Number(((field.value ?? 0) + step).toFixed(2))
@@ -58,7 +58,7 @@ export function Vector3Field({ input, control }: Vector3FieldProps) {
                   type="button"
                   size="icon"
                   variant="ghost"
-                  className="h-4 w-4 main-btn"
+                  className="h-5 w-5 flex justify-center items-center main-btn"
                   onClick={() =>
                     field.onChange(
                       Number(((field.value ?? 0) - step).toFixed(2))
