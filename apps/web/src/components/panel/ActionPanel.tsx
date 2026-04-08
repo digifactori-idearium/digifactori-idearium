@@ -1,5 +1,4 @@
 import { ArrowLeft, Plus, Trash2, Zap } from 'lucide-react';
-import { useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { FormInputData } from '../global/Input';
@@ -25,7 +24,7 @@ export const ActionPanel = () => {
   const selectedId = snap.selectedObjectId;
   const obj = selectedId ? snap.objects[selectedId] : null;
 
-  const [activeTrigger, setActiveTrigger] = useState<TriggerType>('onStart');
+  const activeTrigger = snap.pendingTrigger || 'onStart';
 
   // Filter actions for the selected trigger
   const currentActions = (obj?.actions || []).filter(
@@ -50,8 +49,7 @@ export const ActionPanel = () => {
       <Tabs
         value={activeTrigger}
         onValueChange={v => {
-          const nextValue = v as TriggerType;
-          setActiveTrigger(nextValue);
+          sceneState.pendingTrigger = v as TriggerType;
         }}
         className="mt-1"
       >
@@ -106,7 +104,7 @@ export const ActionPanel = () => {
 
         <SuperButton
           className="w-full mt-3 form-button"
-          onClick={() => actions.openActionPicker(true, activeTrigger)}
+          onClick={() => actions.openActionPicker(true)}
         >
           <Plus className="mr-2 size-4" /> Ajouter une action
         </SuperButton>

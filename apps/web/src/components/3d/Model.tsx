@@ -17,9 +17,10 @@ import { SkeletonUtils } from 'three-stdlib';
 import { useSnapshot } from 'valtio';
 
 import { Controls } from './Gismo';
+import { SpeechBubble } from './SpeechBubble';
 
 import { useTrigger } from '@/hooks/useTrigger';
-import { cleanObject, setCleanup } from '@/lib/actionRuntime';
+import { cleanObject, runCleanup, setCleanup } from '@/lib/actionRuntime';
 import { ActionRegistry } from '@/lib/actionsRegistry';
 import { sceneState, actions } from '@/stores';
 
@@ -244,6 +245,7 @@ export const Model = memo(function Model({
         .forEach(a => {
           const handler = ActionRegistry[a.subType];
           if (handler?.execute && modelRef.current) {
+            runCleanup(a.id); //i don't know
             setCleanup(a.id, handler.execute(modelRef.current, a.config), id);
           }
         });
@@ -324,6 +326,7 @@ export const Model = memo(function Model({
           name={name}
           dispose={null}
         />
+        <SpeechBubble objectRef={modelRef} objectId={id} />
       </group>
     </Controls>
   );
