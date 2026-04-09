@@ -8,6 +8,10 @@ import {
   ShieldCheck,
   User,
   Users,
+  Box,
+  ChartBarStacked,
+  TextAlignStart,
+  FileBox,
 } from 'lucide-react';
 
 import { MusicSelector } from './MusicDialog';
@@ -330,3 +334,37 @@ export const objectConfigInputs = {
   style: styleInputs,
   advanced: advancedInputs,
 };
+
+/* =========================
+   ASSET INPUTS
+========================= */
+export const assetInputs = [
+  {
+    label: 'Nom',
+    type: 'text',
+    name: 'name',
+    placeholder: "Entrez le nom de l'asset",
+    icon: Box,
+  },
+  {
+    label: 'Catégorie',
+    type: 'text',
+    name: 'category',
+    placeholder: "Entrez le type de catégorie de l'asset",
+    icon: ChartBarStacked,
+  },
+  {
+    label: 'Description',
+    type: 'text',
+    name: 'description',
+    placeholder: "Entrez la description de l'asset",
+    icon: TextAlignStart,
+  },
+  {
+    label: 'Source',
+    type: 'text',
+    name: 'source',
+    placeholder: "Entrez la source de l'asset",
+    icon: FileBox,
+  },
+];
