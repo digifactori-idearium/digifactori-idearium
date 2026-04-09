@@ -52,7 +52,6 @@ export const sceneState = proxy<IdeoramaState>({
   // undo/redo management
   history: [],
   current: -1,
-  oldest: 0,
   newest: 0,
 
   pendingTrigger: 'onStart' as TriggerType,
