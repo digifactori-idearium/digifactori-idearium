@@ -55,7 +55,7 @@ const getProfile = async (req: AuthenticatedRequest, res: Response) => {
       status: 'error',
       error: {
         code: 'Internal Server Error',
-        message: 'Erreur lors de la rechercher de votre profil',
+        message: 'Erreur lors de la recherche de votre profil',
         error: error,
       },
       status_code: 500,
