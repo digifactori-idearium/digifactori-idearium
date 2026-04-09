@@ -1,11 +1,10 @@
 import * as React from 'react';
 
-import { VoiceLink } from '../global';
-
 import { NavBrand } from './NavBrand';
 import { NavLink } from './NavLink';
 import { NavLinkSkeleton } from './NavSkeleton';
 
+import { VoiceLink } from '@/components/common/button';
 import {
   Sidebar,
   SidebarContent,

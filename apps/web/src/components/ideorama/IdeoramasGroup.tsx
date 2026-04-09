@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import DeleteIdeoramaDialog from './deleteIdeoramaDialog';
 
-import { SuperButton } from '@/components/global/SuperButton';
+import { SuperButton } from '@/components/common/button/SuperButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { deleteIdeorama } from '@/services/ideorama.service';

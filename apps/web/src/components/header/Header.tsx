@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import logo from '../../assets/images/logo.png';
 
-import { VoiceButton } from '@/components/global';
-import { SuperButton } from '@/components/global';
+import { VoiceButton, SuperButton } from '@/components/common/button';
 import {
   AlertDialog,
   AlertDialogAction,

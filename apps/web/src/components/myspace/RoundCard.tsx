@@ -2,7 +2,7 @@ import { CirclePlus } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { SuperButton } from '@/components/global';
+import { SuperButton } from '@/components/common/button';
 interface RoundCardProps {
   title: string;
   link: string;

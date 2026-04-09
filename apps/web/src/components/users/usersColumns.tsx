@@ -1,7 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 
-import { DataTableColumnHeader } from '../global/data-table/dataTableColumnHeader';
+import { DataTableColumnHeader } from '../common/data-table/dataTableColumnHeader';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

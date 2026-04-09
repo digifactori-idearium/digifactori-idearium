@@ -2,7 +2,7 @@ import { RotateCcw, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { SuperButton } from '@/components/global';
+import { SuperButton } from '@/components/common/button';
 import EditPanel from '@/components/voxel/panel';
 import Voxel, { VoxelPoint } from '@/pages/Voxel';
 import { getVoxelModelById, saveVoxelModel } from '@/services/voxel.service';
@@ -11,7 +11,9 @@ export default function VoxelLayout() {
   const { modelId } = useParams();
 
   const [mode, setMode] = useState<'add' | 'remove' | 'paint'>('add');
-  const [shape, setShape] = useState<'cube' | 'mur' | 'plateforme' | 'escalier'>('cube');
+  const [shape, setShape] = useState<
+    'cube' | 'mur' | 'plateforme' | 'escalier'
+  >('cube');
   const [rotation, setRotation] = useState(0);
 
   const [voxels, setVoxels] = useState<VoxelPoint[]>([]);

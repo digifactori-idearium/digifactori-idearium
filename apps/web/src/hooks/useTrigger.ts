@@ -8,8 +8,8 @@ import {
   runCleanup,
   cleanObject,
   clearTweens,
-} from '@/lib/actionRuntime';
-import { ActionRegistry } from '@/lib/actionsRegistry';
+} from '@/lib/actions/runtime';
+import { ActionRegistry } from '@/lib/actions/registery';
 import { sceneState } from '@/stores';
 
 export function useTrigger(

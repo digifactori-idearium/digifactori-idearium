@@ -1,4 +1,4 @@
-import { Form } from '@/components/global';
+import { Form } from '@/components/common/form';
 
 interface Props {
   initialValues: any;
