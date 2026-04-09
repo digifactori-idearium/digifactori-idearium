@@ -9,7 +9,6 @@ const getSingleProfile = async (
   userId: string,
   parental_code: string | null
 ) => {
-	try {
 		
 		const response: { profile; user? } = { profile: {} };
 		response.profile = await profileTable.findUnique({
@@ -22,10 +21,6 @@ const getSingleProfile = async (
 			},
 		});
 
-    if (!response.profile) {
-      throw new Error(`Utilisateur introuvable`);
-    }
-
     const userInfo = await userTable.findUnique({
       where: {
         id: userId,
@@ -35,28 +30,19 @@ const getSingleProfile = async (
       throw new Error('Utilisateur introuvable');
     }
 
+    // Checks if the user info should be added in the response
     let isParentalCodeValid = false;
-
     if (parental_code && userInfo.parental_code) {
       isParentalCodeValid = await bcrypt.compare(
         parental_code,
         userInfo.parental_code
       );
     }
-
     if (userInfo.role !== 'CHILD' || isParentalCodeValid) {
       response.user = userInfo;
     }
 
     return response;
-  } catch (error: any) {
-    console.log('err: ', error);
-    throw new Error(
-      `Erreur lors de la récupération du profil: ${error.message}`
-    );
-  } finally {
-    await prisma.$disconnect();
-  }
 };
 
 const updateProfile = async (userId: string, body: SetProfileInput) => {
