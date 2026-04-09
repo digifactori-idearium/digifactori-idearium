@@ -48,9 +48,13 @@ const ObjectNode = memo(
     const selectedId = useSelectedId();
     const isActive = selectedId === node.id;
 
-    const handleClick = useCallback(() => {
-      actions.selectObject(node.id);
-    }, [node.id]);
+    const handleClick = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        actions.selectObject(node.id);
+      },
+      [node.id]
+    );
 
     if (node.children.length === 0) {
       return (

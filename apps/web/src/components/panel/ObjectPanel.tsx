@@ -106,18 +106,22 @@ export const ObjectConfigPanel = () => {
 
         {/* Style & Advanced Sections */}
         <div className="px-1">
-          <Accordion type="multiple" className="w-full">
+          <Accordion
+            type="multiple"
+            defaultValue={accordionSections.map(section => section.id)}
+            className="w-full pr-2 space-y-2"
+          >
             {accordionSections.map(section => (
               <AccordionItem
                 key={section.id}
                 value={section.id}
-                className="border-none"
+                className="border border-white/10 rounded-lg bg-white/5 px-2 hover:border-yellow-400"
               >
                 <AccordionTrigger className="accordion-btn hover:no-underline py-2 px-3">
                   {section.label}
                 </AccordionTrigger>
 
-                <AccordionContent className="pt-3 px-3">
+                <AccordionContent className="pt-2 border-t border-white/5">
                   <FormThree
                     inputs={objectConfigInputs[section.id]}
                     objectId={selectedId}

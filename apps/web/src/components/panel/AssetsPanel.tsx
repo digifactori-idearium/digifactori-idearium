@@ -40,10 +40,13 @@ export const AssetsPanel = () => {
 
           {/* Right Icons */}
           <div className="flex items-center gap-2 z-10">
-            <Search
-              className="size-5 cursor-pointer"
+            <SuperButton
+              tooltip="Rechercher un objet"
               onClick={() => setSearchOpen(true)}
-            />
+              className={`hover:bg-white/10 p-1! bg-transparent! rounded ${!searchOpen ? 'border' : ''} border-white/20!`}
+            >
+              <Search className="size-5 cursor-pointer text-white" />
+            </SuperButton>
 
             <SuperButton
               tooltip="Fermer"
@@ -70,14 +73,16 @@ export const AssetsPanel = () => {
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-white/50 py-1"
             />
 
-            <button
+            <SuperButton
               onClick={() => {
                 setSearchQuery('');
                 setSearchOpen(false);
               }}
+              tooltip="ferme la recherche"
+              className="group bg-transparent! hover:text-red-500!"
             >
-              <X className="size-4 text-white/70 mr-2" />
-            </button>
+              <X className="size-4 text-white/70 transition-colors group-hover:text-red-500! mr-5" />
+            </SuperButton>
           </div>
         </div>
 
