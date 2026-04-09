@@ -1,12 +1,11 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
 
 import { Request, Response } from 'express';
+import { getUploadPath } from "utils/ideorama";
 
 import { AuthenticatedRequest } from '../../types';
-import {
-  getSingleProfile
-} from "../profile/profile.service";
+
+
 
 import {
   createIdeorama,
@@ -16,16 +15,24 @@ import {
   updateIdeoramaModelPath
 } from './ideorama.services';
 
-const getUploadPath = (ideoramaId: string) => {
-  const id = String(ideoramaId)
-  // The id must be alphanumerical
-  if (!/^[a-z0-9]+$/i.test(id)) {
-    throw new Error("Invalid ideoramaId");
-  }
-  const fileName = `scene-${id}.json`
-  return path.join(process.cwd(), "uploads/scenes", fileName)
-}
 
+/**
+ * creates a new ideorama.
+ *
+ * @param req - Express request object. Expects 'req.body.ideorama' (Ideorama)
+ * @param res - Express response object.
+ *
+ * @returns Sends an HTTP response:
+ * - 200 with:
+ *  {
+ *    status: "success",
+ *    message: "Idéorama mis à jour avec succès",
+ *    data: the new ideorama (Ideorama),
+ *    status_code: 200
+ *  }
+ * - 401 if the user is not authenticated
+ * - 500 if an unexpected error occurs
+ */
 const createIdeoramaController = async (
   req: AuthenticatedRequest,
   res: Response
@@ -44,20 +51,27 @@ const createIdeoramaController = async (
   }
 
   try {
-    const ideorama = await createIdeorama(req.body.ideorama);
+      // Save in BD
+      const newIdeorama = await createIdeorama(req.body.ideorama)
+      const uploadPath = getUploadPath(newIdeorama.id)
+      await updateIdeoramaModelPath(newIdeorama.id, uploadPath)
 
-    return res.status(201).json({
-      status: 'success',
-      message: 'Ideorama créée avec succès',
-      data: ideorama,
-      status_code: 201,
-    });
+      // Save in uploads dir
+      const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json')
+      fs.writeFileSync(uploadPath, emptyScene)
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Idéorama mis à jour avec succès',
+        data: newIdeorama,
+        status_code: 200,
+      });
   } catch (error) {
     return res.status(500).json({
       status: 'error',
       error: {
         code: 'Internal Server Error',
-        message: 'Erreur lors de la création de la ideorama',
+        message: 'Erreur lors de la création de l\'idéorama',
         error,
       },
       status_code: 500,
@@ -65,6 +79,23 @@ const createIdeoramaController = async (
   }
 };
 
+/**
+ * Finds all ideoramas of the authenticated user.
+ *
+ * @param req - Express request object. Expects 'req.body.ideoramaId' (string)
+ * @param res - Express response object.
+ *
+ * @returns Sends an HTTP response:
+ * - 200 with:
+ *  {
+ *    status: "success",
+ *    message: "Idéoramas récupéré avec succès"
+ *    data: the ideoramas (Ideorama[]),
+ *    status_code: 200
+ *  }
+ * - 401 if the user is not authenticated
+ * - 500 if an unexpected error occurs
+ */
 const getUserIdeoramasController = async (
   req: AuthenticatedRequest,
   res: Response
@@ -84,14 +115,11 @@ const getUserIdeoramasController = async (
 
   try {
     const ideoramas = await getUserIdeoramas(user.userId);
-    const response = await getSingleProfile(user.userId, null)
 
     return res.status(200).json({
       status: 'success',
-      data: {
-        ideoramas: ideoramas,
-        profile: response.profile
-      },
+      message: "Idéoramas récupéré avec succès",
+      data: ideoramas,
       status_code: 200,
     });
   } catch (error) {
@@ -107,6 +135,24 @@ const getUserIdeoramasController = async (
   }
 };
 
+/**
+ * Finds an ideorama based on its ID.
+ *
+ * @param req - Express request object. Expects 'req.body.ideoramaId' (string)
+ * @param res - Express response object.
+ *
+ * @returns Sends an HTTP response:
+ * - 200 with:
+ *  {
+ *    status: "success",
+ *    message: "Idéorama récupéré avec succès",
+ *    data: the ideorama (Ideorama),
+ *    status_code: 200
+ *  }
+ * - 401 if the user is not authenticated
+ * - 404 if ideorama not found
+ * - 500 if an unexpected error occurs
+ */
 const getIdeoramaByIdController = async (
   req: AuthenticatedRequest,
   res: Response
@@ -125,14 +171,14 @@ const getIdeoramaByIdController = async (
   }
 
   try {
-    const ideorama = await getIdeoramaById(req.body.ideoramaId, user.userId);
+    const ideorama = await getIdeoramaById(req.body.ideoramaId);
 
     if (!ideorama) {
       return res.status(404).json({
         status: 'error',
         error: {
           code: 'Not Found',
-          message: 'Ideorama introuvable',
+          message: 'Idéorama introuvable',
         },
         status_code: 404,
       });
@@ -141,6 +187,7 @@ const getIdeoramaByIdController = async (
     ideorama.model = JSON.parse(fileContent)
     return res.status(200).json({
       status: 'success',
+      message: "Idéorama récupéré avec succès",
       data: ideorama,
       status_code: 200,
     });
@@ -149,7 +196,7 @@ const getIdeoramaByIdController = async (
       status: 'error',
       error: {
         code: 'Internal Server Error',
-        message: 'Erreur lors de la récupération de la ideorama',
+        message: 'Erreur lors de la récupération de l\'idéorama',
         error,
       },
       status_code: 500,
@@ -157,6 +204,24 @@ const getIdeoramaByIdController = async (
   }
 };
 
+/**
+ * Saves the changes in uploads/scenes/scene-<ID>.
+ *
+ * @param req - Express request object. Expects 'req.body.ideoramaId' (string)
+ *                                      Expects 'req.body.model' (ModelInfo)
+ * @param res - Express response object.
+ *
+ * @returns Sends an HTTP response:
+ * - 200 with:
+ *  {
+ *    status: "success",
+ *    message: 'Idéorama mis à jour avec succès',
+ *    data: the ideorama (Ideorama),
+ *    status_code: 200
+ *  }
+ * - 401 if the user is not authenticated
+ * - 500 if an unexpected error occurs
+ */
 const saveIdeoramaController = async (
   req: AuthenticatedRequest,
   res: Response
@@ -175,33 +240,16 @@ const saveIdeoramaController = async (
   }
 
   try {
-    if (!req.body.ideoramaId) {
-      // Save in BD
-      const newIdeorama = await createIdeorama(req.body.ideorama)
-      const uploadPath = getUploadPath(newIdeorama.id)
-      await updateIdeoramaModelPath(newIdeorama.id, uploadPath)
-
-      // Save in uploads dir
-      const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json')
-      fs.writeFileSync(uploadPath, emptyScene)
-
-      return res.status(200).json({
-        status: 'success',
-        message: 'Ideorama mise à jour avec succès',
-        data: newIdeorama,
-        status_code: 200,
-      });
-    } else {
       const uploadPath = getUploadPath(req.body.ideoramaId)
 
       fs.writeFileSync(uploadPath, req.body.ideorama.model)
       return res.status(200).json({
         status: 'success',
-        message: 'Ideorama mis à jour avec succès',
+        message: 'Idéorama mis à jour avec succès',
         data: null,
         status_code: 200,
       });
-    }
+    
   } catch (error) {
     return res.status(500).json({
       status: 'error',
@@ -215,6 +263,24 @@ const saveIdeoramaController = async (
   }
 };
 
+/**
+ * Deletes an ideorama from the database based its ID.
+ * Deletes its corresponding scene in uploads/scenes
+ *
+ * @param req - Express request object. Expects 'req.body.ideoramaId' (string).
+ * @param res - Express response object.
+ *
+ * @returns Sends an HTTP response:
+ * - 200 with:
+ *  {
+ *    status: "success",
+ *    message: 'Ideorama supprimé avec succès',
+ *    data: null,
+ *    status_code: 200
+ *  }
+ * - 401 if the user is not authenticated
+ * - 500 if an unexpected error occurs
+ */
 const deleteIdeoramaController = async (
   req: AuthenticatedRequest,
   res: Response
@@ -230,7 +296,7 @@ const deleteIdeoramaController = async (
     });
   }
   try {
-    deleteIdeorama(req.body.ideoramaId)
+    await deleteIdeorama(req.body.ideoramaId)
     const uploadPath = getUploadPath(req.body.ideoramaId)
 
     fs.unlink(uploadPath, (err) => {if (err) {console.log(err)}})
@@ -253,17 +319,45 @@ const deleteIdeoramaController = async (
   }
 };
 
+/**
+ * @param req - Express request object.
+ * @param res - Express response object.
+ *
+ * @returns Sends an HTTP response:
+ * - 200 with:
+ *  {
+ *    status: "success",
+ *    message: 'Ideorama vide récupéré avec succès',
+ *    data: the model of the ideorama (ModelInfo),
+ *    status_code: 200
+ *  }
+ * - 500 otherwise
+ */
 const getEmptyIdeorama = async(
   req: Request,
   res: Response
 ) => {
-  return res.status(200).json({
-    status: 'success',
-    data: {model: JSON.parse(fs.readFileSync(getUploadPath("empty"), "utf-8"))},
-    status_code: 200,
-  });
+  try {
+    const model = JSON.parse(fs.readFileSync(getUploadPath("empty"), "utf-8"))
+    return res.status(200).json({
+      status: 'success',
+      message: 'Ideorama vide récupéré avec succès',
+      data: {model: model},
+      status_code: 200,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      error: {
+        code: 'Internal Server Error',
+        message: 'Erreur lors de la récupération de l\'idéorama vide',
+        error,
+      },
+      status_code: 500,
+    });
+  }
 }
 
 
-export { deleteIdeoramaController, getEmptyIdeorama, getIdeoramaByIdController, getUserIdeoramasController, saveIdeoramaController };
+export { createIdeoramaController, deleteIdeoramaController, getEmptyIdeorama, getIdeoramaByIdController, getUserIdeoramasController, saveIdeoramaController };
 
