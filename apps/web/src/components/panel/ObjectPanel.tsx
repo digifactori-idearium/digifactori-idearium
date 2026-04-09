@@ -10,9 +10,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useSnapshot } from 'valtio';
 
-import { FormThree } from '@/components/global';
-import { SuperButton } from '@/components/global';
-import { TooltipButton } from '@/components/global';
+import { SuperButton, TooltipButton } from '@/components/common/button';
+import { FormThree } from '@/components/common/form';
 import {
   Accordion,
   AccordionContent,

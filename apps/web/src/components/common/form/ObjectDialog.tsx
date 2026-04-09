@@ -2,7 +2,7 @@ import { Box, Check } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
-import { Search } from '@/components/global/Search';
+import { Search } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';

@@ -11,7 +11,7 @@ interface UploadFieldProps {
   type?: string;
 }
 
-const UploadField: React.FC<UploadFieldProps> = ({
+export const UploadField: React.FC<UploadFieldProps> = ({
   name,
   setValue,
   placeholder,
@@ -79,5 +79,3 @@ const UploadField: React.FC<UploadFieldProps> = ({
     </div>
   );
 };
-
-export default UploadField;

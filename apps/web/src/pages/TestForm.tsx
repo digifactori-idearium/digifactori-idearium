@@ -12,8 +12,7 @@ import {
 import React from 'react';
 import { SubmitHandler, FieldValues } from 'react-hook-form';
 
-import { Form } from '@/components/global';
-import { FormInputData } from '@/components/global/Input';
+import { Form, FormInputData } from '@/components/common/form';
 
 const TestFormPage: React.FC = () => {
   // Define all input types for testing

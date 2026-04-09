@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { FormInputData } from '@/components/global/Input';
+import { FormInputData } from '@/components/common/form';
 
 const setNestedObject = (obj: any, path: string, value: any) => {
   const keys = path.split('.');

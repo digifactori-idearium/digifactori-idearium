@@ -8,9 +8,9 @@ import {
   FieldValues,
 } from 'react-hook-form';
 
-import FormInput, { FormInputData } from './Input';
-import InputSelect from './InputSelect';
-import UploadField from './UploadField';
+import { FormInput, FormInputData } from './Input';
+import { InputSelect } from './InputSelect';
+import { UploadField } from './UploadField';
 
 import { createFormSchema } from '@/lib/validation';
 

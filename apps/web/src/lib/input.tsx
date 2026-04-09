@@ -14,9 +14,9 @@ import {
   FileBox,
 } from 'lucide-react';
 
-import { MusicSelector } from './MusicDialog';
-import { ObjectSelector } from './ObjectDialog';
 import { themeOptions } from './theme';
+
+import { MusicSelector, ObjectSelector } from '@/components/common/form';
 
 /* =========================
    LOGIN INPUTS

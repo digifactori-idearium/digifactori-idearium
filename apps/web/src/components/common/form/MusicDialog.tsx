@@ -2,7 +2,6 @@ import { Music, Play, Pause, Check, Search, X } from 'lucide-react';
 import { useState, useRef, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
-// import { Search } from '@/components/global/Search';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSound } from '@/hooks/useSound';

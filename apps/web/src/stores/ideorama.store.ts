@@ -2,10 +2,10 @@ import { toast } from 'sonner';
 import * as THREE from 'three';
 import { proxy } from 'valtio';
 
+import { resetState, stackNewState } from '@/lib/state';
 import { themesToColors } from '@/lib/theme';
 import { round } from '@/lib/utils';
 import { getEmptyIdeorama } from '@/services/ideorama.service';
-import { resetState, stackNewState } from '@/utils/utils';
 
 //theme
 const INITIAL_THEME = 'day' as keyof typeof themesToColors;

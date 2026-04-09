@@ -1,7 +1,8 @@
 import { X } from 'lucide-react';
 import { useSnapshot } from 'valtio';
 
-import { FormThree, TooltipButton } from '@/components/global';
+import { TooltipButton } from '@/components/common/button';
+import { FormThree } from '@/components/common/form';
 import {
   Accordion,
   AccordionContent,

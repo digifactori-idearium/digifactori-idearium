@@ -24,7 +24,7 @@ interface InputSelectProps {
   className?: string;
 }
 
-export default function InputSelect({
+export function InputSelect({
   options,
   placeholder = 'Select an option',
   onChange,

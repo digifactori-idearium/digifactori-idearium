@@ -7,12 +7,12 @@ import {
   UseFormSetValue,
 } from 'react-hook-form';
 
-import { Slider } from '../ui/slider';
+import { Slider } from '../../ui/slider';
 
 import { HexColorField } from './HexColorField';
-import FormInput, { FormInputData } from './Input';
-import InputSelect from './InputSelect';
-import UploadField from './UploadField';
+import { FormInput, FormInputData } from './Input';
+import { InputSelect } from './InputSelect';
+import { UploadField } from './UploadField';
 import { Vector3Field } from './Vector3Field';
 
 import {
@@ -148,9 +148,9 @@ export function FormInputRenderer({
                 max={input.max ?? 10}
                 step={input.step ?? 0.1}
                 onChange={e => {
-                  field.onChange(Number(e.target.value))
-                  if(input.name == "scale") {
-                    setTimeout(actions.stackState, 200)
+                  field.onChange(Number(e.target.value));
+                  if (input.name == 'scale') {
+                    setTimeout(actions.stackState, 200);
                   }
                 }}
                 className="slider-input w-12 text-xs"
@@ -162,11 +162,10 @@ export function FormInputRenderer({
                 value={[field.value ?? 0]}
                 onValueChange={val => field.onChange(val[0])}
                 onValueCommit={() => {
-                  if(input.name == "scale") {
-                    actions.stackState()
+                  if (input.name == 'scale') {
+                    actions.stackState();
                   }
-                }
-                }
+                }}
                 className="sliderer flex-1 py-4 cursor-pointer"
               />
             </div>

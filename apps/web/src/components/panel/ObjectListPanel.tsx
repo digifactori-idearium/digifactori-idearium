@@ -2,8 +2,7 @@ import { X } from 'lucide-react';
 import { memo, useCallback } from 'react';
 import { useSnapshot } from 'valtio';
 
-import { SuperButton } from '../global';
-
+import { SuperButton } from '@/components/common/button';
 import {
   Accordion,
   AccordionContent,

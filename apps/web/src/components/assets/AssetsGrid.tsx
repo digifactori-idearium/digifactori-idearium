@@ -1,10 +1,9 @@
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { TooltipButton } from '../global';
-
 import { AssetTile } from './AssetTile';
 
+import { TooltipButton } from '@/components/common/button';
 import { useAssets } from '@/hooks/useAssets';
 import { CATEGORIES } from '@/lib/constants';
 

@@ -26,7 +26,7 @@ import { useSnapshot } from 'valtio';
 
 import Scene from '@/components/3d';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
-import { SuperButton } from '@/components/global';
+import { SuperButton } from '@/components/common/button';
 import ResetIdeoramaDialog from '@/components/ideorama/resetIdeoramaDialog';
 import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';

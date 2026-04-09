@@ -1,13 +1,8 @@
 import { ArrowDown, ArrowLeft, ArrowUp, Plus, Trash2, Zap } from 'lucide-react';
 import { useSnapshot } from 'valtio';
 
-import { FormInputData } from '../global/Input';
-
-import {
-  SuperButton,
-  TooltipButton,
-  ActionConfigForm,
-} from '@/components/global';
+import { SuperButton, TooltipButton } from '@/components/common/button';
+import { FormInputData, ActionConfigForm } from '@/components/common/form';
 import {
   Accordion,
   AccordionItem,

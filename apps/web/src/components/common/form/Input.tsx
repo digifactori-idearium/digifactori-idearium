@@ -31,7 +31,11 @@ export interface FormInputProps {
   errors?: FieldErrors<FieldValues>;
 }
 
-const FormInput: React.FC<FormInputProps> = ({ input, register, errors }) => {
+export const FormInput: React.FC<FormInputProps> = ({
+  input,
+  register,
+  errors,
+}) => {
   const getNestedError = (errors: FieldErrors<FieldValues>, path: string) => {
     return path.split('.').reduce((obj, key) => (obj as any)?.[key], errors);
   };
@@ -204,5 +208,3 @@ const FormInput: React.FC<FormInputProps> = ({ input, register, errors }) => {
     </div>
   );
 };
-
-export default FormInput;

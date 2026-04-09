@@ -2,9 +2,8 @@ import { Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
-import { AssetsGrid } from '../assets/AssetsGrid';
-import { SuperButton } from '../global';
-
+import { AssetsGrid } from '@/components/assets/AssetsGrid';
+import { SuperButton } from '@/components/common/button';
 import { sceneState, actions } from '@/stores';
 
 export const AssetsPanel = () => {
