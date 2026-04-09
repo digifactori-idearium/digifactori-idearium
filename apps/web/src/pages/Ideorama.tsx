@@ -27,6 +27,7 @@ import { useSnapshot } from 'valtio';
 import Scene from '@/components/3d';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
 import { SuperButton } from '@/components/global';
+import ResetIdeoramaDialog from '@/components/ideorama/resetIdeoramaDialog';
 import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { SettingPanel } from '@/components/panel/SettingPanel';
@@ -59,6 +60,7 @@ export default function Ideorama() {
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
   const [isFirstRender, setIsFirstRender] = useState(true);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false)
   const { setOpen } = useSidebar();
 
   useEffect(() => {
@@ -73,6 +75,7 @@ export default function Ideorama() {
     })
   );
 
+
   useEffect(() => {
     const handleBeforeUnload = () => {
       saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId);
@@ -86,7 +89,6 @@ export default function Ideorama() {
       sceneState.history = [];
       sceneState.current = -1;
       sceneState.newest = 0;
-      sceneState.oldest = 0;
     };
   }, []);
 
@@ -182,9 +184,10 @@ export default function Ideorama() {
                 </span>
               )}
             </Button>
-            {snap.current != snap.oldest && (
+            {snap.current != 0 && isEditMode && (
               <SuperButton
                 tooltip="Revenir en arrière"
+                voiceText="Revenir en arrière"
                 onClick={() => actions.undo()}
                 className="p-2 main-small-btn"
               >
@@ -193,9 +196,10 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
-            {snap.current != snap.newest && (
+            {snap.current != snap.newest && isEditMode && (
               <SuperButton
                 tooltip="Rétablir"
+                voiceText="Rétablir"
                 onClick={() => actions.redo()}
                 className="p-2 main-small-btn"
               >
@@ -204,9 +208,23 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
-            <SuperButton
-              tooltip="Réinitialiser"
-              onClick={() => {
+            {isEditMode ? (
+              <SuperButton
+                tooltip="Réinitialiser"
+                voiceText="Réinitialiser"
+                onClick={() => {
+                  setResetDialogOpen(true);
+                }}
+                className="z-50 p-2 main-small-btn"
+              >
+                <span className="flex items-center gap-1">
+                  <RotateCcw className="w-4 h-4 text-white!" />
+                </span>
+              </SuperButton>
+            ) : null}
+            <ResetIdeoramaDialog
+              open={resetDialogOpen}
+              onConfirm={() => {
                 actions.resetIdeorama().then(res => {
                   if (res) {
                     toast.success('Idéorama réinitialisé');
@@ -216,13 +234,12 @@ export default function Ideorama() {
                     );
                   }
                 });
+                setResetDialogOpen(false);
               }}
-              className="z-50 p-2 main-small-btn"
-            >
-              <span className="flex items-center gap-1">
-                <RotateCcw className="w-4 h-4 text-white!" />
-              </span>
-            </SuperButton>
+              onCancel={() => {
+                setResetDialogOpen(false);
+              }}
+            />
           </div>
           {/* Assets Button */}
           {isEditMode && (

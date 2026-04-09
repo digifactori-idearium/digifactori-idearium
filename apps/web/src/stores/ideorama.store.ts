@@ -40,7 +40,7 @@ export const sceneState = proxy<IdeoramaState>({
   objects: {} as Record<string, ObjectState>,
   selectedObjectId: null as string | null,
 
-  //Objects movement managemet
+  //Objects movement management
   isDragging: false,
   assetsPanelOpen: false,
   assetsTreeOpen: false,
@@ -49,10 +49,9 @@ export const sceneState = proxy<IdeoramaState>({
   activeSettingView: 'model',
   actionPickerOpen: false,
 
-  // undo/redomanagement
+  // undo/redo management
   history: [],
   current: -1,
-  oldest: 0,
   newest: 0,
 
   pendingTrigger: 'onStart' as TriggerType,
