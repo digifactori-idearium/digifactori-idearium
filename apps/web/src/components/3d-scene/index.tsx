@@ -11,12 +11,11 @@ import React, { Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 import { useSnapshot } from 'valtio';
 
-import { AssetsDropHandler } from '../assets/AssetsDropHandler';
-
 import { Model } from './Model';
 import { SceneAudio } from './SceneAudio';
 import { SceneGradient } from './SceneGradient';
 
+import { AssetsDropHandler } from '@/components/assets/AssetsDropHandler';
 import { ActionTicker } from '@/lib/actions/runtime';
 import { actions, sceneState } from '@/stores';
 

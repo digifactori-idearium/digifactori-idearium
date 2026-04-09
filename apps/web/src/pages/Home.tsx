@@ -3,7 +3,7 @@ import React from 'react';
 import DigifactoryLogo from '@/assets/images/digifactory.png';
 import ImageStage from '@/assets/images/stage.jpg';
 import UnamurLogo from '@/assets/images/unamur.png';
-import VoxelColor from '@/components/3d/VoxelColor';
+import VoxelColor from '@/components/3d-scene/VoxelColor';
 import Card from '@/components/home/Card';
 import CardText from '@/components/home/CardText';
 import Hero from '@/components/home/Hero';

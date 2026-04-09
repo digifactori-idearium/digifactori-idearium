@@ -24,13 +24,13 @@ import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSnapshot } from 'valtio';
 
-import Scene from '@/components/3d';
+import Scene from '@/components/3d-scene';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
 import { SuperButton } from '@/components/common/button';
 import ResetIdeoramaDialog from '@/components/ideorama/resetIdeoramaDialog';
-import { AssetsPanel } from '@/components/panel/AssetsPanel';
-import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
-import { SettingPanel } from '@/components/panel/SettingPanel';
+import { AssetsPanel } from '@/components/panels/AssetsPanel';
+import { ObjectListPanel } from '@/components/panels/ObjectListPanel';
+import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useUser } from '@/providers/UserProvider';
