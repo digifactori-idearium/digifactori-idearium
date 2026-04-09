@@ -53,11 +53,6 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
 
   const selectedUrl = type === 'global' ? globalTrack : actionTrack;
 
-  const searchOptions = sounds.map(s => ({
-    value: String(s.id),
-    label: s.name,
-  }));
-
   const togglePreview = (sound: AssetItem) => {
     if (previewId === String(sound.id)) {
       audioRef.current?.pause();

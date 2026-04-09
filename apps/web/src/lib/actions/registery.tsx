@@ -537,6 +537,7 @@ export const ActionRegistry: Record<
     ],
     getDuration: ({ duration = 1 }) => duration,
     execute(ref, { duration }) {
+      ref.userData.wait = duration;
       return () => {};
     },
   },
