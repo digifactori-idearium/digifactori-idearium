@@ -1,84 +1,126 @@
-import { Music, Play, Pause, Check } from 'lucide-react';
+import { Music, Play, Pause, Check, Search, X } from 'lucide-react';
 import { useState, useRef, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 
+// import { Search } from '@/components/global/Search';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useSound } from '@/hooks/useSound';
 import { cn } from '@/lib/utils';
 import { sceneState } from '@/stores';
-
-const TRACKS = [
-  { id: 'sea', name: 'Deep Sea', url: '/sea.wav' },
-  { id: 'forest', name: 'Forest Rain', url: '/forest.wav' },
-  { id: 'gun', name: 'Action Beats', url: '/son.mp3' },
-];
 
 interface MusicSelectorProps {
   type?: 'global' | 'action';
 }
 
+function setGlobalTrack(url: string, current: string) {
+  sceneState.global.music.currentTrack = current === url ? '' : url;
+}
+
+function setActionTrack(objId: string, trigger: string, url: string) {
+  const actions = sceneState.objects[objId].actions;
+  const targetAction = (actions || []).find(
+    a => a.subType === 'playSound' && a.trigger === trigger
+  );
+  if (targetAction) {
+    targetAction.config.music = targetAction.config.music === url ? '' : url;
+  }
+}
+
 export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const { sounds, loading, fetchNextPage, hasMore } = useSound(searchQuery);
+
   const snap = useSnapshot(sceneState);
   const globalTrack = snap.global.music.currentTrack;
-  const selectObjectIp = snap.selectedObjectId;
+  const selectedObjectId = snap.selectedObjectId;
   const trigger = snap.pendingTrigger;
-  const selectedObject = selectObjectIp ? snap.objects[selectObjectIp] : null;
+  const selectedObject = selectedObjectId
+    ? snap.objects[selectedObjectId]
+    : null;
+
+  // console.log(sounds);
+
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const actionTrack = useMemo(() => {
     if (type !== 'action' || !selectedObject?.actions) return '';
-
     const action = selectedObject.actions.find(
       a => a.subType === 'playSound' && a.trigger === trigger
     );
     return action?.config?.music ?? '';
   }, [type, selectedObject, trigger]);
 
-  const [previewId, setPreviewId] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
   const selectedUrl = type === 'global' ? globalTrack : actionTrack;
 
-  const togglePreview = (track: (typeof TRACKS)[0]) => {
-    if (previewId === track.id) {
+  const searchOptions = sounds.map(s => ({
+    value: String(s.id),
+    label: s.name,
+  }));
+
+  const togglePreview = (sound: AssetItem) => {
+    if (previewId === String(sound.id)) {
       audioRef.current?.pause();
       setPreviewId(null);
     } else {
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.src = track.url;
+        audioRef.current.src = sound.file;
         audioRef.current.play();
       }
-      setPreviewId(track.id);
+      setPreviewId(String(sound.id));
     }
   };
+
   const selectTrack = (url: string) => {
     if (type === 'global') {
-      sceneState.global.music.currentTrack = globalTrack === url ? '' : url;
+      setGlobalTrack(url, globalTrack);
       return;
     }
-    const objId = snap.selectedObjectId;
-    const currentTrigger = snap.pendingTrigger;
-
+    const objId = sceneState.selectedObjectId;
+    const currentTrigger = sceneState.pendingTrigger;
     if (!objId || !currentTrigger) return;
-    const actions = sceneState.objects[objId].actions;
-    const targetAction = (actions || []).find(
-      a => a.subType === 'playSound' && a.trigger === currentTrigger
-    );
-
-    if (targetAction) {
-      targetAction.config.music = targetAction.config.music === url ? '' : url;
-    }
+    setActionTrack(objId, currentTrigger, url);
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <ScrollArea className="h-72 pr-4">
+    <div className="flex flex-col gap-3">
+      <div
+        className={`w-4/5 flex items-center self-center gap-2 bg-neutral-900/80 backdrop-blur-md rounded-md px-2 py-2 transition-all duration-300 ${'opacity-100 scale-100'}`}
+      >
+        <Search className="size-5 cursor-pointer" />
+        <input
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Chercher un son, une musique..."
+          className="flex-1 bg-transparent outline-none text-sm placeholder:text-white/50 py-1"
+        />
+
+        <button
+          onClick={() => {
+            setSearchQuery('');
+          }}
+        >
+          <X className="size-4 text-white/70 mr-2" />
+        </button>
+      </div>
+      <ScrollArea
+        className="h-72 pr-4"
+        onScrollCapture={e => {
+          const el = e.currentTarget;
+          const nearBottom =
+            el.scrollTop + el.clientHeight >= el.scrollHeight - 50;
+          if (nearBottom && hasMore && !loading) fetchNextPage();
+        }}
+      >
         <div className="flex flex-col gap-2">
-          {TRACKS.map(track => {
-            const isSelected = selectedUrl === track.url;
+          {sounds.map(sound => {
+            const isSelected = selectedUrl === sound.file;
 
             return (
               <div
-                key={track.id}
+                key={sound.id}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-lg border transition-all duration-200',
                   isSelected
@@ -103,7 +145,7 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
                       isSelected ? 'text-foreground' : 'text-muted-foreground'
                     )}
                   >
-                    {track.name}
+                    {sound.frName || sound.name}
                   </span>
                 </div>
 
@@ -111,9 +153,9 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
                   <Button
                     size="icon"
                     className="h-8 w-8 rounded-full bg-mauve! text-white!"
-                    onClick={() => togglePreview(track)}
+                    onClick={() => togglePreview(sound)}
                   >
-                    {previewId === track.id ? (
+                    {previewId === String(sound.id) ? (
                       <Pause size={14} />
                     ) : (
                       <Play size={14} />
@@ -123,7 +165,7 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
                   <Button
                     variant={isSelected ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => selectTrack(track.url)}
+                    onClick={() => selectTrack(sound.file)}
                     className={cn(
                       'group min-w-22.5 transition-all bg-mauve! text-white!',
                       isSelected && [
@@ -150,6 +192,18 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
               </div>
             );
           })}
+
+          {loading && (
+            <div className="py-4 text-center text-sm text-muted-foreground">
+              Chargement...
+            </div>
+          )}
+
+          {!hasMore && sounds.length === 0 && !loading && (
+            <div className="py-4 text-center text-sm text-muted-foreground">
+              Aucun son trouvé.
+            </div>
+          )}
         </div>
       </ScrollArea>
       <audio ref={audioRef} onEnded={() => setPreviewId(null)} hidden />

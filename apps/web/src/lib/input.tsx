@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import { MusicSelector } from './MusicDialog';
+import { ObjectSelector } from './ObjectDialog';
 import { themeOptions } from './theme';
 
 /* =========================
@@ -307,18 +308,11 @@ const styleInputs = [
 ];
 
 const advancedInputs = [
-  { name: 'parent', label: 'Contenant(Parent)', type: 'dialog' },
   {
-    name: 'physics',
-    label: 'Physique',
-    type: 'select',
-    options: [
-      { value: 'kinematic', text: 'Cinématique' },
-      { value: 'upright', text: 'Droit / Vertical' },
-      { value: 'tumbly', text: 'Bascule' },
-      { value: 'passthrough', text: 'Passage' },
-      { value: 'trigger', text: 'Déclencheur' },
-    ],
+    name: 'parent',
+    label: 'Contenant(Parent)',
+    type: 'dialog',
+    dialogueContent: <ObjectSelector type="parent" />,
   },
   { name: 'hidden', label: 'Caché', type: 'switch' },
   { name: 'locked', label: 'Verrouiller en mode édition', type: 'switch' },

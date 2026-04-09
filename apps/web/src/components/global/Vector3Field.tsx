@@ -1,9 +1,7 @@
-import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Controller, Control } from 'react-hook-form';
 
 import { FormInputData } from './Input';
 
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 interface Vector3FieldProps {
@@ -14,63 +12,65 @@ interface Vector3FieldProps {
 export function Vector3Field({ input, control }: Vector3FieldProps) {
   const step = input.step ?? 1;
 
+  const axisColors: Record<string, string> = {
+    x: 'text-red-500',
+    y: 'text-emerald-500',
+    z: 'text-blue-500',
+  };
+
   return (
-    <div className="form-input-container flex flex-col gap-2">
+    <div className="form-input-container flex flex-col gap-1.5">
       <label className="text-sm font-medium">{input.label}</label>
 
-      <div className="grid grid-cols-3 gap-3">
-        {['x', 'y', 'z'].map(axis => (
+      <div className="flex gap-2">
+        {(['x', 'y', 'z'] as const).map(axis => (
           <Controller
             key={axis}
             name={`${input.name}.${axis}`}
             control={control}
             render={({ field }) => (
-              <div className="flex flex-col items-center bg-sidebar-dark/30 rounded-xl p-2 gap-1">
-                <Button
+              <div className="flex flex-1 items-center bg-sidebar-dark/30 border border-white/10 rounded-lg overflow-hidden">
+                <span
+                  className={`text-[11px] font-bold! pl-2 pr-1 uppercase ${axisColors[axis]}`}
+                >
+                  {axis}
+                </span>
+
+                <button
                   type="button"
-                  size="icon"
-                  className="h-5 w-5 flex justify-center items-center main-btn"
                   onClick={() =>
                     field.onChange(
-                      Number(((field.value ?? 0) + step).toFixed(2))
+                      Number(((field.value ?? 0) - step).toFixed(2))
                     )
                   }
+                  className="px-1.5 py-1.5 text-base leading-none text-muted-foreground rounded-md hover:bg-white/10 transition-colors"
                 >
-                  <ChevronUp className="w-3! h-3!" />
-                </Button>
+                  -
+                </button>
 
                 <Input
                   type="number"
                   step={step}
-                  // min={input.min}
-                  // max={input.max}
-                  maxLength={4}
                   value={field.value ?? 0}
                   onChange={e =>
                     field.onChange(
                       e.target.value === '' ? 0 : Number(e.target.value)
                     )
                   }
-                  className="text-center h-5 p-0 bg-transparent border-none shadow-none no-spinner focus-visible:ring-0!"
+                  className="w-11 text-center text-sm font-medium border-none bg-transparent! shadow-none p-0! no-spinner focus-visible:ring-0!"
                 />
 
-                <Button
+                <button
                   type="button"
-                  size="icon"
-                  variant="ghost"
-                  className="h-5 w-5 flex justify-center items-center main-btn"
                   onClick={() =>
                     field.onChange(
-                      Number(((field.value ?? 0) - step).toFixed(2))
+                      Number(((field.value ?? 0) + step).toFixed(2))
                     )
                   }
+                  className="px-1.5 py-1.5  text-base leading-none text-muted-foreground rounded-md hover:bg-white/10 transition-colors"
                 >
-                  <ChevronDown className="w-3! h-3!" />
-                </Button>
-
-                <span className="text-[10px] font-bold text-white uppercase">
-                  {axis}
-                </span>
+                  +
+                </button>
               </div>
             )}
           />

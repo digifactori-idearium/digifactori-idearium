@@ -21,7 +21,7 @@ export const ActionPickerModal = () => {
     { id: 'say', label: 'Parole', emoji: '💬', color: '#f59e0b' },
     { id: 'sound', label: 'Son', emoji: '🔊', color: '#ef4444' },
     { id: 'particles', label: 'Effets', emoji: '💫', color: '#14b8a6' },
-    { id: 'physics', label: 'Physique', emoji: '🧲', color: '#a855f7' },
+    { id: 'utility', label: 'Utilité', emoji: '⏱️', color: '#ff66ce' },
   ];
 
   const handleAdd = (subType: string) => {
@@ -55,7 +55,9 @@ export const ActionPickerModal = () => {
             />
           )}
           <DialogTitle>
-            {category ? category.toUpperCase() : 'Pick an action, any action'}
+            {category
+              ? categories.find(c => c.id === category)?.label
+              : "Choisis une action, n'importe laquelle"}
           </DialogTitle>
         </DialogHeader>
 

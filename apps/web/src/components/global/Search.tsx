@@ -16,25 +16,49 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { searchIdeoramas } from '@/services/ideorama.service';
+
+interface SearchOption {
+  value: string;
+  label: string;
+}
+
+interface SearchProps {
+  onSelect: (value: string) => void;
+  className?: string;
+  label?: string;
+  placeholder?: string;
+  onSearch?: (query: string) => Promise<SearchOption[]>;
+  options?: SearchOption[];
+}
 
 export function Search({
   onSelect,
   className,
-  label = 'ideorama',
-}: {
-  onSelect: (name: string) => void;
-  className?: string;
-  label: string;
-  id: string;
-}) {
+  label = 'item',
+  placeholder,
+  onSearch,
+  options,
+}: SearchProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<string[]>([]);
+  const [results, setResults] = useState<SearchOption[]>(options ?? []);
   const [loading, setLoading] = useState(false);
 
+  // Static filtering when options are provided locally
   useEffect(() => {
+    if (options) {
+      const filtered = options.filter(o => {
+        if (!query || !o.label) return true;
+        return o.label.toLowerCase().includes(query.toLowerCase());
+      });
+      setResults(filtered);
+      return;
+    }
+
+    // Async search
+    if (!onSearch) return;
+
     const timer = setTimeout(async () => {
       if (query.length < 2) {
         setResults([]);
@@ -42,21 +66,21 @@ export function Search({
       }
       setLoading(true);
       try {
-        const data = await searchIdeoramas(query);
+        const data = await onSearch(query);
         setResults(data);
       } catch (err) {
-        console.error('PubChem Autocomplete Error', err);
+        console.error('Search error', err);
       } finally {
         setLoading(false);
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, options, onSearch]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <div className={`${className} w-75`}>
+      <div className={cn('w-75', className)}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -71,7 +95,7 @@ export function Search({
         <PopoverContent className="w-(--radix-popover-trigger-width) p-0 border-white/10 bg-[#161618]">
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder="Type molecule name..."
+              placeholder={placeholder ?? `Search ${label}...`}
               onValueChange={setQuery}
               className="text-white"
             />
@@ -81,16 +105,16 @@ export function Search({
                   <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
                 </div>
               )}
-              {!loading && results.length === 0 && query.length > 1 && (
-                <CommandEmpty>No molecule found.</CommandEmpty>
+              {!loading && results.length === 0 && (
+                <CommandEmpty>No {label} found.</CommandEmpty>
               )}
               <CommandGroup>
-                {results.map(name => (
+                {results.map(option => (
                   <CommandItem
-                    key={name}
-                    value={name}
+                    key={option.value}
+                    value={option.value}
                     onSelect={currentValue => {
-                      setValue(currentValue);
+                      setValue(option.label);
                       onSelect(currentValue);
                       setOpen(false);
                     }}
@@ -99,10 +123,10 @@ export function Search({
                     <Check
                       className={cn(
                         'mr-2 h-4 w-4',
-                        value === name ? 'opacity-100' : 'opacity-0'
+                        value === option.label ? 'opacity-100' : 'opacity-0'
                       )}
                     />
-                    {name}
+                    {option.label}
                   </CommandItem>
                 ))}
               </CommandGroup>
