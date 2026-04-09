@@ -1,5 +1,5 @@
 import { Html } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -18,24 +18,36 @@ const MAX_CHARS = 80;
 
 export function SpeechBubble({ objectRef }: SpeechBubbleProps) {
   const [bubble, setBubble] = useState<BubbleState | null>(null);
-  const prevDataRef = useRef<object | null>(null);
+  const { gl } = useThree();
+  const prevOpacityRef = useRef<number>(-1);
+  const prevDisplayedRef = useRef<string>('');
 
   useFrame(() => {
     const data = objectRef.current?.userData.speechBubble;
 
     if (!data) {
-      if (bubble !== null) setBubble(null);
-      prevDataRef.current = null;
+      if (prevOpacityRef.current !== -1) {
+        setBubble(null);
+        prevOpacityRef.current = -1;
+        prevDisplayedRef.current = '';
+      }
       return;
     }
+
+    if (
+      data.displayed === prevDisplayedRef.current &&
+      data.opacity === prevOpacityRef.current
+    )
+      return;
+
+    prevDisplayedRef.current = data.displayed ?? '';
+    prevOpacityRef.current = data.opacity ?? 1;
 
     setBubble({
       text: data.text,
       displayed: data.displayed ?? '',
       opacity: data.opacity ?? 1,
     });
-
-    prevDataRef.current = data;
   });
 
   if (!bubble) return null;
@@ -45,17 +57,18 @@ export function SpeechBubble({ objectRef }: SpeechBubbleProps) {
     isTruncated && bubble.displayed.length >= MAX_CHARS
       ? bubble.displayed.slice(0, MAX_CHARS) + '…'
       : bubble.displayed;
-
   const isTyping = bubble.displayed.length < bubble.text.length;
 
+  const forwardToCanvas = (e: React.PointerEvent | React.MouseEvent) => {
+    e.stopPropagation();
+    const canvas = gl.domElement;
+    canvas.dispatchEvent(
+      new (e.nativeEvent.constructor as typeof Event)(e.type, e.nativeEvent)
+    );
+  };
+
   return (
-    <Html
-      position={[0, 0, 0]}
-      center
-      zIndexRange={[100, 0]}
-      pointerEvents="none"
-      style={{ pointerEvents: 'none' }}
-    >
+    <Html position={[0, 0, 0]} center zIndexRange={[100, 0]}>
       <style>{`
         @keyframes blink {
           0%, 100% { opacity: 1; }
@@ -70,7 +83,6 @@ export function SpeechBubble({ objectRef }: SpeechBubbleProps) {
           animation: bubblePop 0.25s cubic-bezier(.34,1.56,.64,1) both;
           transform: translateY(-130px);
           position: relative;
-          pointer-events: none;
           user-select: none;
           filter: drop-shadow(0px 6px 18px rgba(0,0,0,0.22));
         }
@@ -95,14 +107,27 @@ export function SpeechBubble({ objectRef }: SpeechBubbleProps) {
             inset 0 1px 0 rgba(255,255,255,0.9),
             0 2px 8px rgba(0,0,0,0.08);
           position: relative;
+          cursor: pointer;
         }
-        .speech-bubble-body::before {
-          content: '';
+        .speech-tail-wrap {
+          display: flex;
+          justify-content: center;
+          margin-top: -1px;
+        }
+        .speech-tail-outer {
+          width: 0; height: 0;
+          border-left: 10px solid transparent;
+          border-right: 10px solid transparent;
+          border-top: 12px solid rgba(60,60,80,0.13);
+        }
+        .speech-tail-inner {
+          width: 0; height: 0;
+          border-left: 8px solid transparent;
+          border-right: 8px solid transparent;
+          border-top: 10px solid #f4f4f8;
           position: absolute;
-          inset: 0;
-          border-radius: 18px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 60%);
-          pointer-events: none;
+          top: -1px; left: 50%;
+          transform: translateX(-50%);
         }
         .speech-cursor {
           display: inline-block;
@@ -114,37 +139,22 @@ export function SpeechBubble({ objectRef }: SpeechBubbleProps) {
           vertical-align: middle;
           animation: blink 0.7s step-end infinite;
         }
-        .speech-tail-wrap {
-          display: flex;
-          justify-content: center;
-          margin-top: -1px;
-        }
-        .speech-tail-outer {
-          width: 0;
-          height: 0;
-          border-left: 10px solid transparent;
-          border-right: 10px solid transparent;
-          border-top: 12px solid rgba(60,60,80,0.13);
-        }
-        .speech-tail-inner {
-          width: 0;
-          height: 0;
-          border-left: 8px solid transparent;
-          border-right: 8px solid transparent;
-          border-top: 10px solid #f4f4f8;
-          position: absolute;
-          top: -1px;
-          left: 50%;
-          transform: translateX(-50%);
-        }
       `}</style>
 
-      <div className="speech-bubble-wrap" style={{ opacity: bubble.opacity }}>
+      <div
+        className="speech-bubble-wrap"
+        style={{ opacity: bubble.opacity }}
+        onPointerMove={forwardToCanvas}
+        onPointerDown={forwardToCanvas}
+        onPointerUp={forwardToCanvas}
+        onClick={forwardToCanvas}
+        onPointerOut={e => e.stopPropagation()}
+        onPointerLeave={e => e.stopPropagation()}
+      >
         <div className="speech-bubble-body">
           {displayedTruncated}
           {isTyping && !isTruncated && <span className="speech-cursor" />}
         </div>
-
         <div className="speech-tail-wrap">
           <div style={{ position: 'relative' }}>
             <div className="speech-tail-outer" />

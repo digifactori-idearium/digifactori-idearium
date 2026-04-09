@@ -34,6 +34,7 @@ export const ActionRegistry: Record<
     category: ActionType;
     description: string;
     inputs: FormInputData[];
+    getDuration?: (config: Record<string, any>) => number;
     execute: ActionExecuteFn;
   }
 > = {
@@ -76,6 +77,7 @@ export const ActionRegistry: Record<
         default: 5,
       },
     ],
+    getDuration: ({ duration }) => (duration ?? 5) * 1000,
     execute(ref, { direction, distance, duration }) {
       // clearTweens(ref);
       let x = ref.position.x;
@@ -117,24 +119,81 @@ export const ActionRegistry: Record<
     label: 'Tourner',
     icon: '↪️',
     category: 'motion',
-    description: "Fait pivoter l'objet une seule fois.",
+    description: "Fais tourner l'objet dans une direction.",
+
     inputs: [
       {
+        name: 'direction',
+        label: 'Direction',
+        type: 'select',
+        options: [
+          { value: 'left', text: 'À gauche' },
+          { value: 'right', text: 'À droite' },
+          { value: 'up', text: 'Vers le haut' },
+          { value: 'down', text: 'Vers le bas' },
+          { value: 'forward', text: 'En avant' },
+          { value: 'backward', text: 'En arrière' },
+        ],
+        default: 'right',
+      },
+      {
         name: 'angle',
-        label: 'Angle',
+        label: 'Combien tourner ?',
         type: 'slider',
         min: 0,
         max: 360,
         default: 90,
+        step: 1,
+      },
+      {
+        name: 'duration',
+        label: 'Temps (secondes)',
+        type: 'slider',
+        min: 1,
+        max: 15,
+        default: 1,
+        step: 1,
       },
     ],
-    execute(ref, { angle }) {
-      // clearTweens(ref);
 
+    getDuration: ({ duration }) => (duration ?? 1) * 1000,
+
+    execute(ref, { direction, angle, duration }) {
       const radians = (angle * Math.PI) / 180;
+
+      let axis: 'x' | 'y' | 'z' = 'y';
+      let value = radians;
+
+      switch (direction) {
+        case 'left':
+          axis = 'y';
+          value = radians;
+          break;
+        case 'right':
+          axis = 'y';
+          value = -radians;
+          break;
+        case 'up':
+          axis = 'x';
+          value = radians;
+          break;
+        case 'down':
+          axis = 'x';
+          value = -radians;
+          break;
+        case 'forward':
+          axis = 'z';
+          value = radians;
+          break;
+        case 'backward':
+          axis = 'z';
+          value = -radians;
+          break;
+      }
+
       const tween = gsap.to(ref.rotation, {
-        y: ref.rotation.y + radians,
-        duration: 0.5,
+        [axis]: ref.rotation[axis] + value,
+        duration: duration,
         ease: 'power2.out',
       });
 
@@ -394,6 +453,7 @@ export const ActionRegistry: Record<
         default: 'Bonjour !',
       },
     ],
+    getDuration: ({ text = '' }) => 250 + text.length * 50 + 3000 + 400,
     execute(ref, { text }) {
       const SPEED = 0.05;
       const DURATION = 3;
@@ -472,8 +532,6 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { force }) {
-      // Stores impulse in userData for your physics loop to consume on next tick.
-      // The physics loop should read and zero this out after applying.
       ref.userData.pendingImpulse = new THREE.Vector3(0, force * 0.05, 0);
       return () => {
         ref.userData.pendingImpulse = null;
@@ -497,7 +555,6 @@ export const ActionRegistry: Record<
       },
     ],
     execute(ref, { strength }) {
-      // Stores a continuous force in userData for your physics loop to apply each frame.
       ref.userData.continuousForce = new THREE.Vector3(strength * 0.01, 0, 0);
       return () => {
         ref.userData.continuousForce = null;
@@ -722,12 +779,14 @@ export const ActionRegistry: Record<
         emissiveIntensity: (m.material as THREE.MeshStandardMaterial)
           .emissiveIntensity,
       }));
+
       meshes.forEach(m => {
         const mat = m.material as THREE.MeshStandardMaterial;
-        mat.emissive.set('#ffffff');
+        mat.emissive.copy(mat.color);
         mat.emissiveIntensity = intensity;
         mat.needsUpdate = true;
       });
+
       return () =>
         meshes.forEach((m, i) => {
           const mat = m.material as THREE.MeshStandardMaterial;
