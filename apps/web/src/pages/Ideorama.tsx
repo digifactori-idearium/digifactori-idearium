@@ -10,13 +10,14 @@ import {
 } from '@dnd-kit/core';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import {
-  ArrowDownToLine,
   CirclePlay,
   ListTree,
   Plus,
+  Redo2,
   RotateCcw,
   Settings2,
   SquarePen,
+  Undo2,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -29,17 +30,13 @@ import { SuperButton } from '@/components/global';
 import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { SettingPanel } from '@/components/panel/SettingPanel';
+import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useUser } from '@/providers/UserProvider';
-import {
-  getEmptyIdeorama,
-  saveIdeorama,
-  searchIdeorama,
-} from '@/services/ideorama.service';
+import { saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
-const downloadAndSaveIdeorama = (setIsSaving: (arg: boolean) => void) => {
-  setIsSaving(true);
+const downloadAndSaveIdeorama = () => {
   localStorage.setItem(
     'sceneState',
     JSON.stringify({
@@ -50,22 +47,6 @@ const downloadAndSaveIdeorama = (setIsSaving: (arg: boolean) => void) => {
       objects: sceneState.objects,
     })
   );
-  // toast.success("Sauvegarde de l'idéorama réussie");
-  setIsSaving(false);
-};
-
-const resetIdeorama = () => {
-  getEmptyIdeorama().then(res => {
-    const model = res.data.model;
-    sceneState.global = model.global ? model.global : sceneState.global;
-    sceneState.background = model.background
-      ? model.background
-      : sceneState.background;
-    sceneState.info = model.info ? model.info : sceneState.info;
-    sceneState.floor = model.floor ? model.floor : sceneState.floor;
-    sceneState.objects = model.objects ? model.objects : sceneState.objects;
-    toast.success('Idéorama réinitialisé');
-  });
 };
 
 export default function Ideorama() {
@@ -77,7 +58,6 @@ export default function Ideorama() {
   const userId = useUser().user?.id;
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [isFirstRender, setIsFirstRender] = useState(true);
   const { setOpen } = useSidebar();
 
@@ -94,54 +74,54 @@ export default function Ideorama() {
   );
 
   useEffect(() => {
-    console.log('effect');
     const handleBeforeUnload = () => {
-      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId).then(
-        () => console.log('ha ha ha ha')
-      );
+      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId);
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId).then(
-        () => console.log('hi hi hi ha')
-      );
-      // localStorage.setItem("sceneState", `{"global":{"brightness":"bright","visible":true,"music":{"currentTrack":"","volume":0.5},"theme":"day"},"background":{"color":"#8ecae6","accent":"#8ecae6"},"info":{"name":"Template","description":"New Ideorama","category":"none"},"floor":{"color":"#53ED83","hidden":false,"texture":"none"},"objects":{}}`)
-      console.log('cleanup');
+      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId);
+      sceneState.selectedObjectId = null;
+      sceneState.history = [];
+      sceneState.current = -1;
+      sceneState.newest = 0;
+      sceneState.oldest = 0;
     };
   }, []);
 
   useEffect(() => {
     if (!ideoramaid) return;
 
-    console.log('here');
-    searchIdeorama(ideoramaid).then(res => {
-      console.log('in');
-      localStorage.setItem('sceneState', JSON.stringify(res.data.model));
-      res.data.model.info.name = res.data.name;
-      const model = res.data.model;
-      if (!model) return;
+    searchIdeorama(ideoramaid)
+      .then(res => {
+        localStorage.setItem('sceneState', JSON.stringify(res.data.model));
+        res.data.model.info.name = res.data.name;
+        const model = res.data.model;
+        if (!model) return;
 
-      if (model.global) Object.assign(sceneState.global, model.global);
-      if (model.background)
-        Object.assign(sceneState.background, model.background);
-      if (model.info) Object.assign(sceneState.info, model.info);
-      if (model.floor) Object.assign(sceneState.floor, model.floor);
-      if (model.objects) sceneState.objects = model.objects;
-    });
-    console.log('there');
+        if (model.global) Object.assign(sceneState.global, model.global);
+        if (model.background)
+          Object.assign(sceneState.background, model.background);
+        if (model.info) Object.assign(sceneState.info, model.info);
+        if (model.floor) Object.assign(sceneState.floor, model.floor);
+        if (model.objects) sceneState.objects = model.objects;
+      })
+      .then(() => {
+        actions.stackState();
+      });
   }, [ideoramaid]);
 
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
-      downloadAndSaveIdeorama(setIsSaving);
+      downloadAndSaveIdeorama();
     }
   }, [snap.global, snap.background, snap.info, snap.floor, snap.objects]);
 
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
-      downloadAndSaveIdeorama(setIsSaving);
+      downloadAndSaveIdeorama();
+      actions.stackState();
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFirstRender(false);
@@ -186,51 +166,63 @@ export default function Ideorama() {
         <div className="w-full h-full overflow-hidden flex flex-col">
           <Scene />
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-            <button
+            <Button
               onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
               className="p-2 main-small-btn"
             >
               {isEditMode ? (
                 <span className="flex items-center gap-1">
                   <CirclePlay className="w-4 h-4 text-white" />
-                  <span>Jouer</span>
+                  <span className="text-white">Jouer</span>
                 </span>
               ) : (
                 <span className="flex items-center gap-1">
                   <SquarePen className="w-4 h-4 text-white" />
-                  <span>Modifier</span>
+                  <span className="text-white">Modifier</span>
                 </span>
               )}
-            </button>
-
-            {!isSaving ? (
-              <button
-                onClick={() => downloadAndSaveIdeorama(setIsSaving)}
+            </Button>
+            {snap.current != snap.oldest && (
+              <SuperButton
+                tooltip="Revenir en arrière"
+                onClick={() => actions.undo()}
                 className="p-2 main-small-btn"
               >
                 <span className="flex items-center gap-1">
-                  <ArrowDownToLine className="w-4 h-4 text-white" />
-                  <span>Sauvegarder</span>
+                  <Undo2 className="w-4 h-4 text-white!" />
                 </span>
-              </button>
-            ) : (
-              <button className="p-2 main-small-btn">
-                <span className="flex items-center gap-1">
-                  <ArrowDownToLine className="w-4 h-4 text-white" />
-                  <span>En train de sauvegarder</span>
-                </span>
-              </button>
+              </SuperButton>
             )}
-
-            <button
-              onClick={() => resetIdeorama()}
-              className="p-2 main-small-btn"
+            {snap.current != snap.newest && (
+              <SuperButton
+                tooltip="Rétablir"
+                onClick={() => actions.redo()}
+                className="p-2 main-small-btn"
+              >
+                <span className="flex items-center gap-1">
+                  <Redo2 className="w-4 h-4 text-white!" />
+                </span>
+              </SuperButton>
+            )}
+            <SuperButton
+              tooltip="Réinitialiser"
+              onClick={() => {
+                actions.resetIdeorama().then(res => {
+                  if (res) {
+                    toast.success('Idéorama réinitialisé');
+                  } else {
+                    toast.error(
+                      "Échec lors de la réinitialisation de l'idéorama"
+                    );
+                  }
+                });
+              }}
+              className="z-50 p-2 main-small-btn"
             >
               <span className="flex items-center gap-1">
-                <RotateCcw className="w-4 h-4 text-white" />
-                <span>Réinitialiser</span>
+                <RotateCcw className="w-4 h-4 text-white!" />
               </span>
-            </button>
+            </SuperButton>
           </div>
           {/* Assets Button */}
           {isEditMode && (

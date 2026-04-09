@@ -173,17 +173,17 @@ export function FormInputRenderer({
           <DialogTrigger asChild>
             <button
               type="button"
-              className="px-3 py-1 flex justify-between items-center form-input bg-transparent! text-white!"
+              className="px-3 py-1 flex justify-between items-center form-input bg-transparent! text-white! outline-none!"
             >
-              <span>Choisir {input.label}</span>
+              <span>{input.label}</span>
               <SquareArrowOutUpRight size={16} />
             </button>
           </DialogTrigger>
           <DialogContent className="max-w-lg bg-sidebar">
             <DialogHeader>
-              <DialogTitle>Configuration {input.label}</DialogTitle>
+              <DialogTitle>{input.label}</DialogTitle>
               <DialogDescription>
-                Personnalisez les réglages ci-dessous.
+                Personnalisation ci-dessous.
               </DialogDescription>
             </DialogHeader>
             {input.dialogueContent || 'Nothing to display'}
