@@ -210,12 +210,12 @@ export const actions = {
 
   spawnAssetAtPosition(asset: AssetItem, position: THREE.Vector3) {
     const id = crypto.randomUUID();
-
     sceneState.objects[id] = {
       info: {
         name: asset.name,
         category: asset.category,
         file: asset.file,
+        preview: asset.thumbnail,
       },
       transform: {
         position: {
@@ -311,7 +311,18 @@ export const actions = {
 
 if (import.meta.hot) {
   import.meta.hot.dispose(data => {
-    data.sceneState = JSON.parse(JSON.stringify(sceneState));
+    try {
+      data.sceneState = {
+        global: JSON.parse(JSON.stringify(sceneState.global)),
+        background: JSON.parse(JSON.stringify(sceneState.background)),
+        info: JSON.parse(JSON.stringify(sceneState.info)),
+        floor: JSON.parse(JSON.stringify(sceneState.floor)),
+        objects: JSON.parse(JSON.stringify(sceneState.objects)),
+        selectedObjectId: sceneState.selectedObjectId,
+      };
+    } catch (err) {
+      console.error('HMR dispose: failed to serialize sceneState', err);
+    }
   });
 
   if (import.meta.hot.data.sceneState) {

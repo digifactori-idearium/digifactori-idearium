@@ -38,16 +38,19 @@ import { saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
 const downloadAndSaveIdeorama = () => {
-  localStorage.setItem(
-    'sceneState',
-    JSON.stringify({
-      global: sceneState.global,
-      background: sceneState.background,
-      info: sceneState.info,
-      floor: sceneState.floor,
-      objects: sceneState.objects,
-    })
-  );
+  try {
+    const serializable = {
+      global: JSON.parse(JSON.stringify(sceneState.global)),
+      background: JSON.parse(JSON.stringify(sceneState.background)),
+      info: JSON.parse(JSON.stringify(sceneState.info)),
+      floor: JSON.parse(JSON.stringify(sceneState.floor)),
+      objects: JSON.parse(JSON.stringify(sceneState.objects)),
+    };
+
+    localStorage.setItem('sceneState', JSON.stringify(serializable));
+  } catch (err) {
+    console.error('Failed to save scene state:', err);
+  }
 };
 
 export default function Ideorama() {
@@ -60,7 +63,7 @@ export default function Ideorama() {
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
   const [isFirstRender, setIsFirstRender] = useState(true);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false)
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const { setOpen } = useSidebar();
 
   useEffect(() => {
@@ -74,7 +77,6 @@ export default function Ideorama() {
       },
     })
   );
-
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -249,9 +251,9 @@ export default function Ideorama() {
                 actions.toggleAssetsPanel();
                 actions.toggleAssetsTree(false);
               }}
-              className="absolute md:bottom-6 bottom-15 left-10 -translate-x-1/2 z-50 main-small-btn p-3!"
+              className="absolute md:bottom-6 bottom-15 left-10 -translate-x-1/2 z-50 main-small-btn size-12!"
             >
-              <Plus className="w-5 h-5 text-white!" />
+              <Plus className="size-8! text-white!" />
             </SuperButton>
           )}
           {isEditMode && <AssetsPanel />}
@@ -264,9 +266,9 @@ export default function Ideorama() {
                 actions.toggleAssetsTree();
                 actions.toggleAssetsPanel(false);
               }}
-              className="absolute md:bottom-6 bottom-15 left-25 -translate-x-1/2 z-50 main-small-btn p-3!"
+              className="absolute md:bottom-6 bottom-15 left-30 -translate-x-1/2 z-50 main-small-btn size-12!"
             >
-              <ListTree className="w-5 h-5 text-white!" />
+              <ListTree className="size-8! text-white!" />
             </SuperButton>
           )}
           {isEditMode && <ObjectListPanel />}
@@ -278,9 +280,9 @@ export default function Ideorama() {
               onClick={() => {
                 actions.toggleSettingPanel();
               }}
-              className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn p-3!"
+              className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn size-12!"
             >
-              <Settings2 className="w-5 h-5 text-white!" />
+              <Settings2 className="size-8! text-white!" />
             </SuperButton>
           )}
           {isEditMode && <SettingPanel />}
