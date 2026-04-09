@@ -72,10 +72,10 @@ const MySpace: React.FC = () => {
     },
     {
       title: 'Mes Modèles',
-      link: '/app/voxel',
+      link: '/app/my-models',
       imageSrc:
         'https://techcrunch.com/wp-content/uploads/2023/05/Screenshot-2023-05-15-at-3.08.50-PM.jpg?w=680',
-      onActionClick: () => {},
+      onActionClick: () => { },
       toolTip: 'Créer un nouveau modèle',
     },
     {
@@ -83,7 +83,7 @@ const MySpace: React.FC = () => {
       link: '/app/my-ideas',
       imageSrc:
         'https://npr.brightspotcdn.com/dims4/default/9d2fef6/2147483647/strip/true/crop/500x498+0+0/resize/880x876!/quality/90/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2Flegacy%2Fsites%2Fkut%2Ffiles%2F201312%2Funleash-creativity.jpg',
-      onActionClick: () => {},
+      onActionClick: () => { },
       toolTip: 'Créer une nouvelle idée',
     },
     {
@@ -91,7 +91,7 @@ const MySpace: React.FC = () => {
       link: '/app/text-editor',
       imageSrc:
         'https://collegeinfogeek.com/wp-content/uploads/2018/11/Essential-Books.jpg',
-      onActionClick: () => {},
+      onActionClick: () => { },
       toolTip: 'Créer un nouveau texte',
     },
     {
@@ -99,7 +99,7 @@ const MySpace: React.FC = () => {
       link: '/app/audio-editor',
       imageSrc:
         'https://images.newscientist.com/wp-content/uploads/2018/08/07151255/gettyimages-937069350.jpg',
-      onActionClick: () => {},
+      onActionClick: () => { },
       toolTip: 'Créer un nouvel audio',
     },
   ];
