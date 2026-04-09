@@ -22,7 +22,7 @@ export const updateIdeoramaModelPath= async (ideoramaId: string, uploadPath: str
   })
 }
 
-export const getIdeoramaById = async (ideoramaId: string, userId: string) => {
+export const getIdeoramaById = async (ideoramaId: string) => {
   return ideoramaTable.findFirst({
     where: {
       id: ideoramaId,
@@ -67,7 +67,13 @@ export const isIdeoramaInBD = async (
   return false
 }
 
-
+/**
+ * Deletes an ideorama from DB based on its ID.
+ *
+ * @param ideoramaId - the unique id of the ideorama to delete
+ * @returns the deleted ideorama
+ * @throws error if the ideoramaId does not exist in DB
+ */
 export const deleteIdeorama = async (
   ideoramaId: string
 ) => {
