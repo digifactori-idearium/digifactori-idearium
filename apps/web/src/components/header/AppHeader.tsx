@@ -1,9 +1,11 @@
 import { House, LogOutIcon, Moon, Sun } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { VoiceLink } from '@/components/global';
-import { VoiceButton } from '@/components/global';
-import { SuperButton } from '@/components/global';
+import {
+  VoiceLink,
+  VoiceButton,
+  SuperButton,
+} from '@/components/common/button';
 import {
   AlertDialog,
   AlertDialogAction,

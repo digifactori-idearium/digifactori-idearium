@@ -1,4 +1,4 @@
-import { DataTable } from '../global/data-table/dataTable';
+import { DataTable } from '../common/data-table/dataTable';
 
 import { columns } from './usersColumns';
 

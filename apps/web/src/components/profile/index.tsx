@@ -7,7 +7,7 @@ import AvatarSelector from './AvatarSelector';
 import ProfileForm from './ProfileForm';
 import ProfileHeader from './ProfileHeader';
 
-import { VoiceButton } from '@/components/global';
+import { VoiceButton } from '@/components/common/button';
 import { useProfile } from '@/hooks/useProfile';
 
 const AVATAR_OPTIONS = [

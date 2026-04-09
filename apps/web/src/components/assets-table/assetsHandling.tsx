@@ -1,11 +1,11 @@
 import { SquarePlus } from 'lucide-react';
 import { useState } from 'react';
 
-import { DataTable } from '../global/data-table/dataTable';
+import { DataTable } from '../common/data-table/dataTable';
 
 import { columns } from './assetsColumns';
 
-import { Form } from '@/components/global';
+import { Form } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
