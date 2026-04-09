@@ -20,11 +20,10 @@ import { Controls } from './Gismo';
 import { SpeechBubble } from './SpeechBubble';
 
 import { useTrigger } from '@/hooks/useTrigger';
-import { cleanObject, runCleanup, setCleanup } from '@/lib/actionRuntime';
-import { ActionRegistry } from '@/lib/actionsRegistry';
+import { cleanObject } from '@/lib/actionRuntime';
 import { sceneState, actions } from '@/stores';
 
-// ─── Scratch objects
+// Scratch objects
 const _initPos = new THREE.Vector3();
 const _initQuat = new THREE.Quaternion();
 const _initScale = new THREE.Vector3();
@@ -33,7 +32,7 @@ const _box3 = new THREE.Box3();
 const _size = new THREE.Vector3();
 const _center = new THREE.Vector3();
 
-// ─── Types
+// Types
 interface ModelProps extends Omit<
   JSX.IntrinsicElements['mesh'],
   'name' | 'id'
@@ -48,7 +47,7 @@ type GLTFResult = GLTF & {
   materials: Record<string, THREE.Material>;
 };
 
-// ─── Helpers
+// Helpers
 function collectMeshes(obj: THREE.Object3D): THREE.Mesh[] {
   const meshes: THREE.Mesh[] = [];
   obj.traverse(child => {
@@ -57,7 +56,7 @@ function collectMeshes(obj: THREE.Object3D): THREE.Mesh[] {
   return meshes;
 }
 
-// ─── Model Component
+// Model Component
 export const Model = memo(function Model({
   id,
   name,
@@ -229,10 +228,11 @@ export const Model = memo(function Model({
     }
   }, [style.tint, style.opacity, style.glow, style.threshold]);
 
-  // ── Action triggers
+  // Action triggers
   useTrigger(id, modelRef, 'onStart');
+  const triggerOnTap = useTrigger(id, modelRef, 'onTap');
 
-  // ── Event handlers
+  // Event handlers
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
@@ -240,17 +240,9 @@ export const Model = memo(function Model({
         actions.selectObject(id);
         return;
       }
-      objectState?.actions
-        ?.filter(a => a.trigger === 'onTap')
-        .forEach(a => {
-          const handler = ActionRegistry[a.subType];
-          if (handler?.execute && modelRef.current) {
-            runCleanup(a.id); //i don't know
-            setCleanup(a.id, handler.execute(modelRef.current, a.config), id);
-          }
-        });
+      triggerOnTap?.();
     },
-    [id, snap.mode, objectState?.actions]
+    [id, snap.mode, triggerOnTap]
   );
 
   const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {

@@ -17,7 +17,7 @@ import {
   RotateCcw,
   Settings2,
   SquarePen,
-  Undo2
+  Undo2,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -30,6 +30,7 @@ import { SuperButton } from '@/components/global';
 import { AssetsPanel } from '@/components/panel/AssetsPanel';
 import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
 import { SettingPanel } from '@/components/panel/SettingPanel';
+import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useUser } from '@/providers/UserProvider';
 import { saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
@@ -74,53 +75,53 @@ export default function Ideorama() {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
+      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId);
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId);
       sceneState.selectedObjectId = null;
       sceneState.history = [];
       sceneState.current = -1;
       sceneState.newest = 0;
       sceneState.oldest = 0;
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     if (!ideoramaid) return;
-    
-    searchIdeorama(ideoramaid).then(res => {
-      localStorage.setItem("sceneState", JSON.stringify(res.data.model))
-      res.data.model.info.name = res.data.name
-      const model = res.data.model;
-      if (!model) return;
 
-      if (model.global) Object.assign(sceneState.global, model.global);
-      if (model.background)
-        Object.assign(sceneState.background, model.background);
-      if (model.info) Object.assign(sceneState.info, model.info);
-      if (model.floor) Object.assign(sceneState.floor, model.floor);
-      if (model.objects) sceneState.objects = model.objects;
-      
-    }).then(() => {
+    searchIdeorama(ideoramaid)
+      .then(res => {
+        localStorage.setItem('sceneState', JSON.stringify(res.data.model));
+        res.data.model.info.name = res.data.name;
+        const model = res.data.model;
+        if (!model) return;
+
+        if (model.global) Object.assign(sceneState.global, model.global);
+        if (model.background)
+          Object.assign(sceneState.background, model.background);
+        if (model.info) Object.assign(sceneState.info, model.info);
+        if (model.floor) Object.assign(sceneState.floor, model.floor);
+        if (model.objects) sceneState.objects = model.objects;
+      })
+      .then(() => {
         actions.stackState();
-    })
+      });
   }, [ideoramaid]);
-  
+
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
-      downloadAndSaveIdeorama() 
+      downloadAndSaveIdeorama();
     }
-  }, [snap.global, snap.background, snap.info, snap.floor, snap.objects])
-
+  }, [snap.global, snap.background, snap.info, snap.floor, snap.objects]);
 
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
-      downloadAndSaveIdeorama()
-      actions.stackState()
+      downloadAndSaveIdeorama();
+      actions.stackState();
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFirstRender(false);
@@ -165,25 +166,25 @@ export default function Ideorama() {
         <div className="w-full h-full overflow-hidden flex flex-col">
           <Scene />
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-            <button
+            <Button
               onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
               className="p-2 main-small-btn"
             >
               {isEditMode ? (
                 <span className="flex items-center gap-1">
                   <CirclePlay className="w-4 h-4 text-white" />
-                  <span>Jouer</span>
+                  <span className="text-white">Jouer</span>
                 </span>
               ) : (
                 <span className="flex items-center gap-1">
                   <SquarePen className="w-4 h-4 text-white" />
-                  <span>Modifier</span>
+                  <span className="text-white">Modifier</span>
                 </span>
               )}
-            </button>
+            </Button>
             {snap.current != snap.oldest && (
               <SuperButton
-                tooltip='Revenir en arrière'
+                tooltip="Revenir en arrière"
                 onClick={() => actions.undo()}
                 className="p-2 main-small-btn"
               >
@@ -194,7 +195,7 @@ export default function Ideorama() {
             )}
             {snap.current != snap.newest && (
               <SuperButton
-                tooltip='Rétablir'
+                tooltip="Rétablir"
                 onClick={() => actions.redo()}
                 className="p-2 main-small-btn"
               >
@@ -204,7 +205,7 @@ export default function Ideorama() {
               </SuperButton>
             )}
             <SuperButton
-              tooltip='Réinitialiser'
+              tooltip="Réinitialiser"
               onClick={() => {
                 actions.resetIdeorama().then(res => {
                   if (res) {
