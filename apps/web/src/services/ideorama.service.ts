@@ -19,7 +19,6 @@ export const searchIdeorama = async (
         ideoramaId: ideoramaId,
       }
     );
-    console.log("search Ideorama: ", response)
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -51,13 +50,12 @@ export const getEmptyIdeorama = async(): Promise<ApiResponse<IdeoramaModel>> => 
   }
 }
 
-
 export const createIdeorama = async (
   name: string, userId: string|undefined,
 ): Promise<ApiResponse<Ideorama>> => {
   try {
     const response = await axios.post(
-      `http://localhost:3001/api/ideorama/save`, {
+      `http://localhost:3001/api/ideorama/create`, {
         ideorama: {
           name: name,
           userId: userId
@@ -103,7 +101,7 @@ export const saveIdeorama = async (
 
 export const getAllIdeoramas = async (
   userId :string | undefined
-): Promise<ApiResponse<{ideoramas: Ideorama[], profile: Profile}>> => {
+): Promise<ApiResponse<Ideorama[]>> => {
   try {
   const response = await axios.post(
       `http://localhost:3001/api/ideorama/all`, {
@@ -123,20 +121,21 @@ export const getAllIdeoramas = async (
 
 export const deleteIdeorama = async (
   ideoramaId :string|undefined
-) => {
+): Promise<boolean> => {
   try {
-  const response = await axios.post(
+    const response = await axios.post(
       `http://localhost:3001/api/ideorama/delete`, {
           ideoramaId: ideoramaId
         }
-  );
- if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
+    );
+    console.log("response: ", response)
+    if (response.data.status === 'error') {
+      // toast.error(response.data.error?.message)
     }
     toast.success('Suppression de l\'idéorama réussie');
+    return true
   } catch (error: any) {
-    throw new Error(error.response?.data?.error?.message || 'Echec lors de la suppression de l\'idéorama');
+      // toast.error(error.message)
+      return false
   }
 }
