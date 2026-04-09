@@ -3,6 +3,7 @@ import * as THREE from 'three';
 
 import { clearTweens, addTween, playBlip } from './actionRuntime';
 import { MusicSelector } from './MusicDialog';
+import { ObjectSelector } from './ObjectDialog';
 
 import { FormInputData } from '@/components/global/Input';
 import {
@@ -453,7 +454,7 @@ export const ActionRegistry: Record<
         default: 'Bonjour !',
       },
     ],
-    getDuration: ({ text = '' }) => 250 + text.length * 50 + 3000 + 400,
+    getDuration: ({ text = '' }) => 250 + text.length * 50 + 1000,
     execute(ref, { text }) {
       const SPEED = 0.05;
       const DURATION = 3;
@@ -515,49 +516,48 @@ export const ActionRegistry: Record<
     },
   },
 
-  // --- PHYSICS ---
-  velocity: {
-    label: 'Propulser',
+  // --- UTILITY ---
+  wait: {
+    label: 'Attendre',
     icon: '🚀',
-    category: 'physics',
+    category: 'utility',
     description: "Donne une poussée soudaine à l'objet.",
     inputs: [
       {
-        name: 'force',
-        label: 'Puissance',
+        name: 'duration',
+        label: 'Attendre (secondes)',
         type: 'slider',
         min: 1,
         max: 50,
-        default: 10,
+        step: 1,
+        default: 1,
       },
     ],
-    execute(ref, { force }) {
-      ref.userData.pendingImpulse = new THREE.Vector3(0, force * 0.05, 0);
-      return () => {
-        ref.userData.pendingImpulse = null;
-      };
+    getDuration: ({ duration = 1 }) => duration,
+    execute(ref, { duration }) {
+      return () => {};
     },
   },
 
-  force: {
-    label: 'Pousser',
-    icon: '🧲',
-    category: 'physics',
-    description: 'Applique une force continue.',
+  delete: {
+    label: 'Supprimer',
+    icon: '🗑️',
+    category: 'utility',
+    description: 'Supprimer un Object',
     inputs: [
       {
-        name: 'strength',
-        label: 'Force',
-        type: 'slider',
-        min: -20,
-        max: 20,
-        default: 5,
+        name: 'delete_object_id',
+        label: "L'object à supprimer",
+        type: 'dialog',
+        placeholder: "Choisis l'object à supprimer",
+        required: false,
+        dialogueContent: <ObjectSelector type="action" />,
       },
     ],
-    execute(ref, { strength }) {
-      ref.userData.continuousForce = new THREE.Vector3(strength * 0.01, 0, 0);
+    execute(ref, { delete_object_id }) {
+      ref.userData.delete_object = delete_object_id;
       return () => {
-        ref.userData.continuousForce = null;
+        console.log('Your are crazy');
       };
     },
   },
