@@ -98,7 +98,7 @@ interface IdeoramaState {
   activeSettingView: 'model' | 'actions';
   actionPickerOpen: boolean;
 
-  history: ModelsInfo[]
+  history: {objects: Record<string, ObjectState>}[]
   current: number,
   oldest: number,
   newest: number

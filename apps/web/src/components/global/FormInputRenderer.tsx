@@ -150,7 +150,7 @@ export function FormInputRenderer({
                 onChange={e => {
                   field.onChange(Number(e.target.value))
                   if(input.name == "scale") {
-                    actions.stackState()
+                    setTimeout(actions.stackState, 200)
                   }
                 }}
                 className="slider-input w-12 text-xs"

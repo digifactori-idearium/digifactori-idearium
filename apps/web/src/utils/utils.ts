@@ -1,10 +1,6 @@
-export const deepCloneSceneState = (sceneState: IdeoramaState | ModelsInfo) => {
+export const deepCloneSceneState = (sceneState: {objects: Record<string, ObjectState>}) => {
     const newObjects = copyObjects(sceneState.objects)
       return {
-        global: {...sceneState.global},
-        background: {...sceneState.background},
-        info: {...sceneState.info},
-        floor: {...sceneState.floor},
         objects: newObjects
       }
 }
@@ -42,14 +38,14 @@ export const stackNewState = (sceneState: IdeoramaState) => {
     sceneState.newest = sceneState.current
     const copy = deepCloneSceneState(sceneState)
     sceneState.history[sceneState.current] = copy
-    sceneState.newest = sceneState.current
 }
-
+/**
+ * 
+ * @param sceneState 
+ * Resets sceneState with the current state in history
+ * Resets only objects (for now)
+ */
 export const resetState = (sceneState: IdeoramaState) => {
     const copy = deepCloneSceneState(sceneState.history[sceneState.current])
-    sceneState.global = copy.global
-    sceneState.background = copy.background
-    sceneState.info = copy.info
-    sceneState.floor = copy.floor
     sceneState.objects = copy.objects
 }

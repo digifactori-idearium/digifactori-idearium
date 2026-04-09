@@ -81,32 +81,6 @@ export default function Ideorama() {
   const selectedObject = snap.selectedObjectId ? snap.objects[snap.selectedObjectId] :  null
   const scale = selectedObject?.transform.scale
 
-//   const timeoutRef = useRef(100);
-
-// useEffect(() => {
-//   clearTimeout(timeoutRef.current);
-
-//   timeoutRef.current = setTimeout(() => {
-//     actions.stackState();
-//   }, 200);
-
-//   return () => clearTimeout(timeoutRef.current);
-// }, [scale]);
-  
-  // useEffect(() => {
-  //   const handleScaleUpdate = () => {
-  //     console.log("stacked")
-  //     actions.stackState();
-  //   }
-  //   const slider = document.getElementById("scale_slider_ext") as HTMLElement
-  //   console.log("slider: ", slider)
-  //   if (slider) {
-  //     slider.addEventListener("change", handleScaleUpdate)
-  //   }
-    
-  //   // return () => slider.removeEventListener("change", handleScaleUpdate)
-  // }, [snap.activeSettingView])
-
   useEffect(() => {
     const handleBeforeUnload = () => {
       saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
@@ -219,6 +193,7 @@ export default function Ideorama() {
             {snap.current != snap.oldest && isEditMode && (
               <SuperButton
                 tooltip="Revenir en arrière"
+                voiceText="Revenir en arrière"
                 onClick={() => actions.undo()}
                 className="p-2 main-small-btn"
               >
@@ -230,6 +205,7 @@ export default function Ideorama() {
             {snap.current != snap.newest && isEditMode && (
               <SuperButton
                 tooltip="Rétablir"
+                voiceText="Rétablir"
                 onClick={() => actions.redo()}
                 className="p-2 main-small-btn"
               >
@@ -241,6 +217,7 @@ export default function Ideorama() {
             {isEditMode ? (
               <SuperButton
                 tooltip="Réinitialiser"
+                voiceText="Réinitialiser"
                 onClick={() => {
                   setResetDialogOpen(true);
                 }}

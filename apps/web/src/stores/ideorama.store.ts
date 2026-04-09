@@ -45,7 +45,7 @@ export const sceneState = proxy<IdeoramaState>({
   activeSettingView: 'model',
   actionPickerOpen: false,
 
-  // undo/redomanagement
+  // undo/redo management
   history: [],
   current: -1,
   oldest: 0,
