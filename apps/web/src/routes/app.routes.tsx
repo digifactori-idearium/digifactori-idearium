@@ -38,8 +38,6 @@ const appRoutes = [
     element: <ProtectedRoute element={<MyModels />} />,
   },
   {
-    path: 'batch_register',
-    element: <ProtectedRoute element={<BatchRegister />} />,
     path: 'users',
     element: <ProtectedRoute element={<UserHandling />} />,
   },
