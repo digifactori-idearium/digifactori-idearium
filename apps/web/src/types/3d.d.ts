@@ -100,7 +100,6 @@ interface IdeoramaState {
 
   history: {objects: Record<string, ObjectState>}[]
   current: number,
-  oldest: number,
   newest: number
   
   pendingTrigger: TriggerType;
@@ -183,6 +182,7 @@ type ActionType =
 interface ActionConfig {
   id: string;
   type: ActionType;
+  active?: boolean;
   subType: string;
   trigger: TriggerType;
   config: Record<string, any>;

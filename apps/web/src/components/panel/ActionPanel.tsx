@@ -1,5 +1,4 @@
-import { ArrowLeft, Plus, Trash2, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowDown, ArrowLeft, ArrowUp, Plus, Trash2, Zap } from 'lucide-react';
 import { useSnapshot } from 'valtio';
 
 import { FormInputData } from '../global/Input';
@@ -16,6 +15,7 @@ import {
   AccordionContent,
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ActionRegistry } from '@/lib/actionsRegistry';
 import { actions, sceneState } from '@/stores';
@@ -25,7 +25,7 @@ export const ActionPanel = () => {
   const selectedId = snap.selectedObjectId;
   const obj = selectedId ? snap.objects[selectedId] : null;
 
-  const [activeTrigger, setActiveTrigger] = useState<TriggerType>('onStart');
+  const activeTrigger = snap.pendingTrigger || 'onStart';
 
   // Filter actions for the selected trigger
   const currentActions = (obj?.actions || []).filter(
@@ -50,8 +50,7 @@ export const ActionPanel = () => {
       <Tabs
         value={activeTrigger}
         onValueChange={v => {
-          const nextValue = v as TriggerType;
-          setActiveTrigger(nextValue);
+          sceneState.pendingTrigger = v as TriggerType;
         }}
         className="mt-1"
       >
@@ -72,25 +71,65 @@ export const ActionPanel = () => {
       </Tabs>
 
       <CardContent className="flex-1 overflow-y-auto p-0 mt-4 custom-scrollbar">
-        <Accordion type="multiple" className="space-y-2">
+        <Accordion type="single" className="space-y-2">
           {currentActions.map(action => {
             const reg = ActionRegistry[action.subType];
             return (
               <AccordionItem
                 key={action.id}
                 value={action.id}
-                className="border border-white/10 rounded-lg bg-white/5 px-2"
+                className="border border-white/10 rounded-lg bg-white/5 px-2 hover:border-yellow-400"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-2">
                   <Zap className="size-3 text-yellow-400" />
-                  <AccordionTrigger className="flex-1 py-3 hover:no-underline text-sm capitalize">
+                  <AccordionTrigger className="flex-1 py-3 hover:no-underline text-xs capitalize">
                     {reg?.label || action.subType}
                   </AccordionTrigger>
-                  <button
-                    onClick={() => actions.removeAction(selectedId!, action.id)}
-                  >
-                    <Trash2 className="size-4 text-white hover:text-red-400" />
-                  </button>
+                  <div>
+                    <TooltipButton
+                      tooltip="Faire monter"
+                      onClick={() =>
+                        actions.reorderAction(selectedId!, action.id, 'up')
+                      }
+                      className="bg-transparent! p-1!"
+                    >
+                      <ArrowUp className="size-4 text-white hover:text-red-400!" />
+                    </TooltipButton>
+                    <TooltipButton
+                      tooltip="Faire descendre"
+                      onClick={() =>
+                        actions.reorderAction(selectedId!, action.id, 'down')
+                      }
+                      className="bg-transparent! p-1!"
+                    >
+                      <ArrowDown className="size-4 text-white hover:text-red-400" />
+                    </TooltipButton>
+                    <TooltipButton
+                      tooltip="Supprimer"
+                      onClick={() =>
+                        actions.removeAction(selectedId!, action.id)
+                      }
+                      className="bg-transparent! p-1!"
+                    >
+                      <Trash2 className="size-4 text-white! hover:text-red-400!" />
+                    </TooltipButton>
+                    <Checkbox
+                      className="size-4 data-[state=checked]:bg-mauve! data-[state=checked]:text-white!"
+                      checked={action.active ?? true}
+                      onCheckedChange={checked => {
+                        const obj = sceneState.objects[selectedId!];
+                        if (!obj) return;
+
+                        const found = obj.actions?.find(
+                          a => a.id === action.id
+                        );
+                        if (!found) return;
+
+                        found.active = checked === true;
+                        actions.bumpActionsVersion(selectedId!);
+                      }}
+                    />
+                  </div>
                 </div>
                 <AccordionContent className="pt-2 border-t border-white/5">
                   <ActionConfigForm
@@ -106,7 +145,7 @@ export const ActionPanel = () => {
 
         <SuperButton
           className="w-full mt-3 form-button"
-          onClick={() => actions.openActionPicker(true, activeTrigger)}
+          onClick={() => actions.openActionPicker(true)}
         >
           <Plus className="mr-2 size-4" /> Ajouter une action
         </SuperButton>

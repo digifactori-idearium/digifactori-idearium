@@ -18,10 +18,10 @@ export const ActionPickerModal = () => {
   const categories = [
     { id: 'motion', label: 'Mouvement', emoji: '🏃', color: '#22c55e' },
     { id: 'appearance', label: 'Apparence', emoji: '🎨', color: '#3b82f6' },
-    { id: 'say', label: 'Parole', emoji: '💬', color: '#a855f7' },
+    { id: 'say', label: 'Parole', emoji: '💬', color: '#f59e0b' },
     { id: 'sound', label: 'Son', emoji: '🔊', color: '#ef4444' },
-    { id: 'particles', label: 'Effets', emoji: '✨', color: '#f59e0b' },
-    { id: 'physics', label: 'Physique', emoji: '🧲', color: '#14b8a6' },
+    { id: 'particles', label: 'Effets', emoji: '💫', color: '#14b8a6' },
+    { id: 'physics', label: 'Physique', emoji: '🧲', color: '#a855f7' },
   ];
 
   const handleAdd = (subType: string) => {
@@ -29,6 +29,7 @@ export const ActionPickerModal = () => {
     actions.addAction(snap.selectedObjectId, {
       id: crypto.randomUUID(),
       type: category,
+      active: true,
       subType,
       trigger: snap.pendingTrigger,
       config: ActionRegistry[subType]?.inputs.reduce(
@@ -45,7 +46,7 @@ export const ActionPickerModal = () => {
       open={snap.actionPickerOpen}
       onOpenChange={actions.openActionPicker}
     >
-      <DialogContent className="sm:max-w-md bg-zinc-950 border-white/10 text-white p-6">
+      <DialogContent className="relativesm:max-w-md bg-zinc-950 border-white/10 text-white p-6 z-60!">
         <DialogHeader className="flex-row items-center gap-4 space-y-0">
           {category && (
             <ArrowLeft

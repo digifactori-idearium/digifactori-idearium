@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import * as THREE from 'three';
 import { proxy } from 'valtio';
 
@@ -6,9 +7,12 @@ import { round } from '@/lib/utils';
 import { getEmptyIdeorama } from '@/services/ideorama.service';
 import { resetState, stackNewState } from '@/utils/utils';
 
+//theme
 const INITIAL_THEME = 'day' as keyof typeof themesToColors;
-
 const initialThemeData = themesToColors[INITIAL_THEME];
+
+//action
+const NON_DUPLICABLE_ACTIONS = ['playSound', 'say'];
 
 export const sceneState = proxy<IdeoramaState>({
   // Global State
@@ -127,7 +131,7 @@ export const actions = {
   removeObject: (id: string) => {
     delete sceneState.objects[id];
     if (sceneState.selectedObjectId === id) sceneState.selectedObjectId = null;
-    stackNewState(sceneState)
+    stackNewState(sceneState);
   },
   registerObject: (id: string, obj: THREE.Object3D) =>
     sceneRegistry.set(id, obj),
@@ -145,8 +149,7 @@ export const actions = {
 
   async resetIdeorama() {
     try {
-      await getEmptyIdeorama()
-      .then(res => {
+      await getEmptyIdeorama().then(res => {
         const model = res.data.model;
         sceneState.global = model.global ? model.global : sceneState.global;
         sceneState.background = model.background
@@ -155,11 +158,11 @@ export const actions = {
         sceneState.info = model.info ? model.info : sceneState.info;
         sceneState.floor = model.floor ? model.floor : sceneState.floor;
         sceneState.objects = model.objects ? model.objects : sceneState.objects;
-        stackNewState(sceneState)
+        stackNewState(sceneState);
       });
-      return true
+      return true;
     } catch (error) {
-      console.log("error: ", error)
+      console.log('error: ', error);
       return false;
     }
   },
@@ -232,30 +235,40 @@ export const actions = {
 
     sceneState.selectedObjectId = id;
 
-    stackNewState(sceneState)
+    stackNewState(sceneState);
   },
 
   // Historic management
   stackState() {
-    stackNewState(sceneState)
+    stackNewState(sceneState);
   },
 
   // Undo/ redo
   undo() {
     sceneState.current -= 1;
     sceneState.selectedObjectId = null;
-    resetState(sceneState)
+    resetState(sceneState);
   },
   redo() {
     sceneState.current += 1;
-    resetState(sceneState)
-
+    resetState(sceneState);
   },
 
   // ACTIONS MANAGEMENT
   addAction(objectId: string, action: ActionConfig) {
     const obj = sceneState.objects[objectId];
     if (!obj) return;
+    const alreadyExists = (obj.actions ??= []).some(
+      a =>
+        a.subType === action.subType &&
+        a.trigger === action.trigger &&
+        NON_DUPLICABLE_ACTIONS.includes(action.subType)
+    );
+
+    if (alreadyExists) {
+      toast.error("C'est déjà là !");
+      return;
+    }
     (obj.actions ??= []).push(action);
     obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
   },
@@ -265,6 +278,21 @@ export const actions = {
     if (!obj?.actions) return;
     obj.actions = obj.actions.filter(a => a.id !== actionId);
     obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
+  },
+
+  reorderAction(objectId: string, actionId: string, direction: 'up' | 'down') {
+    const obj = sceneState.objects[objectId];
+    if (!obj?.actions) return;
+
+    const index = obj.actions.findIndex(a => a.id === actionId);
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (swapIndex < 0 || swapIndex >= obj.actions.length) return;
+
+    [obj.actions[index], obj.actions[swapIndex]] = [
+      obj.actions[swapIndex],
+      obj.actions[index],
+    ];
   },
 
   bumpActionsVersion(objectId: string) {
@@ -277,9 +305,8 @@ export const actions = {
   setSettingView: (view: 'model' | 'actions') => {
     sceneState.activeSettingView = view;
   },
-  openActionPicker: (open: boolean, trigger: TriggerType = 'onStart') => {
+  openActionPicker: (open: boolean) => {
     sceneState.actionPickerOpen = open;
-    sceneState.pendingTrigger = trigger;
   },
 };
 
