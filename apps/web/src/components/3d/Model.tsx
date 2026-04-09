@@ -20,7 +20,7 @@ import { Controls } from './Gismo';
 import { SpeechBubble } from './SpeechBubble';
 
 import { useTrigger } from '@/hooks/useTrigger';
-import { cleanObject } from '@/lib/actionRuntime';
+import { cleanObject } from '@/lib/actions/runtime';
 import { sceneState, actions } from '@/stores';
 
 // Scratch objects

@@ -17,7 +17,7 @@ import { Model } from './Model';
 import { SceneAudio } from './SceneAudio';
 import { SceneGradient } from './SceneGradient';
 
-import { ActionTicker } from '@/lib/actionRuntime';
+import { ActionTicker } from '@/lib/actions/runtime';
 import { actions, sceneState } from '@/stores';
 
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {

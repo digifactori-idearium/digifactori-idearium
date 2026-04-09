@@ -17,7 +17,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ActionRegistry } from '@/lib/actionsRegistry';
+import { ActionRegistry } from '@/lib/actions/registery';
 import { actions, sceneState } from '@/stores';
 
 export const ActionPanel = () => {

@@ -17,7 +17,7 @@ import {
   Bezier,
 } from 'three.quarks';
 
-import { addTicker, removeTicker } from './actionRuntime';
+import { addTicker, removeTicker } from './runtime';
 
 type Cleanup = () => void;
 type TickFn = (delta: number) => void;

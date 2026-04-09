@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ActionRegistry } from '@/lib/actionsRegistry';
+import { ActionRegistry } from '@/lib/actions/registery';
 import { sceneState, actions } from '@/stores';
 
 export const ActionPickerModal = () => {

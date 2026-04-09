@@ -1,17 +1,18 @@
 import { gsap } from 'gsap';
 import * as THREE from 'three';
 
-import { clearTweens, addTween, playBlip } from './actionRuntime';
-import { MusicSelector } from './MusicDialog';
-import { ObjectSelector } from './ObjectDialog';
+import { MusicSelector } from '../MusicDialog';
+import { ObjectSelector } from '../ObjectDialog';
 
-import { FormInputData } from '@/components/global/Input';
 import {
   createExplosion,
   createRain,
   createSnow,
   createFlame,
-} from '@/lib/particles';
+} from './particles';
+import { clearTweens, addTween, playBlip } from './runtime';
+
+import { FormInputData } from '@/components/global/Input';
 
 export type ActionExecuteFn = (
   ref: THREE.Object3D,
