@@ -1,107 +1,204 @@
 import React, { useState } from 'react';
 
-
-type Priority = 0 | 1 | 2 | 3;
+// ================= TYPES =================
+type Priority = 'high' | 'low';
 
 type Task = {
   id: string;
   content: string;
   priority: Priority;
-  days: number;
+  color: string;
 };
 
-type ColumnType = 'draft' | 'todo' | 'progress' | 'review' | 'done';
+type ColumnType = 'todo' | 'progress' | 'done';
 
 const initialData: Record<ColumnType, Task[]> = {
-  draft: [],
   todo: [],
   progress: [],
-  review: [],
   done: [],
 };
 
+const COLORS = ['#fde68a', '#bfdbfe', '#bbf7d0', '#fecaca', '#ddd6fe'];
 
+// ================= COLUMN (FIX ICI) =================
+const Column = ({
+  title,
+  columnKey,
+  columns,
+  inputs,
+  setInputs,
+  addTask,
+  onDrop,
+  onDragStart,
+  setModalPriority,
+  setModalEdit,
+  setModalDelete,
+}: any) => (
+  <div
+    onDragOver={(e) => e.preventDefault()}
+    onDrop={(e) => onDrop(e, columnKey)}
+    className="flex flex-col flex-1 bg-gray-100 dark:bg-gray-800 p-4 rounded-xl min-h-[500px]"
+  >
+    <h2 className="text-lg font-bold mb-3 dark:text-white">
+      {title} ({columns[columnKey].length})
+    </h2>
+
+    <div className="flex flex-col gap-3 flex-1">
+      {columns[columnKey].map((task: any) => (
+        <div
+          key={task.id}
+          draggable
+          onDragStart={(e) => onDragStart(e, task, columnKey)}
+          className="p-3 rounded-lg shadow cursor-grab"
+          style={{ backgroundColor: task.color }}
+        >
+          <div className="flex justify-between">
+            <span className="dark:text-black">{task.content}</span>
+            <span
+              onClick={() =>
+                setModalPriority({ column: columnKey, id: task.id })
+              }
+              className={`text-xs px-2 py-1 rounded cursor-pointer ${task.priority === 'high'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-green-500 text-white'
+                }`}
+            >
+              {task.priority === 'high'
+                ? 'Important'
+                : 'Pas important'}
+            </span>
+          </div>
+
+          <div className="flex gap-2 mt-2 text-xs">
+            <button
+              onClick={() =>
+                setModalEdit({
+                  column: columnKey,
+                  id: task.id,
+                  value: task.content,
+                })
+              }
+            >
+              ✏️ Modifier
+            </button>
+            <button
+              onClick={() =>
+                setModalDelete({ column: columnKey, id: task.id })
+              }
+            >
+              ❌ Supprimer
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="mt-3">
+      <textarea
+        value={inputs[columnKey]}
+        onChange={(e) =>
+          setInputs((prev: any) => ({
+            ...prev,
+            [columnKey]: e.target.value,
+          }))
+        }
+        placeholder="Nouvelle idée..."
+        className="w-full p-2 rounded text-black"
+      />
+      <button
+        onClick={() => addTask(columnKey)}
+        className="w-full mt-2 bg-blue-500 text-white py-1 rounded"
+      >
+        Ajouter
+      </button>
+    </div>
+  </div>
+);
+
+// ================= COMPONENT =================
 const MyIdeas: React.FC = () => {
   const [columns, setColumns] = useState(initialData);
   const [inputs, setInputs] = useState<Record<ColumnType, string>>({
-    draft: '',
     todo: '',
     progress: '',
-    review: '',
     done: '',
   });
 
-  // ➕ Ajouter tâche
+  const [modalPriority, setModalPriority] = useState<any>(null);
+  const [modalDelete, setModalDelete] = useState<any>(null);
+  const [modalEdit, setModalEdit] = useState<any>(null);
+
   const addTask = (column: ColumnType) => {
     if (!inputs[column].trim()) return;
+
+    const randomColor =
+      COLORS[Math.floor(Math.random() * COLORS.length)];
 
     const task: Task = {
       id: Date.now().toString(),
       content: inputs[column],
-      priority: 0,
-      days: 1,
+      priority: 'low',
+      color: randomColor,
     };
 
-    setColumns(prev => ({
+    setColumns((prev) => ({
       ...prev,
       [column]: [...prev[column], task],
     }));
 
-    setInputs(prev => ({ ...prev, [column]: '' }));
+    setInputs((prev) => ({ ...prev, [column]: '' }));
   };
 
+  const setPriority = (priority: Priority) => {
+    if (!modalPriority) return;
 
-  const editTask = (column: ColumnType, id: string) => {
-    const newText = prompt('Modifier le texte :');
-    if (!newText) return;
-
-    setColumns(prev => ({
+    setColumns((prev) => ({
       ...prev,
-      [column]: prev[column].map(t =>
-        t.id === id ? { ...t, content: newText } : t
+      [modalPriority.column]: prev[modalPriority.column].map((t) =>
+        t.id === modalPriority.id ? { ...t, priority } : t
       ),
     }));
+
+    setModalPriority(null);
   };
 
+  const confirmDelete = () => {
+    if (!modalDelete) return;
 
-  const changePriority = (column: ColumnType, id: string) => {
-    const value = prompt('Priorité (0-3)');
-    if (!value) return;
-
-    setColumns(prev => ({
+    setColumns((prev) => ({
       ...prev,
-      [column]: prev[column].map(t =>
-        t.id === id ? { ...t, priority: Number(value) as Priority } : t
+      [modalDelete.column]: prev[modalDelete.column].filter(
+        (t) => t.id !== modalDelete.id
       ),
     }));
+
+    setModalDelete(null);
   };
 
+  const confirmEdit = () => {
+    if (!modalEdit) return;
 
-  const changeDays = (column: ColumnType, id: string) => {
-    const value = prompt('Durée en jours');
-    if (!value) return;
-
-    setColumns(prev => ({
+    setColumns((prev) => ({
       ...prev,
-      [column]: prev[column].map(t =>
-        t.id === id ? { ...t, days: Number(value) } : t
+      [modalEdit.column]: prev[modalEdit.column].map((t) =>
+        t.id === modalEdit.id
+          ? { ...t, content: modalEdit.value }
+          : t
       ),
     }));
+
+    setModalEdit(null);
   };
 
-
-  const deleteTask = (column: ColumnType, id: string) => {
-    if (!confirm('Supprimer cette idée ?')) return;
-
-    setColumns(prev => ({
-      ...prev,
-      [column]: prev[column].filter(t => t.id !== id),
-    }));
-  };
-
-
-  const onDragStart = (e: React.DragEvent, task: Task, from: ColumnType) => {
-    e.dataTransfer.setData('task', JSON.stringify({ task, from }));
+  const onDragStart = (
+    e: React.DragEvent,
+    task: Task,
+    from: ColumnType
+  ) => {
+    e.dataTransfer.setData(
+      'task',
+      JSON.stringify({ task, from })
+    );
   };
 
   const onDrop = (e: React.DragEvent, to: ColumnType) => {
@@ -110,104 +207,145 @@ const MyIdeas: React.FC = () => {
 
     if (from === to) return;
 
-    setColumns(prev => ({
+    setColumns((prev) => ({
       ...prev,
-      [from]: prev[from].filter(t => t.id !== task.id),
+      [from]: prev[from].filter((t) => t.id !== task.id),
       [to]: [...prev[to], task],
     }));
   };
 
+  return (
+    <div className="min-h-screen p-6">
+      <h1 className="text-3xl font-bold mb-6">Mes idées</h1>
 
-  const Column = ({
-    title,
-    columnKey,
-  }: {
-    title: string;
-    columnKey: ColumnType;
-  }) => (
-    <div
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => onDrop(e, columnKey)}
-      className="flex flex-col flex-1 bg-gray-100 dark:bg-gray-800 p-4 rounded-xl min-h-[500px]"
-    >
-      <h2 className="text-lg font-bold mb-3 dark:text-white">
-        {title} ({columns[columnKey].length})
-      </h2>
+      <div className="flex gap-4">
+        <Column
+          title="📌 À faire"
+          columnKey="todo"
+          columns={columns}
+          inputs={inputs}
+          setInputs={setInputs}
+          addTask={addTask}
+          onDrop={onDrop}
+          onDragStart={onDragStart}
+          setModalPriority={setModalPriority}
+          setModalEdit={setModalEdit}
+          setModalDelete={setModalDelete}
+        />
 
-      {/* tâches */}
-      <div className="flex flex-col gap-3 flex-1">
-        {columns[columnKey].map(task => (
-          <div
-            key={task.id}
-            draggable
-            onDragStart={(e) => onDragStart(e, task, columnKey)}
-            className="bg-white dark:bg-gray-700 p-3 rounded-lg shadow cursor-grab active:cursor-grabbing"
-          >
-            <div className="flex justify-between items-start">
-              <span
-                onClick={() => editTask(columnKey, task.id)}
-                className="cursor-pointer dark:text-white"
+        <Column
+          title="🚧 En cours"
+          columnKey="progress"
+          columns={columns}
+          inputs={inputs}
+          setInputs={setInputs}
+          addTask={addTask}
+          onDrop={onDrop}
+          onDragStart={onDragStart}
+          setModalPriority={setModalPriority}
+          setModalEdit={setModalEdit}
+          setModalDelete={setModalDelete}
+        />
+
+        <Column
+          title="✅ Terminé"
+          columnKey="done"
+          columns={columns}
+          inputs={inputs}
+          setInputs={setInputs}
+          addTask={addTask}
+          onDrop={onDrop}
+          onDragStart={onDragStart}
+          setModalPriority={setModalPriority}
+          setModalEdit={setModalEdit}
+          setModalDelete={setModalDelete}
+        />
+      </div>
+
+      {/* MODAL PRIORITÉ */}
+      {modalPriority && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl shadow-lg">
+            <h3 className="mb-4 font-bold">
+              Choisir la priorité
+            </h3>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setPriority('high')}
+                className="bg-red-500 text-white px-4 py-2 rounded"
               >
-                {task.content}
-              </span>
-              <span className="text-xs">⭐{task.priority}</span>
-            </div>
-
-            <div className="text-xs mt-1 dark:text-gray-300">
-              ⏱ {task.days} jours
-            </div>
-
-            <div className="flex gap-2 mt-2 text-xs">
-              <button onClick={() => changePriority(columnKey, task.id)}>
-                prio
+                Important
               </button>
-              <button onClick={() => changeDays(columnKey, task.id)}>
-                temps
-              </button>
-              <button onClick={() => deleteTask(columnKey, task.id)}>
-                ❌
+              <button
+                onClick={() => setPriority('low')}
+                className="bg-green-500 text-white px-4 py-2 rounded"
+              >
+                Pas important
               </button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      {/* ajout */}
-      <div className="mt-3">
-        <textarea
-          value={inputs[columnKey]}
-          onChange={(e) =>
-            setInputs(prev => ({
-              ...prev,
-              [columnKey]: e.target.value,
-            }))
-          }
-          placeholder="Nouvelle idée..."
-          className="w-full p-2 rounded text-black"
-        />
-        <button
-          onClick={() => addTask(columnKey)}
-          className="w-full mt-2 bg-blue-500 text-white py-1 rounded"
-        >
-          Ajouter
-        </button>
-      </div>
-    </div>
-  );
+      {/* MODAL SUPPRESSION */}
+      {modalDelete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl shadow-lg">
+            <h3 className="mb-4 font-bold">
+              Supprimer cette idée ?
+            </h3>
+            <div className="flex gap-4">
+              <button
+                onClick={confirmDelete}
+                className="bg-red-500 text-white px-4 py-2 rounded"
+              >
+                Supprimer
+              </button>
+              <button
+                onClick={() => setModalDelete(null)}
+                className="bg-gray-300 px-4 py-2 rounded"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-  return (
-    <div className="min-h-screen p-6">
-      <h1 className="text-3xl font-bold mb-6 dark:text-white">
-        Mes idées
-      </h1>
-
-      <div className="flex gap-4">
-        <Column title="📝 Draft" columnKey="draft" />
-        <Column title="📌 To Do" columnKey="todo" />
-        <Column title="🚧 In Progress" columnKey="progress" />
-        <Column title="🔍 In Review" columnKey="review" />
-        <Column title="✅ Done" columnKey="done" />
-      </div>
+      {/* MODAL EDIT */}
+      {modalEdit && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl shadow-lg w-[300px]">
+            <h3 className="mb-4 font-bold">
+              Modifier l'idée
+            </h3>
+            <textarea
+              value={modalEdit.value}
+              onChange={(e) =>
+                setModalEdit({
+                  ...modalEdit,
+                  value: e.target.value,
+                })
+              }
+              className="w-full p-2 border rounded mb-3"
+            />
+            <div className="flex gap-4">
+              <button
+                onClick={confirmEdit}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Valider
+              </button>
+              <button
+                onClick={() => setModalEdit(null)}
+                className="bg-gray-300 px-4 py-2 rounded"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
