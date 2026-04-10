@@ -1,238 +1,174 @@
 import fs from 'fs';
 import path from 'path';
 
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
-import { AuthenticatedRequest } from '../../types';
 import {
-    createVoxelModel,
-    deleteVoxelModel,
-    getUserVoxelModels,
-    getVoxelModelById,
-    updateVoxelModelPath,
+  createVoxelModel,
+  deleteVoxelModel,
+  getUserVoxelModels,
+  getVoxelModelById,
+  updateVoxelModelPath,
 } from './voxel.service';
 
-const getUploadPath = (voxelModelId: string) => {
-    const id = String(voxelModelId);
+import asyncHandler from '@/utils/async-handler';
+import HttpResponse from '@/utils/http-response';
 
-    if (!/^[a-z0-9]+$/i.test(id)) {
-        throw new Error('Invalid voxelModelId');
-    }
+/**
+ * Helper function to get the file path for a voxel model
+ *
+ * @description Generates and validates the upload path for a voxel model file.
+ * Ensures the ID is alphanumeric to prevent path traversal attacks
+ *
+ * @param {string} voxelModelId - The unique identifier for the voxel model
+ * @returns {string} The absolute file path for the voxel model JSON file
+ * @throws {Error} If voxelModelId contains invalid characters
+ */
+const getUploadPath = (voxelModelId: string): string => {
+  const id = String(voxelModelId);
 
-    const fileName = `model-${id}.json`;
-    return path.join(process.cwd(), 'uploads/voxel-models', fileName);
+  if (!/^[a-z0-9]+$/i.test(id)) {
+    throw new Error('Invalid voxelModelId');
+  }
+
+  const fileName = `model-${id}.json`;
+  return path.join(process.cwd(), 'uploads/voxel-models', fileName);
 };
 
-const saveVoxelModelController = async (
-    req: AuthenticatedRequest,
-    res: Response
-) => {
+/**
+ * Creates a new voxel model or updates an existing one
+ *
+ * @description Creates a new voxel model with an empty template if voxelModelId is not provided.
+ * If updating (voxelModelId provided), persists the model data to the file system
+ *
+ * @param {Request} req - Express request with authenticated user and body containing:
+ *   - voxelModelId?: string (if updating)
+ *   - voxelModel: { name?: string, model?: object }
+ * @param {Response} res - Express response object
+ * @returns {Response} JSON response
+ */
+export const saveVoxelModelController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user!;
+
+    if (!req.body.voxelModelId) {
+      // Create new voxel model
+      const newVoxelModel = await createVoxelModel({
+        name: req.body.voxelModel?.name,
+        userId: user.userId,
+      });
+
+      const uploadPath = getUploadPath(newVoxelModel.id);
+      await updateVoxelModelPath(newVoxelModel.id, uploadPath);
+
+      const emptyModel = fs.readFileSync(
+        path.join(process.cwd(), 'uploads/voxel-models', 'model-empty.json'),
+        'utf-8'
+      );
+
+      fs.writeFileSync(uploadPath, emptyModel);
+
+      return HttpResponse.created(
+        newVoxelModel,
+        'Voxel model créé avec succès'
+      ).send(res);
+    }
+
+    // Update existing voxel model
+    const uploadPath = getUploadPath(req.body.voxelModelId);
+    fs.writeFileSync(uploadPath, req.body.voxelModel.model);
+
+    HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(res);
+  }
+);
+
+/**
+ * Retrieves a voxel model by ID with its model data loaded from file
+ *
+ * @description Fetches a voxel model by ID and loads the associated 3D model data from the file system.
+ * Ensures the authenticated user can only access their own models
+ *
+ * @param {Request} req - Express request with authenticated user and voxelModelId in body
+ * @param {Response} res - Express response object
+ * @returns {Response} JSON response
+ */
+export const getVoxelModelByIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user!;
+
+    const voxelModel = await getVoxelModelById(
+      req.body.voxelModelId,
+      user.userId
+    );
+
+    if (!voxelModel) {
+      return HttpResponse.notFound('Voxel model introuvable').send(res);
+    }
+
+    const fileContent = fs.readFileSync(voxelModel.model, 'utf-8');
+
+    HttpResponse.success(
+      {
+        ...voxelModel,
+        model: JSON.parse(fileContent),
+      },
+      'Voxel model récupéré avec succès'
+    ).send(res);
+  }
+);
+
+/**
+ * Retrieves all voxel models belonging to the authenticated user
+ *
+ * @description Fetches all voxel models created by the authenticated user
+ *
+ * @param {Request} req - Express request with authenticated user
+ * @param {Response} res - Express response object
+ * @returns {Response} JSON response
+ */
+export const getUserVoxelModelsController = asyncHandler(
+  async (req: Request, res: Response) => {
     const user = req.user;
 
     if (!user) {
-        return res.status(401).json({
-            status: 'error',
-            error: {
-                code: 'Unauthorized',
-                message: "Vous n'avez pas les droits d'accès",
-            },
-            status_code: 401,
-        });
+      return HttpResponse.unAuthorized(
+        "Vous n'avez pas les droits d'accès"
+      ).send(res);
     }
 
-    try {
-        if (!req.body.voxelModelId) {
-            const newVoxelModel = await createVoxelModel({
-                name: req.body.voxelModel?.name,
-                userId: user.userId,
-            });
+    const voxelModels = await getUserVoxelModels(user.userId);
 
-            const uploadPath = getUploadPath(newVoxelModel.id);
-            await updateVoxelModelPath(newVoxelModel.id, uploadPath);
+    HttpResponse.success(
+      voxelModels,
+      'Voxel models récupérés avec succès'
+    ).send(res);
+  }
+);
 
-            const emptyModel = fs.readFileSync(
-                path.join(process.cwd(), 'uploads/voxel-models', 'model-empty.json'),
-                'utf-8'
-            );
+/**
+ * Deletes a voxel model and its associated file
+ *
+ * @description Permanently removes a voxel model from the database and deletes its associated file from the file system.
+ * Only allows deletion of models owned by the authenticated user
+ *
+ * @param {Request} req - Express request with authenticated user and voxelModelId in body
+ * @param {Response} res - Express response object
+ * @returns {Response} JSON response
+ */
+export const deleteVoxelModelController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user!;
 
-            fs.writeFileSync(uploadPath, emptyModel);
+    const uploadPath = getUploadPath(req.body.voxelModelId);
 
-            return res.status(200).json({
-                status: 'success',
-                message: 'Voxel model créé avec succès',
-                data: newVoxelModel,
-                status_code: 200,
-            });
-        } else {
-            const uploadPath = getUploadPath(req.body.voxelModelId);
+    await deleteVoxelModel(req.body.voxelModelId, user.userId);
 
-            fs.writeFileSync(uploadPath, req.body.voxelModel.model);
+    fs.unlink(uploadPath, err => {
+      if (err) {
+        console.log(err);
+      }
+    });
 
-            return res.status(200).json({
-                status: 'success',
-                message: 'Voxel model mis à jour avec succès',
-                data: null,
-                status_code: 200,
-            });
-        }
-    } catch (error) {
-        return res.status(500).json({
-            status: 'error',
-            error: {
-                code: 'Internal Server Error',
-                message: 'Erreur lors de la sauvegarde du voxel model',
-                error,
-            },
-            status_code: 500,
-        });
-    }
-};
-
-const getVoxelModelByIdController = async (
-    req: AuthenticatedRequest,
-    res: Response
-) => {
-    const user = req.user;
-
-    if (!user) {
-        return res.status(401).json({
-            status: 'error',
-            error: {
-                code: 'Unauthorized',
-                message: "Vous n'avez pas les droits d'accès",
-            },
-            status_code: 401,
-        });
-    }
-
-    try {
-        const voxelModel = await getVoxelModelById(
-            req.body.voxelModelId,
-            user.userId
-        );
-
-        if (!voxelModel) {
-            return res.status(404).json({
-                status: 'error',
-                error: {
-                    code: 'Not Found',
-                    message: 'Voxel model introuvable',
-                },
-                status_code: 404,
-            });
-        }
-
-        const fileContent = fs.readFileSync(voxelModel.model, 'utf-8');
-
-        return res.status(200).json({
-            status: 'success',
-            data: {
-                ...voxelModel,
-                model: JSON.parse(fileContent),
-            },
-            status_code: 200,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            status: 'error',
-            error: {
-                code: 'Internal Server Error',
-                message: 'Erreur lors de la récupération du voxel model',
-                error,
-            },
-            status_code: 500,
-        });
-    }
-};
-
-const getUserVoxelModelsController = async (
-    req: AuthenticatedRequest,
-    res: Response
-) => {
-    const user = req.user;
-
-    if (!user) {
-        return res.status(401).json({
-            status: 'error',
-            error: {
-                code: 'Unauthorized',
-                message: "Vous n'avez pas les droits d'accès",
-            },
-            status_code: 401,
-        });
-    }
-
-    try {
-        const voxelModels = await getUserVoxelModels(user.userId);
-
-        return res.status(200).json({
-            status: 'success',
-            data: voxelModels,
-            status_code: 200,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            status: 'error',
-            error: {
-                code: 'Internal Server Error',
-                message: 'Erreur lors de la récupération des voxel models',
-                error,
-            },
-            status_code: 500,
-        });
-    }
-};
-
-const deleteVoxelModelController = async (
-    req: AuthenticatedRequest,
-    res: Response
-) => {
-    const user = req.user;
-
-    if (!user) {
-        return res.status(401).json({
-            status: 'error',
-            error: {
-                code: 'Unauthorized',
-                message: "Vous n'avez pas les droits d'accès",
-            },
-            status_code: 401,
-        });
-    }
-
-    try {
-        const uploadPath = getUploadPath(req.body.voxelModelId);
-
-        await deleteVoxelModel(req.body.voxelModelId, user.userId);
-
-        fs.unlink(uploadPath, err => {
-            if (err) {
-                console.log(err);
-            }
-        });
-
-        return res.status(200).json({
-            status: 'success',
-            message: 'Voxel model supprimé avec succès',
-            data: null,
-            status_code: 200,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            status: 'error',
-            error: {
-                code: 'Internal Server Error',
-                message: 'Erreur lors de la suppression du voxel model',
-                error,
-            },
-            status_code: 500,
-        });
-    }
-};
-
-export {
-    deleteVoxelModelController,
-    getUserVoxelModelsController,
-    getVoxelModelByIdController,
-    saveVoxelModelController,
-};
+    HttpResponse.deleted('Voxel model supprimé avec succès').send(res);
+  }
+);

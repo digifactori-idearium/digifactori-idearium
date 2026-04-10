@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken';
 
-import config from '../config/app.config';
-import { type User } from '../config/client.config';
+import config from '@/config/app.config';
+import { type User } from '@/config/client.config';
 
 /**
  * Generates a JWT token for a user.
- * Returns the token string or null if generation fails.
+ * @param {User} user - Async controller function
+ * @returns the token string or null if generation fails.
  */
 export const generateToken = (user: User): string | null => {
   try {
