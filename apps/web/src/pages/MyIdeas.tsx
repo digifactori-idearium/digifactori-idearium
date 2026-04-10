@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-// ================= TYPES =================
+//types
 type Priority = 'high' | 'low';
 
 type Task = {
@@ -20,7 +20,7 @@ const initialData: Record<ColumnType, Task[]> = {
 
 const COLORS = ['#fde68a', '#bfdbfe', '#bbf7d0', '#fecaca', '#ddd6fe'];
 
-// ================= COLUMN (FIX ICI) =================
+//column
 const Column = ({
   title,
   columnKey,
@@ -115,7 +115,7 @@ const Column = ({
   </div>
 );
 
-// ================= COMPONENT =================
+//component
 const MyIdeas: React.FC = () => {
   const [columns, setColumns] = useState(initialData);
   const [inputs, setInputs] = useState<Record<ColumnType, string>>({
