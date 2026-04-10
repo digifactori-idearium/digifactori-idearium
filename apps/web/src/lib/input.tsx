@@ -139,9 +139,23 @@ export const resetInputs = [
 /* =========================
    ROOM CREATION FORM INPUTS
 ========================= */
-export const IdeoramaCreationInputs = [
+export const ideoramaCreationInputs = [
   {
     label: "Nom de l'idéorama",
+    type: 'text',
+    name: 'name',
+    placeholder: 'Monstre bleu',
+    required: true,
+    icon: Pencil,
+  },
+];
+
+/* =========================
+   MODEL CREATION FORM INPUTS
+========================= */
+export const modelCreationInputs = [
+  {
+    label: 'Nom du modèle',
     type: 'text',
     name: 'name',
     placeholder: 'Monstre bleu',
