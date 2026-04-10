@@ -1,113 +1,74 @@
-import { Request, Response } from 'express';
-
-import { generateToken } from '../../utils/generateToken';
-import { registrationSchema, loginSchema } from '../../utils/validations';
-
 import AuthenticationService from './auth.service';
 
-interface UserRequest extends Request {
-  body: RegisterInput;
-  params: {
-    userId: string;
-  };
-}
+import asyncHandler from '@/utils/async-handler';
+import { generateToken } from '@/utils/generate-token';
+import HttpResponse from '@/utils/http-response';
+import { failOnValidation } from '@/utils/validation-errors';
+import { registrationSchema, loginSchema } from '@/utils/validations';
 
-async function register(req: UserRequest, res: Response) {
+/**
+ * Creates a new user account and returns an authentication token
+ *
+ * @description Registers a new user account with email/username and password.
+ * Validates input against registrationSchema and creates an account in the database.
+ * Returns a JWT token for immediate authentication after registration
+ *
+ * @param {Request} req - Express request with { email, password, pseudo } in body
+ * @param {Response} res - Express response object
+ * @returns {Response} JSON response
+ */
+export const register = asyncHandler(async (req, res) => {
   const result = await registrationSchema.safeParseAsync(req.body);
+  if (failOnValidation(result, res)) return;
 
-  if (!result.success) {
-    const errors = result.error.issues.map(err => ({
-      field: err.path.join('.'),
-      message: err.message,
-    }));
+  const account = await AuthenticationService.createAccount(
+    result.data as RegisterInput
+  );
+  const token = generateToken(account.user);
 
-    return res.status(400).json({ status: 'error', errors });
-  }
+  HttpResponse.created(
+    {
+      accessToken: token,
+      user: account.user,
+    },
+    'Account created successfully'
+  ).send(res);
+});
 
-  try {
-    const acc = await AuthenticationService.createAccount(req.body);
-    const token = generateToken(acc.user);
-    const response = {
-      status: 'success',
-      message: 'Création de compte réussie',
-      data: {
-        accessToken: token,
-        user: acc.user,
-      },
-    };
-    return res.status(201).json(response);
-  } catch (error: any) {
-    const responseError = {
-      status: 'error',
-      error: {
-        code: 'Internal server error',
-        message: 'Échec de la création de compte',
-        error,
-      },
-
-      status_code: 500,
-    };
-    return res.status(responseError.status_code).json(responseError);
-  }
-}
-
-async function login(req: Request, res: Response) {
+/**
+ * Authenticates a user and returns an authentication token
+ *
+ * @description Authenticates user credentials (email or pseudo with password).
+ * Validates input against loginSchema and verifies credentials against stored user data.
+ * Returns a JWT token for use in authenticated API requests
+ *
+ * @param {Request} req - Express request with { email | pseudo, password } in body
+ * @param {Response} res - Express response object
+ * @returns {Response} JSON response
+ */
+export const login = asyncHandler(async (req, res) => {
   const result = await loginSchema.safeParseAsync(req.body);
+  if (failOnValidation(result, res)) return;
 
-  if (!result.success) {
-    const errors = result.error.issues.map(err => ({
-      field: err.path.join('.'),
-      message: err.message,
-    }));
+  const { pseudo, email, password } = result.data!;
 
-    return res.status(400).json({ status: 'error', errors });
+  let user;
+  if (pseudo) {
+    user = await AuthenticationService.loginPseudo(pseudo, password);
+  } else if (email) {
+    user = await AuthenticationService.loginEmail(email, password);
   }
 
-  const { pseudo, email, password } = result.data;
-
-  try {
-    let user;
-
-    if (pseudo) {
-      user = await AuthenticationService.loginPseudo(pseudo, password);
-    } else if (email) {
-      user = await AuthenticationService.loginEmail(email, password);
-    }
-
-    if (user) {
-      const token = generateToken(user);
-      const response = {
-        status: 'success',
-        message: 'Connexion réussie',
-        data: {
-          accessToken: token,
-          user: user,
-        },
-      };
-      return res.status(200).json(response);
-    } else {
-      const responseError = {
-        status: 'error',
-        error: {
-          code: 'Bad Request',
-          message: 'Bad Credential',
-        },
-        status_code: 401,
-      };
-      return res.status(responseError.status_code).json(responseError);
-    }
-  } catch (error) {
-    const responseError = {
-      status: 'error',
-      error: {
-        code: 'Internal server error',
-        message: "Échec de l'authentification",
-        error,
-      },
-      status_code: 500,
-    };
-    return res.status(responseError.status_code).json(responseError);
+  if (!user) {
+    return HttpResponse.unAuthorized('Invalid credentials').send(res);
   }
-}
 
-export { register, login };
+  const token = generateToken(user);
+  HttpResponse.success(
+    {
+      accessToken: token,
+      user,
+    },
+    'Login successful'
+  ).send(res);
+});
