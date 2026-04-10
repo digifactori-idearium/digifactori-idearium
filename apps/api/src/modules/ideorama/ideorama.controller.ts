@@ -5,8 +5,6 @@ import { getUploadPath } from "utils/ideorama";
 
 import { AuthenticatedRequest } from '../../types';
 
-
-
 import {
   createIdeorama,
   deleteIdeorama,
@@ -241,7 +239,6 @@ const saveIdeoramaController = async (
 
   try {
       const uploadPath = getUploadPath(req.body.ideoramaId)
-
       fs.writeFileSync(uploadPath, req.body.ideorama.model)
       return res.status(200).json({
         status: 'success',
@@ -264,7 +261,7 @@ const saveIdeoramaController = async (
 };
 
 /**
- * Deletes an ideorama from the database based its ID.
+ * Deletes an ideorama from the database based on its ID.
  * Deletes its corresponding scene in uploads/scenes
  *
  * @param req - Express request object. Expects 'req.body.ideoramaId' (string).
