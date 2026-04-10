@@ -89,10 +89,7 @@ export const getUserIdeoramasController = asyncHandler(
  */
 export const getIdeoramaByIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const ideorama = await getIdeoramaById(
-      req.body.ideoramaId,
-      req.user!.userId
-    );
+    const ideorama = await getIdeoramaById(req.body.ideoramaId);
 
     if (!ideorama) {
       return HttpResponse.notFound('Ideorama not found').send(res);
