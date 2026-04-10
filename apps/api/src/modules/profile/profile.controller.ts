@@ -1,21 +1,29 @@
+import { Profile, User } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import { Response } from 'express';
 
 import { AuthenticatedRequest } from '../../types';
 import { profileSchema, userProfileSchema } from '../../utils/validations';
 
-import { deleteUser, getSingleProfile, updateProfile } from './profile.service';
+import { deleteUser, getSingleProfile, getSingleUser, updateProfile } from './profile.service';
 
 /**
+ * Finds a profile based on its ID. Adds all user data if the user is a SUPERVISOR or if the parental code is correct.
  *
- * @param req
- * @param res {status: string, status_code: int, error?: {code: string, message: string}, data?: {
- *     profile: Profile,
- *     user?: User
- * } where: - error is set if an error occurs, data is set otherwise
- *          - User is set if the auth user has the "SUPERVISOR" role or if the parental_code in the body of req corresponds to its correct
- *            parental_code
- * }
- * @returns res
+ * @param req - Express request object. Expects 'req.body.parentalCode' (String)
+ * @param res - Express response object.
+ *
+ * @returns Sends an HTTP response:
+ * - 200 with:
+ *  {
+ *    status: "success",
+ *    message: "Profile récupéré avec succès",
+ *    data: the profile, and the user if needed ({profile: Profile, user?: user}}),
+ *    status_code: 200
+ *  }
+ * - 401 if the user is not authenticated
+ * - 404 if the user or the profile is not found
+ * - 500 if an unexpected error occurs
  */
 const getProfile = async (req: AuthenticatedRequest, res: Response) => {
   const currentUser = req.user;
@@ -32,24 +40,43 @@ const getProfile = async (req: AuthenticatedRequest, res: Response) => {
   }
 
   try {
-    const user = await getSingleProfile(
-      currentUser?.userId,
-      req.body.parental_code
-    );
-    if (user.profile) {
-      const response = {
-        status: 'success',
-        message: 'Utilisateur trouvé',
-        data: user,
-      };
-      return res.status(200).json(response);
-    } else {
+    const profile = await getSingleProfile(currentUser.userId);
+    if(!profile) {
+      console.log("profile not found")
       return res.status(404).json({
         status: 'error',
-        error: { code: 'Not Found', message: "Cet utilisateur n'existe pas" },
-        status_code: 404,
+        message: 'Profile non trouvé',
+        status_code: 404
       });
     }
+    const data: {profile: Profile, user?: User} = {profile: profile};
+    const user = await getSingleUser(currentUser?.userId)
+    if (!user) {
+      console.log("user not found")
+      return res.status(404).json({
+        status: 'success',
+        message: 'Utilisateur non trouvé',
+        status_code: 404
+      });
+    }
+
+    // Checks if the user info should be added in the response
+    let isParentalCodeValid = false;
+    if (req.body.parental_code && user.parental_code) {
+      isParentalCodeValid = await bcrypt.compare(
+        req.body.parental_code,
+        user.parental_code
+      );
+    }
+    if (user.role !== 'CHILD' || isParentalCodeValid) {
+      data.user = user;
+    }
+    return res.status(200).json({
+      status: 'success',
+      message: 'Profil récupéré avec succès',
+      data: data,
+      status_code: 404,
+    });
   } catch (error: any) {
     const responseError = {
       status: 'error',
@@ -64,6 +91,25 @@ const getProfile = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
+/**
+ * Updates the profile.
+ *
+ * @param req - Express request object. Expects 'req.body.profile' (Profile)
+ * @param res - Express response object.
+ *
+ * @returns Sends an HTTP response:
+ * - 200 with:
+ *  {
+ *    status: "success",
+ *    message: "Profil mis à jour avec succès",
+ *    data: the updated profile (Profile),
+ *    status_code: 200
+ *  }
+ * - 400 if the new data is not well-formatted
+ * - 401 if the user is not authenticated
+ * - 404 if the profile is not found
+ * - 500 if an unexpected error occurs
+ */
 const setProfile = async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user;
 
@@ -147,6 +193,23 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
+/**
+ * Deletes the profile and the user to which it belongs.
+ *
+ * @param req - Express request object. Expects 'req.user.userId' (String)
+ * @param res - Express response object.
+ *
+ * @returns Sends an HTTP response:
+ * - 200 with:
+ *  {
+ *    status: "success",
+ *    message: "Profil supprimé avec succès",
+ *    data: the new ideorama (Ideorama),
+ *    status_code: 200
+ *  }
+ * - 401 if the user is not authenticated
+ * - 500 if an unexpected error occurs
+ */
 const deleteProfile = async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user;
   if (!user) {
@@ -164,19 +227,19 @@ const deleteProfile = async (req: AuthenticatedRequest, res: Response) => {
     const deleted = await deleteUser(user.userId);
     const response = {
       status: 'success',
-      message: 'Utilisateur supprimé avec succès',
+      message: 'Profil supprimé avec succès',
       data: deleted,
       status_code: 201,
     };
     return res.status(response.status_code).json(response);
   } catch {
-    return res.status(401).json({
+    return res.status(500).json({
       status: 'error',
       error: {
         code: 'Error',
         message: "Erreur lors de la suppression de l'utilisateur",
       },
-      status_code: 401,
+      status_code: 500,
     });
   }
 };

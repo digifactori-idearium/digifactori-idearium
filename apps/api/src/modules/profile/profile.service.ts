@@ -1,17 +1,43 @@
 import bcrypt from 'bcrypt';
 
-import { prisma } from '../../config/client.config';
+import { prisma, Profile, User } from '../../config/client.config';
 
 const profileTable = prisma.profile;
 const userTable = prisma.user;
 
+/**
+ * Checks if the password is correct
+ *
+ * @param userId: the id of the user who wants to connect (string)
+ * @param password: the provided password
+ * @returns true if the password is correct, false otherwise
+ */
+const verifyPassword = async (userId: string, password: string) => {
+	const correctPassword = await userTable
+		.findUnique({
+			where: {
+				id: userId,
+			},
+		})
+		.then(res => res?.password);
+	const result = await bcrypt.compare(password, correctPassword)
+	return result;
+};
+
+
+/**
+ * Finds the profile in DB.
+ *
+ * @param userId - the user id for wich we are looking for its profile (string)
+ * @returns :
+ * - if found, a Promise with the profile (Promise<Profile>)
+ * - otherwise, a Promise with null (Promise<null>)
+ */
 const getSingleProfile = async (
   userId: string,
-  parental_code: string | null
-) => {
+): Promise<Profile|null> => {
 		
-		const response: { profile; user? } = { profile: {} };
-		response.profile = await profileTable.findUnique({
+		return profileTable.findUnique({
 			where: {
 				userId: userId,
 			},
@@ -20,33 +46,33 @@ const getSingleProfile = async (
 				following: true,
 			},
 		});
-
-    const userInfo = await userTable.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    if (!userInfo) {
-      throw new Error('Utilisateur introuvable');
-    }
-
-    // Checks if the user info should be added in the response
-    let isParentalCodeValid = false;
-    if (parental_code && userInfo.parental_code) {
-      isParentalCodeValid = await bcrypt.compare(
-        parental_code,
-        userInfo.parental_code
-      );
-    }
-    if (userInfo.role !== 'CHILD' || isParentalCodeValid) {
-      response.user = userInfo;
-    }
-
-    return response;
 };
 
+/**
+ * Finds the user in DB.
+ *
+ * @param userId - the user id (string)
+ * @returns:
+ * - if found, a Promise with the user (Promise<User>)
+ * - otherwise, a Promise with null (Promise<null>)
+ */
+const getSingleUser = async (userId: string): Promise<User|null> => {
+  return await userTable.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+};
+
+/**
+ * Updates the user and the profile in DB.
+ *
+ * @param userId - the user id (string)
+ * @param body - the new data (SetProfileInput)
+ * @returns the updated user and profile ({user: User, profile: Profile})
+ * @throws error if the user or profile is not found
+ */
 const updateProfile = async (userId: string, body: SetProfileInput) => {
-  try {
     const response: { user?; profile } = { profile: {} };
     if (body.user) {
       const user = await userTable.findUnique({
@@ -82,25 +108,16 @@ const updateProfile = async (userId: string, body: SetProfileInput) => {
       data: { pseudo, bio, avatar },
     });
     return response;
-  } catch (error: any) {
-    throw new Error(
-      `Erreur lors du fonctionnement du profil: ${error.message}`
-    );
-  }
 };
 
-const verifyPassword = async (userId: string, password: string) => {
-	const correctPassword = await userTable
-		.findUnique({
-			where: {
-				id: userId,
-			},
-		})
-		.then(res => res?.password);
-	const result = await bcrypt.compare(password, correctPassword)
-	return result;
-};
 
+/**
+ * Deletes the user and its corresponding profile from DB
+ *
+ * @param userId the id of the user to delete
+ * @returns a Promise with the deleted user and profile (Promise<{user: User, profile: Profile})
+ * @throws an error if the user or the profile is not found
+ */
 const deleteUser = async (userId: string) => {
   const response = await prisma.$transaction(async tx => {
     const profile = await tx.profile.delete({
@@ -121,5 +138,5 @@ const deleteUser = async (userId: string) => {
   return response;
 };
 
-export { deleteUser, getSingleProfile, updateProfile, verifyPassword };
+export { deleteUser, getSingleProfile, getSingleUser, updateProfile, verifyPassword };
 
