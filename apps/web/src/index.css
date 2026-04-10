@@ -80,20 +80,15 @@ h1 {
 }
 
 button {
-  border-radius: 8px;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
-  border-color: #6f51b0;
-}
+
 button:focus,
 button:focus-visible {
-  outline: 2px auto -webkit-focus-ring-color;
+  /* outline: 2px auto -webkit-focus-ring-color; */
   box-shadow: none !important;
   outline: none !important;
 }

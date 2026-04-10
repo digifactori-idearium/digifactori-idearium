@@ -66,133 +66,133 @@ export const themesToColors = {
     label: 'Journée Ensoleillée',
     floor: '#e69500',
     background: '#ffb703',
-    accent: '#fff3b0', // Warm sun glow
+    accent: '#fff3b0',
   },
 
   desert: {
     label: 'Désert',
     floor: '#7a5430',
     background: '#a47148',
-    accent: '#f4e1c1', // Sand glow
+    accent: '#f4e1c1',
   },
 
   forest: {
     label: 'Forêt',
     floor: '#1b4332',
     background: '#2d6a4f',
-    accent: '#95d5b2', // Leafy green glow
+    accent: '#95d5b2',
   },
 
   ocean: {
     label: 'Océan',
     floor: '#023047',
     background: '#1b4965',
-    accent: '#8ecae6', // Water surface glow
+    accent: '#8ecae6',
   },
 
   tropical: {
     label: 'Tropical',
     floor: '#006d77',
     background: '#06d6a0',
-    accent: '#ccffef', // Minty fresh glow
+    accent: '#ccffef',
   },
 
   sunset: {
     label: 'Coucher de soleil',
-    floor: '#3c096c', // Dark purple floor for contrast
-    background: '#9d0208', // Deep red sky
-    accent: '#ffb703', // Setting sun glow
+    floor: '#3c096c',
+    background: '#9d0208',
+    accent: '#ffb703',
   },
 
   moon: {
     label: 'Lune',
     floor: '#1a1a1a',
     background: '#12121a',
-    accent: '#6c757d', // Silver moonlight glow
+    accent: '#6c757d',
   },
 
   galaxy: {
     label: 'Galaxie',
     floor: '#10002b',
     background: '#240046',
-    accent: '#7b2cbf', // Nebula purple glow
+    accent: '#7b2cbf',
   },
 
   'deep-space': {
     label: 'Espace profond',
     floor: '#010409',
     background: '#0d1117',
-    accent: '#30363d', // Cold starlight glow
+    accent: '#30363d',
   },
 
   future: {
     label: 'Futuriste',
     floor: '#240046',
     background: '#0a0a14',
-    accent: '#9b5de5', // Cyber-purple glow
+    accent: '#9b5de5',
   },
 
   cyborg: {
     label: 'Cyborg',
     floor: '#011627',
     background: '#0b132b',
-    accent: '#00f5d4', // Teal tech glow
+    accent: '#00f5d4',
   },
 
   'neon-city': {
     label: 'Ville néon',
     floor: '#111',
     background: '#050505',
-    accent: '#ff00ff', // Magenta neon glow
+    accent: '#ff00ff',
   },
 
   hacker: {
     label: 'Hacker',
     floor: '#000c00',
     background: '#000000',
-    accent: '#00ff41', // Classic terminal green glow
+    accent: '#00ff41',
   },
 
   ice: {
     label: 'Glace',
     floor: '#0077b6',
     background: '#90e0ef',
-    accent: '#caf0f8', // Frozen white glow
+    accent: '#caf0f8',
   },
 
   lava: {
     label: 'Lave',
     floor: '#200101',
     background: '#370617',
-    accent: '#ff4d00', // Magma glow
+    accent: '#ff4d00',
   },
 
   candy: {
     label: 'Bonbon',
     floor: '#a44a6a',
     background: '#ff70a6',
-    accent: '#ffd6e0', // Sugar glow
+    accent: '#ffd6e0',
   },
 
   pastel: {
     label: 'Pastel',
     floor: '#9a8c98',
     background: '#cdb4db',
-    accent: '#ffafcc', // Soft pink glow
+    accent: '#ffafcc',
   },
 
   retro: {
     label: 'Rétro',
     floor: '#3a0ca3',
     background: '#4361ee',
-    accent: '#4cc9f0', // Synthwave blue glow
+    accent: '#4cc9f0',
   },
 
   minimal: {
     label: 'Minimaliste',
     floor: '#dee2e6',
     background: '#f8f9fa',
-    accent: '#adb5bd', // Neutral grey glow
+    accent: '#adb5bd',
   },
 };
 
