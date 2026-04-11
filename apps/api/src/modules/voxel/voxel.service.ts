@@ -2,6 +2,12 @@ import { prisma } from '@/config/client.config';
 
 const voxelModelTable = prisma.voxelModel;
 
+/**
+ * Creates a new voxel model in DB.
+ *
+ * @param data - contains the voxel model name and the id of its creator ({name?: string, user: string})
+ * @returns a Promise with the new voxel model (Promise<VoxelModel>)
+ */
 export const createVoxelModel = async (data: {
   name?: string;
   userId: string;
@@ -15,6 +21,14 @@ export const createVoxelModel = async (data: {
   });
 };
 
+/**
+ * Updates the model in BD of the voxel model.
+ *
+ * @param voxelModelId - the voxel model id to update
+ * @param uploadPath - the new model to put in DB
+ * @returns a Promise with the updated voxel model (Promise<VoxelModel>)
+ * @throws error if the voxelModelId does not exist in DB
+ */
 export const updateVoxelModelPath = async (
   voxelModelId: string,
   uploadPath: string
@@ -29,6 +43,14 @@ export const updateVoxelModelPath = async (
   });
 };
 
+/**
+ * Finds a voxel model in DB based on its ID.
+ *
+ * @param ideoramaId - the voxel model id we are searching for
+ * @returns
+ *  - if found, a Promise with the voxel model (Promise<VoxelModel>)
+ *  - a Promise with null otherwise (Promise<null>)
+ */
 export const getVoxelModelById = async (
   voxelModelId: string,
   userId: string
@@ -41,6 +63,12 @@ export const getVoxelModelById = async (
   });
 };
 
+/**
+ * Finds all voxel models of a user in DB.
+ *
+ * @param userId - the user id for which we search for its voxel models
+ * @returns a Promise with the voxel models (Promise<VoxelModel[]>)
+ */
 export const getUserVoxelModels = async (userId: string) => {
   return voxelModelTable.findMany({
     where: {
@@ -52,6 +80,13 @@ export const getUserVoxelModels = async (userId: string) => {
   });
 };
 
+/**
+ * Deletes a voxel model from DB based on its ID.
+ *
+ * @param ideoramaId - the unique id of the voxel model to delete
+ * @returns a Promise with the deleted voxel model (Promise<VoxelModel>)
+ * @throws error if the voxelModelId does not exist in DB
+ */
 export const deleteVoxelModel = async (
   voxelModelId: string,
   userId: string
