@@ -1,128 +1,74 @@
 import { Profile, User } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import { Response } from 'express';
+import bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
 
-import { AuthenticatedRequest } from '../../types';
 import { profileSchema, userProfileSchema } from '../../utils/validations';
 
 import { deleteUser, getSingleProfile, getSingleUser, updateProfile } from './profile.service';
 
-/**
- * Finds a profile based on its ID. Adds all user data if the user is a SUPERVISOR or if the parental code is correct.
- *
- * @param req - Express request object. Expects 'req.body.parentalCode' (String)
- * @param res - Express response object.
- *
- * @returns Sends an HTTP response:
- * - 200 with:
- *  {
- *    status: "success",
- *    message: "Profile récupéré avec succès",
- *    data: the profile, and the user if needed ({profile: Profile, user?: user}}),
- *    status_code: 200
- *  }
- * - 401 if the user is not authenticated
- * - 404 if the user or the profile is not found
- * - 500 if an unexpected error occurs
- */
-const getProfile = async (req: AuthenticatedRequest, res: Response) => {
-  const currentUser = req.user;
-
-  if (!currentUser) {
-    return res.status(401).json({
-      status: 'error',
-      error: {
-        code: 'Unauthorized',
-        message: "Vous n'avez pas les droits d'accès",
-      },
-      status_code: 401,
-    });
-  }
-
-  try {
-    const profile = await getSingleProfile(currentUser.userId);
-    if(!profile) {
-      console.log("profile not found")
-      return res.status(404).json({
-        status: 'error',
-        message: 'Profile non trouvé',
-        status_code: 404
-      });
-    }
-    const data: {profile: Profile, user?: User} = {profile: profile};
-    const user = await getSingleUser(currentUser?.userId)
-    if (!user) {
-      console.log("user not found")
-      return res.status(404).json({
-        status: 'success',
-        message: 'Utilisateur non trouvé',
-        status_code: 404
-      });
-    }
-
-    // Checks if the user info should be added in the response
-    let isParentalCodeValid = false;
-    if (req.body.parental_code && user.parental_code) {
-      isParentalCodeValid = await bcrypt.compare(
-        req.body.parental_code,
-        user.parental_code
-      );
-    }
-    if (user.role !== 'CHILD' || isParentalCodeValid) {
-      data.user = user;
-    }
-    return res.status(200).json({
-      status: 'success',
-      message: 'Profil récupéré avec succès',
-      data: data,
-      status_code: 404,
-    });
-  } catch (error: any) {
-    const responseError = {
-      status: 'error',
-      error: {
-        code: 'Internal Server Error',
-        message: 'Erreur lors de la recherche de votre profil',
-        error: error,
-      },
-      status_code: 500,
-    };
-    return res.status(responseError.status_code).json(responseError);
-  }
-};
+import asyncHandler from '@/utils/async-handler';
+import HttpResponse from '@/utils/http-response';
 
 /**
- * Updates the profile.
+ * Retrieves a single user profile with associated user data
  *
- * @param req - Express request object. Expects 'req.body.profile' (Profile)
- * @param res - Express response object.
+ * @description Fetches the profile of the authenticated user or a linked user if authorized.
+ * User can access their own profile or other user data if they have SUPERVISOR role or valid parental_code
  *
- * @returns Sends an HTTP response:
- * - 200 with:
- *  {
- *    status: "success",
- *    message: "Profil mis à jour avec succès",
- *    data: the updated profile (Profile),
- *    status_code: 200
- *  }
- * - 400 if the new data is not well-formatted
- * - 401 if the user is not authenticated
- * - 404 if the profile is not found
- * - 500 if an unexpected error occurs
+ * @param {Request} req - Express request with authenticated user and optional parental_code in body
+ * @param {Response} res - Express response object
+ * @returns {Response} JSON response with structure:
+ *   - Success (200): { status: 'success', message: string, data: { profile: Profile, user?: User } }
+ *   - Not Found (404): { status: 'error', error: { code: 'Not Found', message: string }, status_code: 404 }
+ *   - Unauthorized (401): { status: 'error', error: { code: 'Unauthorized', message: string }, status_code: 401 }
+ *   - Server Error (500): { status: 'error', error: { code: 'Internal Server Error', message: string }, status_code: 500 }
  */
-const setProfile = async (req: AuthenticatedRequest, res: Response) => {
-  const user = req.user;
+export const getProfile = asyncHandler(async (req: Request, res: Response) => {
+  const currentUser = req.user!;
 
+  const profile = await getSingleProfile(currentUser.userId);
+  if (!profile) {
+    return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
+  }
+  const data: { profile: Profile; user?: User } = { profile: profile };
+
+  const user = await getSingleUser(currentUser?.userId);
   if (!user) {
-    return res.status(401).json({
-      status: 'error',
-      error: {
-        code: 'Unauthorized',
-        message: "Vous n'avez pas les droits d'accès",
-      },
-      status_code: 401,
-    });
+    return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
   }
+
+  // Checks if the user info should be added in the response
+  let isParentalCodeValid = false;
+  if (req.body.parental_code && user.parental_code) {
+    isParentalCodeValid = await bcrypt.compare(
+      req.body.parental_code,
+      user.parental_code
+    );
+  }
+  if (user.role !== 'CHILD' || isParentalCodeValid) {
+    data.user = user;
+  }
+
+  HttpResponse.success(data, 'Utilisateur trouvé').send(res);
+});
+
+/**
+ * Updates a user's profile and associated user data
+ *
+ * @description Updates both profile and user information for the authenticated user.
+ * Validates input data against profileSchema and userProfileSchema before persisting changes
+ *
+ * @param {Request} req - Express request with authenticated user and { profile?, user? } in body
+ * @param {Response} res - Express response object
+ * @returns {Response} JSON response with structure:
+ *   - Success (200): { status: 'success', message: string, data: Profile, status_code: 200 }
+ *   - Bad Request (400): { profileErrors: ValidationError[], userErrors: ValidationError[] }
+ *   - Not Found (404): { status: 'error', error: { code: 'Not Found', message: string }, status_code: 404 }
+ *   - Unauthorized (401): { status: 'error', error: { code: 'Unauthorized', message: string }, status_code: 401 }
+ *   - Server Error (500): { status: 'error', error: { code: 'Internal Server Error', message: string }, status_code: 500 }
+ */
+export const setProfile = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user!;
 
   let profileErrors: any[] = [];
   let userErrors: any[] = [];
@@ -160,89 +106,32 @@ const setProfile = async (req: AuthenticatedRequest, res: Response) => {
     });
   }
 
-  try {
-    const profile = await updateProfile(user.userId, req.body);
+  const profile = await updateProfile(user.userId, req.body);
 
-    if (!profile) {
-      return res.status(404).json({
-        status: 'error',
-        error: {
-          code: 'Not Found',
-          message: 'Profil non trouvé',
-        },
-        status_code: 404,
-      });
-    }
-
-    return res.status(200).json({
-      status: 'success',
-      message: 'Profil mis à jour avec succès',
-      data: profile,
-      status_code: 200,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      error: {
-        code: 'Internal Server Error',
-        message: 'Erreur lors de la configuration du profil',
-        error,
-      },
-      status_code: 500,
-    });
+  if (!profile) {
+    return HttpResponse.notFound('Profil non trouvé').send(res);
   }
-};
+
+  HttpResponse.success(profile, 'Profil mis à jour avec succès').send(res);
+});
 
 /**
- * Deletes the profile and the user to which it belongs.
+ * Deletes a user account and associated profile
  *
- * @param req - Express request object. Expects 'req.user.userId' (String)
- * @param res - Express response object.
+ * @description Permanently removes the authenticated user's account, profile, and all associated data
  *
- * @returns Sends an HTTP response:
- * - 200 with:
- *  {
- *    status: "success",
- *    message: "Profil supprimé avec succès",
- *    data: the new ideorama (Ideorama),
- *    status_code: 200
- *  }
- * - 401 if the user is not authenticated
- * - 500 if an unexpected error occurs
+ * @param {Request} req - Express request with authenticated user
+ * @param {Response} res - Express response object
+ * @returns {Response} JSON response with structure:
+ *   - Success (201): { status: 'success', message: string, data: DeletedUser, status_code: 201 }
+ *   - Unauthorized (401): { status: 'error', error: { code: 'Unauthorized', message: string }, status_code: 401 }
+ *   - Server Error (401): { status: 'error', error: { code: 'Error', message: string }, status_code: 401 }
  */
-const deleteProfile = async (req: AuthenticatedRequest, res: Response) => {
-  const user = req.user;
-  if (!user) {
-    return res.status(401).json({
-      status: 'error',
-      error: {
-        code: 'Unauthorized',
-        message: "Vous n'avez pas les droits d'accès",
-      },
-      status_code: 401,
-    });
-  }
+export const deleteProfile = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user!;
 
-  try {
     const deleted = await deleteUser(user.userId);
-    const response = {
-      status: 'success',
-      message: 'Profil supprimé avec succès',
-      data: deleted,
-      status_code: 201,
-    };
-    return res.status(response.status_code).json(response);
-  } catch {
-    return res.status(500).json({
-      status: 'error',
-      error: {
-        code: 'Error',
-        message: "Erreur lors de la suppression de l'utilisateur",
-      },
-      status_code: 500,
-    });
+    HttpResponse.success(deleted, 'Utilisateur supprimé avec succès').send(res);
   }
-};
-
-export { deleteProfile, getProfile, setProfile };
-
+);

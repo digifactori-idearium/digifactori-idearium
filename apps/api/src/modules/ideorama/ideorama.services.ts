@@ -98,7 +98,7 @@ export const isIdeoramaInBD = async (
 ) => {
   const ideorama = await ideoramaTable.findUnique({
     where: {
-      id: "cccc"
+      id: ideoramaId
     }
   })
   if (ideorama) {
