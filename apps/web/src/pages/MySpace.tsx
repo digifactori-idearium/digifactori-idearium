@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { IdeoramaCreator } from '@/components/ideorama/IdeoramaCreator';
 import ProfileCard from '@/components/myspace/ProfileCard';
@@ -19,8 +19,7 @@ const MySpace: React.FC = () => {
   const { fetchProfile, loading } = useProfile();
 
   const [acc, setAcc] = useState<{
-    profile: any;
-    user: any;
+    profile: Profile;
   } | null>(null);
 
   const [createsNew, setCreatesNew] = useState(false);
@@ -161,7 +160,7 @@ const MySpace: React.FC = () => {
         <ProfileCard
           title={acc.profile.pseudo}
           link="/app/profile"
-          imageSrc={acc.profile.avatar}
+          imageSrc={acc.profile.avatar ?? ""}
         />
         {roundCards.map((card, index) => {
           const angle = index * (360 / totalCards) * (Math.PI / 180) - 90;
@@ -191,7 +190,7 @@ const MySpace: React.FC = () => {
         <IdeoramaCreator
           isOpen={createsNew}
           setIsOpen={setCreatesNew}
-          userId={acc.user?.id}
+          userId={acc.profile.userId}
         />
       )}
     </div>
