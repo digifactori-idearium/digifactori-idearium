@@ -1,19 +1,18 @@
 import bcrypt from 'bcrypt';
 
-import { prisma } from '@/config/client.config';
+import { prisma, Profile, User } from '@/config/client.config';
 
 const userTable = prisma.user;
 const profileTable = prisma.profile;
 
 export default class AuthenticationService {
-  
   /**
    * Creates a new user in DB.
    *
-   * @param inout - the user data
+   * @param input - the user data
    * @returns a Promise with the new user (Promise<User>)
    */
-  static async createUser(input: UserInput) {
+  static async createUser(input: UserInput): Promise<User> {
     const { password, parental_code, ...user } = input;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -35,7 +34,10 @@ export default class AuthenticationService {
    * @param ideoramaData - the profile data
    * @returns a Promise with the new profile (Promise<Profile>)
    */
-  static async createProfile(input: ProfileInput, userId: string) {
+  static async createProfile(
+    input: ProfileInput,
+    userId: string
+  ): Promise<Profile> {
     const newProfile = await profileTable.create({
       data: {
         ...input,
@@ -45,13 +47,16 @@ export default class AuthenticationService {
 
     return newProfile;
   }
+
   /**
    * Creates a new user and a new profile in DB.
    *
    * @param ideoramaData - the user and profile data
-   * @returns a Promise with the data added in DB (Promise<{ideorama: Ideorama, user: User}>)
+   * @returns a Promise with the data added in DB (Promise<{ user: User, profile: Profile}>)
    */
-  static async createAccount(data: RegisterInput) {
+  static async createAccount(
+    data: RegisterInput
+  ): Promise<{ user: User; profile: Profile }> {
     const { password, parental_code, ...userData } = data.user;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -78,7 +83,7 @@ export default class AuthenticationService {
 
       return {
         user: newUser,
-        profil: newProfile,
+        profile: newProfile,
       };
     });
 
@@ -87,12 +92,15 @@ export default class AuthenticationService {
 
   /**
    * Gives the user with the corresponding email if the password matches, null otherwise.
-   * 
+   *
    * @param email - the email of the user who tries to login
    * @param password - the entered password to verify
-   * @returns a promise with the user exists and if the password is correct (Promise<User), Promise<null> otherwise
+   * @returns a promise with the user exists and if the password is correct (Promise<User>), Promise<null> otherwise
    */
-  static async loginEmail(email: string, password: string) {
+  static async loginEmail(
+    email: string,
+    password: string
+  ): Promise<User | null> {
     const user = await userTable.findUnique({
       where: {
         email: email,
@@ -108,12 +116,15 @@ export default class AuthenticationService {
 
   /**
    * Gives the user with the corresponding pseudo if the password matches, null otherwise.
-   * 
+   *
    * @param email - the email of the user who tries to login
    * @param password - the entered password to verify
    * @returns a promise with the user exists and if the password is correct (Promise<User), Promise<null> otherwise
    */
-  static async loginPseudo(pseudo: string, password: string) {
+  static async loginPseudo(
+    pseudo: string,
+    password: string
+  ): Promise<User | null> {
     const profile = await profileTable.findUnique({
       where: {
         pseudo,

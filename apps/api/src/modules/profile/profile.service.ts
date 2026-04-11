@@ -5,74 +5,77 @@ import { prisma, Profile, User } from '../../config/client.config';
 const profileTable = prisma.profile;
 const userTable = prisma.user;
 
-/**
- * Checks if the password is correct
- *
- * @param userId: the id of the user who wants to connect (string)
- * @param password: the provided password
- * @returns true if the password is correct, false otherwise
- */
-const verifyPassword = async (userId: string, password: string) => {
-	const correctPassword = await userTable
-		.findUnique({
-			where: {
-				id: userId,
-			},
-		})
-		.then(res => res?.password);
-	const result = await bcrypt.compare(password, correctPassword)
-	return result;
-};
+export default class ProfileService {
+  /**
+   * Checks if the password is correct
+   *
+   * @param userId: the id of the user who wants to connect (string)
+   * @param password: the provided password
+   * @returns Promise<true> if the password is correct, Promise<false> otherwise
+   */
+  static async verifyPassword(
+    userId: string,
+    password: string
+  ): Promise<boolean> {
+    const correctPassword = await userTable
+      .findUnique({
+        where: {
+          id: userId,
+        },
+      })
+      .then(res => res?.password);
+    const result = await bcrypt.compare(password, correctPassword);
+    return result;
+  }
 
+  /**
+   * Finds the profile in DB.
+   *
+   * @param userId - the user id for wich we are looking for its profile (string)
+   * @returns :
+   * - if found, a Promise with the profile (Promise<Profile>)
+   * - otherwise, a Promise with null (Promise<null>)
+   */
+  static async getSingleProfile(userId: string): Promise<Profile | null> {
+    return profileTable.findUnique({
+      where: {
+        userId: userId,
+      },
+      include: {
+        followers: true,
+        following: true,
+      },
+    });
+  }
 
-/**
- * Finds the profile in DB.
- *
- * @param userId - the user id for wich we are looking for its profile (string)
- * @returns :
- * - if found, a Promise with the profile (Promise<Profile>)
- * - otherwise, a Promise with null (Promise<null>)
- */
-const getSingleProfile = async (
-  userId: string,
-): Promise<Profile|null> => {
-		
-		return profileTable.findUnique({
-			where: {
-				userId: userId,
-			},
-			include: {
-				followers: true,
-				following: true,
-			},
-		});
-};
+  /**
+   * Finds the user in DB.
+   *
+   * @param userId - the user id (string)
+   * @returns:
+   * - if found, a Promise with the user (Promise<User>)
+   * - otherwise, a Promise with null (Promise<null>)
+   */
+  static async getSingleUser(userId: string): Promise<User | null> {
+    return await userTable.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+  }
 
-/**
- * Finds the user in DB.
- *
- * @param userId - the user id (string)
- * @returns:
- * - if found, a Promise with the user (Promise<User>)
- * - otherwise, a Promise with null (Promise<null>)
- */
-const getSingleUser = async (userId: string): Promise<User|null> => {
-  return await userTable.findUnique({
-    where: {
-      id: userId,
-    },
-  });
-};
-
-/**
- * Updates the user and the profile in DB.
- *
- * @param userId - the user id (string)
- * @param body - the new data (SetProfileInput)
- * @returns the updated user and profile ({user: User, profile: Profile})
- * @throws error if the user or profile is not found
- */
-const updateProfile = async (userId: string, body: SetProfileInput) => {
+  /**
+   * Updates the user and the profile in DB.
+   *
+   * @param userId - the user id (string)
+   * @param body - the new data (SetProfileInput)
+   * @returns the updated user and profile ({user?: User, profile: Profile})
+   * @throws error if the user or profile is not found
+   */
+  static async updateProfile(
+    userId: string,
+    body: SetProfileInput
+  ): Promise<{ user?: User; profile: Profile }> {
     const response: { user?; profile } = { profile: {} };
     if (body.user) {
       const user = await userTable.findUnique({
@@ -108,35 +111,34 @@ const updateProfile = async (userId: string, body: SetProfileInput) => {
       data: { pseudo, bio, avatar },
     });
     return response;
-};
+  }
 
+  /**
+   * Deletes the user and its corresponding profile from DB
+   *
+   * @param userId the id of the user to delete
+   * @returns a Promise with the deleted user and profile (Promise<{user: User, profile: Profile}>)
+   * @throws an error if the user or the profile is not found
+   */
+  static async deleteUser(
+    userId: string
+  ): Promise<{ user: User; profile: Profile }> {
+    const response = await prisma.$transaction(async tx => {
+      const profile = await tx.profile.delete({
+        where: {
+          userId: userId,
+        },
+      });
 
-/**
- * Deletes the user and its corresponding profile from DB
- *
- * @param userId the id of the user to delete
- * @returns a Promise with the deleted user and profile (Promise<{user: User, profile: Profile})
- * @throws an error if the user or the profile is not found
- */
-const deleteUser = async (userId: string) => {
-  const response = await prisma.$transaction(async tx => {
-    const profile = await tx.profile.delete({
-      where: {
-        userId: userId,
-      },
+      const user = await tx.user.delete({
+        where: {
+          id: userId,
+        },
+      });
+
+      return { user, profile };
     });
 
-    const user = await tx.user.delete({
-      where: {
-        id: userId,
-      },
-    });
-
-    return { user, profile };
-  });
-
-  return response;
-};
-
-export { deleteUser, getSingleProfile, getSingleUser, updateProfile, verifyPassword };
-
+    return response;
+  }
+}

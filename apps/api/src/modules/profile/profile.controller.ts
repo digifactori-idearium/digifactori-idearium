@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 
 import { profileSchema, userProfileSchema } from '../../utils/validations';
 
-import { deleteUser, getSingleProfile, getSingleUser, updateProfile } from './profile.service';
+import ProfileService from './profile.service';
 
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
@@ -26,13 +26,13 @@ import HttpResponse from '@/utils/http-response';
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   const currentUser = req.user!;
 
-  const profile = await getSingleProfile(currentUser.userId);
+  const profile = await ProfileService.getSingleProfile(currentUser.userId);
   if (!profile) {
     return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
   }
   const data: { profile: Profile; user?: User } = { profile: profile };
 
-  const user = await getSingleUser(currentUser?.userId);
+  const user = await ProfileService.getSingleUser(currentUser?.userId);
   if (!user) {
     return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
   }
@@ -106,7 +106,7 @@ export const setProfile = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  const profile = await updateProfile(user.userId, req.body);
+  const profile = await ProfileService.updateProfile(user.userId, req.body);
 
   if (!profile) {
     return HttpResponse.notFound('Profil non trouvé').send(res);
@@ -131,7 +131,7 @@ export const deleteProfile = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user!;
 
-    const deleted = await deleteUser(user.userId);
+    const deleted = await ProfileService.deleteUser(user.userId);
     HttpResponse.success(deleted, 'Utilisateur supprimé avec succès').send(res);
   }
 );

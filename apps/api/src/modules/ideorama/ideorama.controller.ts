@@ -3,13 +3,7 @@ import path from 'path';
 
 import { Request, RequestHandler, Response } from 'express';
 
-import {
-  createIdeorama,
-  deleteIdeorama,
-  getIdeoramaById,
-  getUserIdeoramas,
-  updateIdeoramaModelPath,
-} from './ideorama.services';
+import IdeoramaService from './ideorama.services';
 
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
@@ -47,13 +41,13 @@ const getUploadPath = (ideoramaId: string): string => {
 export const createIdeoramaController = asyncHandler(
   async (req: Request, res: Response) => {
     // Save in DB
-    const newIdeorama = await createIdeorama(req.body.ideorama)
-    const uploadPath = getUploadPath(newIdeorama.id)
-    await updateIdeoramaModelPath(newIdeorama.id, uploadPath)
+    const newIdeorama = await IdeoramaService.createIdeorama(req.body.ideorama);
+    const uploadPath = getUploadPath(newIdeorama.id);
+    await IdeoramaService.updateIdeoramaModelPath(newIdeorama.id, uploadPath);
 
     // Save in uploads dir
-    const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json')
-    fs.writeFileSync(uploadPath, emptyScene)
+    const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json');
+    fs.writeFileSync(uploadPath, emptyScene);
 
     HttpResponse.created(newIdeorama, 'Idéorama créé avec succès').send(res);
   }
@@ -71,10 +65,10 @@ export const createIdeoramaController = asyncHandler(
  */
 export const getUserIdeoramasController = asyncHandler(
   async (req: Request, res: Response) => {
-    const ideoramas = await getUserIdeoramas(req.user!.userId);
+    const ideoramas = await IdeoramaService.getUserIdeoramas(req.user!.userId);
     HttpResponse.success(
       {
-        ideoramas
+        ideoramas,
       },
       'Idéoramas récupérés avec succès'
     ).send(res);
@@ -93,7 +87,7 @@ export const getUserIdeoramasController = asyncHandler(
  */
 export const getIdeoramaByIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const ideorama = await getIdeoramaById(req.body.ideoramaId);
+    const ideorama = await IdeoramaService.getIdeoramaById(req.body.ideoramaId);
 
     if (!ideorama) {
       return HttpResponse.notFound('Ideorama not found').send(res);
@@ -122,9 +116,11 @@ export const saveIdeoramaController = asyncHandler(
   async (req: Request, res: Response) => {
     if (!req.body.ideoramaId) {
       // Create new ideorama in DB
-      const newIdeorama = await createIdeorama(req.body.ideorama);
+      const newIdeorama = await IdeoramaService.createIdeorama(
+        req.body.ideorama
+      );
       const uploadPath = getUploadPath(newIdeorama.id);
-      await updateIdeoramaModelPath(newIdeorama.id, uploadPath);
+      await IdeoramaService.updateIdeoramaModelPath(newIdeorama.id, uploadPath);
 
       // Copy empty scene template and past in a new file in uploads
       const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json');
@@ -156,7 +152,7 @@ export const saveIdeoramaController = asyncHandler(
  */
 export const deleteIdeoramaController = asyncHandler(
   async (req: Request, res: Response) => {
-    deleteIdeorama(req.body.ideoramaId);
+    IdeoramaService.deleteIdeorama(req.body.ideoramaId);
     const uploadPath = getUploadPath(req.body.ideoramaId);
 
     fs.unlink(uploadPath, err => {

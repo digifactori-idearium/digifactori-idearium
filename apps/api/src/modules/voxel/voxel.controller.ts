@@ -3,13 +3,7 @@ import path from 'path';
 
 import { Request, Response } from 'express';
 
-import {
-  createVoxelModel,
-  deleteVoxelModel,
-  getUserVoxelModels,
-  getVoxelModelById,
-  updateVoxelModelPath,
-} from './voxel.service';
+import VoxelModelService from './voxel.service';
 
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
@@ -53,13 +47,16 @@ export const saveVoxelModelController = asyncHandler(
 
     if (!req.body.voxelModelId) {
       // Create new voxel model
-      const newVoxelModel = await createVoxelModel({
+      const newVoxelModel = await VoxelModelService.createVoxelModel({
         name: req.body.voxelModel?.name,
         userId: user.userId,
       });
 
       const uploadPath = getUploadPath(newVoxelModel.id);
-      await updateVoxelModelPath(newVoxelModel.id, uploadPath);
+      await VoxelModelService.updateVoxelModelPath(
+        newVoxelModel.id,
+        uploadPath
+      );
 
       const emptyModel = fs.readFileSync(
         path.join(process.cwd(), 'uploads/voxel-models', 'model-empty.json'),
@@ -96,7 +93,7 @@ export const getVoxelModelByIdController = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user!;
 
-    const voxelModel = await getVoxelModelById(
+    const voxelModel = await VoxelModelService.getVoxelModelById(
       req.body.voxelModelId,
       user.userId
     );
@@ -136,7 +133,7 @@ export const getUserVoxelModelsController = asyncHandler(
       ).send(res);
     }
 
-    const voxelModels = await getUserVoxelModels(user.userId);
+    const voxelModels = await VoxelModelService.getUserVoxelModels(user.userId);
 
     HttpResponse.success(
       voxelModels,
@@ -161,7 +158,10 @@ export const deleteVoxelModelController = asyncHandler(
 
     const uploadPath = getUploadPath(req.body.voxelModelId);
 
-    await deleteVoxelModel(req.body.voxelModelId, user.userId);
+    await VoxelModelService.deleteVoxelModel(
+      req.body.voxelModelId,
+      user.userId
+    );
 
     fs.unlink(uploadPath, err => {
       if (err) {
