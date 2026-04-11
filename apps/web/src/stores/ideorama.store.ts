@@ -148,20 +148,19 @@ export const actions = {
 
   async resetIdeorama() {
     try {
-      await getEmptyIdeorama().then(res => {
-        const model = res.data.model;
-        sceneState.global = model.global ? model.global : sceneState.global;
-        sceneState.background = model.background
-          ? model.background
-          : sceneState.background;
-        sceneState.info = model.info ? model.info : sceneState.info;
-        sceneState.floor = model.floor ? model.floor : sceneState.floor;
-        sceneState.objects = model.objects ? model.objects : sceneState.objects;
-        stackNewState(sceneState);
-      });
+      const res = await getEmptyIdeorama();
+      const model = res.data.model;
+      if (!model) return false;
+
+      sceneState.global = model.global ?? sceneState.global;
+      sceneState.background = model.background ?? sceneState.background;
+      sceneState.info = model.info ?? sceneState.info;
+      sceneState.floor = model.floor ?? sceneState.floor;
+      sceneState.objects = model.objects ?? sceneState.objects;
+      stackNewState(sceneState);
       return true;
     } catch (error) {
-      console.log('error: ', error);
+      console.error('resetIdeorama error:', error);
       return false;
     }
   },
@@ -244,20 +243,24 @@ export const actions = {
 
   // Undo/ redo
   undo() {
+    if (sceneState.current <= 0) return;
     sceneState.current -= 1;
     sceneState.selectedObjectId = null;
     resetState(sceneState);
   },
   redo() {
+    if (sceneState.current >= sceneState.newest) return;
     sceneState.current += 1;
     resetState(sceneState);
   },
-
   // ACTIONS MANAGEMENT
   addAction(objectId: string, action: ActionConfig) {
     const obj = sceneState.objects[objectId];
     if (!obj) return;
-    const alreadyExists = (obj.actions ??= []).some(
+
+    obj.actions ??= [];
+
+    const alreadyExists = obj.actions.some(
       a =>
         a.subType === action.subType &&
         a.trigger === action.trigger &&
@@ -268,7 +271,8 @@ export const actions = {
       toast.error("C'est déjà là !");
       return;
     }
-    (obj.actions ??= []).push(action);
+
+    obj.actions.push(action);
     obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
   },
 
