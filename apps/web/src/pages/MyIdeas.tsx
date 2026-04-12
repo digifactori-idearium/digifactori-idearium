@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-//types
+//priorites
 type Priority = 'high' | 'low';
 
 type Task = {
@@ -59,8 +59,8 @@ const Column = ({
                 setModalPriority({ column: columnKey, id: task.id })
               }
               className={`text-xs px-2 py-1 rounded cursor-pointer ${task.priority === 'high'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-green-500 text-white'
+                ? 'bg-red-500 text-white'
+                : 'bg-green-500 text-white'
                 }`}
             >
               {task.priority === 'high'
