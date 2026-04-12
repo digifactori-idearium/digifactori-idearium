@@ -4,6 +4,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*  ================ PRIMITIVES ================== */
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -100,6 +102,57 @@ button:focus-visible {
     'M 50 1 L 90 20 A 10 10 0 0 1 95 30 L 95 70 L 55 90 A 20 20 0 0 1 45 90 L 5 70 L 5 30 A 10 10 0 0 1 10 20 Z'
   );
 }
+
+/*  ================ myspace ================== */
+
+/* Pulsing ring */
+@keyframes pulseRing {
+  0% {
+    width: 100px;
+    height: 100px;
+    opacity: 0.5;
+  }
+  100% {
+    width: 560px;
+    height: 560px;
+    opacity: 0;
+  }
+}
+
+/* Rainbow spin gradient */
+@keyframes hubSpin {
+  from {
+    filter: hue-rotate(0deg);
+  }
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* float */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Fade-in for card */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =========== THEME HANDLING ============ */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

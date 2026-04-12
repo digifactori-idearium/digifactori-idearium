@@ -10,7 +10,7 @@ export function CircularImage({ src, alt, onClick }: CircularImageProps) {
         src={src}
         alt={alt}
         onClick={onClick}
-        className="h-28 w-28 rounded-full object-cover object-center hover:z-50 hover:scale-107"
+        className="h-28 w-28 rounded-full object-cover object-center hover:z-50 hover:scale-107 bg-sidebar"
       />
     </div>
   );

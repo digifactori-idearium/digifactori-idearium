@@ -88,3 +88,16 @@ type Asset = {
   createdAt?: Date;
   updatedAt?: Date;
 };
+
+// My space
+interface CardDef {
+  id: string;
+  title: string;
+  emoji: string;
+  link: string;
+  count: number;
+  accentColor: string;
+  tooltipCreate: string;
+  orbit: 1 | 2;
+  onActionClick: () => void;
+}
