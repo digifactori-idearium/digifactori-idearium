@@ -1,8 +1,7 @@
 import { Wand } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-import { SuperButton } from '../components/global';
-
+import { SuperButton } from '@/components/common/button';
 import { IdeoramaCreator } from '@/components/ideorama/IdeoramaCreator';
 import IdeoramasGroup from '@/components/ideorama/IdeoramasGroup';
 import { useUser } from '@/providers/UserProvider';

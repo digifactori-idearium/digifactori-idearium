@@ -3,6 +3,10 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@app/*": ["../../package/*"]
+    },
     "noEmit": false,
     "declaration": true,
     "declarationMap": true,

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 
-import { prisma } from '../../config/client.config';
+import { prisma } from '@/config/client.config';
 
 const userTable = prisma.user;
 const profileTable = prisma.profile;

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 
-import { prisma } from '../../config/client.config';
+import { prisma } from '@/config/client.config';
 
 const profileTable = prisma.profile;
 const userTable = prisma.user;
@@ -9,18 +9,17 @@ const getSingleProfile = async (
   userId: string,
   parental_code: string | null
 ) => {
-	try {
-		
-		const response: { profile; user? } = { profile: {} };
-		response.profile = await profileTable.findUnique({
-			where: {
-				userId: userId,
-			},
-			include: {
-				followers: true,
-				following: true,
-			},
-		});
+  try {
+    const response: { profile; user? } = { profile: {} };
+    response.profile = await profileTable.findUnique({
+      where: {
+        userId: userId,
+      },
+      include: {
+        followers: true,
+        following: true,
+      },
+    });
 
     if (!response.profile) {
       throw new Error(`Utilisateur introuvable`);
@@ -104,15 +103,15 @@ const updateProfile = async (userId: string, body: SetProfileInput) => {
 };
 
 const verifyPassword = async (userId: string, password: string) => {
-	const correctPassword = await userTable
-		.findUnique({
-			where: {
-				id: userId,
-			},
-		})
-		.then(res => res?.password);
-	const result = await bcrypt.compare(password, correctPassword)
-	return result;
+  const correctPassword = await userTable
+    .findUnique({
+      where: {
+        id: userId,
+      },
+    })
+    .then(res => res?.password);
+  const result = await bcrypt.compare(password, correctPassword);
+  return result;
 };
 
 const deleteUser = async (userId: string) => {
@@ -136,4 +135,3 @@ const deleteUser = async (userId: string) => {
 };
 
 export { deleteUser, getSingleProfile, updateProfile, verifyPassword };
-
