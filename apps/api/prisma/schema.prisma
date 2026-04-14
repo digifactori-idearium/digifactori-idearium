@@ -18,18 +18,18 @@ enum Role {
 }
 
 model User {
-  id             String       @id @default(cuid())
-  email          String       @unique
-  first_name     String
-  last_name      String
-  password       String
-  parental_codee String?
-  role           Role
-  profil         Profile?
-  ideoramas      Ideorama[]
-  voxelModels    VoxelModel[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id            String       @id @default(cuid())
+  email         String       @unique
+  first_name    String
+  last_name     String
+  password      String
+  parental_code String?
+  role          Role
+  profil        Profile?
+  ideoramas     Ideorama[]
+  voxelModels   VoxelModel[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Profile {
@@ -57,9 +57,17 @@ model Follows {
 
 // use metadata
 model Ideorama {
-  id       String  @id @default(cuid())
-  name     String  @default("New Ideorama")
-  isPublic Boolean @default(true)
+  id          String  @id @default(cuid())
+  name        String  @default("New Ideorama")
+  description String?
+  theme       String  @default("black-orange")
+  brightness  String  @default("bright")
+  isPublic    Boolean @default(true)
+
+  backgroundColor String @default("#f0d400")
+  leftWallColor   String @default("#f45405")
+  rightWallColor  String @default("#e80606")
+  floorColor      String @default("#100101")
 
   model String
 
