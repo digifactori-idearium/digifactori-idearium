@@ -2,16 +2,18 @@ import { Ideorama } from '@prisma/client';
 
 import { prisma } from '../../config/client.config';
 
+import { IIdeoramaService } from '@/types';
+
 const ideoramaTable = prisma.ideorama;
 
-export default class IdeoramaService {
+export default class IdeoramaService implements IIdeoramaService{
   /**
    * Creates a new ideorama in DB, with model = "".
    *
    * @param ideoramaData - the ideorama data
    * @returns a Promise with the new ideorama (Promise<Ideorama>)
    */
-  static async createIdeorama(ideoramaData: Ideorama): Promise<Ideorama> {
+  async createIdeorama(ideoramaData: Ideorama): Promise<Ideorama> {
     return await ideoramaTable.create({
       data: { ...ideoramaData, model: '' },
     });
@@ -25,7 +27,7 @@ export default class IdeoramaService {
    * @returns a Promise with the updated ideorama (Promise<Ideorama>)
    * @throws error if the ideoramaId does not exist in DB
    */
-  static async updateIdeoramaModelPath(
+  async updateIdeoramaModelPath(
     ideoramaId: string,
     uploadPath: string
   ): Promise<Ideorama> {
@@ -47,7 +49,8 @@ export default class IdeoramaService {
    *  - if found, a Promise with the ideorama (Promise<Ideorama>)
    *  - a Promise with null otherwise (Promise<null>)
    */
-  static async getIdeoramaById(ideoramaId: string): Promise<Ideorama | null> {
+  async getIdeoramaById(ideoramaId: string): Promise<Ideorama | null> {
+    // ideoramaTable.deleteMany()
     return ideoramaTable.findFirst({
       where: {
         id: ideoramaId,
@@ -61,7 +64,7 @@ export default class IdeoramaService {
    * @param userId - the user id for which we search for its ideoramas
    * @returns a Promise with the ideoramas (Promise<Ideorama[]>)
    */
-  static async getUserIdeoramas(userId: string): Promise<Ideorama[]> {
+  async getUserIdeoramas(userId: string): Promise<Ideorama[]> {
     return ideoramaTable.findMany({
       where: {
         userId: userId,
@@ -79,7 +82,7 @@ export default class IdeoramaService {
    * @returns a Promise with the updated ideorama (Promise<Ideorama>)
    * @throws error if the ideoramaId does not exist in DB
    */
-  static async updateIdeorama(
+  async updateIdeorama(
     ideoramaId: string,
     data: Ideorama
   ): Promise<Ideorama> {
@@ -97,7 +100,7 @@ export default class IdeoramaService {
    * @param ideoramaId - the unique id of the ideorama to find
    * @returns Promise<true> if present, Promise<false> otherwise
    */
-  static async isIdeoramaInBD(ideoramaId: string): Promise<boolean> {
+  async isIdeoramaInBD(ideoramaId: string): Promise<boolean> {
     const ideorama = await ideoramaTable.findUnique({
       where: {
         id: ideoramaId,
@@ -116,8 +119,8 @@ export default class IdeoramaService {
    * @returns a Promise with the deleted ideorama (Promise<Ideorama>)
    * @throws error if the ideoramaId does not exist in DB
    */
-  static deleteIdeorama(ideoramaId: string): Promise<Ideorama> {
-    const ideorama = ideoramaTable.delete({
+  async deleteIdeorama(ideoramaId: string): Promise<Ideorama> {
+    const ideorama = await ideoramaTable.delete({
       where: {
         id: ideoramaId,
       },

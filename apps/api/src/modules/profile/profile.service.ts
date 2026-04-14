@@ -2,10 +2,12 @@ import bcrypt from 'bcrypt';
 
 import { prisma, Profile, User } from '../../config/client.config';
 
+import { IProfileService } from '@/types';
+
 const profileTable = prisma.profile;
 const userTable = prisma.user;
 
-export default class ProfileService {
+export default class ProfileService implements IProfileService{
   /**
    * Checks if the password is correct
    *
@@ -13,7 +15,7 @@ export default class ProfileService {
    * @param password: the provided password
    * @returns Promise<true> if the password is correct, Promise<false> otherwise
    */
-  static async verifyPassword(
+  async verifyPassword(
     userId: string,
     password: string
   ): Promise<boolean> {
@@ -36,7 +38,7 @@ export default class ProfileService {
    * - if found, a Promise with the profile (Promise<Profile>)
    * - otherwise, a Promise with null (Promise<null>)
    */
-  static async getSingleProfile(userId: string): Promise<Profile | null> {
+  async getSingleProfile(userId: string): Promise<Profile | null> {
     return profileTable.findUnique({
       where: {
         userId: userId,
@@ -56,7 +58,7 @@ export default class ProfileService {
    * - if found, a Promise with the user (Promise<User>)
    * - otherwise, a Promise with null (Promise<null>)
    */
-  static async getSingleUser(userId: string): Promise<User | null> {
+  async getSingleUser(userId: string): Promise<User | null> {
     return await userTable.findUnique({
       where: {
         id: userId,
@@ -72,7 +74,7 @@ export default class ProfileService {
    * @returns the updated user and profile ({user?: User, profile: Profile})
    * @throws error if the user or profile is not found
    */
-  static async updateProfile(
+  async updateProfile(
     userId: string,
     body: SetProfileInput
   ): Promise<{ user?: User; profile: Profile }> {
@@ -120,7 +122,7 @@ export default class ProfileService {
    * @returns a Promise with the deleted user and profile (Promise<{user: User, profile: Profile}>)
    * @throws an error if the user or the profile is not found
    */
-  static async deleteUser(
+  async deleteUser(
     userId: string
   ): Promise<{ user: User; profile: Profile }> {
     const response = await prisma.$transaction(async tx => {

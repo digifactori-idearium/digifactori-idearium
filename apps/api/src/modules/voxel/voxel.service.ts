@@ -1,17 +1,18 @@
 import { VoxelModel } from '@prisma/client';
 
 import { prisma } from '@/config/client.config';
+import { IVoxelService } from '@/types';
 
 const voxelModelTable = prisma.voxelModel;
 
-export default class VoxelModelService {
+export default class VoxelService implements IVoxelService {
   /**
    * Creates a new voxel model in DB.
    *
    * @param data - contains the voxel model name and the id of its creator ({name?: string, user: string})
    * @returns a Promise with the new voxel model (Promise<VoxelModel>)
    */
-  static async createVoxelModel(data: {
+  async createVoxelModel(data: {
     name?: string;
     userId: string;
   }): Promise<VoxelModel> {
@@ -32,7 +33,7 @@ export default class VoxelModelService {
    * @returns a Promise with the updated voxel model (Promise<VoxelModel>)
    * @throws error if the voxelModelId does not exist in DB
    */
-  static async updateVoxelModelPath(
+  async updateVoxelModelPath(
     voxelModelId: string,
     uploadPath: string
   ): Promise<VoxelModel> {
@@ -54,7 +55,7 @@ export default class VoxelModelService {
    *  - if found, a Promise with the voxel model (Promise<VoxelModel>)
    *  - a Promise with null otherwise (Promise<null>)
    */
-  static async getVoxelModelById(
+  async getVoxelModelById(
     voxelModelId: string,
     userId: string
   ): Promise<VoxelModel | null> {
@@ -72,7 +73,7 @@ export default class VoxelModelService {
    * @param userId - the user id for which we search for its voxel models
    * @returns a Promise with the voxel models (Promise<VoxelModel[]>)
    */
-  static async getUserVoxelModels(userId: string): Promise<VoxelModel[]> {
+  async getUserVoxelModels(userId: string): Promise<VoxelModel[]> {
     return voxelModelTable.findMany({
       where: {
         userId: userId,
@@ -90,7 +91,7 @@ export default class VoxelModelService {
    * @returns a Promise with the deleted voxel model (Promise<VoxelModel>)
    * @throws error if the voxelModelId does not exist in DB
    */
-  static async deleteVoxelModel(
+  async deleteVoxelModel(
     voxelModelId: string,
     userId: string
   ): Promise<VoxelModel> {

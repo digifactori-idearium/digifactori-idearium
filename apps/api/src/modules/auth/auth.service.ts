@@ -1,18 +1,19 @@
 import bcrypt from 'bcrypt';
 
 import { prisma, Profile, User } from '@/config/client.config';
+import { IAuthService } from '@/types';
 
 const userTable = prisma.user;
 const profileTable = prisma.profile;
 
-export default class AuthenticationService {
+export default class AuthService implements IAuthService{
   /**
    * Creates a new user in DB.
    *
    * @param input - the user data
    * @returns a Promise with the new user (Promise<User>)
    */
-  static async createUser(input: UserInput): Promise<User> {
+  async createUser(input: UserInput): Promise<User> {
     const { password, parental_code, ...user } = input;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -34,7 +35,7 @@ export default class AuthenticationService {
    * @param ideoramaData - the profile data
    * @returns a Promise with the new profile (Promise<Profile>)
    */
-  static async createProfile(
+  async createProfile(
     input: ProfileInput,
     userId: string
   ): Promise<Profile> {
@@ -54,7 +55,7 @@ export default class AuthenticationService {
    * @param ideoramaData - the user and profile data
    * @returns a Promise with the data added in DB (Promise<{ user: User, profile: Profile}>)
    */
-  static async createAccount(
+  async createAccount(
     data: RegisterInput
   ): Promise<{ user: User; profile: Profile }> {
     const { password, parental_code, ...userData } = data.user;
@@ -97,7 +98,7 @@ export default class AuthenticationService {
    * @param password - the entered password to verify
    * @returns a promise with the user exists and if the password is correct (Promise<User>), Promise<null> otherwise
    */
-  static async loginEmail(
+  async loginEmail(
     email: string,
     password: string
   ): Promise<User | null> {
@@ -121,7 +122,7 @@ export default class AuthenticationService {
    * @param password - the entered password to verify
    * @returns a promise with the user exists and if the password is correct (Promise<User), Promise<null> otherwise
    */
-  static async loginPseudo(
+  async loginPseudo(
     pseudo: string,
     password: string
   ): Promise<User | null> {
