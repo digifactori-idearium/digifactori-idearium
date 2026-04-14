@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
@@ -22,7 +24,7 @@
   --radius: 0.625rem;
   /* --background: oklch(1 0 0); */
   --background: #f3bee1;
-  --foreground: oklch(0.141 0.005 285.823);
+  --foreground: var(--color-slate-700);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
@@ -57,6 +59,7 @@
   /* Custom */
   --mauve: #6f51b0;
   --sidebar-dark: #120d1d;
+  --editor-font: 'Nunito', sans-serif;
 }
 
 a {
@@ -150,6 +153,120 @@ button:focus-visible {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+text-editor-content .ProseMirror {
+  font-family: var(--editor-font);
+  font-size: 1.2rem;
+  line-height: 1.9;
+  color: #1e1b4b;
+  outline: none;
+  min-height: 400px;
+}
+
+/*  ================ EDITOR ================== */
+
+.text-editor-content {
+  cursor: text;
+}
+
+/* ── ProseMirror root ── */
+.text-editor-content .ProseMirror {
+  font-family: var(--editor-font);
+  font-size: 1.2rem;
+  line-height: 1.9;
+  color: #1e1b4b;
+  outline: none;
+  border: none;
+  min-height: 400px;
+  width: 100%;
+  cursor: text;
+}
+
+.text-editor-content .ProseMirror-focused {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Placeholder */
+.text-editor-content .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #c4b5fd;
+  font-style: italic;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Headings */
+.text-editor-content .ProseMirror h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #6d28d9;
+  margin: 1rem 0 0.5rem;
+  line-height: 1.3;
+}
+.text-editor-content .ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #7c3aed;
+  margin: 0.8rem 0 0.4rem;
+}
+.text-editor-content .ProseMirror h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #8b5cf6;
+  margin: 0.6rem 0 0.3rem;
+}
+
+/* Paragraphs */
+.text-editor-content .ProseMirror p {
+  margin: 0.4rem 0;
+}
+
+/* Lists */
+.text-editor-content .ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.text-editor-content .ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.text-editor-content .ProseMirror li {
+  margin: 0.2rem 0;
+}
+.text-editor-content .ProseMirror li::marker {
+  color: #a78bfa;
+}
+
+/* Highlight */
+.text-editor-content .ProseMirror mark {
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+/* Text selection */
+.text-editor-content .ProseMirror ::selection {
+  background: #ddd6fe;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #ddd6fe;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a78bfa;
 }
 
 /* =========== THEME HANDLING ============ */

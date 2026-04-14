@@ -101,3 +101,53 @@ interface CardDef {
   orbit: 1 | 2;
   onActionClick: () => void;
 }
+
+// ===== Text editor
+
+interface Document {
+  id: string;
+  title: string;
+  content: string;
+  json?: Record<string, unknown>;
+  wordCount: number;
+  emoji: string;
+  color: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+type DocumentListItem = Omit<Document, 'content' | 'json'>;
+
+interface CreateDocumentPayload {
+  userId: string;
+  title?: string;
+  content?: string;
+  json?: Record<string, unknown>;
+  emoji?: string;
+  color?: string;
+}
+
+interface UpdateDocumentPayload {
+  title?: string;
+  content?: string;
+  json?: Record<string, unknown>;
+  emoji?: string;
+  color?: string;
+}
+
+type FontSize = 'small' | 'medium' | 'large' | 'xlarge';
+type TextAlign = 'left' | 'center' | 'right';
+
+interface EditorToolbarState {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strike: boolean;
+  bulletList: boolean;
+  orderedList: boolean;
+  heading: boolean;
+  alignLeft: boolean;
+  alignCenter: boolean;
+  alignRight: boolean;
+}
