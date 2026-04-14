@@ -12,6 +12,11 @@ type Task = {
 
 type ColumnType = 'todo' | 'progress' | 'done';
 
+type DragData = {
+  task: Task;
+  from: ColumnType;
+};
+
 const initialData: Record<ColumnType, Task[]> = {
   todo: [],
   progress: [],
@@ -30,9 +35,15 @@ type ColumnProps = {
   addTask: (column: ColumnType) => void;
   onDrop: (e: React.DragEvent, column: ColumnType) => void;
   onDragStart: (e: React.DragEvent, task: Task, column: ColumnType) => void;
-  setModalPriority: React.Dispatch<React.SetStateAction<{ column: ColumnType; id: string } | null>>;
-  setModalEdit: React.Dispatch<React.SetStateAction<{ column: ColumnType; id: string; value: string } | null>>;
-  setModalDelete: React.Dispatch<React.SetStateAction<{ column: ColumnType; id: string } | null>>;
+  setModalPriority: React.Dispatch<
+    React.SetStateAction<{ column: ColumnType; id: string } | null>
+  >;
+  setModalEdit: React.Dispatch<
+    React.SetStateAction<{ column: ColumnType; id: string; value: string } | null>
+  >;
+  setModalDelete: React.Dispatch<
+    React.SetStateAction<{ column: ColumnType; id: string } | null>
+  >;
 };
 
 const Column = ({
@@ -58,7 +69,7 @@ const Column = ({
     </h2>
 
     <div className="flex flex-col gap-3 flex-1">
-      {columns[columnKey].map((task: Task) => (
+      {columns[columnKey].map((task) => (
         <div
           key={task.id}
           draggable
@@ -68,6 +79,7 @@ const Column = ({
         >
           <div className="flex justify-between">
             <span className="dark:text-black">{task.content}</span>
+
             <span
               onClick={() =>
                 setModalPriority({ column: columnKey, id: task.id })
@@ -78,9 +90,7 @@ const Column = ({
                   : 'bg-green-500 text-white'
               }`}
             >
-              {task.priority === 'high'
-                ? 'Important'
-                : 'Pas important'}
+              {task.priority === 'high' ? 'Important' : 'Pas important'}
             </span>
           </div>
 
@@ -96,6 +106,7 @@ const Column = ({
             >
               ✏️ Modifier
             </button>
+
             <button
               onClick={() =>
                 setModalDelete({ column: columnKey, id: task.id })
@@ -160,14 +171,11 @@ const MyIdeas: React.FC = () => {
   const addTask = (column: ColumnType) => {
     if (!inputs[column].trim()) return;
 
-    const randomColor =
-      COLORS[Math.floor(Math.random() * COLORS.length)];
-
     const task: Task = {
       id: Date.now().toString(),
       content: inputs[column],
       priority: 'low',
-      color: randomColor,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
     };
 
     setColumns((prev) => ({
@@ -184,7 +192,7 @@ const MyIdeas: React.FC = () => {
 
     setColumns((prev) => ({
       ...prev,
-      [modalPriority.column]: prev[modalPriority.column].map((t: Task) =>
+      [modalPriority.column]: prev[modalPriority.column].map((t) =>
         t.id === modalPriority.id ? { ...t, priority } : t
       ),
     }));
@@ -199,7 +207,7 @@ const MyIdeas: React.FC = () => {
     setColumns((prev) => ({
       ...prev,
       [modalDelete.column]: prev[modalDelete.column].filter(
-        (t: Task) => t.id !== modalDelete.id
+        (t) => t.id !== modalDelete.id
       ),
     }));
 
@@ -212,10 +220,8 @@ const MyIdeas: React.FC = () => {
 
     setColumns((prev) => ({
       ...prev,
-      [modalEdit.column]: prev[modalEdit.column].map((t: Task) =>
-        t.id === modalEdit.id
-          ? { ...t, content: modalEdit.value }
-          : t
+      [modalEdit.column]: prev[modalEdit.column].map((t) =>
+        t.id === modalEdit.id ? { ...t, content: modalEdit.value } : t
       ),
     }));
 
@@ -228,21 +234,22 @@ const MyIdeas: React.FC = () => {
     task: Task,
     from: ColumnType
   ) => {
-    e.dataTransfer.setData(
-      'task',
-      JSON.stringify({ task, from })
-    );
+    const data: DragData = { task, from };
+    e.dataTransfer.setData('task', JSON.stringify(data));
   };
 
   const onDrop = (e: React.DragEvent, to: ColumnType) => {
-    const data = JSON.parse(e.dataTransfer.getData('task'));
+    const data: DragData = JSON.parse(
+      e.dataTransfer.getData('task')
+    );
+
     const { task, from } = data;
 
     if (from === to) return;
 
     setColumns((prev) => ({
       ...prev,
-      [from]: prev[from].filter((t: Task) => t.id !== task.id),
+      [from]: prev[from].filter((t) => t.id !== task.id),
       [to]: [...prev[to], task],
     }));
   };
@@ -257,7 +264,7 @@ const MyIdeas: React.FC = () => {
         <Column title="✅ Terminé" columnKey="done" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete }} />
       </div>
 
-      {/* PRIORITY MODAL */}
+      {/* MODALS inchangés */}
       {modalPriority && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg">
@@ -274,7 +281,6 @@ const MyIdeas: React.FC = () => {
         </div>
       )}
 
-      {/* DELETE MODAL */}
       {modalDelete && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg">
@@ -291,7 +297,6 @@ const MyIdeas: React.FC = () => {
         </div>
       )}
 
-      {/* EDIT MODAL */}
       {modalEdit && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg w-[300px]">
@@ -299,10 +304,7 @@ const MyIdeas: React.FC = () => {
             <textarea
               value={modalEdit.value}
               onChange={(e) =>
-                setModalEdit({
-                  ...modalEdit,
-                  value: e.target.value,
-                })
+                setModalEdit({ ...modalEdit, value: e.target.value })
               }
               className="w-full p-2 border rounded mb-3"
             />
