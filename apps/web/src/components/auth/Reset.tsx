@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { SubmitHandler, FieldValues } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { Form } from '@/components/global';
-
+import { Form } from '@/components/common/form';
 import { resetInputs } from '@/lib/input';
 import { useAuth } from '@/providers/AuthProvider';
 

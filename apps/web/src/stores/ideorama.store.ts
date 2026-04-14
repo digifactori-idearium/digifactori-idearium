@@ -1,12 +1,18 @@
+import { toast } from 'sonner';
 import * as THREE from 'three';
 import { proxy } from 'valtio';
 
+import { resetState, stackNewState } from '@/lib/state';
 import { themesToColors } from '@/lib/theme';
 import { round } from '@/lib/utils';
+import { getEmptyIdeorama } from '@/services/ideorama.service';
 
+//theme
 const INITIAL_THEME = 'day' as keyof typeof themesToColors;
-
 const initialThemeData = themesToColors[INITIAL_THEME];
+
+//action
+const NON_DUPLICABLE_ACTIONS = ['playSound', 'say'];
 
 export const sceneState = proxy<IdeoramaState>({
   // Global State
@@ -34,7 +40,7 @@ export const sceneState = proxy<IdeoramaState>({
   objects: {} as Record<string, ObjectState>,
   selectedObjectId: null as string | null,
 
-  //Objects movement managemet
+  //Objects movement management
   isDragging: false,
   assetsPanelOpen: false,
   assetsTreeOpen: false,
@@ -42,6 +48,12 @@ export const sceneState = proxy<IdeoramaState>({
   //Action management
   activeSettingView: 'model',
   actionPickerOpen: false,
+
+  // undo/redo management
+  history: [],
+  current: -1,
+  newest: 0,
+
   pendingTrigger: 'onStart' as TriggerType,
 });
 
@@ -118,18 +130,39 @@ export const actions = {
   removeObject: (id: string) => {
     delete sceneState.objects[id];
     if (sceneState.selectedObjectId === id) sceneState.selectedObjectId = null;
+    stackNewState(sceneState);
   },
   registerObject: (id: string, obj: THREE.Object3D) =>
     sceneRegistry.set(id, obj),
 
   unregisterObject: (id: string) => sceneRegistry.delete(id),
 
-  // Setting Mangament
+  // Setting Management
   toggleSettingPanel(open?: boolean) {
     if (open !== undefined) {
       sceneState.settingPanelOpen = open;
     } else {
       sceneState.settingPanelOpen = !sceneState.settingPanelOpen;
+    }
+  },
+
+  async resetIdeorama() {
+    try {
+      await getEmptyIdeorama().then(res => {
+        const model = res.data.model;
+        sceneState.global = model.global ? model.global : sceneState.global;
+        sceneState.background = model.background
+          ? model.background
+          : sceneState.background;
+        sceneState.info = model.info ? model.info : sceneState.info;
+        sceneState.floor = model.floor ? model.floor : sceneState.floor;
+        sceneState.objects = model.objects ? model.objects : sceneState.objects;
+        stackNewState(sceneState);
+      });
+      return true;
+    } catch (error) {
+      console.log('error: ', error);
+      return false;
     }
   },
 
@@ -177,12 +210,12 @@ export const actions = {
 
   spawnAssetAtPosition(asset: AssetItem, position: THREE.Vector3) {
     const id = crypto.randomUUID();
-
     sceneState.objects[id] = {
       info: {
         name: asset.name,
         category: asset.category,
         file: asset.file,
+        preview: asset.thumbnail,
       },
       transform: {
         position: {
@@ -200,12 +233,41 @@ export const actions = {
     };
 
     sceneState.selectedObjectId = id;
+
+    stackNewState(sceneState);
   },
 
-  // ACTIONS NAMAGEMENT
+  // Historic management
+  stackState() {
+    stackNewState(sceneState);
+  },
+
+  // Undo/ redo
+  undo() {
+    sceneState.current -= 1;
+    sceneState.selectedObjectId = null;
+    resetState(sceneState);
+  },
+  redo() {
+    sceneState.current += 1;
+    resetState(sceneState);
+  },
+
+  // ACTIONS MANAGEMENT
   addAction(objectId: string, action: ActionConfig) {
     const obj = sceneState.objects[objectId];
     if (!obj) return;
+    const alreadyExists = (obj.actions ??= []).some(
+      a =>
+        a.subType === action.subType &&
+        a.trigger === action.trigger &&
+        NON_DUPLICABLE_ACTIONS.includes(action.subType)
+    );
+
+    if (alreadyExists) {
+      toast.error("C'est déjà là !");
+      return;
+    }
     (obj.actions ??= []).push(action);
     obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
   },
@@ -215,6 +277,21 @@ export const actions = {
     if (!obj?.actions) return;
     obj.actions = obj.actions.filter(a => a.id !== actionId);
     obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
+  },
+
+  reorderAction(objectId: string, actionId: string, direction: 'up' | 'down') {
+    const obj = sceneState.objects[objectId];
+    if (!obj?.actions) return;
+
+    const index = obj.actions.findIndex(a => a.id === actionId);
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (swapIndex < 0 || swapIndex >= obj.actions.length) return;
+
+    [obj.actions[index], obj.actions[swapIndex]] = [
+      obj.actions[swapIndex],
+      obj.actions[index],
+    ];
   },
 
   bumpActionsVersion(objectId: string) {
@@ -227,15 +304,25 @@ export const actions = {
   setSettingView: (view: 'model' | 'actions') => {
     sceneState.activeSettingView = view;
   },
-  openActionPicker: (open: boolean, trigger: TriggerType = 'onStart') => {
+  openActionPicker: (open: boolean) => {
     sceneState.actionPickerOpen = open;
-    sceneState.pendingTrigger = trigger;
   },
 };
 
 if (import.meta.hot) {
   import.meta.hot.dispose(data => {
-    data.sceneState = JSON.parse(JSON.stringify(sceneState));
+    try {
+      data.sceneState = {
+        global: JSON.parse(JSON.stringify(sceneState.global)),
+        background: JSON.parse(JSON.stringify(sceneState.background)),
+        info: JSON.parse(JSON.stringify(sceneState.info)),
+        floor: JSON.parse(JSON.stringify(sceneState.floor)),
+        objects: JSON.parse(JSON.stringify(sceneState.objects)),
+        selectedObjectId: sceneState.selectedObjectId,
+      };
+    } catch (err) {
+      console.error('HMR dispose: failed to serialize sceneState', err);
+    }
   });
 
   if (import.meta.hot.data.sceneState) {

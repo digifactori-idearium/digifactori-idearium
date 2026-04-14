@@ -1,22 +1,46 @@
 import { useState, useCallback, useEffect } from 'react';
-import translate from 'translate';
+// import translate from 'translate';
+
+// translate.engine = 'libre'; // "google", "yandex", "libre", "deepl"
+// // translate.key = process.env.DEEPL_KEY;
+
+// // WE CAN CREATE OUR OWN API FOR FREE WITH SELF HOSTING OF LIBRETRANSLATE ⚠️⚠️⚠️⚠️⚠️
+
+// async function translateToEnglish(text: string): Promise<string> {
+//   if (!text || text.trim().length === 0) return '';
+
+//   try {
+//     const translated = await translate(text, { from: 'fr', to: 'en' });
+//     console.log(translate);
+//     return translated;
+//   } catch (err) {
+//     console.error('Translation fetch failed:', err);
+//     return text;
+//   }
+// }
 
 const API_KEY = '42e4fc678abc42adafdcfad16293a3eb';
 
-translate.engine = 'libre'; // "google", "yandex", "libre", "deepl"
-// translate.key = process.env.DEEPL_KEY;
-
-// WE CAN CREATE OUR OWN API FOR FREE WITH SELF HOSTING OF LIBRETRANSLATE ⚠️⚠️⚠️⚠️⚠️
+async function translateToFrench(text: string): Promise<string> {
+  try {
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|fr`
+    );
+    const data = await res.json();
+    return data?.responseData?.translatedText ?? text;
+  } catch {
+    return text;
+  }
+}
 
 async function translateToEnglish(text: string): Promise<string> {
-  if (!text || text.trim().length === 0) return '';
-
   try {
-    const translated = await translate(text, { from: 'fr', to: 'en' });
-    console.log(translate);
-    return translated;
-  } catch (err) {
-    console.error('Translation fetch failed:', err);
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=fr|en`
+    );
+    const data = await res.json();
+    return data?.responseData?.translatedText ?? text;
+  } catch {
     return text;
   }
 }
@@ -76,7 +100,7 @@ export function useAssets(searchTerm: string = '', category?: number) {
 
         const mapped = results.map((item: any) => ({
           id: item.ID,
-          name: item.Title,
+          name: translateToFrench(item.Title),
           category: item.Category || 'Other',
           file: item.Download,
           thumbnail: item.Thumbnail,

@@ -1,21 +1,37 @@
 import { Router, type Router as ExpressRouter } from 'express';
 
-import authenticate from '../../middlewares/authenticate';
+import { authenticate, requireAuth } from '../../middlewares/authentication';
 
 import {
   deleteIdeoramaController,
   getEmptyIdeorama,
   getIdeoramaByIdController,
   getUserIdeoramasController,
-  saveIdeoramaController
+  saveIdeoramaController,
 } from './ideorama.controller';
 
 const ideoramasRoutes: ExpressRouter = Router();
 
-ideoramasRoutes.post('/', authenticate, getIdeoramaByIdController);
-ideoramasRoutes.post('/save', authenticate, saveIdeoramaController);
-ideoramasRoutes.post('/all', authenticate, getUserIdeoramasController);
-ideoramasRoutes.post('/delete', authenticate, deleteIdeoramaController);
+ideoramasRoutes.post('/', authenticate, requireAuth, getIdeoramaByIdController);
+ideoramasRoutes.post(
+  '/save',
+  authenticate,
+  requireAuth,
+  saveIdeoramaController
+);
+ideoramasRoutes.post(
+  '/all',
+  authenticate,
+  requireAuth,
+  getUserIdeoramasController
+);
+ideoramasRoutes.post(
+  '/delete',
+  authenticate,
+  requireAuth,
+  deleteIdeoramaController
+);
+
 ideoramasRoutes.get('/empty', getEmptyIdeorama);
 
 export default ideoramasRoutes;

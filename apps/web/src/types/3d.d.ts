@@ -97,6 +97,11 @@ interface IdeoramaState {
   //Action management
   activeSettingView: 'model' | 'actions';
   actionPickerOpen: boolean;
+
+  history: { objects: Record<string, ObjectState> }[];
+  current: number;
+  newest: number;
+
   pendingTrigger: TriggerType;
 }
 
@@ -128,6 +133,7 @@ interface ObjectState {
     name: string;
     category?: string;
     file?: string;
+    preview?: string;
   };
 
   // Transform
@@ -161,6 +167,14 @@ type AssetItem = {
   thumbnail?: string;
 };
 
+type MusicItem = {
+  id: string;
+  name: string;
+  frName?: string;
+  category?: string;
+  file: string;
+};
+
 // ACTIONS ON ASSETS MODEL
 
 type TriggerType = 'onStart' | 'onTap';
@@ -172,11 +186,13 @@ type ActionType =
   | 'physics'
   | 'particles'
   | 'appearance'
+  | 'utility'
   | 'stop';
 
 interface ActionConfig {
   id: string;
   type: ActionType;
+  active?: boolean;
   subType: string;
   trigger: TriggerType;
   config: Record<string, any>;

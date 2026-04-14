@@ -1,85 +1,107 @@
-import { useState } from 'react';
+import { RotateCcw, Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
+import { SuperButton } from '@/components/common/button';
 import EditPanel from '@/components/voxel/panel';
 import Voxel, { VoxelPoint } from '@/pages/Voxel';
 import {
-  createVoxelModel,
   getVoxelModelById,
   saveVoxelModel,
 } from '@/services/voxel.service';
 
 export default function VoxelLayout() {
-  const [mode, setMode] = useState<'add' | 'remove' | 'paint'>('add');
-  const [shape, setShape] = useState<'cube' | 'mur' | 'plateforme' | 'escalier'>('cube');
-  const [rotation, setRotation] = useState(0);
-  const [voxels, setVoxels] = useState<VoxelPoint[]>([]);
-  const [currentModelId, setCurrentModelId] = useState('');
-  const [modelName, setModelName] = useState('My Voxel Model');
-  const [loadModelId, setLoadModelId] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState('');
-  const [taille, setTaille] = useState(1)
-  const handleCreateModel = async () => {
-    try {
-      setMessage('');
-      const response = await createVoxelModel(modelName);
-      setCurrentModelId(response.data.id);
-      setMessage(`Modèle créé : ${response.data.id}`);
-    } catch (error: any) {
-      setMessage(error.message || 'Erreur lors de la création du modèle');
-    }
-  };
+  const { modelId } = useParams<{ modelId: string }>();
 
-  const handleSaveModel = async () => {
-    if (!currentModelId) {
-      setMessage('Crée d’abord un modèle avant de sauvegarder.');
+  const [mode, setMode] = useState<'add' | 'remove' | 'paint'>('add');
+  const [shape, setShape] = useState<
+    'cube' | 'mur' | 'plateforme' | 'escalier'
+  >('cube');
+  const [rotation, setRotation] = useState(0);
+
+  const [voxels, setVoxels] = useState<VoxelPoint[]>([]);
+  const [modelName, setModelName] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [taille, setTaille] = useState(1);
+  const [message, setMessage] = useState('');
+
+  // 🔹 Charger le modèle
+  useEffect(() => {
+    if (!modelId) {
+      setIsLoading(false);
+      return;
+    }
+
+    const loadModel = async () => {
+      try {
+        const response = await getVoxelModelById(modelId);
+
+        if (Array.isArray(response.data.model)) {
+          setVoxels(response.data.model);
+          setModelName(response.data.name || 'Sans nom');
+        }
+      } catch (error) {
+        console.error('Erreur chargement modèle', error);
+        setMessage('Erreur lors du chargement');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadModel();
+  }, [modelId]);
+
+  // 🔹 Sauvegarde
+  const handleSave = async () => {
+    if (!modelId) {
+      setMessage('Aucun modèle à sauvegarder');
       return;
     }
 
     try {
       setIsSaving(true);
       setMessage('');
-      await saveVoxelModel(currentModelId, voxels);
-      setMessage('Modèle sauvegardé avec succès.');
-    } catch (error: any) {
-      setMessage(error.message || 'Erreur lors de la sauvegarde');
+
+      await saveVoxelModel(modelId, voxels);
+
+      setMessage('Modèle sauvegardé ✅');
+    } catch (error) {
+      console.error('Erreur sauvegarde', error);
+      setMessage('Erreur lors de la sauvegarde');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleLoadModel = async () => {
-    if (!loadModelId) {
-      setMessage('Entre un id de modèle à charger.');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setMessage('');
-      const response = await getVoxelModelById(loadModelId);
-
-      const loadedModel = response.data.model;
-
-      if (Array.isArray(loadedModel)) {
-        setVoxels(loadedModel);
-        setCurrentModelId(response.data.id);
-        setModelName(response.data.name);
-        setMessage('Modèle chargé avec succès.');
-      } else {
-        setMessage('Le modèle chargé est invalide.');
-      }
-    } catch (error: any) {
-      setMessage(error.message || 'Erreur lors du chargement');
-    } finally {
-      setIsLoading(false);
-    }
+  // 🔹 Reset
+  const handleReset = () => {
+    setVoxels([]);
   };
 
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        Chargement du modèle...
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
-      <div style={{ width: 320, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="w-full h-screen relative">
+      {/* 🔹 Boutons */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex gap-3">
+        <SuperButton onClick={handleSave} className="main-btn">
+          <Save /> {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+        </SuperButton>
+
+        <SuperButton onClick={handleReset} className="main-btn">
+          <RotateCcw /> Réinitialiser
+        </SuperButton>
+      </div>
+
+      {/* 🔹 Panel */}
+      <div className="absolute top-6 left-6 z-50 w-[280px]">
         <EditPanel
           mode={mode}
           setMode={setMode}
@@ -91,80 +113,28 @@ export default function VoxelLayout() {
           setTaille={setTaille}
         />
 
-        <hr />
-
-        <div>
-          <label>Nom du modèle</label>
-          <input
-            value={modelName}
-            onChange={e => setModelName(e.target.value)}
-            style={{ width: '100%', padding: 8, marginTop: 4 }}
-          />
-        </div>
-
-        <button onClick={handleCreateModel}>Créer modèle</button>
-
-        <div>
-          <label>ID du modèle courant</label>
-          <input
-            value={currentModelId}
-            readOnly
-            style={{ width: '100%', padding: 8, marginTop: 4 }}
-          />
-        </div>
-
-        <button onClick={handleSaveModel} disabled={isSaving}>
-          {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
-        </button>
-
-        <hr />
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <label htmlFor="load-model-id">ID du modèle à charger</label>
-          <input
-            id="load-model-id"
-            type="text"
-            placeholder="Colle ici l'id du modèle"
-            value={loadModelId}
-            onChange={e => setLoadModelId(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '10px',
-              marginTop: 4,
-              border: '1px solid #999',
-              borderRadius: 8,
-              backgroundColor: '#fff',
-              color: '#000',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
-        <button onClick={handleLoadModel} disabled={isLoading}>
-          {isLoading ? 'Chargement...' : 'Charger'}
-        </button>
-
-        {message && (
-          <div style={{ padding: 10, background: '#f3f3f3', borderRadius: 8 }}>
-            {message}
-          </div>
-        )}
-
-        <div>
-          <strong>Nombre de voxels :</strong> {voxels.length}
+        <div className="mt-4 p-3 rounded-xl bg-white/80 text-black text-sm">
+          <strong>Modèle :</strong> {modelName}
+          <br />
+          <strong>Voxels :</strong> {voxels.length}
+          {message && (
+            <>
+              <br />
+              <span className="text-xs">{message}</span>
+            </>
+          )}
         </div>
       </div>
 
-      <div style={{ flex: 1 }}>
-        <Voxel
-          mode={mode}
-          shape={shape}
-          rotation={rotation}
-          taille={taille}
-          voxels={voxels}
-          onVoxelsChange={setVoxels}
-        />
-      </div>
+      {/* 🔹 Viewer */}
+      <Voxel
+        mode={mode}
+        shape={shape}
+        rotation={rotation}
+        taille={taille}
+        voxels={voxels}
+        onVoxelsChange={setVoxels}
+      />
     </div>
   );
 }

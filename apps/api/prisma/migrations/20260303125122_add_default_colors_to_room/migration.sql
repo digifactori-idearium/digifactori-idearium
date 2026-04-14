@@ -1,5 +1,0 @@
--- AlterTable
-ALTER TABLE "Room" ALTER COLUMN "backgroundColor" SET DEFAULT '#f0d400',
-ALTER COLUMN "leftWallColor" SET DEFAULT '#f45405',
-ALTER COLUMN "rightWallColor" SET DEFAULT '#e80606',
-ALTER COLUMN "floorColor" SET DEFAULT '#100101';

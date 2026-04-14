@@ -1,4 +1,3 @@
-
 interface Option {
   text: string;
   value: string;
@@ -42,7 +41,6 @@ type Profile = {
 
 type Role = 'CHILD' | 'SUPERVISOR';
 
-
 type Ideorama = {
   id: string;
   name: string;
@@ -58,11 +56,11 @@ type Ideorama = {
   updatedAt: Date;
   userId: string;
   model: ModelsInfo;
-}
+};
 
 type IdeoramaModel = {
-    model: ModelsInfo;
-}
+  model: ModelsInfo;
+};
 
 type ModelsInfo = {
   global: {
@@ -70,13 +68,23 @@ type ModelsInfo = {
     visible: boolean;
     music: { currentTrack: string; volume: number };
     theme: string;
-  }
-  background:  { color: string; accent: string }
+  };
+  background: { color: string; accent: string };
   info: {
     name: string;
     description: string;
     category?: string;
-  }
-  floor: PartSettings
-  objects: Record<string, ObjectState>
-}
+  };
+  floor: PartSettings;
+  objects: Record<string, ObjectState>;
+};
+
+type Asset = {
+  name: string;
+  category: string;
+  description: string;
+  source?: string;
+  preview?: source;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
