@@ -12,9 +12,11 @@ export interface VoxelPoint {
 
 interface BaseVoxelProps {
   mode: "add" | "remove" | "paint"
-  shape: "cube" | "mur" | "plateforme" | "escalier"
+  shape: "cube" | "mur" | "plateforme" | "escalier" | "cadre" | "anneau"
   rotation: number
-  taille: number
+  longueur: number
+  largeur: number
+  hauteur: number
   voxels: VoxelPoint[]
   onVoxelsChange: React.Dispatch<React.SetStateAction<VoxelPoint[]>>
 }
@@ -48,7 +50,9 @@ function VoxelMotor({
   shape,
   rotation,
   voxels,
-  taille,
+  longueur,
+  largeur,
+  hauteur,
   selectedColor,
   onVoxelsChange,
   setIsDragging,
@@ -207,27 +211,57 @@ function VoxelMotor({
   };
 
   const getShapeOffsets = () => {
+    const offsets: number[][] = [];
 
-    const offsets:number[][] = []
-  
     if (shape === "cube")
       offsets.push([0,0,0])
   
     if (shape === "mur")
-      for (let i=0;i<taille;i++)
-        offsets.push([i*50,0,0])
+      for (let i=0;i<longueur;i++)
+        for (let y=0;y<hauteur;y++)
+          offsets.push([i*50,y*50,0])
   
     if (shape === "plateforme")
-      for (let x=0;x<taille;x++)
-        for (let z=0;z<taille;z++)
+      for (let x=0;x<longueur;x++)
+        for (let z=0;z<largeur;z++)
           offsets.push([x*50,0,z*50])
   
     if (shape === "escalier")
-      for (let i=0;i<taille;i++)
-        offsets.push([i*50,i*50,0])
+      for (let i=0;i<hauteur;i++)
+        for (let lar=0;lar<largeur;lar++)
+          offsets.push([i*50,i*50,lar*50])
+
+    if (shape === "cadre")
+      for (let x = 0; x < longueur; x++)
+        for (let z = 0; z < largeur; z++)
+          if (
+            x === 0 ||
+            x === longueur - 1 ||
+            z === 0 ||
+            z === largeur - 1
+          )
+            offsets.push([x * 50, 0, z * 50])
+
+    const rayon = largeur / 2
+    const epaisseur = 1
+    
+    const rMin = (rayon - epaisseur) * (rayon - epaisseur)
+    const rMax = (rayon + 0.5) * (rayon + 0.5)
+    
+    if (shape === "anneau") {
+      for (let x = -rayon; x <= rayon; x++) {
+        for (let z = -rayon; z <= rayon; z++) {
+          const distSq = x * x + z * z
+    
+          if (distSq >= rMin && distSq <= rMax) {
+            offsets.push([x * 50, 0, z * 50])
+          }
+        }
+      }
+    }
   
     return offsets.map(o => rotateOffset(o[0],o[1],o[2]))
-  }
+  };
 
   return (
     <>
@@ -244,7 +278,7 @@ function VoxelMotor({
         ))}
       </group>
 
-      <gridHelper args={[1000, 20]} />
+      <gridHelper args={[3000, 60]} />
 
       <mesh
         ref={planeRef}
@@ -253,7 +287,7 @@ function VoxelMotor({
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
       >
-        <planeGeometry args={[1000, 1000]} />
+        <planeGeometry args={[3000, 3000]} />
         <meshBasicMaterial visible={false} />
       </mesh>
 
@@ -273,7 +307,7 @@ function VoxelMotor({
   );
 }
 
-export default function Voxel({mode, shape, rotation, taille, voxels, onVoxelsChange,}: VoxelProps) {
+export default function Voxel({mode, shape, rotation, longueur, largeur, hauteur, voxels, onVoxelsChange,}: VoxelProps) {
   
   const [isDragging, setIsDragging] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#f97316');
@@ -297,7 +331,9 @@ export default function Voxel({mode, shape, rotation, taille, voxels, onVoxelsCh
         mode={mode}
         shape={shape}
         rotation={rotation}
-        taille={taille} // ✅ IMPORTANT (manquait)
+        longueur={longueur}
+        largeur={largeur}
+        hauteur={hauteur}
         voxels={voxels}
         onVoxelsChange={onVoxelsChange}
         setIsDragging={setIsDragging}
@@ -324,4 +360,4 @@ export default function Voxel({mode, shape, rotation, taille, voxels, onVoxelsCh
       </div>
     )}
   </div>
-)
+)}

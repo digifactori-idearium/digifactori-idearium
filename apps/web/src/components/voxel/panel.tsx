@@ -3,12 +3,16 @@ import { useState } from "react"
 interface EditPanelProps {
   mode: "add" | "remove" | "paint"
   setMode: (m: "add" | "remove" | "paint") => void
-  shape: "cube" | "mur" | "plateforme" | "escalier"
-  setShape: (s: "cube" | "mur" | "plateforme" | "escalier") => void
+  shape: "cube" | "mur" | "plateforme" | "escalier" | "cadre" | "anneau"
+  setShape: (s: "cube" | "mur" | "plateforme" | "escalier" | "cadre" | "anneau") => void
   rotation: number
   setRotation: React.Dispatch<React.SetStateAction<number>>
-  taille: number
-  setTaille: (n: number) => void
+  longueur: number
+  setLongueur: (n: number) => void
+  largeur: number
+  setLargeur: (n: number) => void
+  hauteur: number
+  setHauteur: (n: number) => void
 }
 
 interface ButtonProps {
@@ -37,8 +41,18 @@ const Button = ({ value, label, color, mode, setMode }: ButtonProps) => (
   </button>
 )
 
-export default function EditPanel({ mode, setMode, shape, setShape, rotation, setRotation, taille, setTaille }: EditPanelProps) {
+export default function EditPanel({ mode, setMode, shape, setShape, rotation, setRotation, longueur, setLongueur, largeur, setLargeur, hauteur, setHauteur }: EditPanelProps) {
   const [open, setOpen] = useState(false)
+  const forme = {
+    cube: {longueur : false, largeur : false, hauteur : false},
+    mur: {longueur : true, largeur : false, hauteur : true},
+    plateforme: {longueur : true, largeur : true, hauteur : false},
+    escalier: {longueur : false, largeur : true, hauteur : true},
+    cadre: {longueur : true, largeur : true, hauteur : false},
+    anneau: {longueur : false, largeur : true, hauteur : false}
+  }
+
+  const formeSelect = forme[shape]
 
   return (
     <div style={{
@@ -53,15 +67,16 @@ export default function EditPanel({ mode, setMode, shape, setShape, rotation, se
     }}>
       <b>🧱 Edition</b>
 
+      {formeSelect.longueur && (
       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         <label style={{ fontSize: 14 }}>
-          🔢 Taille des formes :
+          🔢 Longueur des formes :
         </label>
       
         <input
           type="number"
-          value={taille}
-          onChange={(e) => setTaille(Number(e.target.value))}
+          value={longueur}
+          onChange={(e) => setLongueur(Number(e.target.value))}
           min={1}
           style={{
             padding: 8,
@@ -72,6 +87,51 @@ export default function EditPanel({ mode, setMode, shape, setShape, rotation, se
           }}
         />
       </div>
+      )}
+
+      {formeSelect.largeur && (
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <label style={{ fontSize: 14 }}>
+          🔢 Largueur des formes :
+        </label>
+      
+        <input
+          type="number"
+          value={largeur}
+          onChange={(e) => setLargeur(Number(e.target.value))}
+          min={1}
+          style={{
+            padding: 8,
+            borderRadius: 10,
+            border: "none",
+            background: "#333",
+            color: "white"
+          }}
+        />
+      </div>
+      )}
+
+      {formeSelect.hauteur && (
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <label style={{ fontSize: 14 }}>
+          🔢 Hauteur des formes :
+        </label>
+      
+        <input
+          type="number"
+          value={hauteur}
+          onChange={(e) => setHauteur(Number(e.target.value))}
+          min={1}
+          style={{
+            padding: 8,
+            borderRadius: 10,
+            border: "none",
+            background: "#333",
+            color: "white"
+          }}
+        />
+      </div>
+      )}
 
       {/* DROPDOWN */}
       <div style={{ position: "relative" }}>
@@ -103,7 +163,7 @@ export default function EditPanel({ mode, setMode, shape, setShape, rotation, se
             flexDirection: "column",
             gap: 4
           }}>
-            {["cube","mur","plateforme","escalier"].map(s => (
+            {["cube","mur","plateforme","escalier","cadre", "anneau"].map(s => (
               <div
                 key={s}
                 onClick={() => { setShape(s as any); setOpen(false) }}

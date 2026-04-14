@@ -14,17 +14,17 @@ export default function VoxelLayout() {
   const { modelId } = useParams<{ modelId: string }>();
 
   const [mode, setMode] = useState<'add' | 'remove' | 'paint'>('add');
-  const [shape, setShape] = useState<
-    'cube' | 'mur' | 'plateforme' | 'escalier'
-  >('cube');
+  const [shape, setShape] = useState<'cube' | 'mur' | 'plateforme' | 'escalier' | 'cadre' | 'anneau'>('cube');
   const [rotation, setRotation] = useState(0);
 
   const [voxels, setVoxels] = useState<VoxelPoint[]>([]);
   const [modelName, setModelName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [taille, setTaille] = useState(1);
   const [message, setMessage] = useState('');
+  const [longueur, setLongueur] = useState(1)
+  const [largeur, setLargeur] = useState(1)
+  const [hauteur, setHauteur] = useState(1)
 
   // 🔹 Charger le modèle
   useEffect(() => {
@@ -109,8 +109,12 @@ export default function VoxelLayout() {
           setShape={setShape}
           rotation={rotation}
           setRotation={setRotation}
-          taille={taille}
-          setTaille={setTaille}
+          longueur={longueur}
+          setLongueur={setLongueur}
+          largeur={largeur}
+          setLargeur={setLargeur}
+          hauteur={hauteur}
+          setHauteur={setHauteur}
         />
 
         <div className="mt-4 p-3 rounded-xl bg-white/80 text-black text-sm">
@@ -131,7 +135,9 @@ export default function VoxelLayout() {
         mode={mode}
         shape={shape}
         rotation={rotation}
-        taille={taille}
+        longueur={longueur}
+        largeur={largeur}
+        hauteur={hauteur}
         voxels={voxels}
         onVoxelsChange={setVoxels}
       />
