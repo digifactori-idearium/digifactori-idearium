@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 
 import { Request, RequestHandler, Response } from 'express';
 
@@ -7,26 +6,7 @@ import IdeoramaService from './ideorama.services';
 
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
-
-/**
- * Helper function to get the file path for an ideorama model
- *
- * @description Generates and validates the upload path for an ideorama scene file.
- * Ensures the ID is alphanumeric to prevent path traversal attacks
- *
- * @param {string} ideoramaId - The unique identifier for the ideorama
- * @returns {string} The absolute file path for the ideorama JSON scene file
- * @throws {Error} If ideoramaId contains invalid characters
- */
-const getUploadPath = (ideoramaId: string): string => {
-  const id = String(ideoramaId);
-  // The id should be alphanumerical
-  if (!/^[a-z0-9]+$/i.test(id)) {
-    throw new Error('Invalid ideoramaId');
-  }
-  const fileName = `scene-${id}.json`;
-  return path.join(process.cwd(), 'uploads/scenes', fileName);
-};
+import { getUploadPath } from '@/utils/ideorama';
 
 export default class IdeoramaController {
   constructor(private readonly ideoramaService: IdeoramaService) {}
@@ -77,9 +57,7 @@ export default class IdeoramaController {
         req.user!.userId
       );
       HttpResponse.success(
-        {
-          ideoramas,
-        },
+        ideoramas,
         'Idéoramas récupérés avec succès'
       ).send(res);
     }
@@ -115,42 +93,23 @@ export default class IdeoramaController {
   );
 
   /**
-   * Creates or updates an ideorama and its scene model
+   * Updates an ideorama and its scene model
    *
-   * @description Creates a new ideorama with an empty scene template if ideoramaId is not provided.
-   * If updating (ideoramaId provided), persists the scene data to the file system
+   * @description Persists the scene data to the file system
    *
    * @param {Request} req - Express request with authenticated user and body containing:
-   *   - ideoramaId?: string (if updating)
+   *   - ideoramaId: string
    *   - ideorama: { model: string (JSON) }
    * @param {Response} res - Express response object
    * @returns {Response} JSON response
    */
-  saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.body.ideoramaId) {
-      // Create new ideorama in DB
-      const newIdeorama = await this.ideoramaService.createIdeorama(
-        req.body.ideorama
-      );
-      const uploadPath = getUploadPath(newIdeorama.id);
-      await this.ideoramaService.updateIdeoramaModelPath(
-        newIdeorama.id,
-        uploadPath
-      );
+  saveIdeoramaController = asyncHandler(
+    async (req: Request, res: Response) => {
+      const uploadPath = getUploadPath(req.body.ideoramaId);
+      fs.writeFileSync(uploadPath, req.body.ideorama.model);
+  
+      HttpResponse.success(null, 'Ideorama updated successfully').send(res);
 
-      // Copy empty scene template and past in a new file in uploads
-      const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json');
-      fs.writeFileSync(uploadPath, emptyScene);
-
-      return HttpResponse.created(
-        newIdeorama,
-        'Ideorama created successfully'
-      ).send(res);
-    }
-
-    // Update existing ideorama
-    const uploadPath = getUploadPath(req.body.ideoramaId);
-    fs.writeFileSync(uploadPath, req.body.ideorama.model);
 
     HttpResponse.success(null, 'Ideorama updated successfully').send(res);
   });
@@ -167,14 +126,15 @@ export default class IdeoramaController {
    */
   deleteIdeoramaController = asyncHandler(
     async (req: Request, res: Response) => {
-      this.ideoramaService.deleteIdeorama(req.body.ideoramaId);
-      const uploadPath = getUploadPath(req.body.ideoramaId);
 
-      fs.unlink(uploadPath, err => {
-        if (err) console.log(err);
-      });
-
-      return HttpResponse.deleted('Ideorama deleted successfully').send(res);
+        await this.ideoramaService.deleteIdeorama(req.body.ideoramaId);
+        const uploadPath = getUploadPath(req.body.ideoramaId);
+    
+        fs.unlink(uploadPath, err => {
+          if (err) console.log(err);
+        });
+    
+        return HttpResponse.deleted('Ideorama deleted successfully').send(res);
     }
   );
 
@@ -193,11 +153,9 @@ export default class IdeoramaController {
       const emptyModel = JSON.parse(
         fs.readFileSync(getUploadPath('empty'), 'utf-8')
       );
-
-      HttpResponse.success(
-        { model: emptyModel },
-        'Empty ideorama template'
-      ).send(res);
+      HttpResponse.success(emptyModel, 'Empty ideorama template').send(
+        res
+      );
     }
   );
 }
