@@ -10,9 +10,9 @@ import MyIdeoramas from '@/pages/MyIdeoramas';
 import MyModels from '@/pages/MyModels';
 import MySpace from '@/pages/MySpace';
 import ProfilePage from '@/pages/Profile';
+import Settings from '@/pages/Settings';
 import TextEditor from '@/pages/TextEditor';
 import VoxelLayout from '@/pages/VoxelLayout';
-
 
 const appRoutes = [
   {
@@ -59,10 +59,17 @@ const appRoutes = [
     path: 'voxel',
     children: [
       { index: true, element: <ProtectedRoute element={<VoxelLayout />} /> },
-      { path: ':modelId', element: <ProtectedRoute element={<VoxelLayout />} /> },
-      { path: 'playground', element: <ProtectedRoute element={<VoxelLayout />} /> },
+      {
+        path: ':modelId',
+        element: <ProtectedRoute element={<VoxelLayout />} />,
+      },
+      {
+        path: 'playground',
+        element: <ProtectedRoute element={<VoxelLayout />} />,
+      },
     ],
   },
+  { path: 'settings', element: <ProtectedRoute element={<Settings />} /> },
 ];
 
 export default appRoutes;

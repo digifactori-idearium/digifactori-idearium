@@ -194,3 +194,12 @@ interface EditorToolbarState {
   alignCenter: boolean;
   alignRight: boolean;
 }
+
+interface Integration {
+  id: string;
+  name: string;
+}
+
+interface CurrentStatusProps {
+  status: Status;
+}

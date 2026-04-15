@@ -116,7 +116,6 @@ model VoxelModel {
 }
 
 
-
 model Document {
   id        String   @id @default(cuid())
   title     String   @default("Sans titre")
@@ -129,4 +128,34 @@ model Document {
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ASSETS
+enum IntegrationType{
+  ASSET
+  MUSIC
+  OTHER
+}
+
+
+model Setting {
+  id Int  @id @default(1)
+  StoreName String 
+  Integrations Integration[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Integration{
+  id String  @id
+  settingId Int
+  setting Setting  @relation(fields: [settingId], references: [id])
+  name String 
+  url String 
+  type IntegrationType 
+  key String
+  isActive Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  fiedMapping Json
 }

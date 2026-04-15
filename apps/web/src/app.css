@@ -72,8 +72,10 @@
   .side-btn {
     @apply bg-sidebar! hover:bg-sidebar/70! active:bg-sidebar/50! outline-none! border-none!;
   }
+  @apply bg-mauve! text-white! hover:bg-mauve/80! outline-none! focus:border-2! focus:border-white!;
+
   .danger-btn {
-    @apply border-none! p-4 rounded-2xl bg-red-500! hover:bg-red-600! text-white! font-bold shadow-[0_4px_0_rgb(180,40,40)] active:translate-y-1 active:shadow-none transition-all;
+    @apply border-none! rounded-2xl bg-red-500! hover:bg-red-600! text-white! font-bold shadow-[0_4px_0_rgb(180,40,40)] active:translate-y-1 active:shadow-none transition-all;
   }
 
   .green-btn {
