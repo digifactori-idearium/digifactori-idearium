@@ -12,6 +12,7 @@ import {
   ChartBarStacked,
   TextAlignStart,
   FileBox,
+  Columns3Cog,
 } from 'lucide-react';
 
 import { themeOptions } from './theme';
@@ -338,6 +339,7 @@ export const assetInputs = [
     type: 'text',
     name: 'name',
     placeholder: "Entrez le nom de l'asset",
+    required: true,
     icon: Box,
   },
   {
@@ -345,6 +347,7 @@ export const assetInputs = [
     type: 'text',
     name: 'category',
     placeholder: "Entrez le type de catégorie de l'asset",
+    required: true,
     icon: ChartBarStacked,
   },
   {
@@ -352,6 +355,7 @@ export const assetInputs = [
     type: 'text',
     name: 'description',
     placeholder: "Entrez la description de l'asset",
+    required: true,
     icon: TextAlignStart,
   },
   {
@@ -359,6 +363,80 @@ export const assetInputs = [
     type: 'text',
     name: 'source',
     placeholder: "Entrez la source de l'asset",
+    required: true,
+    icon: FileBox,
+  },
+];
+
+/* =========================
+   INTEGRATION INPUTS
+========================= */
+export const integrationInputs = [
+  {
+    label: 'Nom',
+    type: 'text',
+    name: 'name',
+    placeholder: "Entrez le nom de l'intégration",
+    required: true,
+    icon: Box,
+  },
+  {
+    label: 'Source',
+    type: 'text',
+    name: 'source',
+    placeholder: "Entrez la source de l'intégration",
+    required: true,
+    icon: FileBox,
+  },
+  {
+    label: 'Type',
+    type: 'select',
+    name: 'category',
+    placeholder: "Entrez le type de l'intégration",
+    required: true,
+    options: [
+      { value: 'ASSET', text: 'Asset-3d' },
+      { value: 'MUSIC', text: 'Musique' },
+      { value: 'OTHER', text: 'Autre' },
+    ],
+    icon: ChartBarStacked,
+  },
+  {
+    label: 'Clé',
+    type: 'password',
+    name: 'password',
+    placeholder: "Entrez la clé de l'intégration",
+    required: true,
+    icon: KeyRound,
+  },
+  {
+    label: 'Configuration',
+    type: 'json',
+    name: 'user.role',
+    placeholder: "Entrez la configuration de l'intégration",
+    required: true,
+    icon: Columns3Cog,
+  },
+];
+
+/* =========================
+   STORE INPUTS
+========================= */
+export const storeInputs = [
+  {
+    label: 'Nom',
+    type: 'text',
+    name: 'name',
+    placeholder: 'Entrez le nom du store',
+    required: true,
+    icon: Box,
+  },
+  {
+    label: 'Source',
+    type: 'text',
+    name: 'source',
+    placeholder: 'Entrez la source du store',
+    required: true,
     icon: FileBox,
   },
 ];
