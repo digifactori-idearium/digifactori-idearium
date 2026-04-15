@@ -9,6 +9,8 @@ import morgan from 'morgan';
 
 import createAuthRoutes from './modules/auth/auth.route';
 import AuthService from './modules/auth/auth.service';
+import createEditorRoutes from './modules/editor/editor.route';
+import EditorService from './modules/editor/editor.service';
 import createIdeoramaRoutes from './modules/ideorama/ideorama.route';
 import IdeoramaService from './modules/ideorama/ideorama.services';
 import createProfileRoutes from './modules/profile/profile.route';
@@ -36,6 +38,7 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
 // Routes
 const authService = new AuthService();
@@ -50,6 +53,10 @@ app.use('/api/ideorama', createIdeoramaRoutes(ideoramaService));
 const voxelService = new VoxelService();
 app.use('/api/voxel', createVoxelRoutes(voxelService));
 
+const editorService = new EditorService();
+app.use('/api/editor', createEditorRoutes(editorService));
+
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Health check endpoint

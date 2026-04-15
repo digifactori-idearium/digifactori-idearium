@@ -28,6 +28,7 @@ model User {
   profil        Profile?
   ideoramas     Ideorama[]
   voxelModels   VoxelModel[]
+  documents     Document[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 }
@@ -108,6 +109,22 @@ model VoxelModel {
   id        String   @id @default(cuid())
   name      String   @default("New Voxel Model")
   model     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+model Document {
+  id        String   @id @default(cuid())
+  title     String   @default("Sans titre")
+  content   String   @default("") 
+  json      Json?
+  wordCount Int      @default(0)
+  emoji     String   @default("📝")
+  color     String   @default("#a78bfa")
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
