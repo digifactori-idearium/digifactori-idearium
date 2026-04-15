@@ -2,20 +2,25 @@ import path from 'path';
 
 import cors from 'cors';
 import dotenv from 'dotenv';
-import express from 'express';
+import express, { type Express } from 'express';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import authRoutes from './modules/auth/auth.route';
-import ideoramasRoutes from './modules/ideorama/ideorama.route';
-import profileRoutes from './modules/profile/profile.route';
-import voxelRoutes from './modules/voxel/voxel.route';
+import createAuthRoutes from './modules/auth/auth.route';
+import AuthService from './modules/auth/auth.service';
+import createIdeoramaRoutes from './modules/ideorama/ideorama.route';
+import IdeoramaService from './modules/ideorama/ideorama.services';
+import createProfileRoutes from './modules/profile/profile.route';
+import ProfileService from './modules/profile/profile.service';
+import createVoxelRoutes from './modules/voxel/voxel.route';
+import VoxelService from './modules/voxel/voxel.service';
 
 // Env variables
 dotenv.config();
 
-const app = express();
+const app: Express = express();
+export default app;
 const PORT = process.env.PORT || 3001;
 
 // set up rate limiter: maximum of five requests per minute
@@ -33,12 +38,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/ideorama', ideoramasRoutes);
-app.use('/api/voxel', voxelRoutes);
+const authService = new AuthService();
+app.use('/api/auth', createAuthRoutes(authService));
 
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")))
+const profileService = new ProfileService();
+app.use('/api/profile', createProfileRoutes(profileService));
+
+const ideoramaService = new IdeoramaService();
+app.use('/api/ideorama', createIdeoramaRoutes(ideoramaService));
+
+const voxelService = new VoxelService();
+app.use('/api/voxel', createVoxelRoutes(voxelService));
+
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

@@ -16,7 +16,6 @@ export const searchIdeorama = async (
     const response = await axios.post(`http://localhost:3001/api/ideorama/`, {
       ideoramaId: ideoramaId,
     });
-    console.log('search Ideorama: ', response);
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -62,7 +61,7 @@ export const createIdeorama = async (
 ): Promise<ApiResponse<Ideorama>> => {
   try {
     const response = await axios.post(
-      `http://localhost:3001/api/ideorama/save`,
+      `http://localhost:3001/api/ideorama/create`,
       {
         ideorama: {
           name: name,
@@ -153,7 +152,7 @@ export const autoSaveIdeorama = (
 
 export const getAllIdeoramas = async (
   userId: string | undefined
-): Promise<ApiResponse<{ ideoramas: Ideorama[]; profile: Profile }>> => {
+): Promise<ApiResponse<{ ideoramas: Ideorama[] }>> => {
   try {
     const response = await axios.post(
       `http://localhost:3001/api/ideorama/all`,
@@ -166,6 +165,7 @@ export const getAllIdeoramas = async (
         response.data.errors[0]?.message || response.data.error?.message
       );
     }
+    console.log(response.data.data);
     return response.data;
   } catch (error: any) {
     throw new Error(
@@ -175,7 +175,9 @@ export const getAllIdeoramas = async (
   }
 };
 
-export const deleteIdeorama = async (ideoramaId: string | undefined) => {
+export const deleteIdeorama = async (
+  ideoramaId: string | undefined
+): Promise<boolean> => {
   try {
     const response = await axios.post(
       `http://localhost:3001/api/ideorama/delete`,
@@ -183,16 +185,14 @@ export const deleteIdeorama = async (ideoramaId: string | undefined) => {
         ideoramaId: ideoramaId,
       }
     );
+    console.log('response: ', response);
     if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
+      // toast.error(response.data.error?.message)
     }
     toast.success("Suppression de l'idéorama réussie");
+    return true;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message ||
-        "Echec lors de la suppression de l'idéorama"
-    );
+    // toast.error(error.message)
+    return false;
   }
 };
