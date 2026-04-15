@@ -4,13 +4,11 @@ import { Request, Response } from 'express';
 
 import { profileSchema, userProfileSchema } from '../../utils/validations';
 
-
 import { IProfileService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
 
 export default class ProfileController {
-
   constructor(private readonly profileService: IProfileService) {}
 
   /**
@@ -29,18 +27,20 @@ export default class ProfileController {
    */
   getProfile = asyncHandler(async (req: Request, res: Response) => {
     const currentUser = req.user!;
-  
-    const profile = await this.profileService.getSingleProfile(currentUser.userId);
+
+    const profile = await this.profileService.getSingleProfile(
+      currentUser.userId
+    );
     if (!profile) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
     const data: { profile: Profile; user?: User } = { profile: profile };
-  
+
     const user = await this.profileService.getSingleUser(currentUser?.userId);
     if (!user) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
-  
+
     // Checks if the user info should be added in the response
     let isParentalCodeValid = false;
     if (req.body.parental_code && user.parental_code) {
@@ -52,10 +52,10 @@ export default class ProfileController {
     if (user.role !== 'CHILD' || isParentalCodeValid) {
       data.user = user;
     }
-  
+
     HttpResponse.success(data, 'Utilisateur trouvé').send(res);
   });
-  
+
   /**
    * Updates a user's profile and associated user data
    *
@@ -73,15 +73,15 @@ export default class ProfileController {
    */
   setProfile = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user!;
-  
+
     let profileErrors: any[] = [];
     let userErrors: any[] = [];
-  
+
     if (req.body.profile) {
       const resultProfileSchema = await profileSchema.safeParseAsync(
         req.body.profile
       );
-  
+
       if (!resultProfileSchema.success) {
         profileErrors = resultProfileSchema.error.issues.map(err => ({
           field: err.path.join('.'),
@@ -89,12 +89,12 @@ export default class ProfileController {
         }));
       }
     }
-  
+
     if (req.body.user) {
       const resultUserSchema = await userProfileSchema.safeParseAsync(
         req.body.user
       );
-  
+
       if (!resultUserSchema.success) {
         userErrors = resultUserSchema.error.issues.map(err => ({
           field: err.path.join('.'),
@@ -102,23 +102,26 @@ export default class ProfileController {
         }));
       }
     }
-  
+
     if (profileErrors.length > 0 || userErrors.length > 0) {
       return res.status(400).json({
         profileErrors,
         userErrors,
       });
     }
-  
-    const profile = await this.profileService.updateProfile(user.userId, req.body);
-  
+
+    const profile = await this.profileService.updateProfile(
+      user.userId,
+      req.body
+    );
+
     if (!profile) {
       return HttpResponse.notFound('Profil non trouvé').send(res);
     }
-  
+
     HttpResponse.success(profile, 'Profil mis à jour avec succès').send(res);
   });
-  
+
   /**
    * Deletes a user account and associated profile
    *
@@ -131,13 +134,10 @@ export default class ProfileController {
    *   - Unauthorized (401): { status: 'error', error: { code: 'Unauthorized', message: string }, status_code: 401 }
    *   - Server Error (401): { status: 'error', error: { code: 'Error', message: string }, status_code: 401 }
    */
-  deleteProfile = asyncHandler(
-    async (req: Request, res: Response) => {
-      const user = req.user!;
-  
-      const deleted = await this.profileService.deleteUser(user.userId);
-      HttpResponse.success(deleted, 'Utilisateur supprimé avec succès').send(res);
-    }
-  );
-}
+  deleteProfile = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user!;
 
+    const deleted = await this.profileService.deleteUser(user.userId);
+    HttpResponse.success(deleted, 'Utilisateur supprimé avec succès').send(res);
+  });
+}

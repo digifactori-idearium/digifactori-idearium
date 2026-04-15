@@ -137,9 +137,9 @@ export const resetInputs = [
 ];
 
 /* =========================
-   ROOM CREATION FORM INPUTS
+   IDEORAMA CREATION FORM INPUTS
 ========================= */
-export const IdeoramaCreationInputs = [
+export const ideoramaCreationInputs = [
   {
     label: "Nom de l'idéorama",
     type: 'text',
@@ -151,7 +151,49 @@ export const IdeoramaCreationInputs = [
 ];
 
 /* =========================
-   ROOM CONFIGURATION FORM INPUTS
+   MODEL CREATION FORM INPUTS
+========================= */
+export const modelCreationInputs = [
+  {
+    label: 'Nom du modèle',
+    type: 'text',
+    name: 'name',
+    placeholder: 'Monstre bleu',
+    required: true,
+    icon: Pencil,
+  },
+];
+
+/* =========================
+   EDITOR CREATION FORM INPUTS
+========================= */
+export const editorCreationInputs = [
+  {
+    label: 'Le titre du document ',
+    type: 'text',
+    name: 'title',
+    placeholder: 'Le Petit Chaperon rouge',
+    required: true,
+    icon: Pencil,
+  },
+  {
+    label: "L'Emoji",
+    type: 'emoji',
+    name: 'emoji',
+    required: false,
+    icon: Pencil,
+  },
+  {
+    label: 'Couleur du document ',
+    type: 'color',
+    name: 'color',
+    required: false,
+    icon: Pencil,
+  },
+];
+
+/* =========================
+   IDEORAMA CONFIGURATION FORM INPUTS
 ========================= */
 
 //Tags

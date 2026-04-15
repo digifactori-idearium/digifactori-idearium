@@ -6,10 +6,10 @@ import IdeoramaController from './ideorama.controller';
 
 import { IIdeoramaService } from '@/types';
 
-
-export default function createIdeoramaRoutes(ideoramaService: IIdeoramaService) {
-
-  const ideoramaController = new IdeoramaController(ideoramaService)
+export default function createIdeoramaRoutes(
+  ideoramaService: IIdeoramaService
+) {
+  const ideoramaController = new IdeoramaController(ideoramaService);
 
   const ideoramasRoutes: ExpressRouter = Router();
   ideoramasRoutes.post(
@@ -43,6 +43,6 @@ export default function createIdeoramaRoutes(ideoramaService: IIdeoramaService) 
     ideoramaController.deleteIdeoramaController
   );
   ideoramasRoutes.get('/empty', ideoramaController.getEmptyIdeorama);
-  
+
   return ideoramasRoutes;
 }

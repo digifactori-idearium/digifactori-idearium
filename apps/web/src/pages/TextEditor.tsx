@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+import { Editor } from '@/components/editor';
+import { DocumentList } from '@/components/editor/DocumentList';
+import { useUser } from '@/providers/UserProvider';
+
+type View = { type: 'list' } | { type: 'editor'; documentId: string };
 
 const TextEditor: React.FC = () => {
+  const [view, setView] = useState<View>({ type: 'list' });
+  const { user } = useUser();
+  if (!user) return null;
+
   return (
-    <div className="min-h-screen p-6">
-      <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-800 mb-6 dark:text-white">
-        Editeur de texte
-      </h1>
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      {view.type === 'list' ? (
+        <DocumentList
+          userId={user.id}
+          onOpen={id => setView({ type: 'editor', documentId: id })}
+        />
+      ) : (
+        <Editor
+          documentId={view.documentId}
+          onBack={() => setView({ type: 'list' })}
+        />
+      )}
     </div>
   );
 };

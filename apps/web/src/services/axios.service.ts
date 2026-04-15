@@ -4,6 +4,9 @@ import { toast } from 'sonner';
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001',
   withCredentials: false,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 instance.interceptors.request.use(
@@ -23,27 +26,13 @@ instance.interceptors.response.use(
   response => response,
   error => {
     const status = error.response?.status;
+    const requestUrl = error.config?.url ?? '';
+    const isAuthRoute = requestUrl.includes('/auth/');
 
-    if (status === 401) {
-      localStorage.removeItem('token');
-
-      toast.error('Session expirée. Veuillez vous reconnecter.', {
-        id: 'session-expired',
-      });
-
-      if (window.location.pathname !== '/') {
-        window.location.href = '/';
-      }
-    }
-
-    if (status === 403) {
-      toast.error('Accès refusé.', {
-        id: 'forbidden',
-      });
-
-      if (window.location.pathname !== '/') {
-        window.location.href = '/';
-      }
+    if ((status === 401 || status === 403) && !isAuthRoute) {
+      window.dispatchEvent(
+        new CustomEvent('auth:unauthorized', { detail: { status } })
+      );
     }
 
     if (status === 500) {
