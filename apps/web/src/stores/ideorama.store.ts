@@ -149,7 +149,7 @@ export const actions = {
   async resetIdeorama() {
     try {
       await getEmptyIdeorama().then(res => {
-        const model = res.data.model;
+        const model = res.data;
         sceneState.global = model.global ? model.global : sceneState.global;
         sceneState.background = model.background
           ? model.background

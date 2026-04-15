@@ -34,7 +34,7 @@ export const searchIdeoramas = async (query: string) => {
   return [query]
 }
 
-export const getEmptyIdeorama = async(): Promise<ApiResponse<IdeoramaModel>> => {
+export const getEmptyIdeorama = async(): Promise<ApiResponse<ModelsInfo>> => {
   try {
     const response = await axios.get(
       `http://localhost:3001/api/ideorama/empty`
@@ -101,7 +101,7 @@ export const saveIdeorama = async (
 
 export const getAllIdeoramas = async (
   userId :string | undefined
-): Promise<ApiResponse<{ideoramas: Ideorama[]}>> => {
+): Promise<ApiResponse<Ideorama[]>> => {
   try {
   const response = await axios.post(
       `http://localhost:3001/api/ideorama/all`, {
@@ -113,7 +113,6 @@ export const getAllIdeoramas = async (
         response.data.errors[0]?.message || response.data.error?.message
       );
     }
-    console.log(response.data.data)
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error?.message || 'Échec lors de la récupération des idéoramas');

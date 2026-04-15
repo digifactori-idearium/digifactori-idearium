@@ -20,7 +20,7 @@ const MyIdeoramas: React.FC = () => {
 
   useEffect(() => {
     getAllIdeoramas(user?.id).then(res => {
-      setIdeoramas(res.data.ideoramas);
+      setIdeoramas(res.data);
     });
     getProfile("").then(res => {
       setProfile(res.data.profile);

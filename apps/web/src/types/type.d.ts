@@ -58,10 +58,6 @@ type Ideorama = {
   model: ModelsInfo;
 };
 
-type IdeoramaModel = {
-  model: ModelsInfo;
-};
-
 type ModelsInfo = {
   global: {
     brightness: 'bright' | 'dim' | 'dark';
