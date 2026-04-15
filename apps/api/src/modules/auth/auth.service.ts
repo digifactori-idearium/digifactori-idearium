@@ -6,7 +6,7 @@ import { IAuthService } from '@/types';
 const userTable = prisma.user;
 const profileTable = prisma.profile;
 
-export default class AuthService implements IAuthService{
+export default class AuthService implements IAuthService {
   /**
    * Creates a new user in DB.
    *
@@ -35,10 +35,7 @@ export default class AuthService implements IAuthService{
    * @param ideoramaData - the profile data
    * @returns a Promise with the new profile (Promise<Profile>)
    */
-  async createProfile(
-    input: ProfileInput,
-    userId: string
-  ): Promise<Profile> {
+  async createProfile(input: ProfileInput, userId: string): Promise<Profile> {
     const newProfile = await profileTable.create({
       data: {
         ...input,
@@ -98,10 +95,7 @@ export default class AuthService implements IAuthService{
    * @param password - the entered password to verify
    * @returns a promise with the user exists and if the password is correct (Promise<User>), Promise<null> otherwise
    */
-  async loginEmail(
-    email: string,
-    password: string
-  ): Promise<User | null> {
+  async loginEmail(email: string, password: string): Promise<User | null> {
     const user = await userTable.findUnique({
       where: {
         email: email,
@@ -122,10 +116,7 @@ export default class AuthService implements IAuthService{
    * @param password - the entered password to verify
    * @returns a promise with the user exists and if the password is correct (Promise<User), Promise<null> otherwise
    */
-  async loginPseudo(
-    pseudo: string,
-    password: string
-  ): Promise<User | null> {
+  async loginPseudo(pseudo: string, password: string): Promise<User | null> {
     const profile = await profileTable.findUnique({
       where: {
         pseudo,

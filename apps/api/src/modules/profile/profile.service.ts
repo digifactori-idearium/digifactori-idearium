@@ -7,7 +7,7 @@ import { IProfileService } from '@/types';
 const profileTable = prisma.profile;
 const userTable = prisma.user;
 
-export default class ProfileService implements IProfileService{
+export default class ProfileService implements IProfileService {
   /**
    * Checks if the password is correct
    *
@@ -15,10 +15,7 @@ export default class ProfileService implements IProfileService{
    * @param password: the provided password
    * @returns Promise<true> if the password is correct, Promise<false> otherwise
    */
-  async verifyPassword(
-    userId: string,
-    password: string
-  ): Promise<boolean> {
+  async verifyPassword(userId: string, password: string): Promise<boolean> {
     const correctPassword = await userTable
       .findUnique({
         where: {
@@ -122,9 +119,7 @@ export default class ProfileService implements IProfileService{
    * @returns a Promise with the deleted user and profile (Promise<{user: User, profile: Profile}>)
    * @throws an error if the user or the profile is not found
    */
-  async deleteUser(
-    userId: string
-  ): Promise<{ user: User; profile: Profile }> {
+  async deleteUser(userId: string): Promise<{ user: User; profile: Profile }> {
     const response = await prisma.$transaction(async tx => {
       const profile = await tx.profile.delete({
         where: {

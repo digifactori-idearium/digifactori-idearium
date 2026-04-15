@@ -21,7 +21,7 @@ interface UserInput {
 interface ProfileInput {
   pseudo: string;
   bio?: string;
-  avatar?: string
+  avatar?: string;
 }
 
 type RegisterInput = {
@@ -30,10 +30,9 @@ type RegisterInput = {
 };
 
 type SetProfileInput = {
-  user?: Partial<UserInput>,
-  profile: Partial<ProfileInput>
-}
-
+  user?: Partial<UserInput>;
+  profile: Partial<ProfileInput>;
+};
 
 type ModelInfo = {
   global: {
@@ -69,7 +68,7 @@ interface ObjectState {
     position: { x: number; y: number; z: number };
     rotation: { x: number; y: number; z: number };
     scale: number;
-};
+  };
 
   // Style
   style: {
@@ -85,7 +84,7 @@ interface ObjectState {
     physics: boolean;
     hidden: boolean;
     locked: boolean;
-};
+  };
 
   actions?: ActionConfig[];
   actionsVersion?: number;

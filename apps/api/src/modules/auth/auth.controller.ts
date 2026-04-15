@@ -1,4 +1,3 @@
-
 import { IAuthService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import { generateToken } from '@/utils/generate-token';
@@ -7,7 +6,6 @@ import { failOnValidation } from '@/utils/validation-errors';
 import { loginSchema, registrationSchema } from '@/utils/validations';
 
 export default class AuthController {
-
   constructor(private readonly authService: IAuthService) {}
 
   /**

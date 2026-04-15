@@ -6,7 +6,7 @@ import { IIdeoramaService } from '@/types';
 
 const ideoramaTable = prisma.ideorama;
 
-export default class IdeoramaService implements IIdeoramaService{
+export default class IdeoramaService implements IIdeoramaService {
   /**
    * Creates a new ideorama in DB, with model = "".
    *
@@ -82,10 +82,7 @@ export default class IdeoramaService implements IIdeoramaService{
    * @returns a Promise with the updated ideorama (Promise<Ideorama>)
    * @throws error if the ideoramaId does not exist in DB
    */
-  async updateIdeorama(
-    ideoramaId: string,
-    data: Ideorama
-  ): Promise<Ideorama> {
+  async updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama> {
     return ideoramaTable.update({
       where: {
         id: ideoramaId,

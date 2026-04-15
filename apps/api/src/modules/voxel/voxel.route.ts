@@ -34,5 +34,5 @@ export default function createVoxelRoutes(voxelService: IVoxelService) {
     voxelController.deleteVoxelModelController
   );
 
-  return voxelRoutes
+  return voxelRoutes;
 }

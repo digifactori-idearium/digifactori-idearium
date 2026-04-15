@@ -9,7 +9,6 @@ import HttpResponse from '@/utils/http-response';
 import { getUploadPath } from '@/utils/ideorama';
 
 export default class IdeoramaController {
-
   constructor(private readonly ideoramaService: IdeoramaService) {}
 
   /**
@@ -25,18 +24,23 @@ export default class IdeoramaController {
   createIdeoramaController = asyncHandler(
     async (req: Request, res: Response) => {
       // Save in DB
-      const newIdeorama = await this.ideoramaService.createIdeorama(req.body.ideorama);
+      const newIdeorama = await this.ideoramaService.createIdeorama(
+        req.body.ideorama
+      );
       const uploadPath = getUploadPath(newIdeorama.id);
-      await this.ideoramaService.updateIdeoramaModelPath(newIdeorama.id, uploadPath);
-  
+      await this.ideoramaService.updateIdeoramaModelPath(
+        newIdeorama.id,
+        uploadPath
+      );
+
       // Save in uploads dir
       const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json');
       fs.writeFileSync(uploadPath, emptyScene);
-  
+
       HttpResponse.created(newIdeorama, 'Idéorama créé avec succès').send(res);
     }
   );
-  
+
   /**
    * Retrieves all ideoramas for the authenticated user with profile info
    *
@@ -49,14 +53,16 @@ export default class IdeoramaController {
    */
   getUserIdeoramasController = asyncHandler(
     async (req: Request, res: Response) => {
-      const ideoramas = await this.ideoramaService.getUserIdeoramas(req.user!.userId);
+      const ideoramas = await this.ideoramaService.getUserIdeoramas(
+        req.user!.userId
+      );
       HttpResponse.success(
         ideoramas,
         'Idéoramas récupérés avec succès'
       ).send(res);
     }
   );
-  
+
   /**
    * Retrieves a specific ideorama with its scene data loaded from file
    *
@@ -69,19 +75,23 @@ export default class IdeoramaController {
    */
   getIdeoramaByIdController = asyncHandler(
     async (req: Request, res: Response) => {
-      const ideorama = await this.ideoramaService.getIdeoramaById(req.body.ideoramaId);
-  
+      const ideorama = await this.ideoramaService.getIdeoramaById(
+        req.body.ideoramaId
+      );
+
       if (!ideorama) {
         return HttpResponse.notFound('Ideorama not found').send(res);
       }
-  
+
       const fileContent = fs.readFileSync(ideorama.model, 'utf-8');
       ideorama.model = JSON.parse(fileContent);
-  
-      HttpResponse.success(ideorama, 'Ideorama retrieved successfully').send(res);
+
+      HttpResponse.success(ideorama, 'Ideorama retrieved successfully').send(
+        res
+      );
     }
   );
-  
+
   /**
    * Updates an ideorama and its scene model
    *
@@ -99,9 +109,11 @@ export default class IdeoramaController {
       fs.writeFileSync(uploadPath, req.body.ideorama.model);
   
       HttpResponse.success(null, 'Ideorama updated successfully').send(res);
-    }
-  );
-  
+
+
+    HttpResponse.success(null, 'Ideorama updated successfully').send(res);
+  });
+
   /**
    * Deletes an ideorama and its associated scene file
    *
@@ -125,7 +137,7 @@ export default class IdeoramaController {
         return HttpResponse.deleted('Ideorama deleted successfully').send(res);
     }
   );
-  
+
   /**
    * Retrieves the empty ideorama template
    *
@@ -148,4 +160,3 @@ export default class IdeoramaController {
     }
   );
 }
-
