@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { integrationInputs } from '@/lib/input';
 
-export const IntegrationCard: React.FC<Integration> = ({ id, name }) => {
+export const IntegrationCard: React.FC<Integration> = ({ name }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const [loading, _setLoading] = useState(false);
