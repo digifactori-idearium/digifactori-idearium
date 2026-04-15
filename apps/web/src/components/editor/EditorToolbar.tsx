@@ -200,9 +200,6 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
     editor.chain().focus().toggleHighlight({ color }).run();
   };
 
-  const editorFocus = () =>
-    editor.chain().focus(undefined, { scrollIntoView: false });
-
   return (
     <div
       className="flex flex-wrap items-center gap-0.5 px-3 py-2 bg-white/80 backdrop-blur-sm border-b border-slate-100"
