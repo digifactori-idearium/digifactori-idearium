@@ -1,269 +1,203 @@
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
 
-import { Request, Response } from 'express';
+import { Request, RequestHandler, Response } from 'express';
 
-import { AuthenticatedRequest } from '../../types';
-import {
-  getSingleProfile
-} from "../profile/profile.service";
+import IdeoramaService from './ideorama.services';
 
-import {
-  createIdeorama,
-  deleteIdeorama,
-  getIdeoramaById,
-  getUserIdeoramas,
-  updateIdeoramaModelPath
-} from './ideorama.services';
+import asyncHandler from '@/utils/async-handler';
+import HttpResponse from '@/utils/http-response';
 
-const getUploadPath = (ideoramaId: string) => {
-  const id = String(ideoramaId)
-  // The id must be alphanumerical
+/**
+ * Helper function to get the file path for an ideorama model
+ *
+ * @description Generates and validates the upload path for an ideorama scene file.
+ * Ensures the ID is alphanumeric to prevent path traversal attacks
+ *
+ * @param {string} ideoramaId - The unique identifier for the ideorama
+ * @returns {string} The absolute file path for the ideorama JSON scene file
+ * @throws {Error} If ideoramaId contains invalid characters
+ */
+const getUploadPath = (ideoramaId: string): string => {
+  const id = String(ideoramaId);
+  // The id should be alphanumerical
   if (!/^[a-z0-9]+$/i.test(id)) {
-    throw new Error("Invalid ideoramaId");
+    throw new Error('Invalid ideoramaId');
   }
-  const fileName = `scene-${id}.json`
-  return path.join(process.cwd(), "uploads/scenes", fileName)
-}
-
-const createIdeoramaController = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  const user = req.user;
-
-  if (!user) {
-    return res.status(401).json({
-      status: 'error',
-      error: {
-        code: 'Unauthorized',
-        message: "Vous n'avez pas les droits d'accès",
-      },
-      status_code: 401,
-    });
-  }
-
-  try {
-    const ideorama = await createIdeorama(req.body.ideorama);
-
-    return res.status(201).json({
-      status: 'success',
-      message: 'Ideorama créée avec succès',
-      data: ideorama,
-      status_code: 201,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      error: {
-        code: 'Internal Server Error',
-        message: 'Erreur lors de la création de la ideorama',
-        error,
-      },
-      status_code: 500,
-    });
-  }
+  const fileName = `scene-${id}.json`;
+  return path.join(process.cwd(), 'uploads/scenes', fileName);
 };
 
-const getUserIdeoramasController = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  const user = req.user;
+export default class IdeoramaController {
+  constructor(private readonly ideoramaService: IdeoramaService) {}
 
-  if (!user) {
-    return res.status(401).json({
-      status: 'error',
-      error: {
-        code: 'Unauthorized',
-        message: "Vous n'avez pas les droits d'accès",
-      },
-      status_code: 401,
-    });
-  }
-
-  try {
-    const ideoramas = await getUserIdeoramas(user.userId);
-    const response = await getSingleProfile(user.userId, null)
-
-    return res.status(200).json({
-      status: 'success',
-      data: {
-        ideoramas: ideoramas,
-        profile: response.profile
-      },
-      status_code: 200,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      error: {
-        code: 'Internal Server Error',
-        message: 'Erreur lors de la récupération des ideoramas',
-        error,
-      },
-      status_code: 500,
-    });
-  }
-};
-
-const getIdeoramaByIdController = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  const user = req.user;
-
-  if (!user) {
-    return res.status(401).json({
-      status: 'error',
-      error: {
-        code: 'Unauthorized',
-        message: "Vous n'avez pas les droits d'accès",
-      },
-      status_code: 401,
-    });
-  }
-
-  try {
-    const ideorama = await getIdeoramaById(req.body.ideoramaId, user.userId);
-
-    if (!ideorama) {
-      return res.status(404).json({
-        status: 'error',
-        error: {
-          code: 'Not Found',
-          message: 'Ideorama introuvable',
-        },
-        status_code: 404,
-      });
-    }
-    const fileContent = fs.readFileSync(ideorama.model, "utf-8")
-    ideorama.model = JSON.parse(fileContent)
-    return res.status(200).json({
-      status: 'success',
-      data: ideorama,
-      status_code: 200,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      error: {
-        code: 'Internal Server Error',
-        message: 'Erreur lors de la récupération de la ideorama',
-        error,
-      },
-      status_code: 500,
-    });
-  }
-};
-
-const saveIdeoramaController = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  const user = req.user;
-
-  if (!user) {
-    return res.status(401).json({
-      status: 'error',
-      error: {
-        code: 'Unauthorized',
-        message: "Vous n'avez pas les droits d'accès",
-      },
-      status_code: 401,
-    });
-  }
-
-  try {
-    if (!req.body.ideoramaId) {
-      // Save in BD
-      const newIdeorama = await createIdeorama(req.body.ideorama)
-      const uploadPath = getUploadPath(newIdeorama.id)
-      await updateIdeoramaModelPath(newIdeorama.id, uploadPath)
+  /**
+   * Creates a new ideorama project
+   *
+   * @description Creates a new ideorama record in the database.
+   * Does not automatically create or initialize the scene file
+   *
+   * @param {Request} req - Express request with ideorama data in body: { ideorama: Object }
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  createIdeoramaController = asyncHandler(
+    async (req: Request, res: Response) => {
+      // Save in DB
+      const newIdeorama = await this.ideoramaService.createIdeorama(
+        req.body.ideorama
+      );
+      const uploadPath = getUploadPath(newIdeorama.id);
+      await this.ideoramaService.updateIdeoramaModelPath(
+        newIdeorama.id,
+        uploadPath
+      );
 
       // Save in uploads dir
-      const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json')
-      fs.writeFileSync(uploadPath, emptyScene)
+      const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json');
+      fs.writeFileSync(uploadPath, emptyScene);
 
-      return res.status(200).json({
-        status: 'success',
-        message: 'Ideorama mise à jour avec succès',
-        data: newIdeorama,
-        status_code: 200,
-      });
-    } else {
-      const uploadPath = getUploadPath(req.body.ideoramaId)
-
-      fs.writeFileSync(uploadPath, req.body.ideorama.model)
-      return res.status(200).json({
-        status: 'success',
-        message: 'Ideorama mis à jour avec succès',
-        data: null,
-        status_code: 200,
-      });
+      HttpResponse.created(newIdeorama, 'Idéorama créé avec succès').send(res);
     }
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      error: {
-        code: 'Internal Server Error',
-        message: 'Erreur lors de la mise à jour de l\'idéorama',
-        error,
-      },
-      status_code: 500,
-    });
-  }
-};
+  );
 
-const deleteIdeoramaController = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  if (!req.user) {
-    return res.status(401).json({
-      status: 'error',
-      error: {
-        code: 'Unauthorized',
-        message: "Vous n'avez pas les droits d'accès",
-      },
-      status_code: 401,
-    });
-  }
-  try {
-    deleteIdeorama(req.body.ideoramaId)
-    const uploadPath = getUploadPath(req.body.ideoramaId)
+  /**
+   * Retrieves all ideoramas for the authenticated user with profile info
+   *
+   * @description Fetches all ideorama projects created by the authenticated user
+   * and includes the user's profile information in the response
+   *
+   * @param {Request} req - Express request with authenticated user (req.user)
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  getUserIdeoramasController = asyncHandler(
+    async (req: Request, res: Response) => {
+      const ideoramas = await this.ideoramaService.getUserIdeoramas(
+        req.user!.userId
+      );
+      HttpResponse.success(
+        {
+          ideoramas,
+        },
+        'Idéoramas récupérés avec succès'
+      ).send(res);
+    }
+  );
 
-    fs.unlink(uploadPath, (err) => {if (err) {console.log(err)}})
-    return res.status(200).json({
-        status: 'success',
-        message: 'Ideorama supprimé avec succès',
-        data: null,
-        status_code: 200,
-      });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      error: {
-        code: 'Internal Server Error',
-        message: 'Erreur lors de la suppression de l\'idéorama',
-        error,
-      },
-      status_code: 500,
-    });
-  }
-};
+  /**
+   * Retrieves a specific ideorama with its scene data loaded from file
+   *
+   * @description Fetches a single ideorama by ID and loads the associated scene model data from the file system.
+   * Ensures the authenticated user can only access their own ideoramas
+   *
+   * @param {Request} req - Express request with authenticated user and ideoramaId in body
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  getIdeoramaByIdController = asyncHandler(
+    async (req: Request, res: Response) => {
+      const ideorama = await this.ideoramaService.getIdeoramaById(
+        req.body.ideoramaId
+      );
 
-const getEmptyIdeorama = async(
-  req: Request,
-  res: Response
-) => {
-  return res.status(200).json({
-    status: 'success',
-    data: {model: JSON.parse(fs.readFileSync(getUploadPath("empty"), "utf-8"))},
-    status_code: 200,
+      if (!ideorama) {
+        return HttpResponse.notFound('Ideorama not found').send(res);
+      }
+
+      const fileContent = fs.readFileSync(ideorama.model, 'utf-8');
+      ideorama.model = JSON.parse(fileContent);
+
+      HttpResponse.success(ideorama, 'Ideorama retrieved successfully').send(
+        res
+      );
+    }
+  );
+
+  /**
+   * Creates or updates an ideorama and its scene model
+   *
+   * @description Creates a new ideorama with an empty scene template if ideoramaId is not provided.
+   * If updating (ideoramaId provided), persists the scene data to the file system
+   *
+   * @param {Request} req - Express request with authenticated user and body containing:
+   *   - ideoramaId?: string (if updating)
+   *   - ideorama: { model: string (JSON) }
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.body.ideoramaId) {
+      // Create new ideorama in DB
+      const newIdeorama = await this.ideoramaService.createIdeorama(
+        req.body.ideorama
+      );
+      const uploadPath = getUploadPath(newIdeorama.id);
+      await this.ideoramaService.updateIdeoramaModelPath(
+        newIdeorama.id,
+        uploadPath
+      );
+
+      // Copy empty scene template and past in a new file in uploads
+      const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json');
+      fs.writeFileSync(uploadPath, emptyScene);
+
+      return HttpResponse.created(
+        newIdeorama,
+        'Ideorama created successfully'
+      ).send(res);
+    }
+
+    // Update existing ideorama
+    const uploadPath = getUploadPath(req.body.ideoramaId);
+    fs.writeFileSync(uploadPath, req.body.ideorama.model);
+
+    HttpResponse.success(null, 'Ideorama updated successfully').send(res);
   });
+
+  /**
+   * Deletes an ideorama and its associated scene file
+   *
+   * @description Permanently removes an ideorama from the database and deletes its associated scene file from the file system.
+   * Only allows deletion of ideoramas owned by the authenticated user
+   *
+   * @param {Request} req - Express request with authenticated user and ideoramaId in body
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  deleteIdeoramaController = asyncHandler(
+    async (req: Request, res: Response) => {
+      this.ideoramaService.deleteIdeorama(req.body.ideoramaId);
+      const uploadPath = getUploadPath(req.body.ideoramaId);
+
+      fs.unlink(uploadPath, err => {
+        if (err) console.log(err);
+      });
+
+      return HttpResponse.deleted('Ideorama deleted successfully').send(res);
+    }
+  );
+
+  /**
+   * Retrieves the empty ideorama template
+   *
+   * @description Returns the empty scene template used for new ideorama projects.
+   * This template serves as the baseline structure for creating new scenes
+   *
+   * @param {Request} req - Express request
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  getEmptyIdeorama: RequestHandler = asyncHandler(
+    async (req: Request, res: Response) => {
+      const emptyModel = JSON.parse(
+        fs.readFileSync(getUploadPath('empty'), 'utf-8')
+      );
+
+      HttpResponse.success(
+        { model: emptyModel },
+        'Empty ideorama template'
+      ).send(res);
+    }
+  );
 }
-
-
-export { deleteIdeoramaController, getEmptyIdeorama, getIdeoramaByIdController, getUserIdeoramasController, saveIdeoramaController };
-

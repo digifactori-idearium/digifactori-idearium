@@ -89,6 +89,116 @@ type Asset = {
   updatedAt?: Date;
 };
 
+// My space
+interface CardDef {
+  id: string;
+  title: string;
+  emoji: string;
+  link: string;
+  count: number;
+  accentColor: string;
+  tooltipCreate: string;
+  orbit: 1 | 2;
+  onActionClick: () => void;
+}
+
+interface MySpaceSceneDims {
+  w: number;
+  h: number;
+}
+
+interface ThemePalette {
+  backgrounds: { label: string; thumb: string; value: string }[];
+  defaultBg: string;
+  orbitRingColor: string;
+  pulseRingColor: string;
+  greetingText: string;
+  greetingBg: string;
+  greetingBorder: string;
+  statText: string;
+  statBg: string;
+  statBorder: string;
+  loadingBg: string;
+  loadingText: string;
+  loadingSpinner: string;
+}
+
+interface Star {
+  x: number;
+  y: number;
+  r: number;
+  alpha: number;
+  dAlpha: number;
+}
+
+interface ShootingStar {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  active: boolean;
+}
+
+interface Cloud {
+  x: number;
+  y: number;
+  speed: number;
+  alpha: number;
+  puffs: { dx: number; dy: number; r: number }[];
+}
+
+// ===== Text editor
+
+interface Document {
+  id: string;
+  title: string;
+  content: string;
+  json?: Record<string, unknown>;
+  wordCount: number;
+  emoji: string;
+  color: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+type DocumentListItem = Omit<Document, 'content' | 'json'>;
+
+interface CreateDocumentPayload {
+  userId: string;
+  title?: string;
+  content?: string;
+  json?: Record<string, unknown>;
+  emoji?: string;
+  color?: string;
+}
+
+interface UpdateDocumentPayload {
+  title?: string;
+  content?: string;
+  json?: Record<string, unknown>;
+  emoji?: string;
+  color?: string;
+}
+
+type FontSize = 'small' | 'medium' | 'large' | 'xlarge';
+type TextAlign = 'left' | 'center' | 'right';
+
+interface EditorToolbarState {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strike: boolean;
+  bulletList: boolean;
+  orderedList: boolean;
+  heading: boolean;
+  alignLeft: boolean;
+  alignCenter: boolean;
+  alignRight: boolean;
+}
+
 interface Integration {
   id: string;
   name: string;

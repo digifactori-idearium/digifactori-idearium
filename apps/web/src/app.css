@@ -88,7 +88,10 @@
     @apply w-14 text-center rounded-md border-zinc-400/40! border-2! outline! focus:border-dashed;
   }
   .form-icon {
-    @apply w-12 h-12 rounded-full bg-mauve! flex justify-center items-center;
+    @apply w-12 h-12 min-w-12 min-h-12 
+         rounded-full bg-mauve 
+         flex items-center justify-center 
+         shrink-0;
   }
   .form-button {
     @apply rounded-md bg-mauve! hover:bg-mauve/80! p-2 text-white! border-white! border-2! focus:border-3! shadow-none! outline-none!;

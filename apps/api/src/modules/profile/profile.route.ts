@@ -1,13 +1,32 @@
 import { Router, type Router as ExpressRouter } from 'express';
 
-import authenticate from '../../middlewares/authenticate';
+import ProfileController from './profile.controller';
 
-import { deleteProfile, getProfile, setProfile } from './profile.controller';
+import { authenticate, requireAuth } from '@/middlewares/authentication';
+import { IProfileService } from '@/types';
 
-const profileRoutes: ExpressRouter = Router();
+export default function createProfileRoutes(profileService: IProfileService) {
+  const profileController = new ProfileController(profileService);
 
-profileRoutes.post('/', authenticate, getProfile);
-profileRoutes.post('/setting', authenticate, setProfile);
-profileRoutes.delete('/delete', authenticate, deleteProfile);
+  const profileRoutes: ExpressRouter = Router();
+  profileRoutes.post(
+    '/',
+    authenticate,
+    requireAuth,
+    profileController.getProfile
+  );
+  profileRoutes.post(
+    '/setting',
+    authenticate,
+    requireAuth,
+    profileController.setProfile
+  );
+  profileRoutes.delete(
+    '/delete',
+    authenticate,
+    requireAuth,
+    profileController.deleteProfile
+  );
 
-export default profileRoutes;
+  return profileRoutes;
+}

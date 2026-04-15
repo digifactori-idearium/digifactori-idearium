@@ -2,7 +2,6 @@ import { toast } from 'sonner';
 
 import axios from '../services/axios.service';
 
-
 interface ApiResponse<T> {
   status: string;
   message: string;
@@ -14,12 +13,9 @@ export const searchIdeorama = async (
   ideoramaId: string
 ): Promise<ApiResponse<Ideorama>> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/ideorama/`,{
-        ideoramaId: ideoramaId,
-      }
-    );
-    console.log("search Ideorama: ", response)
+    const response = await axios.post(`http://localhost:3001/api/ideorama/`, {
+      ideoramaId: ideoramaId,
+    });
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -27,15 +23,20 @@ export const searchIdeorama = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.error?.message || 'Échec lors de la récupération de l\'idéorama');
+    throw new Error(
+      error.response?.data?.error?.message ||
+        "Échec lors de la récupération de l'idéorama"
+    );
   }
 };
 
 export const searchIdeoramas = async (query: string) => {
-  return [query]
-}
+  return [query];
+};
 
-export const getEmptyIdeorama = async(): Promise<ApiResponse<IdeoramaModel>> => {
+export const getEmptyIdeorama = async (): Promise<
+  ApiResponse<IdeoramaModel>
+> => {
   try {
     const response = await axios.get(
       `http://localhost:3001/api/ideorama/empty`
@@ -47,21 +48,25 @@ export const getEmptyIdeorama = async(): Promise<ApiResponse<IdeoramaModel>> => 
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.error?.message || 'Échec lors de la récupération de l\'idéorama vide');
+    throw new Error(
+      error.response?.data?.error?.message ||
+        "Échec lors de la récupération de l'idéorama vide"
+    );
   }
-}
-
+};
 
 export const createIdeorama = async (
-  name: string, userId: string|undefined,
+  name: string,
+  userId: string | undefined
 ): Promise<ApiResponse<Ideorama>> => {
   try {
     const response = await axios.post(
-      `http://localhost:3001/api/ideorama/save`, {
+      `http://localhost:3001/api/ideorama/create`,
+      {
         ideorama: {
           name: name,
-          userId: userId
-        }
+          userId: userId,
+        },
       }
     );
 
@@ -72,21 +77,27 @@ export const createIdeorama = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.error?.message || 'Échec lors de la récupération de l\'idéorama');
+    throw new Error(
+      error.response?.data?.error?.message ||
+        "Échec lors de la récupération de l'idéorama"
+    );
   }
 };
 
 export const saveIdeorama = async (
-  model: string|null, ideoramaId: string|undefined, userId: string|undefined,
+  model: string | null,
+  ideoramaId: string | undefined,
+  userId: string | undefined
 ): Promise<ApiResponse<Ideorama>> => {
   try {
     const response = await axios.post(
-      `http://localhost:3001/api/ideorama/save`, {
+      `http://localhost:3001/api/ideorama/save`,
+      {
         ideoramaId: ideoramaId,
         ideorama: {
           model: model,
-          userId: userId
-        }
+          userId: userId,
+        },
       }
     );
 
@@ -97,46 +108,91 @@ export const saveIdeorama = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.error?.message || 'Échec lors de la récupération de l\'idéorama');
+    console.error('Save error:', error);
+    throw new Error(
+      error.response?.data?.error?.message ||
+        "Échec lors de la récupération de l'idéorama"
+    );
+  }
+};
+
+export const autoSaveIdeorama = (
+  model: string | null,
+  ideoramaId: string | undefined,
+  userId: string | undefined
+): boolean => {
+  try {
+    if (!ideoramaId || !userId) {
+      console.warn('Cannot save: missing ideoramaid or userid');
+      return false;
+    }
+
+    const baseURL =
+      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
+    axios
+      .post(
+        `${baseURL}/api/ideorama/save`,
+        {
+          ideoramaId,
+          ideorama: { model, userId },
+        },
+        {
+          fetchOptions: { keepalive: true },
+        }
+      )
+      .catch(err => console.error('Keepalive save failed:', err));
+
+    return true;
+  } catch (error) {
+    console.error('Error queuing keepalive save:', error);
+    return false;
   }
 };
 
 export const getAllIdeoramas = async (
-  userId :string | undefined
-): Promise<ApiResponse<{ideoramas: Ideorama[], profile: Profile}>> => {
+  userId: string | undefined
+): Promise<ApiResponse<{ ideoramas: Ideorama[] }>> => {
   try {
-  const response = await axios.post(
-      `http://localhost:3001/api/ideorama/all`, {
-          userId: userId
-        }
-  );
- if (response.data.status === 'error') {
+    const response = await axios.post(
+      `http://localhost:3001/api/ideorama/all`,
+      {
+        userId: userId,
+      }
+    );
+    if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
       );
     }
+    console.log(response.data.data);
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.error?.message || 'Échec lors de la récupération des idéoramas');
+    throw new Error(
+      error.response?.data?.error?.message ||
+        'Échec lors de la récupération des idéoramas'
+    );
   }
-}
+};
 
 export const deleteIdeorama = async (
-  ideoramaId :string|undefined
-) => {
+  ideoramaId: string | undefined
+): Promise<boolean> => {
   try {
-  const response = await axios.post(
-      `http://localhost:3001/api/ideorama/delete`, {
-          ideoramaId: ideoramaId
-        }
-  );
- if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
+    const response = await axios.post(
+      `http://localhost:3001/api/ideorama/delete`,
+      {
+        ideoramaId: ideoramaId,
+      }
+    );
+    console.log('response: ', response);
+    if (response.data.status === 'error') {
+      // toast.error(response.data.error?.message)
     }
-    toast.success('Suppression de l\'idéorama réussie');
+    toast.success("Suppression de l'idéorama réussie");
+    return true;
   } catch (error: any) {
-    throw new Error(error.response?.data?.error?.message || 'Echec lors de la suppression de l\'idéorama');
+    // toast.error(error.message)
+    return false;
   }
-}
+};

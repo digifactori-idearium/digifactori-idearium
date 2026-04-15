@@ -9,6 +9,7 @@ import {
 
 import { Slider } from '../../ui/slider';
 
+import { EmojiPickerField } from './EmojiField';
 import { HexColorField } from './HexColorField';
 import { FormInput, FormInputData } from './Input';
 import { InputSelect } from './InputSelect';
@@ -202,6 +203,10 @@ export function FormInputRenderer({
         </Dialog>
       </div>
     );
+  }
+
+  if (input.type === 'emoji') {
+    return <EmojiPickerField control={control} input={input} />;
   }
 
   // DEFAULT HTMLS INPUT

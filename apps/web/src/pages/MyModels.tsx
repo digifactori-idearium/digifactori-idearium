@@ -33,11 +33,15 @@ const MyModels: React.FC = () => {
   }, [fetchProfile]);
 
   if (loading) {
-    return <div className="min-h-screen p-6">Chargement des modèles...</div>;
+    return (
+      <div className="min-h-screen p-6 w-full justify-center items-center">
+        Chargement des modèles...
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 w-full">
       <div className="magic-text text-center md:text-5xl text-3xl justify-center flex items-center gap-2 font-bold mb-6">
         Tes modèles, {profile.pseudo}
       </div>
