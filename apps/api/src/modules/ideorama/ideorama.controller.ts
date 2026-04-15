@@ -153,7 +153,6 @@ export default class IdeoramaController {
       const emptyModel = JSON.parse(
         fs.readFileSync(getUploadPath('empty'), 'utf-8')
       );
-  
       HttpResponse.success(emptyModel, 'Empty ideorama template').send(
         res
       );

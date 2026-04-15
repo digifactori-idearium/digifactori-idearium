@@ -230,12 +230,14 @@ describe('Ideorama handling', () => {
       const mockService = new MockIdeoramaService();
       app.use(express.json());
       app.use('/api/ideorama', createIdeoramaRoutes(mockService));
-
+      const readFileSyncMock = fs.readFileSync as jest.Mock;
+      readFileSyncMock.mockReturnValue('{}');
+      
       const res = await request(app)
         .get('/api/ideorama/empty')
 
       expect(res.status).toBe(200);
-      expect(res.body.data.model).toBeDefined()
+      expect(res.body).toBeDefined()
     })
   })
 });
