@@ -19,7 +19,6 @@ const OrbitalCard: React.FC<OrbitalCardProps> = ({ card, isDark }) => {
     card.onActionClick();
   };
 
-  /* Dark: translucent dark card. Light: white frosted card */
   const cardBg = isDark
     ? hovered
       ? `color-mix(in srgb, ${card.accentColor} 22%, #1a0845)`

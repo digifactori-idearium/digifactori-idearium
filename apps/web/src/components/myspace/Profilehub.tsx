@@ -22,7 +22,6 @@ const ProfileHub: React.FC<ProfileHubProps> = ({
     setTimeout(() => setClicked(false), 380);
   };
 
-  /* In light mode the conic ring becomes a warm pastel gradient */
   const ringGradient = isDark
     ? 'conic-gradient(from 0deg, #a855f7, #ec4899, #f59e0b, #10b981, #3b82f6, #a855f7)'
     : 'conic-gradient(from 0deg, #60a5fa, #34d399, #fbbf24, #f87171, #a78bfa, #60a5fa)';

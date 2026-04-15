@@ -102,6 +102,53 @@ interface CardDef {
   onActionClick: () => void;
 }
 
+interface MySpaceSceneDims {
+  w: number;
+  h: number;
+}
+
+interface ThemePalette {
+  backgrounds: { label: string; thumb: string; value: string }[];
+  defaultBg: string;
+  orbitRingColor: string;
+  pulseRingColor: string;
+  greetingText: string;
+  greetingBg: string;
+  greetingBorder: string;
+  statText: string;
+  statBg: string;
+  statBorder: string;
+  loadingBg: string;
+  loadingText: string;
+  loadingSpinner: string;
+}
+
+interface Star {
+  x: number;
+  y: number;
+  r: number;
+  alpha: number;
+  dAlpha: number;
+}
+
+interface ShootingStar {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  active: boolean;
+}
+
+interface Cloud {
+  x: number;
+  y: number;
+  speed: number;
+  alpha: number;
+  puffs: { dx: number; dy: number; r: number }[];
+}
+
 // ===== Text editor
 
 interface Document {

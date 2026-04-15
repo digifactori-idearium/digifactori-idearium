@@ -1,32 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-interface Star {
-  x: number;
-  y: number;
-  r: number;
-  alpha: number;
-  dAlpha: number;
-}
-
-interface ShootingStar {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  maxLife: number;
-  active: boolean;
-}
-
-interface Cloud {
-  x: number;
-  y: number;
-  speed: number;
-  alpha: number;
-  puffs: { dx: number; dy: number; r: number }[];
-}
-
-interface StarFieldProps {
+interface DayNightFieldProps {
   width: number;
   height: number;
   isDark: boolean;
@@ -65,7 +39,7 @@ function makeClouds(w: number, h: number, n: number): Cloud[] {
   return Array.from({ length: n }, () => makeCloud(w, h, true));
 }
 
-const StarField: React.FC<StarFieldProps> = ({
+export const DayNightField: React.FC<DayNightFieldProps> = ({
   width,
   height,
   isDark,
@@ -81,25 +55,21 @@ const StarField: React.FC<StarFieldProps> = ({
   const lastTsRef = useRef<number>(0);
   const isDarkRef = useRef(isDark);
 
-  // sync mode without restarting RAF loop
   useEffect(() => {
     isDarkRef.current = isDark;
   }, [isDark]);
 
-  // rebuild particle data on resize
   useEffect(() => {
     starsRef.current = makeStars(width, height, starCount);
     cloudsRef.current = makeClouds(width, height, cloudCount);
     shootingRef.current = [];
   }, [width, height, starCount, cloudCount]);
 
-  // single RAF loop, lives for component lifetime
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
 
-    // sync canvas bitmap size — this is the centering fix
     canvas.width = width;
     canvas.height = height;
 
@@ -128,7 +98,7 @@ const StarField: React.FC<StarFieldProps> = ({
       ctx.arc(mx, my, mr, 0, Math.PI * 2);
       ctx.fillStyle = '#EDE0FF';
       ctx.fill();
-      // crescent shadow — same dark colour as scene bg
+      // crescent shadow
       ctx.beginPath();
       ctx.arc(mx + mr * 0.38, my - mr * 0.08, mr * 0.82, 0, Math.PI * 2);
       ctx.fillStyle = '#0d0122';
@@ -244,7 +214,7 @@ const StarField: React.FC<StarFieldProps> = ({
 
     rafRef.current = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [width, height]); // intentionally minimal deps — isDark handled via ref
+  }, [width, height]);
 
   return (
     <canvas
@@ -253,7 +223,6 @@ const StarField: React.FC<StarFieldProps> = ({
         position: 'absolute',
         top: 0,
         left: 0,
-        /* KEY FIX: CSS size matches container, bitmap set via canvas.width/height */
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
@@ -262,5 +231,3 @@ const StarField: React.FC<StarFieldProps> = ({
     />
   );
 };
-
-export default StarField;
