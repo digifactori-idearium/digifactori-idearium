@@ -1,4 +1,11 @@
-import { Ideorama, Profile, Role, User, VoxelModel } from '@prisma/client';
+import {
+  Ideorama,
+  Profile,
+  Role,
+  User,
+  VoxelModel,
+  Document,
+} from '@prisma/client';
 
 export interface UserPayload {
   userId: string;
@@ -61,4 +68,41 @@ export interface IVoxelService {
   ): Promise<VoxelModel | null>;
   getUserVoxelModels(userId: string): Promise<VoxelModel[]>;
   deleteVoxelModel(voxelModelId: string, userId: string): Promise<VoxelModel>;
+}
+
+export interface IEditorService {
+  createDocument(data: {
+    title?: string;
+    content?: string;
+    json?: Record<string, any>;
+    wordCount?: number;
+    emoji?: string;
+    color?: string;
+    userId: string;
+  }): Promise<Document>;
+  getUserDocuments(userId: string): Promise<Document[]>;
+  getDocumentById(documentId: string): Promise<Document | null>;
+  updateDocument(
+    documentId: string,
+    data: {
+      title?: string;
+      content?: string;
+      json?: Record<string, any>;
+      wordCount?: number;
+      emoji?: string;
+      color?: string;
+    }
+  ): Promise<Document>;
+  deleteDocument(documentId: string): Promise<Document>;
+  saveDocument(
+    documentId: string,
+    data: {
+      title?: string;
+      content?: string;
+      json?: Record<string, any>;
+      wordCount?: number;
+      emoji?: string;
+      color?: string;
+    }
+  ): Promise<Document>;
 }
