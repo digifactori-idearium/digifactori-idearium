@@ -88,3 +88,12 @@ type Asset = {
   createdAt?: Date;
   updatedAt?: Date;
 };
+
+interface Integration {
+  id: string;
+  name: string;
+}
+
+interface CurrentStatusProps {
+  status: Status;
+}
