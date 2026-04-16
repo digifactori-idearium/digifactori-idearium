@@ -44,6 +44,9 @@ type ColumnProps = {
   setModalDelete: React.Dispatch<
     React.SetStateAction<{ column: ColumnType; id: string } | null>
   >;
+  setModalColor: React.Dispatch<
+    React.SetStateAction<{ column: ColumnType; id: string } | null>
+  >;
 };
 
 const Column = ({
@@ -58,6 +61,7 @@ const Column = ({
   setModalPriority,
   setModalEdit,
   setModalDelete,
+  setModalColor,
 }: ColumnProps) => (
   <div
     onDragOver={(e) => e.preventDefault()}
@@ -114,6 +118,14 @@ const Column = ({
             >
               ❌ Supprimer
             </button>
+
+            <button
+              onClick={() =>
+                setModalColor({ column: columnKey, id: task.id })
+              }
+            >
+              🎨 Grouper
+            </button>
           </div>
         </div>
       ))}
@@ -141,7 +153,6 @@ const Column = ({
   </div>
 );
 
-// ================= MAIN =================
 const MyIdeas: React.FC = () => {
   const [columns, setColumns] = useState(initialData);
 
@@ -167,7 +178,12 @@ const MyIdeas: React.FC = () => {
     value: string;
   } | null>(null);
 
-  // ➕ Ajouter
+  const [modalColor, setModalColor] = useState<{
+    column: ColumnType;
+    id: string;
+  } | null>(null);
+
+
   const addTask = (column: ColumnType) => {
     if (!inputs[column].trim()) return;
 
@@ -186,7 +202,20 @@ const MyIdeas: React.FC = () => {
     setInputs((prev) => ({ ...prev, [column]: '' }));
   };
 
-  // ⭐ priorité
+  const setColor = (color: string) => {
+    if (!modalColor) return;
+
+    setColumns((prev) => ({
+      ...prev,
+      [modalColor.column]: prev[modalColor.column].map((t) =>
+        t.id === modalColor.id ? { ...t, color } : t
+      ),
+    }));
+
+    setModalColor(null);
+  };
+
+ 
   const setPriority = (priority: Priority) => {
     if (!modalPriority) return;
 
@@ -200,7 +229,6 @@ const MyIdeas: React.FC = () => {
     setModalPriority(null);
   };
 
-  // ❌ supprimer
   const confirmDelete = () => {
     if (!modalDelete) return;
 
@@ -214,21 +242,22 @@ const MyIdeas: React.FC = () => {
     setModalDelete(null);
   };
 
-  // ✏️ edit
   const confirmEdit = () => {
     if (!modalEdit) return;
 
     setColumns((prev) => ({
       ...prev,
       [modalEdit.column]: prev[modalEdit.column].map((t) =>
-        t.id === modalEdit.id ? { ...t, content: modalEdit.value } : t
+        t.id === modalEdit.id
+          ? { ...t, content: modalEdit.value }
+          : t
       ),
     }));
 
     setModalEdit(null);
   };
 
-  // 🧲 drag
+
   const onDragStart = (
     e: React.DragEvent,
     task: Task,
@@ -259,12 +288,39 @@ const MyIdeas: React.FC = () => {
       <h1 className="text-3xl font-bold mb-6">Mes idées</h1>
 
       <div className="flex gap-4">
-        <Column title="📌 À faire" columnKey="todo" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete }} />
-        <Column title="🚧 En cours" columnKey="progress" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete }} />
-        <Column title="✅ Terminé" columnKey="done" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete }} />
+        <Column title="📌 À faire" columnKey="todo" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete, setModalColor }} />
+        <Column title="🚧 En cours" columnKey="progress" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete, setModalColor }} />
+        <Column title="✅ Terminé" columnKey="done" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete, setModalColor }} />
       </div>
 
-      {/* MODALS inchangés */}
+      {/* 🎨 COLOR MODAL */}
+      {modalColor && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl shadow-lg">
+            <h3 className="mb-4 font-bold">Choisir une couleur</h3>
+
+            <div className="flex gap-3">
+              {COLORS.map((c) => (
+                <div
+                  key={c}
+                  onClick={() => setColor(c)}
+                  className="w-8 h-8 rounded-full cursor-pointer border"
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={() => setModalColor(null)}
+              className="mt-4 bg-gray-300 px-4 py-2 rounded"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* PRIORITY MODAL */}
       {modalPriority && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg">
@@ -281,6 +337,7 @@ const MyIdeas: React.FC = () => {
         </div>
       )}
 
+      {/* DELETE MODAL */}
       {modalDelete && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg">
@@ -297,6 +354,7 @@ const MyIdeas: React.FC = () => {
         </div>
       )}
 
+      {/* EDIT MODAL */}
       {modalEdit && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg w-[300px]">
@@ -304,7 +362,10 @@ const MyIdeas: React.FC = () => {
             <textarea
               value={modalEdit.value}
               onChange={(e) =>
-                setModalEdit({ ...modalEdit, value: e.target.value })
+                setModalEdit({
+                  ...modalEdit,
+                  value: e.target.value,
+                })
               }
               className="w-full p-2 border rounded mb-3"
             />
