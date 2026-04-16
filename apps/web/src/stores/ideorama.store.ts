@@ -2,10 +2,10 @@ import { toast } from 'sonner';
 import * as THREE from 'three';
 import { proxy } from 'valtio';
 
+import { resetState, stackNewState } from '@/lib/state';
 import { themesToColors } from '@/lib/theme';
 import { round } from '@/lib/utils';
 import { getEmptyIdeorama } from '@/services/ideorama.service';
-import { resetState, stackNewState } from '@/utils/utils';
 
 //theme
 const INITIAL_THEME = 'day' as keyof typeof themesToColors;
@@ -40,7 +40,7 @@ export const sceneState = proxy<IdeoramaState>({
   objects: {} as Record<string, ObjectState>,
   selectedObjectId: null as string | null,
 
-  //Objects movement managemet
+  //Objects movement management
   isDragging: false,
   assetsPanelOpen: false,
   assetsTreeOpen: false,
@@ -49,10 +49,9 @@ export const sceneState = proxy<IdeoramaState>({
   activeSettingView: 'model',
   actionPickerOpen: false,
 
-  // undo/redomanagement
+  // undo/redo management
   history: [],
   current: -1,
-  oldest: 0,
   newest: 0,
 
   pendingTrigger: 'onStart' as TriggerType,
@@ -131,7 +130,7 @@ export const actions = {
   removeObject: (id: string) => {
     delete sceneState.objects[id];
     if (sceneState.selectedObjectId === id) sceneState.selectedObjectId = null;
-    stackNewState(sceneState)
+    stackNewState(sceneState);
   },
   registerObject: (id: string, obj: THREE.Object3D) =>
     sceneRegistry.set(id, obj),
@@ -149,8 +148,7 @@ export const actions = {
 
   async resetIdeorama() {
     try {
-      await getEmptyIdeorama()
-      .then(res => {
+      await getEmptyIdeorama().then(res => {
         const model = res.data.model;
         sceneState.global = model.global ? model.global : sceneState.global;
         sceneState.background = model.background
@@ -159,11 +157,11 @@ export const actions = {
         sceneState.info = model.info ? model.info : sceneState.info;
         sceneState.floor = model.floor ? model.floor : sceneState.floor;
         sceneState.objects = model.objects ? model.objects : sceneState.objects;
-        stackNewState(sceneState)
+        stackNewState(sceneState);
       });
-      return true
+      return true;
     } catch (error) {
-      console.log("error: ", error)
+      console.log('error: ', error);
       return false;
     }
   },
@@ -212,12 +210,12 @@ export const actions = {
 
   spawnAssetAtPosition(asset: AssetItem, position: THREE.Vector3) {
     const id = crypto.randomUUID();
-
     sceneState.objects[id] = {
       info: {
         name: asset.name,
         category: asset.category,
         file: asset.file,
+        preview: asset.thumbnail,
       },
       transform: {
         position: {
@@ -236,24 +234,23 @@ export const actions = {
 
     sceneState.selectedObjectId = id;
 
-    stackNewState(sceneState)
+    stackNewState(sceneState);
   },
 
   // Historic management
   stackState() {
-    stackNewState(sceneState)
+    stackNewState(sceneState);
   },
 
   // Undo/ redo
   undo() {
     sceneState.current -= 1;
     sceneState.selectedObjectId = null;
-    resetState(sceneState)
+    resetState(sceneState);
   },
   redo() {
     sceneState.current += 1;
-    resetState(sceneState)
-
+    resetState(sceneState);
   },
 
   // ACTIONS MANAGEMENT
@@ -282,6 +279,21 @@ export const actions = {
     obj.actionsVersion = (obj.actionsVersion ?? 0) + 1;
   },
 
+  reorderAction(objectId: string, actionId: string, direction: 'up' | 'down') {
+    const obj = sceneState.objects[objectId];
+    if (!obj?.actions) return;
+
+    const index = obj.actions.findIndex(a => a.id === actionId);
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (swapIndex < 0 || swapIndex >= obj.actions.length) return;
+
+    [obj.actions[index], obj.actions[swapIndex]] = [
+      obj.actions[swapIndex],
+      obj.actions[index],
+    ];
+  },
+
   bumpActionsVersion(objectId: string) {
     const obj = sceneState.objects[objectId];
     if (!obj) return;
@@ -299,7 +311,18 @@ export const actions = {
 
 if (import.meta.hot) {
   import.meta.hot.dispose(data => {
-    data.sceneState = JSON.parse(JSON.stringify(sceneState));
+    try {
+      data.sceneState = {
+        global: JSON.parse(JSON.stringify(sceneState.global)),
+        background: JSON.parse(JSON.stringify(sceneState.background)),
+        info: JSON.parse(JSON.stringify(sceneState.info)),
+        floor: JSON.parse(JSON.stringify(sceneState.floor)),
+        objects: JSON.parse(JSON.stringify(sceneState.objects)),
+        selectedObjectId: sceneState.selectedObjectId,
+      };
+    } catch (err) {
+      console.error('HMR dispose: failed to serialize sceneState', err);
+    }
   });
 
   if (import.meta.hot.data.sceneState) {

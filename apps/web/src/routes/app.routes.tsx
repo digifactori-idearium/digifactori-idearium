@@ -1,6 +1,7 @@
 import ProtectedRoute from './protected.routes';
 
-import BatchRegister from '@/components/auth';
+import AssetHandling from '@/components/assets-table/assetsHandling';
+import UserHandling from '@/components/users/userHandling';
 import AudioEditor from '@/pages/AudioEditor';
 import Ideorama from '@/pages/Ideorama';
 import Ideoramas from '@/pages/Ideoramas';
@@ -37,8 +38,12 @@ const appRoutes = [
     element: <ProtectedRoute element={<MyModels />} />,
   },
   {
-    path: 'batch_register',
-    element: <ProtectedRoute element={<BatchRegister />} />,
+    path: 'users',
+    element: <ProtectedRoute element={<UserHandling />} />,
+  },
+  {
+    path: 'assets',
+    element: <ProtectedRoute element={<AssetHandling />} />,
   },
   { path: 'my-space', element: <ProtectedRoute element={<MySpace />} /> },
   { path: 'text-editor', element: <ProtectedRoute element={<TextEditor />} /> },

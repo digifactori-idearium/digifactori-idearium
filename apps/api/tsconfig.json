@@ -3,11 +3,11 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
-    "baseUrl": "./src",
     "paths": {
       "@/*": ["./src/*"],
       "@app/*": ["../../package/*"]
     },
+    "typeRoots": ["./node_modules/@types", "./src/types"],
 
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -24,6 +24,7 @@
   "include": [
     "src/**/*.ts",
     "prisma/**/*.ts",
+    "src/types/**/*.d.ts",
     "tests/**/*.ts",
     "jest.config.js"
   ],

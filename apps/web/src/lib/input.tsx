@@ -8,10 +8,15 @@ import {
   ShieldCheck,
   User,
   Users,
+  Box,
+  ChartBarStacked,
+  TextAlignStart,
+  FileBox,
 } from 'lucide-react';
 
-import { MusicSelector } from './MusicDialog';
 import { themeOptions } from './theme';
+
+import { MusicSelector, ObjectSelector } from '@/components/common/form';
 
 /* =========================
    LOGIN INPUTS
@@ -307,18 +312,11 @@ const styleInputs = [
 ];
 
 const advancedInputs = [
-  { name: 'parent', label: 'Contenant(Parent)', type: 'dialog' },
   {
-    name: 'physics',
-    label: 'Physique',
-    type: 'select',
-    options: [
-      { value: 'kinematic', text: 'Cinématique' },
-      { value: 'upright', text: 'Droit / Vertical' },
-      { value: 'tumbly', text: 'Bascule' },
-      { value: 'passthrough', text: 'Passage' },
-      { value: 'trigger', text: 'Déclencheur' },
-    ],
+    name: 'parent',
+    label: 'Contenant(Parent)',
+    type: 'dialog',
+    dialogueContent: <ObjectSelector type="parent" />,
   },
   { name: 'hidden', label: 'Caché', type: 'switch' },
   { name: 'locked', label: 'Verrouiller en mode édition', type: 'switch' },
@@ -330,3 +328,37 @@ export const objectConfigInputs = {
   style: styleInputs,
   advanced: advancedInputs,
 };
+
+/* =========================
+   ASSET INPUTS
+========================= */
+export const assetInputs = [
+  {
+    label: 'Nom',
+    type: 'text',
+    name: 'name',
+    placeholder: "Entrez le nom de l'asset",
+    icon: Box,
+  },
+  {
+    label: 'Catégorie',
+    type: 'text',
+    name: 'category',
+    placeholder: "Entrez le type de catégorie de l'asset",
+    icon: ChartBarStacked,
+  },
+  {
+    label: 'Description',
+    type: 'text',
+    name: 'description',
+    placeholder: "Entrez la description de l'asset",
+    icon: TextAlignStart,
+  },
+  {
+    label: 'Source',
+    type: 'text',
+    name: 'source',
+    placeholder: "Entrez la source de l'asset",
+    icon: FileBox,
+  },
+];

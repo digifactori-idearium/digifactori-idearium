@@ -1,6 +1,6 @@
 import { Play, Sparkles } from 'lucide-react';
 
-import { VoiceLink } from '../global';
+import { VoiceLink } from '@/components/common/button';
 
 export default function Hero() {
   return (

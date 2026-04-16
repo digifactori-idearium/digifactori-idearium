@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 import { login as loginService } from '../../services/auth.service';
 
-import { Form } from '@/components/global';
+import { Form } from '@/components/common/form';
 import { loginInputs } from '@/lib/input';
 import { useAuth } from '@/providers/AuthProvider';
 import { useUser } from '@/providers/UserProvider';

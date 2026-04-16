@@ -17,35 +17,40 @@ import {
   RotateCcw,
   Settings2,
   SquarePen,
-  Undo2
+  Undo2,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSnapshot } from 'valtio';
 
-import Scene from '@/components/3d';
+import Scene from '@/components/3d-scene';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
-import { SuperButton } from '@/components/global';
-import { AssetsPanel } from '@/components/panel/AssetsPanel';
-import { ObjectListPanel } from '@/components/panel/ObjectListPanel';
-import { SettingPanel } from '@/components/panel/SettingPanel';
+import { SuperButton } from '@/components/common/button';
+import ResetIdeoramaDialog from '@/components/ideorama/resetIdeoramaDialog';
+import { AssetsPanel } from '@/components/panels/AssetsPanel';
+import { ObjectListPanel } from '@/components/panels/ObjectListPanel';
+import { SettingPanel } from '@/components/panels/SettingPanel';
+import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useUser } from '@/providers/UserProvider';
 import { saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 
 const downloadAndSaveIdeorama = () => {
-  localStorage.setItem(
-    'sceneState',
-    JSON.stringify({
-      global: sceneState.global,
-      background: sceneState.background,
-      info: sceneState.info,
-      floor: sceneState.floor,
-      objects: sceneState.objects,
-    })
-  );
+  try {
+    const serializable = {
+      global: JSON.parse(JSON.stringify(sceneState.global)),
+      background: JSON.parse(JSON.stringify(sceneState.background)),
+      info: JSON.parse(JSON.stringify(sceneState.info)),
+      floor: JSON.parse(JSON.stringify(sceneState.floor)),
+      objects: JSON.parse(JSON.stringify(sceneState.objects)),
+    };
+
+    localStorage.setItem('sceneState', JSON.stringify(serializable));
+  } catch (err) {
+    console.error('Failed to save scene state:', err);
+  }
 };
 
 export default function Ideorama() {
@@ -58,6 +63,7 @@ export default function Ideorama() {
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
   const [isFirstRender, setIsFirstRender] = useState(true);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const { setOpen } = useSidebar();
 
   useEffect(() => {
@@ -74,53 +80,52 @@ export default function Ideorama() {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
+      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId);
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      saveIdeorama(localStorage.getItem("sceneState"), ideoramaid, userId);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId);
       sceneState.selectedObjectId = null;
       sceneState.history = [];
       sceneState.current = -1;
       sceneState.newest = 0;
-      sceneState.oldest = 0;
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     if (!ideoramaid) return;
-    
-    searchIdeorama(ideoramaid).then(res => {
-      localStorage.setItem("sceneState", JSON.stringify(res.data.model))
-      res.data.model.info.name = res.data.name
-      const model = res.data.model;
-      if (!model) return;
 
-      if (model.global) Object.assign(sceneState.global, model.global);
-      if (model.background)
-        Object.assign(sceneState.background, model.background);
-      if (model.info) Object.assign(sceneState.info, model.info);
-      if (model.floor) Object.assign(sceneState.floor, model.floor);
-      if (model.objects) sceneState.objects = model.objects;
-      
-    }).then(() => {
+    searchIdeorama(ideoramaid)
+      .then(res => {
+        localStorage.setItem('sceneState', JSON.stringify(res.data.model));
+        res.data.model.info.name = res.data.name;
+        const model = res.data.model;
+        if (!model) return;
+
+        if (model.global) Object.assign(sceneState.global, model.global);
+        if (model.background)
+          Object.assign(sceneState.background, model.background);
+        if (model.info) Object.assign(sceneState.info, model.info);
+        if (model.floor) Object.assign(sceneState.floor, model.floor);
+        if (model.objects) sceneState.objects = model.objects;
+      })
+      .then(() => {
         actions.stackState();
-    })
+      });
   }, [ideoramaid]);
-  
+
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
-      downloadAndSaveIdeorama() 
+      downloadAndSaveIdeorama();
     }
-  }, [snap.global, snap.background, snap.info, snap.floor, snap.objects])
-
+  }, [snap.global, snap.background, snap.info, snap.floor, snap.objects]);
 
   useEffect(() => {
     if (!isFirstRender && !snap.isDragging) {
-      downloadAndSaveIdeorama()
-      actions.stackState()
+      downloadAndSaveIdeorama();
+      actions.stackState();
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFirstRender(false);
@@ -165,25 +170,26 @@ export default function Ideorama() {
         <div className="w-full h-full overflow-hidden flex flex-col">
           <Scene />
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-            <button
+            <Button
               onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
               className="p-2 main-small-btn"
             >
               {isEditMode ? (
                 <span className="flex items-center gap-1">
                   <CirclePlay className="w-4 h-4 text-white" />
-                  <span>Jouer</span>
+                  <span className="text-white">Jouer</span>
                 </span>
               ) : (
                 <span className="flex items-center gap-1">
                   <SquarePen className="w-4 h-4 text-white" />
-                  <span>Modifier</span>
+                  <span className="text-white">Modifier</span>
                 </span>
               )}
-            </button>
-            {snap.current != snap.oldest && (
+            </Button>
+            {snap.current != 0 && isEditMode && (
               <SuperButton
-                tooltip='Revenir en arrière'
+                tooltip="Revenir en arrière"
+                voiceText="Revenir en arrière"
                 onClick={() => actions.undo()}
                 className="p-2 main-small-btn"
               >
@@ -192,9 +198,10 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
-            {snap.current != snap.newest && (
+            {snap.current != snap.newest && isEditMode && (
               <SuperButton
-                tooltip='Rétablir'
+                tooltip="Rétablir"
+                voiceText="Rétablir"
                 onClick={() => actions.redo()}
                 className="p-2 main-small-btn"
               >
@@ -203,9 +210,23 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
-            <SuperButton
-              tooltip='Réinitialiser'
-              onClick={() => {
+            {isEditMode ? (
+              <SuperButton
+                tooltip="Réinitialiser"
+                voiceText="Réinitialiser"
+                onClick={() => {
+                  setResetDialogOpen(true);
+                }}
+                className="z-50 p-2 main-small-btn"
+              >
+                <span className="flex items-center gap-1">
+                  <RotateCcw className="w-4 h-4 text-white!" />
+                </span>
+              </SuperButton>
+            ) : null}
+            <ResetIdeoramaDialog
+              open={resetDialogOpen}
+              onConfirm={() => {
                 actions.resetIdeorama().then(res => {
                   if (res) {
                     toast.success('Idéorama réinitialisé');
@@ -215,13 +236,12 @@ export default function Ideorama() {
                     );
                   }
                 });
+                setResetDialogOpen(false);
               }}
-              className="z-50 p-2 main-small-btn"
-            >
-              <span className="flex items-center gap-1">
-                <RotateCcw className="w-4 h-4 text-white!" />
-              </span>
-            </SuperButton>
+              onCancel={() => {
+                setResetDialogOpen(false);
+              }}
+            />
           </div>
           {/* Assets Button */}
           {isEditMode && (
@@ -231,9 +251,9 @@ export default function Ideorama() {
                 actions.toggleAssetsPanel();
                 actions.toggleAssetsTree(false);
               }}
-              className="absolute md:bottom-6 bottom-15 left-10 -translate-x-1/2 z-50 main-small-btn p-3!"
+              className="absolute md:bottom-6 bottom-15 left-10 -translate-x-1/2 z-50 main-small-btn size-12!"
             >
-              <Plus className="w-5 h-5 text-white!" />
+              <Plus className="size-8! text-white!" />
             </SuperButton>
           )}
           {isEditMode && <AssetsPanel />}
@@ -246,9 +266,9 @@ export default function Ideorama() {
                 actions.toggleAssetsTree();
                 actions.toggleAssetsPanel(false);
               }}
-              className="absolute md:bottom-6 bottom-15 left-25 -translate-x-1/2 z-50 main-small-btn p-3!"
+              className="absolute md:bottom-6 bottom-15 left-30 -translate-x-1/2 z-50 main-small-btn size-12!"
             >
-              <ListTree className="w-5 h-5 text-white!" />
+              <ListTree className="size-8! text-white!" />
             </SuperButton>
           )}
           {isEditMode && <ObjectListPanel />}
@@ -260,9 +280,9 @@ export default function Ideorama() {
               onClick={() => {
                 actions.toggleSettingPanel();
               }}
-              className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn p-3!"
+              className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn size-12!"
             >
-              <Settings2 className="w-5 h-5 text-white!" />
+              <Settings2 className="size-8! text-white!" />
             </SuperButton>
           )}
           {isEditMode && <SettingPanel />}

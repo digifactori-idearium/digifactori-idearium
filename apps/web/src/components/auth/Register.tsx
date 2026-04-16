@@ -3,8 +3,8 @@ import { SubmitHandler, FieldValues } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { register as registerService } from '../../services/auth.service';
-import { Form } from '@/components/global';
 
+import { Form } from '@/components/common/form';
 import { registerInputs } from '@/lib/input';
 import { useAuth } from '@/providers/AuthProvider';
 
