@@ -84,11 +84,14 @@ const IdeoramasGroup: React.FC<{
         <DeleteIdeoramaDialog
           ideoramaName={ideoramaToDelete.name}
           onConfirm={() => {
-            deleteIdeorama(ideoramaToDelete.id);
+            deleteIdeorama(ideoramaToDelete.id).then(res => {
+              if (res) {
+                setIdeoramas(
+                  ideoramas.filter(ideoram => ideoram.id != ideoramaToDelete.id)
+                );
+              }
+            });
             setIdeoramaToDelete(null);
-            setIdeoramas(
-              ideoramas.filter(ideoram => ideoram.id != ideoramaToDelete.id)
-            );
           }}
           onCancel={() => setIdeoramaToDelete(null)}
         />

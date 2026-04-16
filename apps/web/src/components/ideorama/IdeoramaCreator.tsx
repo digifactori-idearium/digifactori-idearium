@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { IdeoramaCreationInputs } from '@/lib/input';
+import { ideoramaCreationInputs } from '@/lib/input';
 import { createIdeorama } from '@/services/ideorama.service';
 
 const IdeoramaCreator: React.FC<{
@@ -43,7 +43,7 @@ const IdeoramaCreator: React.FC<{
         </DialogHeader>
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
           <Form
-            inputs={IdeoramaCreationInputs}
+            inputs={ideoramaCreationInputs}
             handleOnSubmit={onSubmit}
             loading={loading}
           />
