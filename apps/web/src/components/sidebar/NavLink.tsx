@@ -1,4 +1,13 @@
-import { House, LayoutDashboard, LucideIcon, Users, Box } from 'lucide-react';
+import {
+  LucideIcon,
+  Users,
+  Box,
+  Settings,
+  NotebookText,
+  Cuboid,
+  Rocket,
+  SolarPanel,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import {
@@ -19,11 +28,22 @@ export function NavLink() {
   const { user } = useUser();
 
   const links: Record<string, NavLinkItem> = {
-    mySpace: { path: 'my-space', label: 'Mon Espace', icon: House },
+    mySpace: { path: 'my-space', label: 'Mon Espace', icon: Rocket },
     home: {
       path: 'my-ideoramas',
       label: 'Mes Idéoramas',
-      icon: LayoutDashboard,
+      icon: SolarPanel,
+    },
+    myModels: {
+      path: 'my-models',
+      label: 'Mes Modèles',
+      icon: Cuboid,
+    },
+
+    textEditor: {
+      path: 'text-editor',
+      label: 'Éditeur Texte',
+      icon: NotebookText,
     },
     userHandling: {
       path: 'users',
@@ -35,6 +55,12 @@ export function NavLink() {
       path: 'assets',
       label: 'Gestion assets',
       icon: Box,
+      role: 'SUPERVISOR',
+    },
+    settings: {
+      path: 'settings',
+      label: 'Paramètres',
+      icon: Settings,
       role: 'SUPERVISOR',
     },
   };
