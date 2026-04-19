@@ -130,3 +130,37 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ASSETS
+enum IntegrationType {
+  ASSET
+  MUSIC
+  OTHER
+}
+
+
+
+model Setting {
+  id           Int           @id @default(1)
+  storeName    String
+  storeURL     String
+  storeKey     String?
+  integrations Integration[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Integration {
+  id           String          @id @default(cuid())
+  settingId    Int
+  setting      Setting         @relation(fields: [settingId], references: [id])
+  name         String
+  url          String
+  type         IntegrationType
+  key          String?          
+  isActive     Boolean         @default(true)
+  fieldMapping Json            @default("{}")  
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+

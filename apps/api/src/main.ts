@@ -18,6 +18,9 @@ import ProfileService from './modules/profile/profile.service';
 import createVoxelRoutes from './modules/voxel/voxel.route';
 import VoxelService from './modules/voxel/voxel.service';
 
+import createSettingsRoutes from '@/modules/setting/settings.route';
+import SettingsService from '@/modules/setting/settings.service';
+
 // Env variables
 dotenv.config();
 
@@ -55,6 +58,9 @@ app.use('/api/voxel', createVoxelRoutes(voxelService));
 
 const editorService = new EditorService();
 app.use('/api/editor', createEditorRoutes(editorService));
+
+const settingsService = new SettingsService();
+app.use('/api/settings', createSettingsRoutes(settingsService));
 
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
