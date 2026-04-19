@@ -56,10 +56,9 @@ export default class IdeoramaController {
       const ideoramas = await this.ideoramaService.getUserIdeoramas(
         req.user!.userId
       );
-      HttpResponse.success(
-        ideoramas,
-        'Idéoramas récupérés avec succès'
-      ).send(res);
+      HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
+        res
+      );
     }
   );
 
@@ -103,13 +102,11 @@ export default class IdeoramaController {
    * @param {Response} res - Express response object
    * @returns {Response} JSON response
    */
-  saveIdeoramaController = asyncHandler(
-    async (req: Request, res: Response) => {
-      const uploadPath = getUploadPath(req.body.ideoramaId);
-      fs.writeFileSync(uploadPath, req.body.ideorama.model);
-  
-      HttpResponse.success(null, 'Ideorama updated successfully').send(res);
+  saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
+    const uploadPath = getUploadPath(req.body.ideoramaId);
+    fs.writeFileSync(uploadPath, req.body.ideorama.model);
 
+    HttpResponse.success(null, 'Ideorama updated successfully').send(res);
 
     HttpResponse.success(null, 'Ideorama updated successfully').send(res);
   });
@@ -126,15 +123,14 @@ export default class IdeoramaController {
    */
   deleteIdeoramaController = asyncHandler(
     async (req: Request, res: Response) => {
+      await this.ideoramaService.deleteIdeorama(req.body.ideoramaId);
+      const uploadPath = getUploadPath(req.body.ideoramaId);
 
-        await this.ideoramaService.deleteIdeorama(req.body.ideoramaId);
-        const uploadPath = getUploadPath(req.body.ideoramaId);
-    
-        fs.unlink(uploadPath, err => {
-          if (err) console.log(err);
-        });
-    
-        return HttpResponse.deleted('Ideorama deleted successfully').send(res);
+      fs.unlink(uploadPath, err => {
+        if (err) console.log(err);
+      });
+
+      return HttpResponse.deleted('Ideorama deleted successfully').send(res);
     }
   );
 
@@ -153,9 +149,7 @@ export default class IdeoramaController {
       const emptyModel = JSON.parse(
         fs.readFileSync(getUploadPath('empty'), 'utf-8')
       );
-      HttpResponse.success(emptyModel, 'Empty ideorama template').send(
-        res
-      );
+      HttpResponse.success(emptyModel, 'Empty ideorama template').send(res);
     }
   );
 }
