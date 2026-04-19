@@ -203,3 +203,31 @@ interface Integration {
 interface CurrentStatusProps {
   status: Status;
 }
+
+// Settings and Integration
+type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
+
+interface FieldMapping {
+  id: string;
+  name: string;
+  category?: string;
+  file: string;
+  thumbnail?: string;
+}
+
+interface Integration {
+  id: string;
+  name: string;
+  url: string;
+  type: IntegrationType;
+  key: string;
+  isActive: boolean;
+  fieldMapping?: FieldMapping;
+  createdAt?: string;
+}
+
+interface Settings {
+  storeName?: string;
+  storeURL?: string;
+  integrations?: Integration[];
+}

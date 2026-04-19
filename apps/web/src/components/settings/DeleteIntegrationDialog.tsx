@@ -22,7 +22,7 @@ const DeleteIntegrationDialog: React.FC<Props> = ({
 }) => {
   return (
     <AlertDialog open={open}>
-      <AlertDialogContent className="rounded-4xl border-mauve bg-sidebar shadow-2xl p-8">
+      <AlertDialogContent className="rounded-4xl border-mauve bg-sidebar shadow-2xl p-8 z-110">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl font-black text-mauve text-center">
             Êtes-vous sûr ?
