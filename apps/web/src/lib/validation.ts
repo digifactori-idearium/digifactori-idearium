@@ -22,31 +22,67 @@ export const validation = (input: FormInputData) => {
     case 'email':
       schema = z.string().email('Adresse mail invalide');
       break;
+
     case 'password':
       schema = z
         .string()
         .min(6, 'Le mot de passe doit contenir au moins 6 caractères');
       break;
+
     case 'number':
       schema = z.preprocess(
         val => (val === '' ? undefined : Number(val)),
-        z.number('Doit être un chiffre')
+        z.number({ message: 'Doit être un chiffre' })
       );
       break;
+
     case 'select':
       schema = z
         .string()
         .min(1, `Veuillez sélectionner un ${input.label.toLowerCase()}`);
       break;
+
+    case 'switch':
+      schema = z.boolean();
+      break;
+
+    case 'slider':
+      schema = z.number();
+      break;
+
+    case 'fieldMapping':
+      schema = z.record(z.string(), z.string());
+      break;
+    case 'vector3':
+      schema = z.object({
+        x: z.number(),
+        y: z.number(),
+        z: z.number(),
+      });
+      break;
+
+    case 'file':
+    case 'image':
+      schema = z.any();
+      break;
+
+    case 'dialog':
+      schema = z.any();
+      break;
+
+    case 'color':
+    case 'emoji':
     default:
       schema = z.string();
   }
 
-  // Handle Required logic
+  // Handle required logic — skip for types that don't use .min()
+  const stringLike = ['email', 'password', 'select', 'color', 'emoji', 'text'];
   if (input.required) {
-    if (input.type !== 'number') {
+    if (stringLike.includes(input.type)) {
       schema = (schema as z.ZodString).min(1, `${input.label} est requis`);
     }
+    // number/boolean/object types are inherently required once typed
   } else {
     schema = schema.optional().or(z.literal(''));
   }
