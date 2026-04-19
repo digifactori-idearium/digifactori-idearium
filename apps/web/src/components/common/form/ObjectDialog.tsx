@@ -1,10 +1,12 @@
 import { Box, Check } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { useSnapshot } from 'valtio';
 
 import { Search } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { wouldCreateParentCycle } from '@/lib/3d';
 import { cn } from '@/lib/utils';
 import { sceneState } from '@/stores';
 
@@ -13,6 +15,10 @@ interface ObjectSelectorProps {
 }
 
 function setParent(objId: string, id: string) {
+  if (wouldCreateParentCycle(sceneState.objects, objId, id)) {
+    toast.error('Parentage circulaire détecté !');
+    return;
+  }
   const current = sceneState.objects[objId].advanced.parent;
   sceneState.objects[objId].advanced.parent = current === id ? '' : id;
 }
@@ -50,12 +56,14 @@ export function ObjectSelector({ type = 'parent' }: ObjectSelectorProps) {
   }, [type, sceneSelectedObject, trigger]);
 
   const objectList = useMemo(() => {
-    return Object.entries(snap.objects).map(([id, obj]) => ({
-      id,
-      name: obj.info.name || 'Sans nom',
-      preview: obj.info.preview,
-    }));
-  }, [snap.objects]);
+    return Object.entries(snap.objects)
+      .filter(([id]) => id !== selectedObjectId)
+      .map(([id, obj]) => ({
+        id,
+        name: obj.info.name || 'Sans nom',
+        preview: obj.info.preview,
+      }));
+  }, [snap.objects, selectedObjectId]);
 
   const filteredList = useMemo(() => {
     if (!searchQuery) return objectList;

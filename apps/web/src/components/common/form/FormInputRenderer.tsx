@@ -191,7 +191,7 @@ export function FormInputRenderer({
               <SquareArrowOutUpRight size={16} />
             </button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg bg-sidebar">
+          <DialogContent className="max-w-lg bg-sidebar z-60">
             <DialogHeader>
               <DialogTitle>{input.label}</DialogTitle>
               <DialogDescription>

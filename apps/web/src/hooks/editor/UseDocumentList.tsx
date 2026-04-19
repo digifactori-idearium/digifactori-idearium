@@ -6,6 +6,7 @@ interface UseDocumentListReturn {
   documents: DocumentListItem[];
   loading: boolean;
   fetchDocuments: () => Promise<void>;
+  searchDocuments: (query: string) => Promise<DocumentListItem[]>;
   createDocument: (payload: CreateDocumentPayload) => Promise<string>;
   deleteDocument: (id: string) => Promise<void>;
 }
@@ -24,17 +25,33 @@ export function useDocumentList(): UseDocumentListReturn {
     }
   }, []);
 
+  const searchDocuments = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      return documents;
+    }
+
+    setLoading(true);
+    try {
+      const response = await documentsApi.list();
+      const filteredDocs = response.data.filter(doc =>
+        doc.title.toLowerCase().includes(query.toLowerCase())
+      );
+      return filteredDocs.slice(0, 5);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const createDocument = useCallback(async (payload: CreateDocumentPayload) => {
     const response = await documentsApi.create(payload);
     const doc = response.data;
-    setDocuments(prev => [
-      {
-        ...doc,
-        content: undefined,
-        json: undefined,
-      } as unknown as DocumentListItem,
-      ...prev,
-    ]);
+    const newDoc = {
+      ...doc,
+      content: undefined,
+      json: undefined,
+    } as unknown as DocumentListItem;
+
+    setDocuments(prev => [newDoc, ...prev]);
     return doc.id;
   }, []);
 
@@ -43,5 +60,12 @@ export function useDocumentList(): UseDocumentListReturn {
     setDocuments(prev => prev.filter(d => d.id !== id));
   }, []);
 
-  return { documents, loading, fetchDocuments, createDocument, deleteDocument };
+  return {
+    documents,
+    loading,
+    fetchDocuments,
+    searchDocuments,
+    createDocument,
+    deleteDocument,
+  };
 }

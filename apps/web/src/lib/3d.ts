@@ -39,3 +39,17 @@ export function getContrastColor(hex: string) {
 
   return brightness > 150 ? 'text-black' : 'text-white';
 }
+
+// Returns true if making `childId`'s parent = `newParentId` would create a cycle
+export function wouldCreateParentCycle(
+  objects: Record<string, ObjectState>,
+  childId: string,
+  newParentId: string
+): boolean {
+  let current: string | null = newParentId;
+  while (current) {
+    if (current === childId) return true;
+    current = objects[current]?.advanced?.parent ?? null;
+  }
+  return false;
+}
