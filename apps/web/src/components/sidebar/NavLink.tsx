@@ -2,6 +2,7 @@ import {
   LucideIcon,
   Users,
   Box,
+  Settings,
   NotebookText,
   Cuboid,
   Rocket,
@@ -54,6 +55,12 @@ export function NavLink() {
       path: 'assets',
       label: 'Gestion assets',
       icon: Box,
+      role: 'SUPERVISOR',
+    },
+    settings: {
+      path: 'settings',
+      label: 'Paramètres',
+      icon: Settings,
       role: 'SUPERVISOR',
     },
   };

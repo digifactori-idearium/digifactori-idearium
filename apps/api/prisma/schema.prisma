@@ -116,7 +116,6 @@ model VoxelModel {
 }
 
 
-
 model Document {
   id        String   @id @default(cuid())
   title     String   @default("Sans titre")

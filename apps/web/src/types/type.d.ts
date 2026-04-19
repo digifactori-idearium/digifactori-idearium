@@ -58,10 +58,6 @@ type Ideorama = {
   model: ModelsInfo;
 };
 
-type IdeoramaModel = {
-  model: ModelsInfo;
-};
-
 type ModelsInfo = {
   global: {
     brightness: 'bright' | 'dim' | 'dark';
@@ -197,4 +193,13 @@ interface EditorToolbarState {
   alignLeft: boolean;
   alignCenter: boolean;
   alignRight: boolean;
+}
+
+interface Integration {
+  id: string;
+  name: string;
+}
+
+interface CurrentStatusProps {
+  status: Status;
 }

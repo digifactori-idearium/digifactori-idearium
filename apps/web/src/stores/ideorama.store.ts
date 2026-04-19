@@ -148,16 +148,17 @@ export const actions = {
 
   async resetIdeorama() {
     try {
-      const res = await getEmptyIdeorama();
-      const model = res.data.model;
-      if (!model) return false;
-
-      sceneState.global = model.global ?? sceneState.global;
-      sceneState.background = model.background ?? sceneState.background;
-      sceneState.info = model.info ?? sceneState.info;
-      sceneState.floor = model.floor ?? sceneState.floor;
-      sceneState.objects = model.objects ?? sceneState.objects;
-      stackNewState(sceneState);
+      await getEmptyIdeorama().then(res => {
+        const model = res.data;
+        sceneState.global = model.global ? model.global : sceneState.global;
+        sceneState.background = model.background
+          ? model.background
+          : sceneState.background;
+        sceneState.info = model.info ? model.info : sceneState.info;
+        sceneState.floor = model.floor ? model.floor : sceneState.floor;
+        sceneState.objects = model.objects ? model.objects : sceneState.objects;
+        stackNewState(sceneState);
+      });
       return true;
     } catch (error) {
       console.error('resetIdeorama error:', error);
