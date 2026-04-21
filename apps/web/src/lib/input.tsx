@@ -12,7 +12,6 @@ import {
   ChartBarStacked,
   TextAlignStart,
   FileBox,
-  Columns3Cog,
 } from 'lucide-react';
 
 import { themeOptions } from './theme';
@@ -415,6 +414,14 @@ export const assetInputs = [
 ========================= */
 export const integrationInputs = [
   {
+    label: 'Active ?',
+    type: 'switch',
+    name: 'isActive',
+    placeholder: "Entrez le nom de l'intégration",
+    required: true,
+    icon: Box,
+  },
+  {
     label: 'Nom',
     type: 'text',
     name: 'name',
@@ -425,15 +432,23 @@ export const integrationInputs = [
   {
     label: 'Source',
     type: 'text',
-    name: 'source',
+    name: 'url',
     placeholder: "Entrez la source de l'intégration",
     required: true,
     icon: FileBox,
   },
   {
+    label: 'Clé',
+    type: 'password',
+    name: 'key',
+    placeholder: "Entrez la clé de l'intégration",
+    required: false,
+    icon: KeyRound,
+  },
+  {
     label: 'Type',
     type: 'select',
-    name: 'category',
+    name: 'type',
     placeholder: "Entrez le type de l'intégration",
     required: true,
     options: [
@@ -443,21 +458,32 @@ export const integrationInputs = [
     ],
     icon: ChartBarStacked,
   },
-  {
-    label: 'Clé',
-    type: 'password',
-    name: 'password',
-    placeholder: "Entrez la clé de l'intégration",
-    required: true,
-    icon: KeyRound,
-  },
+
   {
     label: 'Configuration',
-    type: 'json',
-    name: 'user.role',
+    type: 'fieldMapping',
+    name: 'fieldMapping',
     placeholder: "Entrez la configuration de l'intégration",
-    required: true,
-    icon: Columns3Cog,
+    required: false,
+    mappingFields: {
+      id: {
+        label: 'Identifiant',
+        placeholder: 'ex: product_id',
+        required: true,
+      },
+      name: { label: 'Nom', placeholder: 'ex: product_name', required: true },
+      file: { label: 'Fichier', placeholder: 'ex: file_url', required: true },
+      category: {
+        label: 'Catégorie',
+        placeholder: 'ex: category',
+        required: false,
+      },
+      thumbnail: {
+        label: 'Miniature',
+        placeholder: 'ex: thumb_url',
+        required: false,
+      },
+    },
   },
 ];
 
@@ -468,7 +494,7 @@ export const storeInputs = [
   {
     label: 'Nom',
     type: 'text',
-    name: 'name',
+    name: 'storeName',
     placeholder: 'Entrez le nom du store',
     required: true,
     icon: Box,
@@ -476,9 +502,17 @@ export const storeInputs = [
   {
     label: 'Source',
     type: 'text',
-    name: 'source',
+    name: 'storeURL',
     placeholder: 'Entrez la source du store',
     required: true,
     icon: FileBox,
+  },
+  {
+    label: 'Clef',
+    type: 'password',
+    name: 'storeKey',
+    placeholder: 'Entrez la source du store',
+    required: false,
+    icon: KeyRound,
   },
 ];
