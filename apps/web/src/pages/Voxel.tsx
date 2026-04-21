@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei';
-import { Canvas, ThreeEvent } from '@react-three/fiber';
-import { useMemo, useRef, useState } from 'react';
+import { Canvas, ThreeEvent, useThree } from '@react-three/fiber';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 export interface VoxelPoint {
@@ -11,6 +11,7 @@ export interface VoxelPoint {
 }
 
 interface VoxelProps {
+  setScene: React.Dispatch<React.SetStateAction<THREE.Scene | null>>,
   mode: 'add' | 'remove' | 'paint';
   shape: 'cube' | 'mur' | 'plateforme' | 'escalier';
   rotation: number;
@@ -272,7 +273,41 @@ function VoxelPainter({
   );
 }
 
+type RefObject<T> = {
+  current: T | null
+}
+
+// const SceneRef = forwardRef<THREE.Scene | null>((props, ref) => {
+//   const sceneRef = useRef<THREE.Scene | null>(null)
+
+//   useEffect(() => {
+//     sceneRef.current = new THREE.Scene()
+//     if (ref) {
+//       if (typeof ref === 'function') {
+//         ref(sceneRef.current)
+//       } else {
+//         ref.current = sceneRef.current
+//       }
+//     }
+//   }, [ref])
+
+//   return null
+// })
+
+function SceneBridge({ setScene }: { setScene: React.Dispatch<React.SetStateAction<THREE.Scene | null>> }) {
+  const { scene } = useThree()
+
+  useEffect(() => {
+    setScene(scene)
+  }, [scene])
+
+  return null
+}
+
+// SceneRef.displayName = 'SceneRef'
+
 export default function Voxel({
+  setScene,
   mode,
   shape,
   rotation,
@@ -297,6 +332,7 @@ export default function Voxel({
         style={{ width: '100%', height: '100%' }}
         camera={{ position: [500, 800, 1300], fov: 45, near: 1, far: 10000 }}
       >
+        <SceneBridge setScene={setScene} />
         <VoxelPainter
           mode={mode}
           shape={shape}

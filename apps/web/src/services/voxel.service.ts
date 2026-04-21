@@ -51,14 +51,18 @@ export const getVoxelModelById = async (
 
 export const saveVoxelModel = async (
     voxelModelId: string,
-    voxels: VoxelPoint[]
+    voxels: VoxelPoint[],
+    blob: Blob
 ): Promise<ApiResponse<null>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/save', {
-        voxelModelId,
-        voxelModel: {
-            model: JSON.stringify(voxels),
-        },
-    });
+    const formData = new FormData()
+    console.log("saveVoxelModel - blob: ", blob);
+    formData.append('file', blob, 'scene.glb')
+    formData.append('voxelModelId', voxelModelId)
+    formData.append('model', JSON.stringify(voxels))
+    const response = await axios.post(
+  'http://localhost:3001/api/voxel/save',
+  formData,
+)
 
     return response.data;
 };

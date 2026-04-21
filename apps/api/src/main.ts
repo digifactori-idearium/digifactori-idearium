@@ -39,6 +39,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
 // Routes
 const authService = new AuthService();
