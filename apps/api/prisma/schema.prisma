@@ -13,8 +13,9 @@ datasource db {
 }
 
 enum Role {
-  CHILD
+  INTERN
   SUPERVISOR
+  ADMIN
 }
 
 model User {
@@ -25,6 +26,7 @@ model User {
   password      String
   parental_code String?
   role          Role
+  isActive      Boolean      @default(true)
   profil        Profile?
   ideoramas     Ideorama[]
   voxelModels   VoxelModel[]
@@ -141,6 +143,7 @@ enum IntegrationType {
 
 model Setting {
   id           Int           @id @default(1)
+  orgCode      String        @default("Idearium2026")
   storeName    String
   storeURL     String
   storeKey     String?

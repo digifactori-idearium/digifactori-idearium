@@ -1,4 +1,3 @@
- 
 import { useCursor, useGLTF } from '@react-three/drei';
 import { ThreeEvent, useFrame } from '@react-three/fiber';
 import {

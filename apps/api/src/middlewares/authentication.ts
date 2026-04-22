@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
@@ -56,23 +57,24 @@ export const requireAuth = (
 };
 
 /**
- * Middleware to ensure user has a specific role
- * Can be extended for role-based access control
+ * Middleware factory that restricts a route to users with one of the allowed roles.
+ * Must be placed after the `authenticate` middleware so that `req.user` is populated.
  *
  * @example
- * router.delete('/users/:id', requireRole('ADMIN'), controller);
+ * router.get('/admin-only', requireRole('ADMIN'), handler);
+ * router.get('/shared',     requireRole('ADMIN', 'SUPERVISOR'), handler);
  */
-export const requireRole = (requiredRole: string) => {
+export const requireRole = (...allowedRoles: Role[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user) {
-      HttpResponse.unAuthorized("Vous n'avez pas les droits d'accès").send(res);
+    const user = req.user;
+
+    if (!user) {
+      HttpResponse.unAuthorized('Non authentifié').send(res);
       return;
     }
 
-    if (req.user.role !== requiredRole) {
-      HttpResponse.forbidden(
-        `Cette action nécessite le rôle ${requiredRole}`
-      ).send(res);
+    if (!allowedRoles.includes(user.role as Role)) {
+      HttpResponse.forbidden('Accès refusé').send(res);
       return;
     }
 
