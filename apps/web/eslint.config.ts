@@ -42,6 +42,8 @@ export default defineConfig([
       '@typescript-eslint/no-non-null-assertion': 'off',
       'react/jsx-no-target-blank': 'off',
       'react-refresh/only-export-components': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
 
       'import/order': [
         'warn',
