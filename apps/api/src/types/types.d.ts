@@ -15,7 +15,7 @@ interface UserInput {
   last_name: string;
   password: string;
   parental_code?: number;
-  role: 'CHILD' | 'SUPERVISOR';
+  role: 'INTERN' | 'SUPERVISOR';
 }
 
 interface ProfileInput {
