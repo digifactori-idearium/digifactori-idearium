@@ -38,6 +38,7 @@ export default class SettingsService implements ISettingsService {
     storeName?: string;
     storeURL?: string;
     storeKey?: string;
+    orgCode?: string;
   }) {
     try {
       const settings = await settingTable.upsert({
@@ -47,11 +48,13 @@ export default class SettingsService implements ISettingsService {
           storeName: data.storeName ?? '',
           storeURL: data.storeURL ?? '',
           storeKey: data.storeKey ?? '',
+          orgCode: data.orgCode ?? '',
         },
         update: {
           ...(data.storeName !== undefined && { storeName: data.storeName }),
           ...(data.storeURL !== undefined && { storeURL: data.storeURL }),
           ...(data.storeKey !== undefined && { storeKey: data.storeKey }),
+          ...(data.orgCode !== undefined && { orgCode: data.orgCode }),
         },
         include: { integrations: true },
       });

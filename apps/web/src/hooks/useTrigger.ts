@@ -3,13 +3,13 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { subscribeKey } from 'valtio/utils';
 
+import { ActionRegistry } from '@/lib/actions/registery';
 import {
   setCleanup,
   runCleanup,
   cleanObject,
   clearTweens,
 } from '@/lib/actions/runtime';
-import { ActionRegistry } from '@/lib/actions/registery';
 import { sceneState } from '@/stores';
 
 export function useTrigger(
