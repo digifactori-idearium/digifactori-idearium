@@ -50,6 +50,7 @@ export const ConfigPanel = () => {
       <CardContent className="flex flex-col flex-1 min-h-0 p-0">
         <div className="pt-2">
           <FormThree
+            key={'global'}
             inputs={ideoramaConfigInputs['global']}
             sliceKey="global"
           />
@@ -71,6 +72,7 @@ export const ConfigPanel = () => {
                   </AccordionTrigger>
                   <AccordionContent className="pt-2 border-t border-white/5">
                     <FormThree
+                      key={section.id}
                       inputs={ideoramaConfigInputs[section.input]}
                       sliceKey={section.id}
                     />

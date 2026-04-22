@@ -197,3 +197,10 @@ interface ActionConfig {
   trigger: TriggerType;
   config: Record<string, any>;
 }
+
+interface TriggerDefinition {
+  key: string;
+  icon: string;
+  label: string;
+  description: string;
+}

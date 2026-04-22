@@ -72,21 +72,26 @@
   .side-btn {
     @apply bg-sidebar! hover:bg-sidebar/70! active:bg-sidebar/50! outline-none! border-none!;
   }
+  @apply bg-mauve! text-white! hover:bg-mauve/80! outline-none! focus:border-2! focus:border-white!;
+
   .danger-btn {
-    @apply border-none! p-4 rounded-2xl bg-red-500! hover:bg-red-600! text-white! font-bold shadow-[0_4px_0_rgb(180,40,40)] active:translate-y-1 active:shadow-none transition-all;
+    @apply border-none! rounded-2xl bg-red-500! hover:bg-red-600! text-white! font-bold shadow-[0_4px_0_rgb(180,40,40)] active:translate-y-1 active:shadow-none transition-all;
   }
 
   .green-btn {
     @apply border-none! p-4 rounded-2xl bg-green-500! hover:bg-green-600! text-white! font-bold shadow-[0_4px_0_rgb(22,101,52)] active:translate-y-1 active:shadow-none transition-all;
   }
   .form-input {
-    @apply w-full pr-10!  border-zinc-400/40! border-2! rounded-2xl! outline! focus:border-dashed;
+    @apply w-full pr-10!  border-mauve! border-2! rounded-2xl! outline! focus:border-dashed outline-none!;
   }
   .slider-input {
     @apply w-14 text-center rounded-md border-zinc-400/40! border-2! outline! focus:border-dashed;
   }
   .form-icon {
-    @apply w-12 h-12 rounded-full bg-mauve! flex justify-center items-center;
+    @apply w-12 h-12 min-w-12 min-h-12 
+         rounded-full bg-mauve 
+         flex items-center justify-center 
+         shrink-0;
   }
   .form-button {
     @apply rounded-md bg-mauve! hover:bg-mauve/80! p-2 text-white! border-white! border-2! focus:border-3! shadow-none! outline-none!;

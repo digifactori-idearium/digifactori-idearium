@@ -1,17 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, SendHorizontal } from 'lucide-react';
+import { SendHorizontal } from 'lucide-react';
 import React, { useEffect } from 'react';
-import {
-  useForm,
-  SubmitHandler,
-  Controller,
-  FieldValues,
-} from 'react-hook-form';
+import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
 
-import { FormInput, FormInputData } from './Input';
-import { InputSelect } from './InputSelect';
-import { UploadField } from './UploadField';
+import { FormInputRenderer } from './FormInputRenderer';
+import { FormInputData } from './Input';
 
+import { ButtonLoading } from '@/components/common/Loading';
 import { createFormSchema } from '@/lib/validation';
 
 interface FormProps {
@@ -59,75 +54,22 @@ export const Form: React.FC<FormProps> = ({
         encType="multipart/form"
         className="w-full flex flex-col gap-4"
       >
-        <div className="w-full flex flex-col gap-4">
-          {inputs.map((input, index) => {
-            if (input.type === 'file' || input.type === 'image') {
-              return (
-                <div key={index} className="formInput flex flex-col gap-2">
-                  <label htmlFor={`InputSelect`}>
-                    <b>{input.label}</b>
-                    {input.required && <span className="text-red-600">*</span>}
-                  </label>
-                  <Controller
-                    key={index}
-                    name={input.name}
-                    control={control}
-                    rules={{
-                      required: input.required ? 'File is required' : false,
-                    }}
-                    render={({ field }) => (
-                      <UploadField
-                        type={input.type}
-                        name={field.name}
-                        setValue={setValue}
-                        placeholder={input.placeholder}
-                        error={errors[input.name]?.message as string}
-                      />
-                    )}
-                  />
-                </div>
-              );
-            }
-            if (input.type === 'select') {
-              return (
-                <div key={index} className="formInput flex flex-col gap-2">
-                  <label htmlFor={`InputSelect`}>
-                    <b>{input.label}</b>
-                    {input.required && <span className="text-red-600">*</span>}
-                  </label>
-                  <Controller
-                    name={input.name}
-                    control={control}
-                    rules={{ required: input.required ? 'Required' : false }}
-                    render={({ field: { ref, ...field } }) => (
-                      <InputSelect
-                        {...field}
-                        name={input.name}
-                        error={errors[input.name]?.message as string}
-                        options={input?.options || []}
-                        placeholder={input.placeholder}
-                        onChange={val => field.onChange(val)}
-                        icon={input.icon}
-                      />
-                    )}
-                  />
-                </div>
-              );
-            }
-            return (
-              <FormInput
-                key={index}
-                input={input}
-                register={register}
-                errors={errors}
-              />
-            );
-          })}
-        </div>
+        {inputs.map((input, index) => (
+          <FormInputRenderer
+            key={index}
+            input={input as any}
+            control={control}
+            setValue={setValue}
+            register={register}
+            errors={errors}
+          />
+        ))}
 
-        <button type="submit" className="w-full form-button">
+        <button type="submit" className="w-full form-button ">
           {loading ? (
-            <Loader2 />
+            <div className="flex gap-2 justify-center items-center">
+              <ButtonLoading />
+            </div>
           ) : (
             <div className="flex gap-2 justify-center items-center">
               <SendHorizontal /> Envoyer

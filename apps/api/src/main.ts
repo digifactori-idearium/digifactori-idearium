@@ -2,20 +2,31 @@ import path from 'path';
 
 import cors from 'cors';
 import dotenv from 'dotenv';
-import express from 'express';
+import express, { type Express } from 'express';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import authRoutes from './modules/auth/auth.route';
-import ideoramasRoutes from './modules/ideorama/ideorama.route';
-import profileRoutes from './modules/profile/profile.route';
-import voxelRoutes from './modules/voxel/voxel.route';
+import createAuthRoutes from '@/modules/auth/auth.route';
+import AuthService from '@/modules/auth/auth.service';
+import createEditorRoutes from '@/modules/editor/editor.route';
+import EditorService from '@/modules/editor/editor.service';
+import createIdeoramaRoutes from '@/modules/ideorama/ideorama.route';
+import IdeoramaService from '@/modules/ideorama/ideorama.services';
+import createProfileRoutes from '@/modules/profile/profile.route';
+import ProfileService from '@/modules/profile/profile.service';
+import createSettingsRoutes from '@/modules/setting/settings.route';
+import SettingsService from '@/modules/setting/settings.service';
+import createUserRoutes from '@/modules/user/user.route';
+import UserService from '@/modules/user/user.service';
+import createVoxelRoutes from '@/modules/voxel/voxel.route';
+import VoxelService from '@/modules/voxel/voxel.service';
 
 // Env variables
 dotenv.config();
 
-const app = express();
+const app: Express = express();
+export default app;
 const PORT = process.env.PORT || 3001;
 
 // set up rate limiter: maximum of five requests per minute
@@ -31,14 +42,32 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/ideorama', ideoramasRoutes);
-app.use('/api/voxel', voxelRoutes);
+const authService = new AuthService();
+app.use('/api/auth', createAuthRoutes(authService));
 
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")))
+const userService = new UserService();
+app.use('/api/user', createUserRoutes(userService));
+
+const profileService = new ProfileService();
+app.use('/api/profile', createProfileRoutes(profileService));
+
+const ideoramaService = new IdeoramaService();
+app.use('/api/ideorama', createIdeoramaRoutes(ideoramaService));
+
+const voxelService = new VoxelService();
+app.use('/api/voxel', createVoxelRoutes(voxelService));
+
+const editorService = new EditorService();
+app.use('/api/editor', createEditorRoutes(editorService));
+
+const settingsService = new SettingsService();
+app.use('/api/settings', createSettingsRoutes(settingsService));
+
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

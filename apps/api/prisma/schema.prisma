@@ -13,23 +13,26 @@ datasource db {
 }
 
 enum Role {
-  CHILD
+  INTERN
   SUPERVISOR
+  ADMIN
 }
 
 model User {
-  id            String     @id @default(cuid())
-  email         String     @unique
+  id            String       @id @default(cuid())
+  email         String       @unique
   first_name    String
   last_name     String
   password      String
   parental_code String?
   role          Role
+  isActive      Boolean      @default(true)
   profil        Profile?
   ideoramas     Ideorama[]
   voxelModels   VoxelModel[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  documents     Document[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Profile {
@@ -113,3 +116,53 @@ model VoxelModel {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
+model Document {
+  id        String   @id @default(cuid())
+  title     String   @default("Sans titre")
+  content   String   @default("") 
+  json      Json?
+  wordCount Int      @default(0)
+  emoji     String   @default("📝")
+  color     String   @default("#a78bfa")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ASSETS
+enum IntegrationType {
+  ASSET
+  MUSIC
+  OTHER
+}
+
+
+
+model Setting {
+  id           Int           @id @default(1)
+  orgCode      String        @default("Idearium2026")
+  storeName    String
+  storeURL     String
+  storeKey     String?
+  integrations Integration[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Integration {
+  id           String          @id @default(cuid())
+  settingId    Int
+  setting      Setting         @relation(fields: [settingId], references: [id])
+  name         String
+  url          String
+  type         IntegrationType
+  key          String?          
+  isActive     Boolean         @default(true)
+  fieldMapping Json            @default("{}")  
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+

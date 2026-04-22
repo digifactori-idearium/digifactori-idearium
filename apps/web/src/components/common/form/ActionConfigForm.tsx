@@ -46,6 +46,10 @@ export function ActionConfigForm({
     if (!watchedValues || isHydrating.current) return;
 
     const obj = sceneState.objects[objectId];
+
+    if (!obj) {
+      return;
+    }
     const targetAction = obj?.actions?.find(a => a.id === actionId);
     if (!targetAction) return;
 

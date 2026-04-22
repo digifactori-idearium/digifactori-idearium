@@ -52,7 +52,7 @@ export const Scene: React.FC = () => {
       className={`w-full h-full ${isOver ? 'droppable active' : 'droppable'}`}
     >
       <Canvas
-        shadows
+        shadows={{ type: THREE.PCFShadowMap }}
         orthographic
         camera={{
           zoom: 50,

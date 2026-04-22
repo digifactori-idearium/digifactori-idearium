@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   DndContext,
   DragEndEvent,
@@ -19,7 +20,7 @@ import {
   SquarePen,
   Undo2,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSnapshot } from 'valtio';
@@ -34,20 +35,40 @@ import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useUser } from '@/providers/UserProvider';
-import { saveIdeorama, searchIdeorama } from '@/services/ideorama.service';
+import { searchIdeorama, autoSaveIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
+
+/**
+ * Safely serializes a value, filtering out circular references, Promises, and functions
+ */
+const createReplacer = () => {
+  const visited = new WeakSet();
+  return (_key: string, value: any) => {
+    if (typeof value === 'object' && value !== null) {
+      if (visited.has(value)) {
+        return undefined;
+      }
+      visited.add(value);
+    }
+    if (value instanceof Promise || typeof value === 'function') {
+      return undefined;
+    }
+    return value;
+  };
+};
 
 const downloadAndSaveIdeorama = () => {
   try {
     const serializable = {
-      global: JSON.parse(JSON.stringify(sceneState.global)),
-      background: JSON.parse(JSON.stringify(sceneState.background)),
-      info: JSON.parse(JSON.stringify(sceneState.info)),
-      floor: JSON.parse(JSON.stringify(sceneState.floor)),
-      objects: JSON.parse(JSON.stringify(sceneState.objects)),
+      global: sceneState.global,
+      background: sceneState.background,
+      info: sceneState.info,
+      floor: sceneState.floor,
+      objects: sceneState.objects,
     };
 
-    localStorage.setItem('sceneState', JSON.stringify(serializable));
+    const jsonString = JSON.stringify(serializable, createReplacer());
+    localStorage.setItem('sceneState', jsonString);
   } catch (err) {
     console.error('Failed to save scene state:', err);
   }
@@ -55,15 +76,13 @@ const downloadAndSaveIdeorama = () => {
 
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
-
   const { ideoramaid } = useParams();
-
   const isEditMode = snap.mode === 'edit';
   const userId = useUser().user?.id;
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
-  const [isFirstRender, setIsFirstRender] = useState(true);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const isFirstRender = useRef(true);
   const { setOpen } = useSidebar();
 
   useEffect(() => {
@@ -71,22 +90,22 @@ export default function Ideorama() {
   }, []);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId);
+      const sceneData = localStorage.getItem('sceneState');
+      autoSaveIdeorama(sceneData, ideoramaid, userId);
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [ideoramaid, userId]);
+
+  useEffect(() => {
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      saveIdeorama(localStorage.getItem('sceneState'), ideoramaid, userId);
+      const sceneData = localStorage.getItem('sceneState');
+      autoSaveIdeorama(sceneData, ideoramaid, userId);
       sceneState.selectedObjectId = null;
       sceneState.history = [];
       sceneState.current = -1;
@@ -96,13 +115,14 @@ export default function Ideorama() {
 
   useEffect(() => {
     if (!ideoramaid) return;
-
     searchIdeorama(ideoramaid)
       .then(res => {
-        localStorage.setItem('sceneState', JSON.stringify(res.data.model));
-        res.data.model.info.name = res.data.name;
         const model = res.data.model;
         if (!model) return;
+
+        // model.info.name = res.data.name;
+
+        localStorage.setItem('sceneState', JSON.stringify(model));
 
         if (model.global) Object.assign(sceneState.global, model.global);
         if (model.background)
@@ -111,24 +131,23 @@ export default function Ideorama() {
         if (model.floor) Object.assign(sceneState.floor, model.floor);
         if (model.objects) sceneState.objects = model.objects;
       })
-      .then(() => {
-        actions.stackState();
-      });
+      .then(() => actions.stackState());
   }, [ideoramaid]);
 
   useEffect(() => {
-    if (!isFirstRender && !snap.isDragging) {
+    if (!isFirstRender.current && !snap.isDragging) {
       downloadAndSaveIdeorama();
     }
   }, [snap.global, snap.background, snap.info, snap.floor, snap.objects]);
 
   useEffect(() => {
-    if (!isFirstRender && !snap.isDragging) {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (!snap.isDragging) {
       downloadAndSaveIdeorama();
       actions.stackState();
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsFirstRender(false);
     }
   }, [snap.isDragging]);
 
@@ -139,23 +158,20 @@ export default function Ideorama() {
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { over, active } = event;
     const draggedData = active.data.current;
-
     if (over?.id === 'canvas-droppable' && draggedData) {
       const rect = active.rect.current.translated;
-
       if (rect) {
-        const clientX = rect.left + rect.width / 2;
-
-        const clientY = rect.top + rect.height / 2;
-
         window.dispatchEvent(
           new CustomEvent('canvas-drop', {
-            detail: { asset: draggedData, x: clientX, y: clientY },
+            detail: {
+              asset: draggedData,
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height / 2,
+            },
           })
         );
       }
     }
-
     setActiveAsset(null);
   }, []);
 
