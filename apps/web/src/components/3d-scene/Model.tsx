@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/immutability */
 import { useGLTF, useCursor } from '@react-three/drei';
 import { ThreeEvent, useFrame } from '@react-three/fiber';
 import {

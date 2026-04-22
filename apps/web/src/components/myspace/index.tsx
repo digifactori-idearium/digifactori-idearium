@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { Loader2 } from 'lucide-react';
 import React, {
   useState,
