@@ -85,7 +85,7 @@ export default class IdeoramaController {
       const fileContent = fs.readFileSync(ideorama.model, 'utf-8');
       ideorama.model = JSON.parse(fileContent);
 
-      HttpResponse.success(ideorama, 'Ideorama retrieved successfully').send(
+      return HttpResponse.success(ideorama, 'Ideorama retrieved successfully').send(
         res
       );
     }
@@ -105,8 +105,6 @@ export default class IdeoramaController {
   saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
     const uploadPath = getUploadPath(req.body.ideoramaId);
     fs.writeFileSync(uploadPath, req.body.ideorama.model);
-
-    HttpResponse.success(null, 'Ideorama updated successfully').send(res);
 
     HttpResponse.success(null, 'Ideorama updated successfully').send(res);
   });

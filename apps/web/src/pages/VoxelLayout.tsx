@@ -51,29 +51,43 @@ export default function VoxelLayout() {
 
 
   const exportGLB = (): Promise<Blob> => {
-  return new Promise((resolve, reject) => {
-    const exporter = new GLTFExporter()
+    return new Promise((resolve, reject) => {
+      const exporter = new GLTFExporter();
 
-    if (!scene) {
-      throw new Error('Scene is not initialized');
-    }
-    console.log('Exporting scene:', scene.children.length);
-    exporter.parse(
-      scene,
-      (result) => {
-        const blob = new Blob([result], {
-          type: 'model/gltf-binary',
-        })
+      if (!scene) {
+        throw new Error('Scene is not initialized');
+      }
 
-        console.log('GLB size:', blob.size)
+      const exportScene = scene.clone(true)
+      exportScene.traverse((obj) => {
+      if (obj.name == "cubeToSave") {
+        console.log("scale: ", obj.scale)
+        const scale = 0.005
+        obj.scale.set(scale, scale, scale)
+        obj.position.multiplyScalar(scale)
+        console.log("scale: ", obj.scale)
+      } else {
+        obj.visible = false
+      }
+    })
 
-        resolve(blob)
-      },
-      (error) => reject(error),
-      { binary: true }
-    )
-  })
-}
+      console.log('Exporting scene:', scene.children.length);
+      exporter.parse(
+        exportScene,
+        result => {
+          const blob = new Blob([result], {
+            type: 'model/gltf-binary',
+          });
+
+          console.log('GLB size:', blob.size);
+
+          resolve(blob);
+        },
+        error => reject(error),
+        { binary: true }
+      );
+    });
+  };
 
   const handleSave = async () => {
     if (!modelId) return;

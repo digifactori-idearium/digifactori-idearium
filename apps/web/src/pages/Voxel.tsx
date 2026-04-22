@@ -133,8 +133,9 @@ function VoxelPainter({
     const position = new THREE.Vector3();
 
     if (event.face) {
-      if (mode === 'add') position.copy(event.point).add(event.face.normal);
-      else position.copy(event.object.position);
+      console.log("here")
+      if (mode === 'add') {position.copy(event.point).add(event.face.normal);}
+      else {position.copy(event.object.position);}
     } else {
       position.copy(rollOverRef.current.position);
     }
@@ -259,6 +260,7 @@ function VoxelPainter({
 
       {voxels.map((voxel, i) => (
         <mesh
+          name="cubeToSave"
           key={`${voxel.x}-${voxel.y}-${voxel.z}-${i}`}
           position={voxelPointToVector3(voxel)}
           onPointerMove={onPointerMove}
