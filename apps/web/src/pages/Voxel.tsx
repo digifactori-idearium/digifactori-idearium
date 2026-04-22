@@ -12,8 +12,9 @@ export interface VoxelPoint {
 
 interface BaseVoxelProps {
   mode: "add" | "remove" | "paint"
-  shape: "cube" | "mur" | "plateforme" | "escalier" | "cadre" | "anneau"
-  rotation: number
+  shape: "cube" | "mur" | "plateforme" | "escalier" | "cadre" | "anneau" | "cercle" | "sphere"
+  rotationH: number
+  rotationV: number
   longueur: number
   largeur: number
   hauteur: number
@@ -48,7 +49,8 @@ function sameVoxel(a: VoxelPoint, b: VoxelPoint) {
 function VoxelMotor({
   mode,
   shape,
-  rotation,
+  rotationH,
+  rotationV,
   voxels,
   longueur,
   largeur,
@@ -162,7 +164,7 @@ function VoxelMotor({
       getShapeOffsets().forEach(o => {
         const p = position.clone().add(new THREE.Vector3(o[0], o[1], o[2]));
         snapPosition(p);
-        newVoxels.push({ ...vector3ToVoxelPoint(p), color: '#feb74c', });
+        newVoxels.push({ ...vector3ToVoxelPoint(p), color: selectedColor, });
       });
 
       onVoxelsChange(prev => {
@@ -200,14 +202,24 @@ function VoxelMotor({
   };
 
   const rotateOffset = (x: number, y: number, z: number) => {
-    const r = ((rotation % 4) + 4) % 4;
-
-    if (r === 0) return [x, y, z];
-    if (r === 1) return [z, y, -x];
-    if (r === 2) return [-x, y, -z];
-    if (r === 3) return [-z, y, x];
-
-    return [x, y, z];
+    let rx = ((rotationV % 4) + 4) % 4; // X
+    let ry = ((rotationH % 4) + 4) % 4; // Y
+  
+    let px = x;
+    let py = y;
+    let pz = z;
+  
+    // 🔵 rotation autour X (vertical)
+    for (let i = 0; i < rx; i++) {
+      [py, pz] = [-pz, py];
+    }
+  
+    // 🟢 rotation autour Y (horizontal)
+    for (let i = 0; i < ry; i++) {
+      [px, pz] = [pz, -px];
+    }
+  
+    return [px, py, pz];
   };
 
   const getShapeOffsets = () => {
@@ -254,13 +266,44 @@ function VoxelMotor({
           const distSq = x * x + z * z
     
           if (distSq >= rMin && distSq <= rMax) {
-            offsets.push([x * 50, 0, z * 50])
+            offsets.push([x * 50 - rayon * 50, 0, z * 50])
+          }
+        }
+      }
+    }
+
+    if (shape === "cercle") {
+      for (let x = -rayon; x <= rayon; x++) {
+        for (let z = -rayon; z <= rayon; z++) {
+          const distSq = x * x + z * z
+    
+          if (distSq <= rMax) {
+            offsets.push([x * 50, 0, z * 50 - rayon * 50])
+          }
+        }
+      }
+    }
+    
+    // optionnel (alignement souris comme avant)
+    const offsetX = 0
+    const offsetY = rayon * 50
+    const offsetZ = 0
+    
+    if (shape === "sphere") {
+      for (let x = -rayon; x <= rayon; x++) {
+        for (let y = -rayon; y <= rayon; y++) {
+          for (let z = -rayon; z <= rayon; z++) {
+            const distSq = x * x + y * y + z * z
+    
+            if (distSq <= rMax) {
+              offsets.push([x * 50 - offsetX , y * 50 - offsetY + 2 * rayon * 50, z * 50 - offsetZ])
+            }
           }
         }
       }
     }
   
-    return offsets.map(o => rotateOffset(o[0],o[1],o[2]))
+    return offsets.map(o => rotateOffset(o[0], o[1], o[2]));
   };
 
   return (
@@ -307,7 +350,7 @@ function VoxelMotor({
   );
 }
 
-export default function Voxel({mode, shape, rotation, longueur, largeur, hauteur, voxels, onVoxelsChange,}: VoxelProps) {
+export default function Voxel({mode, shape, rotationH, rotationV, longueur, largeur, hauteur, voxels, onVoxelsChange,}: VoxelProps) {
   
   const [isDragging, setIsDragging] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#f97316');
@@ -320,6 +363,7 @@ export default function Voxel({mode, shape, rotation, longueur, largeur, hauteur
     '#8b5cf6', '#a78bfa', '#c4b5fd',
     '#000000', '#374151', '#9ca3af', '#ffffff'
   ];
+  
 
   return (
   <div className="w-full h-full relative">
@@ -330,7 +374,8 @@ export default function Voxel({mode, shape, rotation, longueur, largeur, hauteur
       <VoxelMotor
         mode={mode}
         shape={shape}
-        rotation={rotation}
+        rotationH={rotationH}
+        rotationV={rotationV}
         longueur={longueur}
         largeur={largeur}
         hauteur={hauteur}
@@ -343,7 +388,7 @@ export default function Voxel({mode, shape, rotation, longueur, largeur, hauteur
     </Canvas>
 
     {/* 🎨 PALETTE */}
-    {mode === 'paint' && (
+    {(mode === 'paint' || mode === 'add') && (
       <div className="absolute top-4 right-4 grid grid-cols-4 gap-2 p-4 bg-black/40 backdrop-blur-md rounded-xl shadow-xl">
         {COLORS.map((c) => (
           <div

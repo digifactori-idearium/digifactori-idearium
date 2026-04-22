@@ -3,10 +3,12 @@ import { useState } from "react"
 interface EditPanelProps {
   mode: "add" | "remove" | "paint"
   setMode: (m: "add" | "remove" | "paint") => void
-  shape: "cube" | "mur" | "plateforme" | "escalier" | "cadre" | "anneau"
-  setShape: (s: "cube" | "mur" | "plateforme" | "escalier" | "cadre" | "anneau") => void
-  rotation: number
-  setRotation: React.Dispatch<React.SetStateAction<number>>
+  shape: "cube" | "mur" | "plateforme" | "escalier" | "cadre" | "anneau" | "cercle" | "sphere"
+  setShape: (s: "cube" | "mur" | "plateforme" | "escalier" | "cadre" | "anneau" | "cercle" | "sphere") => void
+  rotationH: number
+  setRotationH: React.Dispatch<React.SetStateAction<number>>
+  rotationV: number
+  setRotationV: React.Dispatch<React.SetStateAction<number>>
   longueur: number
   setLongueur: (n: number) => void
   largeur: number
@@ -41,7 +43,7 @@ const Button = ({ value, label, color, mode, setMode }: ButtonProps) => (
   </button>
 )
 
-export default function EditPanel({ mode, setMode, shape, setShape, rotation, setRotation, longueur, setLongueur, largeur, setLargeur, hauteur, setHauteur }: EditPanelProps) {
+export default function EditPanel({ mode, setMode, shape, setShape, rotationH, setRotationH, rotationV, setRotationV, longueur, setLongueur, largeur, setLargeur, hauteur, setHauteur }: EditPanelProps) {
   const [open, setOpen] = useState(false)
   const forme = {
     cube: {longueur : false, largeur : false, hauteur : false},
@@ -49,7 +51,9 @@ export default function EditPanel({ mode, setMode, shape, setShape, rotation, se
     plateforme: {longueur : true, largeur : true, hauteur : false},
     escalier: {longueur : false, largeur : true, hauteur : true},
     cadre: {longueur : true, largeur : true, hauteur : false},
-    anneau: {longueur : false, largeur : true, hauteur : false}
+    anneau: {longueur : false, largeur : true, hauteur : false},
+    cercle: {longueur : false, largeur : true, hauteur : false},
+    sphere: {longueur : false, largeur : true, hauteur : false}
   }
 
   const formeSelect = forme[shape]
@@ -142,7 +146,7 @@ export default function EditPanel({ mode, setMode, shape, setShape, rotation, se
             padding: 10,
             borderRadius: 12,
             border: "none",
-            background: "#333",
+            background: "#555",
             color: "white",
             cursor: "pointer"
           }}
@@ -156,14 +160,14 @@ export default function EditPanel({ mode, setMode, shape, setShape, rotation, se
             top: 45,
             left: 0,
             right: 0,
-            background: "#222",
+            background: "#555",
             borderRadius: 12,
             padding: 6,
             display: "flex",
             flexDirection: "column",
             gap: 4
           }}>
-            {["cube","mur","plateforme","escalier","cadre", "anneau"].map(s => (
+            {["cube","mur","plateforme","escalier","cadre", "anneau", "cercle", "sphere"].map(s => (
               <div
                 key={s}
                 onClick={() => { setShape(s as any); setOpen(false) }}
@@ -181,15 +185,56 @@ export default function EditPanel({ mode, setMode, shape, setShape, rotation, se
         )}
       </div>
 
-      {/* Rotation */}
+      {/* RotationH */}
       <div style={{ marginTop: 6 }}>
         <div style={{ fontSize: 14, marginBottom: 4 }}>
-          🔄 Rotation : {(rotation % 4 + 4) % 4 * 90}°
+          🔄 rotation Horizontale : {(rotationH % 4 + 4) % 4 * 90}°
         </div>
       
         <div style={{ display: "flex", gap: 6 }}>
           <button
-            onClick={() => setRotation(r => r - 1)}
+            onClick={() => setRotationH(r => r - 1)}
+            style={{
+              flex: 1,
+              padding: 10,
+              borderRadius: 10,
+              border: "none",
+              background: "#555",
+              color: "white",
+              cursor: "pointer",
+              fontSize: 18
+            }}
+          >
+            ↻
+          </button>
+      
+          <button
+            onClick={() => setRotationH(r => r + 1)}
+            style={{
+              flex: 1,
+              padding: 10,
+              borderRadius: 10,
+              border: "none",
+              background: "#555",
+              color: "white",
+              cursor: "pointer",
+              fontSize: 18
+            }}
+          >
+            ↺
+          </button>
+        </div>
+      </div>
+
+      {/* RotationV */}
+      <div style={{ marginTop: 6 }}>
+        <div style={{ fontSize: 14, marginBottom: 4 }}>
+          🔄 rotation Verticale : {(rotationV % 4 + 4) % 4 * 90}°
+        </div>
+      
+        <div style={{ display: "flex", gap: 6 }}>
+          <button
+            onClick={() => setRotationV(r => r - 1)}
             style={{
               flex: 1,
               padding: 10,
@@ -205,7 +250,7 @@ export default function EditPanel({ mode, setMode, shape, setShape, rotation, se
           </button>
       
           <button
-            onClick={() => setRotation(r => r + 1)}
+            onClick={() => setRotationV(r => r + 1)}
             style={{
               flex: 1,
               padding: 10,

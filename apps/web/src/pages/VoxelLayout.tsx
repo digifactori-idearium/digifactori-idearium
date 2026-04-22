@@ -14,8 +14,9 @@ export default function VoxelLayout() {
   const { modelId } = useParams<{ modelId: string }>();
 
   const [mode, setMode] = useState<'add' | 'remove' | 'paint'>('add');
-  const [shape, setShape] = useState<'cube' | 'mur' | 'plateforme' | 'escalier' | 'cadre' | 'anneau'>('cube');
-  const [rotation, setRotation] = useState(0);
+  const [shape, setShape] = useState<'cube' | 'mur' | 'plateforme' | 'escalier' | 'cadre' | 'anneau' | 'cercle' | 'sphere'>('cube');
+  const [rotationH, setRotationH] = useState(0);
+  const [rotationV, setRotationV] = useState(0);
 
   const [voxels, setVoxels] = useState<VoxelPoint[]>([]);
   const [modelName, setModelName] = useState('');
@@ -107,8 +108,10 @@ export default function VoxelLayout() {
           setMode={setMode}
           shape={shape}
           setShape={setShape}
-          rotation={rotation}
-          setRotation={setRotation}
+          rotationH={rotationH}
+          setRotationH={setRotationH}
+          rotationV={rotationV}
+          setRotationV={setRotationV}
           longueur={longueur}
           setLongueur={setLongueur}
           largeur={largeur}
@@ -134,7 +137,8 @@ export default function VoxelLayout() {
       <Voxel
         mode={mode}
         shape={shape}
-        rotation={rotation}
+        rotationH={rotationH}
+        rotationV={rotationV}
         longueur={longueur}
         largeur={largeur}
         hauteur={hauteur}
