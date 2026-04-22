@@ -99,6 +99,7 @@ export function SortableActionCard({
 
       <AccordionContent className="px-3 pb-3 pt-2 border-t border-white/5">
         <ActionConfigForm
+          key={action.id}
           inputs={(reg?.inputs as FormInputData[]) || []}
           objectId={selectedId}
           actionId={action.id}

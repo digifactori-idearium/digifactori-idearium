@@ -1,11 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, SendHorizontal } from 'lucide-react';
+import { SendHorizontal } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
 
 import { FormInputRenderer } from './FormInputRenderer';
 import { FormInputData } from './Input';
 
+import { ButtonLoading } from '@/components/common/Loading';
 import { createFormSchema } from '@/lib/validation';
 
 interface FormProps {
@@ -64,9 +65,11 @@ export const Form: React.FC<FormProps> = ({
           />
         ))}
 
-        <button type="submit" className="w-full form-button">
+        <button type="submit" className="w-full form-button ">
           {loading ? (
-            <Loader2 />
+            <div className="flex gap-2 justify-center items-center">
+              <ButtonLoading />
+            </div>
           ) : (
             <div className="flex gap-2 justify-center items-center">
               <SendHorizontal /> Envoyer

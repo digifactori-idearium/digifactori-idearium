@@ -21,29 +21,29 @@ import { useState, useCallback, useEffect } from 'react';
 
 const API_KEY = '42e4fc678abc42adafdcfad16293a3eb';
 
-async function translateToFrench(text: string): Promise<string> {
-  try {
-    const res = await fetch(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|fr`
-    );
-    const data = await res.json();
-    return data?.responseData?.translatedText ?? text;
-  } catch {
-    return text;
-  }
-}
+// async function translateToFrench(text: string): Promise<string> {
+//   try {
+//     const res = await fetch(
+//       `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|fr`
+//     );
+//     const data = await res.json();
+//     return data?.responseData?.translatedText ?? text;
+//   } catch {
+//     return text;
+//   }
+// }
 
-async function translateToEnglish(text: string): Promise<string> {
-  try {
-    const res = await fetch(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=fr|en`
-    );
-    const data = await res.json();
-    return data?.responseData?.translatedText ?? text;
-  } catch {
-    return text;
-  }
-}
+// async function translateToEnglish(text: string): Promise<string> {
+//   try {
+//     const res = await fetch(
+//       `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=fr|en`
+//     );
+//     const data = await res.json();
+//     return data?.responseData?.translatedText ?? text;
+//   } catch {
+//     return text;
+//   }
+// }
 
 export function useAssets(searchTerm: string = '', category?: number) {
   const [assets, setAssets] = useState<AssetItem[]>([]);
@@ -61,11 +61,11 @@ export function useAssets(searchTerm: string = '', category?: number) {
       try {
         const baseUrl = `https://api.poly.pizza/v1.1/search`;
 
-        let searchQuery = searchTerm.trim();
+        const searchQuery = searchTerm.trim();
         // Translate only on the first page of a new search
-        if (searchQuery && isNewSearch) {
-          searchQuery = await translateToEnglish(searchQuery);
-        }
+        // if (searchQuery && isNewSearch) {
+        //   searchQuery = await translateToEnglish(searchQuery);
+        // }
 
         const finalUrl = searchQuery
           ? `${baseUrl}/${encodeURIComponent(searchQuery)}`
@@ -100,7 +100,7 @@ export function useAssets(searchTerm: string = '', category?: number) {
 
         const mapped = results.map((item: any) => ({
           id: item.ID,
-          name: translateToFrench(item.Title),
+          name: item.Title, //await translateToFrench(item.Title),
           category: item.Category || 'Other',
           file: item.Download,
           thumbnail: item.Thumbnail,
@@ -121,6 +121,7 @@ export function useAssets(searchTerm: string = '', category?: number) {
     setPage(0);
     setHasMore(true);
     fetchAssets(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, category]);
 
   return { assets, loading, hasMore, fetchNextPage: () => fetchAssets(false) };

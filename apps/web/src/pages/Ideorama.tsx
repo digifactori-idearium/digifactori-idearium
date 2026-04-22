@@ -120,7 +120,8 @@ export default function Ideorama() {
         const model = res.data.model;
         if (!model) return;
 
-        model.info.name = res.data.name;
+        // model.info.name = res.data.name;
+
         localStorage.setItem('sceneState', JSON.stringify(model));
 
         if (model.global) Object.assign(sceneState.global, model.global);

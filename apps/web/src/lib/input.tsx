@@ -380,6 +380,7 @@ export const assetInputs = [
     type: 'text',
     name: 'name',
     placeholder: "Entrez le nom de l'asset",
+    required: true,
     icon: Box,
   },
   {
@@ -387,6 +388,7 @@ export const assetInputs = [
     type: 'text',
     name: 'category',
     placeholder: "Entrez le type de catégorie de l'asset",
+    required: true,
     icon: ChartBarStacked,
   },
   {
@@ -394,6 +396,7 @@ export const assetInputs = [
     type: 'text',
     name: 'description',
     placeholder: "Entrez la description de l'asset",
+    required: true,
     icon: TextAlignStart,
   },
   {
@@ -401,6 +404,115 @@ export const assetInputs = [
     type: 'text',
     name: 'source',
     placeholder: "Entrez la source de l'asset",
+    required: true,
     icon: FileBox,
+  },
+];
+
+/* =========================
+   INTEGRATION INPUTS
+========================= */
+export const integrationInputs = [
+  {
+    label: 'Active ?',
+    type: 'switch',
+    name: 'isActive',
+    placeholder: "Entrez le nom de l'intégration",
+    required: true,
+    icon: Box,
+  },
+  {
+    label: 'Nom',
+    type: 'text',
+    name: 'name',
+    placeholder: "Entrez le nom de l'intégration",
+    required: true,
+    icon: Box,
+  },
+  {
+    label: 'Source',
+    type: 'text',
+    name: 'url',
+    placeholder: "Entrez la source de l'intégration",
+    required: true,
+    icon: FileBox,
+  },
+  {
+    label: 'Clé',
+    type: 'password',
+    name: 'key',
+    placeholder: "Entrez la clé de l'intégration",
+    required: false,
+    icon: KeyRound,
+  },
+  {
+    label: 'Type',
+    type: 'select',
+    name: 'type',
+    placeholder: "Entrez le type de l'intégration",
+    required: true,
+    options: [
+      { value: 'ASSET', text: 'Asset-3d' },
+      { value: 'MUSIC', text: 'Musique' },
+      { value: 'OTHER', text: 'Autre' },
+    ],
+    icon: ChartBarStacked,
+  },
+
+  {
+    label: 'Configuration',
+    type: 'fieldMapping',
+    name: 'fieldMapping',
+    placeholder: "Entrez la configuration de l'intégration",
+    required: false,
+    mappingFields: {
+      id: {
+        label: 'Identifiant',
+        placeholder: 'ex: product_id',
+        required: true,
+      },
+      name: { label: 'Nom', placeholder: 'ex: product_name', required: true },
+      file: { label: 'Fichier', placeholder: 'ex: file_url', required: true },
+      category: {
+        label: 'Catégorie',
+        placeholder: 'ex: category',
+        required: false,
+      },
+      thumbnail: {
+        label: 'Miniature',
+        placeholder: 'ex: thumb_url',
+        required: false,
+      },
+    },
+  },
+];
+
+/* =========================
+   STORE INPUTS
+========================= */
+export const storeInputs = [
+  {
+    label: 'Nom',
+    type: 'text',
+    name: 'storeName',
+    placeholder: 'Entrez le nom du store',
+    required: true,
+    icon: Box,
+  },
+  {
+    label: 'Source',
+    type: 'text',
+    name: 'storeURL',
+    placeholder: 'Entrez la source du store',
+    required: true,
+    icon: FileBox,
+  },
+  {
+    label: 'Clef',
+    type: 'password',
+    name: 'storeKey',
+    placeholder: 'Entrez la source du store',
+    required: false,
+    icon: KeyRound,
   },
 ];

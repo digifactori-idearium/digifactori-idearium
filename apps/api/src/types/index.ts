@@ -5,6 +5,8 @@ import {
   User,
   VoxelModel,
   Document,
+  Setting,
+  Integration,
 } from '@prisma/client';
 
 export interface UserPayload {
@@ -105,4 +107,39 @@ export interface IEditorService {
       color?: string;
     }
   ): Promise<Document>;
+}
+
+export interface ISettingsService {
+  // Settings (singleton)
+  getSettings(): Promise<Setting & { integrations: Integration[] }>;
+  updateSettings(data: {
+    storeName?: string;
+    storeURL?: string;
+    storeKey?: string;
+  }): Promise<Setting & { integrations: Integration[] }>;
+
+  // Integrations
+  getIntegrations(): Promise<Integration[]>;
+  getIntegrationById(integrationId: string): Promise<Integration>;
+  createIntegration(data: {
+    name: string;
+    url: string;
+    type: string;
+    key?: string;
+    isActive?: boolean;
+    fieldMapping?: Record<string, any>;
+  }): Promise<Integration>;
+  updateIntegration(
+    integrationId: string,
+    data: {
+      name?: string;
+      url?: string;
+      type?: string;
+      key?: string;
+      isActive?: boolean;
+      fieldMapping?: Record<string, any>;
+    }
+  ): Promise<Integration>;
+  toggleIntegration(integrationId: string): Promise<Integration>;
+  deleteIntegration(integrationId: string): Promise<Integration>;
 }
