@@ -43,6 +43,11 @@ export default class ProfileService implements IProfileService {
       include: {
         followers: true,
         following: true,
+        ideoramaLiked: {
+          select: {
+            ideoramaId: true,
+          },
+        }
       },
     });
   }

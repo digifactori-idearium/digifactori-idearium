@@ -25,7 +25,7 @@ export default class ProfileController {
    *   - Unauthorized (401): { status: 'error', error: { code: 'Unauthorized', message: string }, status_code: 401 }
    *   - Server Error (500): { status: 'error', error: { code: 'Internal Server Error', message: string }, status_code: 500 }
    */
-  getProfile = asyncHandler(async (req: Request, res: Response) => {
+  getMyProfile = asyncHandler(async (req: Request, res: Response) => {
     const currentUser = req.user!;
 
     const profile = await this.profileService.getSingleProfile(
@@ -122,6 +122,17 @@ export default class ProfileController {
     HttpResponse.success(profile, 'Profil mis à jour avec succès').send(res);
   });
 
+  getProfile = asyncHandler(async (req: Request, res: Response) => {
+    const profile = await this.profileService.getSingleProfile(
+      req.body.pseudo
+    );
+    if (!profile) {
+      return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
+    }
+    HttpResponse.success(profile, 'Utilisateur trouvé').send(res);
+  })
+    
+  
   /**
    * Deletes a user account and associated profile
    *

@@ -85,9 +85,10 @@ export default class IdeoramaController {
       const fileContent = fs.readFileSync(ideorama.model, 'utf-8');
       ideorama.model = JSON.parse(fileContent);
 
-      return HttpResponse.success(ideorama, 'Ideorama retrieved successfully').send(
-        res
-      );
+      return HttpResponse.success(
+        ideorama,
+        'Ideorama retrieved successfully'
+      ).send(res);
     }
   );
 
@@ -107,6 +108,25 @@ export default class IdeoramaController {
     fs.writeFileSync(uploadPath, req.body.ideorama.model);
 
     HttpResponse.success(null, 'Ideorama updated successfully').send(res);
+  });
+
+  /**
+   * Updates the like status of an ideorama for the authenticated user
+   *
+   * @description Toggles the like status of an ideorama for the authenticated user. If the user has already liked the ideorama, it will remove the like; otherwise, it will add a like.
+   *
+   * @param {Request} req - Express request with authenticated user and body containing:
+   *   - ideoramaId: string
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  likeIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
+    await this.ideoramaService.likeIdeorama(
+      req.body.ideoramaId,
+      req.user!.userId
+    );
+
+    return HttpResponse.success(null, 'Ideorama liked successfully').send(res);
   });
 
   /**
