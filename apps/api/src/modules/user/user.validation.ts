@@ -76,6 +76,8 @@ export const updateUserSchema = z.object({
     .string()
     .min(2, 'Le nom de famille doit comporter au moins 2 caractères')
     .optional(),
+
+  role: z.enum(Role).optional(),
 });
 
 /**

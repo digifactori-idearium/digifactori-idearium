@@ -6,7 +6,11 @@ import { UserDeleteDialog } from './UserDeleteDialog';
 import { UserDialog } from './UserDialog';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { adminUserInputs } from '@/lib/input';
+import {
+  manageUserInputs,
+  adminUserRole,
+  supervisorUserRole,
+} from '@/lib/input';
 import { updateUser } from '@/services/user.service';
 
 export const columns = (
@@ -89,6 +93,10 @@ export const columns = (
     cell: ({ row }) => {
       const user = row.original;
       const isSelf = currentUser!.id === user.id;
+      const roleInput =
+        currentUser?.role === 'ADMIN' ? adminUserRole : supervisorUserRole;
+
+      const userInputs = [...manageUserInputs, roleInput];
 
       if (isSelf) return null;
 
@@ -105,7 +113,7 @@ export const columns = (
             }
             title="Modifier utilisateur"
             description="Modifier les informations de l'utilisateur"
-            inputs={adminUserInputs}
+            inputs={userInputs}
             initialValues={{
               email: user.email,
               first_name: user.first_name,
