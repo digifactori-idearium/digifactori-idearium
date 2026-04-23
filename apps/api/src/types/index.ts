@@ -123,7 +123,8 @@ export interface ISettingsService {
     storeName?: string;
     storeURL?: string;
     storeKey?: string;
-    orgCode?: string;
+    orgCode?: number;
+    orgParentalCode?: number;
   }): Promise<Setting & { integrations: Integration[] }>;
 
   // Integrations

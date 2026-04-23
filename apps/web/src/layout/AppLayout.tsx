@@ -6,7 +6,8 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 export function AppLayout({ header }: { header: React.ReactElement }) {
   const location = useLocation();
-  const isIdeorama = location.pathname.split('/').includes('ideorama');
+  const paths = location.pathname.split('/');
+  const isCanvas = paths.includes('ideorama') || paths.includes('my-space');
   return (
     <SidebarProvider
       style={
@@ -15,7 +16,7 @@ export function AppLayout({ header }: { header: React.ReactElement }) {
           '--sidebar-width-mobile': '8rem',
         } as React.CSSProperties
       }
-      defaultOpen={!isIdeorama}
+      defaultOpen={!isCanvas}
     >
       <AppSidebar collapsible="offcanvas" />
       {/* Main content area */}
@@ -23,7 +24,7 @@ export function AppLayout({ header }: { header: React.ReactElement }) {
         {/* Header is sticky */}
         {header}
         <main
-          className={`min-h-[calc(100vh - 100px)] bg-sidebar flex-1 flex items-center justify-center ${isIdeorama ? 'p-0' : 'p-4'}z-0`}
+          className={`min-h-[calc(100vh - 100px)] bg-sidebar flex-1 flex items-center justify-center ${isCanvas ? 'p-0' : 'p-4 md:p-6'} z-0`}
         >
           <div className="relative w-full h-full flex items-center justify-center">
             <Outlet />

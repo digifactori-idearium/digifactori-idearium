@@ -6,15 +6,18 @@ interface Props {
 
 const ProfileHeader: React.FC<Props> = ({ children }) => {
   return (
-    <div className="flex gap-2 flex-col md:flex-row justify-around items-center py-4">
-      <div className="flex gap-2 justify-center items-center py-4">
-        <UserCircle className="w-12 h-12 text-mauve" />
-        <h1 className="magic-text text-center w-fit md:text-5xl text-3xl">
+    <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-full bg-mauve/10">
+          <UserCircle className="w-10 h-10 text-mauve" />
+        </div>
+
+        <h1 className="magic-text text-3xl md:text-5xl font-semibold tracking-tight w-fit">
           MON PROFILE
         </h1>
       </div>
 
-      {children}
+      <div className="flex items-center gap-2">{children}</div>
     </div>
   );
 };

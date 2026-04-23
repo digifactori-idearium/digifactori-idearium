@@ -3,6 +3,8 @@ interface Option {
   value: string;
 }
 
+type Role = 'INTERN' | 'SUPERVISOR' | 'ADMIN';
+
 interface ApiResponse<T> {
   status: string;
   message: string;
@@ -17,15 +19,17 @@ type User = {
   email: string;
   first_name: string;
   last_name: string;
+  isActive: boolean;
   password: string;
   parental_code: string | null;
-  role: 'CHILD' | 'SUPERVISOR';
+  role: Role;
+  profile?: Profile;
 };
 
 type UserSession = {
   id: string;
   email: string;
-  role: 'CHILD' | 'SUPERVISOR';
+  role: Role;
   token: string;
 };
 
@@ -39,7 +43,19 @@ type Profile = {
   updatedAt: Date;
 };
 
-type Role = 'CHILD' | 'SUPERVISOR';
+interface CreateUserInput {
+  email: string;
+  first_name: string;
+  last_name: string;
+  pseudo: string;
+  role: Role;
+}
+
+interface UpdateUserInput {
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+}
 
 type Ideorama = {
   id: string;

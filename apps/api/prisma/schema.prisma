@@ -24,10 +24,9 @@ model User {
   first_name    String
   last_name     String
   password      String
-  parental_code String?
   role          Role
   isActive      Boolean      @default(true)
-  profil        Profile?
+  profile        Profile?
   ideoramas     Ideorama[]
   voxelModels   VoxelModel[]
   documents     Document[]
@@ -142,9 +141,10 @@ enum IntegrationType {
 
 
 model Setting {
-  id           Int           @id @default(1)
-  orgCode      String        @default("Idearium2026")
-  storeName    String
+  id              Int        @id @default(1)
+  orgCode         Int        @default(202026)
+  orgParentalCode Int        @default(2026)
+  storeName       String
   storeURL     String
   storeKey     String?
   integrations Integration[]

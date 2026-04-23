@@ -3,6 +3,7 @@ import {
   ColumnFiltersState,
   VisibilityState,
   SortingState,
+  FilterFn,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -31,27 +32,41 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+const globalFilterFn: FilterFn<any> = (row, _columnId, filterValue) => {
+  const search = String(filterValue).toLowerCase().trim();
+  if (!search) return true;
+
+  return row.getAllCells().some(cell => {
+    if (
+      cell.column.id === 'id' ||
+      cell.column.id === 'select' ||
+      cell.column.id === 'actions'
+    )
+      return false;
+    const value = cell.getValue();
+    if (value == null) return false;
+    return String(value).toLowerCase().includes(search);
+  });
+};
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  filterColumn?: string;
-  filterColumnText?: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  filterColumn,
-  filterColumnText,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-
+  const [globalFilter, setGlobalFilter] = React.useState('');
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+
   const table = useReactTable({
     data,
     columns,
@@ -63,37 +78,30 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    globalFilterFn,
+    onGlobalFilterChange: setGlobalFilter,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+      globalFilter,
     },
   });
 
   return (
-    <div className="w-full max-w-6xl mx-auto sm:px-6 lg:px-8 py-10">
+    <div className="w-full py-8">
       <DataTablePagination table={table} />
       <div className="flex items-center py-4">
         <Input
-          placeholder={
-            filterColumn ? `Filtrer les ${filterColumnText}...` : 'Filtrer...'
-          }
-          value={
-            filterColumn
-              ? ((table.getColumn(filterColumn)?.getFilterValue() as string) ??
-                '')
-              : ''
-          }
-          onChange={event => {
-            if (!filterColumn) return;
-            table.getColumn(filterColumn)?.setFilterValue(event.target.value);
-          }}
-          className="w-full sm:max-w-sm !border-mauve/80"
+          placeholder="Rechercher..."
+          value={globalFilter}
+          onChange={e => setGlobalFilter(e.target.value)}
+          className="w-full sm:max-w-sm border-mauve/80!"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! !border-mauve">
+            <Button className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! border-mauve!">
               Colonnes
             </Button>
           </DropdownMenuTrigger>
@@ -101,20 +109,18 @@ export function DataTable<TData, TValue>({
             {table
               .getAllColumns()
               .filter(column => column.getCanHide())
-              .map(column => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={value => column.toggleVisibility(!!value)}
-                  >
-                    {typeof column.columnDef.header === 'string'
-                      ? column.columnDef.header
-                      : ((column.columnDef.meta as any)?.label ?? column.id)}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
+              .map(column => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={value => column.toggleVisibility(!!value)}
+                >
+                  {typeof column.columnDef.header === 'string'
+                    ? column.columnDef.header
+                    : ((column.columnDef.meta as any)?.label ?? column.id)}
+                </DropdownMenuCheckboxItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -124,18 +130,16 @@ export function DataTable<TData, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map(header => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>

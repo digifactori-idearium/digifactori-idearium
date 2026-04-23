@@ -1,152 +1,86 @@
+import { Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+
+import { SuperButton } from '../common/button';
 import { DataTable } from '../common/data-table/dataTable';
 
+import { UserDialog } from './UserDialog';
 import { columns } from './usersColumns';
 
-function getData(): Profile[] {
-  return [
-    {
-      id: 'u1',
-      userId: 'alice01',
-      pseudo: 'Alice',
-      bio: 'Je suis Alice',
-      avatar: 'alice@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u2',
-      userId: 'bob02',
-      pseudo: 'Bob',
-      bio: 'Je suis Bob',
-      avatar: 'bob@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u3',
-      userId: 'feuille03',
-      pseudo: 'Feuille',
-      bio: 'Je suis Feuille',
-      avatar: 'feuille@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u4',
-      userId: 'teams04',
-      pseudo: 'Teams',
-      bio: 'Je suis Teams',
-      avatar: 'teams@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u5',
-      userId: 'cinq05',
-      pseudo: 'Cinq',
-      bio: 'Je suis Cinq',
-      avatar: 'cinq@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u6',
-      userId: 'oslo06',
-      pseudo: 'Oslo',
-      bio: 'Je suis Oslo',
-      avatar: 'oslo@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u7',
-      userId: 'patrick07',
-      pseudo: 'Patrick',
-      bio: 'Je suis Patrick',
-      avatar: 'patrick@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u8',
-      userId: 'sandy08',
-      pseudo: 'sandy',
-      bio: 'Je suis Sandy',
-      avatar: 'sandy@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u9',
-      userId: 'carlo09',
-      pseudo: 'carlo',
-      bio: 'Je suis Carlo',
-      avatar: 'carlo@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u10',
-      userId: 'crabs10',
-      pseudo: 'crabs',
-      bio: 'Je suis Crabs',
-      avatar: 'crabs@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u11',
-      userId: 'spa11',
-      pseudo: 'Pingui',
-      bio: 'Je suis Pingui',
-      avatar: 'pingui@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u12',
-      userId: 'spa12',
-      pseudo: 'Spa',
-      bio: 'Je suis Spa',
-      avatar: 'spa@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u13',
-      userId: 'tele13',
-      pseudo: 'Tele',
-      bio: 'Je suis Tele',
-      avatar: 'tele@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-    {
-      id: 'u14',
-      userId: 'ideorama02',
-      pseudo: 'Ideorama',
-      bio: 'Je suis Ideorama',
-      avatar: 'ideorama@example.com',
-      createdAt: new Date('2024-01-12'),
-      updatedAt: new Date('2024-06-01'),
-    },
-  ];
-}
+import { adminUserInputs } from '@/lib/input';
+import { useUser } from '@/providers/UserProvider';
+import { getUsers, deleteUser, createUser } from '@/services/user.service';
 
-export default function userHandling() {
-  const data = getData();
+export default function UserHandling() {
+  const [data, setData] = useState<User[]>([]);
+  const { user: currentUser } = useUser();
+
+  const [_loading, setLoading] = useState(false);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const users = await getUsers();
+      console.log(users);
+      setData(users);
+    } catch {
+      toast.error('Erreur lors du chargement des utilisateurs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteUser(id);
+      toast.success('Utilisateur supprimé');
+      fetchUsers();
+    } catch {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
 
   return (
-    <div className="w-full min-h-screen p-6">
-      <div className="magic-text text-center md:text-5xl text-3xl justify-center flex items-center gap-2 font-bold mb-6">
-        Gérez les stagiaires
+    <div className="container mx-auto h-full">
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="magic-text md:text-5xl text-3xl font-bold">
+          Gérez les stagiaires
+        </h1>
       </div>
-      <div className="container mx-auto py-10">
+
+      <UserDialog
+        trigger={
+          <SuperButton
+            voiceText={"Le paramètre avancé, c'est pour les grands."}
+            className="flex items-center gap-2 form-button"
+          >
+            <Plus className="w-4 h-4" />
+            Créer un utilisateur
+          </SuperButton>
+        }
+        title="Créer un utilisateur"
+        description="Ajouter un nouvel utilisateur"
+        inputs={adminUserInputs}
+        loading={false}
+        onsubmit={async data => {
+          console.log(data);
+          await createUser(data);
+          toast.success('Utilisateur créé');
+          fetchUsers();
+        }}
+      />
+
+      {/* TABLE */}
+      <div>
         <DataTable
-          columns={columns}
+          columns={columns(handleDelete, fetchUsers, currentUser)}
           data={data}
-          filterColumn="avatar"
-          filterColumnText="emails"
         />
       </div>
     </div>
