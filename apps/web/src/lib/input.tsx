@@ -187,7 +187,7 @@ export const resetInputs = [
    ADMIN CREATE USER IMPUTS
 ========================= */
 
-export const adminUserInputs = [
+export const manageUserInputs = [
   {
     label: 'Prénom',
     type: 'text',
@@ -220,20 +220,30 @@ export const adminUserInputs = [
     required: true,
     icon: Users,
   },
-  {
-    label: 'Rôle',
-    type: 'select',
-    name: 'role',
-    placeholder: 'Sélectionnez un rôle',
-    required: true,
-    icon: Briefcase,
-    options: [
-      { value: 'INTERN', text: 'Stagiaire' },
-      { value: 'SUPERVISOR', text: 'Superviseur' },
-    ],
-  },
 ];
 
+export const adminUserRole = {
+  label: 'Rôle',
+  type: 'select',
+  name: 'role',
+  placeholder: 'Sélectionnez un rôle',
+  required: true,
+  icon: Briefcase,
+  options: [
+    { value: 'INTERN', text: 'Stagiaire' },
+    { value: 'SUPERVISOR', text: 'Superviseur' },
+  ],
+};
+
+export const supervisorUserRole = {
+  label: 'Rôle',
+  type: 'select',
+  name: 'role',
+  placeholder: 'Sélectionnez un rôle',
+  required: true,
+  icon: Briefcase,
+  options: [{ value: 'INTERN', text: 'Stagiaire' }],
+};
 /* =========================
    IDEORAMA CREATION FORM INPUTS
 ========================= */
