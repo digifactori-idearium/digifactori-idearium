@@ -1,5 +1,6 @@
 import axios from '../services/axios.service';
 
+import { handleApiError } from '@/lib/api';
 type getProfileResponse = {
   profile: Profile;
   user: User;
@@ -23,7 +24,7 @@ export const getProfile = async (
   try {
     const response = await axios.post(
       `http://localhost:3001/api/profile/`,
-      parentalCode == '' ? {} : { parental_code: parentalCode }
+      parentalCode == '' ? {} : { parental_code: parseInt(parentalCode) ?? 0 }
     );
 
     if (response.data.status === 'error') {
@@ -33,7 +34,7 @@ export const getProfile = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.error?.message || 'Échec du profil');
+    return handleApiError(error);
   }
 };
 
@@ -57,9 +58,7 @@ export const updateProfile = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message || 'Échec du profil' + error
-    );
+    return handleApiError(error);
   }
 };
 
@@ -81,9 +80,6 @@ export const deleteProfile = async (): Promise<
 
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message ||
-        'Échec de la suppression du profil'
-    );
+    return handleApiError(error);
   }
 };

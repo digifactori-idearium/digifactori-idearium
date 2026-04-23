@@ -8,3 +8,14 @@ export function Loading() {
     </div>
   );
 }
+
+export function ButtonLoading() {
+  return (
+    <div className="flex items-center justify-center h-full w-full">
+      <div className="flex items-center gap-3 text-white">
+        <div className="w-6 h-6 rounded-full border-4 border-violet-300 border-t-violet-600 animate-spin" />
+        <p className="text-sm font-medium">Chargement…</p>
+      </div>
+    </div>
+  );
+}

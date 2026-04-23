@@ -5,6 +5,8 @@ import {
   User,
   VoxelModel,
   Document,
+  Setting,
+  Integration,
 } from '@prisma/client';
 
 export interface UserPayload {
@@ -27,6 +29,13 @@ export interface IAuthService {
   ) => Promise<{ profile: Profile; user: User }>;
   loginEmail: (email: string, password: string) => Promise<User | null>;
   loginPseudo: (email: string, password: string) => Promise<User | null>;
+  changePassword: (
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<true>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<true>;
 }
 
 export interface IIdeoramaService {
@@ -105,4 +114,60 @@ export interface IEditorService {
       color?: string;
     }
   ): Promise<Document>;
+}
+
+export interface ISettingsService {
+  // Settings (singleton)
+  getSettings(): Promise<Setting & { integrations: Integration[] }>;
+  updateSettings(data: {
+    storeName?: string;
+    storeURL?: string;
+    storeKey?: string;
+    orgCode?: number;
+    orgParentalCode?: number;
+  }): Promise<Setting & { integrations: Integration[] }>;
+
+  // Integrations
+  getIntegrations(): Promise<Integration[]>;
+  getIntegrationById(integrationId: string): Promise<Integration>;
+  createIntegration(data: {
+    name: string;
+    url: string;
+    type: string;
+    key?: string;
+    isActive?: boolean;
+    fieldMapping?: Record<string, any>;
+  }): Promise<Integration>;
+  updateIntegration(
+    integrationId: string,
+    data: {
+      name?: string;
+      url?: string;
+      type?: string;
+      key?: string;
+      isActive?: boolean;
+      fieldMapping?: Record<string, any>;
+    }
+  ): Promise<Integration>;
+  toggleIntegration(integrationId: string): Promise<Integration>;
+  deleteIntegration(integrationId: string): Promise<Integration>;
+}
+
+export interface IUserService {
+  getUsers(requesterRole: Role): Promise<User[]>;
+  getUserById(id: string, requesterRole: Role): Promise<User | null>;
+  createUser(data: {
+    email: string;
+    first_name: string;
+    last_name: string;
+    pseudo: string;
+    role: Role;
+  }): Promise<{ user: User }>;
+  updateUser(
+    id: string,
+    data: Partial<Pick<User, 'email' | 'first_name' | 'last_name'>>
+  ): Promise<User>;
+  setActive(id: string, isActive: boolean): Promise<User>;
+  updateRole(id: string, role: Role): Promise<User>;
+  deleteUser(id: string): Promise<{ user: User }>;
 }

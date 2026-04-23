@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, ReactNode, JSX } from 'react';
-import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { useState, useEffect, useRef, ReactNode, JSX } from 'react';
 
 // Palette de couleurs
 const COLORS = [

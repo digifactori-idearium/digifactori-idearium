@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Form } from '@/components/common/form';
 import { resetInputs } from '@/lib/input';
 import { useAuth } from '@/providers/AuthProvider';
+import { requestPasswordReset } from '@/services/auth.service';
 
 export default function Reset() {
   const { switchToLogin } = useAuth();
@@ -13,9 +14,8 @@ export default function Reset() {
   const onSubmit: SubmitHandler<FieldValues> = async data => {
     try {
       setLoading(true);
-      console.log('Reset data:', data);
 
-      // await resetPasswordService(data);
+      await requestPasswordReset(data.email ?? '');
 
       toast.success('Reset link sent to your email');
       switchToLogin();
@@ -30,8 +30,7 @@ export default function Reset() {
     <div className="w-full flex flex-col gap-5">
       <div className="title">
         <p className="text-[#626262]">
-          Reset your password to regain access to your account and exclusive
-          features
+          Réinitialisez votre mot de passe pour retrouver l'accès à votre compte
         </p>
       </div>
 

@@ -10,6 +10,7 @@ import {
 import { Slider } from '../../ui/slider';
 
 import { EmojiPickerField } from './EmojiField';
+import { FieldMappingField } from './FieldMappingField';
 import { HexColorField } from './HexColorField';
 import { FormInput, FormInputData } from './Input';
 import { InputSelect } from './InputSelect';
@@ -131,6 +132,10 @@ export function FormInputRenderer({
       </div>
     );
   }
+  // EMOJI
+  if (input.type === 'emoji') {
+    return <EmojiPickerField control={control} input={input} />;
+  }
 
   // SLIDER
   if (input.type === 'slider') {
@@ -176,6 +181,19 @@ export function FormInputRenderer({
     );
   }
 
+  if (input.type === 'fieldMapping') {
+    return (
+      <div className="flex flex-col gap-2">
+        {commonLabel}
+        <FieldMappingField
+          control={control}
+          input={input}
+          fields={input.mappingFields ?? {}}
+        />
+      </div>
+    );
+  }
+
   // DIALOG
   if (input.type === 'dialog') {
     return (
@@ -191,7 +209,7 @@ export function FormInputRenderer({
               <SquareArrowOutUpRight size={16} />
             </button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg bg-sidebar">
+          <DialogContent className="max-w-lg bg-sidebar z-60">
             <DialogHeader>
               <DialogTitle>{input.label}</DialogTitle>
               <DialogDescription>
@@ -203,10 +221,6 @@ export function FormInputRenderer({
         </Dialog>
       </div>
     );
-  }
-
-  if (input.type === 'emoji') {
-    return <EmojiPickerField control={control} input={input} />;
   }
 
   // DEFAULT HTMLS INPUT
