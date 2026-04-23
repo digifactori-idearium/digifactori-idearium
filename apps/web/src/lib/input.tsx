@@ -124,8 +124,8 @@ export const adminCodeInput: FormInputData = {
 
 export const orgCodeInput: FormInputData = {
   label: 'Code organisation',
-  type: 'text',
-  name: 'user.org_code',
+  type: 'number',
+  name: 'user.orgCode',
   placeholder: "Entrez le code de l'organisation",
   required: true,
   icon: KeyRound,

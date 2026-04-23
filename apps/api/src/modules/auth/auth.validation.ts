@@ -40,7 +40,7 @@ const getOrgCode = async (): Promise<number | null> => {
  * @property {Role}   role         - ADMIN | SUPERVISOR | INTERN
  * @property {string} password     - Min 6 chars, 1 uppercase, 1 lowercase, 1 digit
  * @property {string} [admin_code] - Required if role is ADMIN
- * @property {string} [org_code]   - Required if role is SUPERVISOR
+ * @property {number} [org_code]   - Required if role is SUPERVISOR
  *
  * Messages are in French (FR)
  */
@@ -70,7 +70,7 @@ export const userSchema = z
         'Il faut au moins 1 majuscule, 1 minuscule et 1 chiffre.'
       ),
     admin_code: z.string().optional(),
-    org_code: z.number().optional(),
+    orgCode: z.coerce.number().optional(),
   })
   .superRefine(async (data, ctx) => {
     // ADMIN: verify against ADMIN_CODE env variable
@@ -99,10 +99,10 @@ export const userSchema = z
 
     // SUPERVISOR: verify against orgCode in Setting table
     if (data.role === Role.SUPERVISOR) {
-      if (!data.org_code) {
+      if (!data.orgCode) {
         ctx.addIssue({
           code: 'custom',
-          path: ['org_code'],
+          path: ['orgCode'],
           message:
             'Le code organisation est requis pour créer un compte superviseur.',
         });
@@ -114,24 +114,24 @@ export const userSchema = z
       if (!orgCode) {
         ctx.addIssue({
           code: 'custom',
-          path: ['org_code'],
+          path: ['orgCode'],
           message:
             "Aucun code organisation configuré. Contactez l'administrateur.",
         });
         return;
       }
 
-      if (data.org_code !== orgCode) {
+      if (data.orgCode !== orgCode) {
         ctx.addIssue({
           code: 'custom',
-          path: ['org_code'],
+          path: ['orgCode'],
           message: 'Code organisation invalide.',
         });
       }
     }
-
-    // INTERN: no code required — parental code is assigned from settings at account creation
-  });
+  })
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  .transform(({ admin_code, orgCode, ...rest }) => rest);
 
 /**
  * User profile update validation schema
