@@ -83,7 +83,7 @@ export default class VoxelController {
       if (!/^[a-z0-9]+$/i.test(id)) {
         throw new Error('Invalid ideoramaId');
       }
-      const targetPath = `uploads/glb/${req.body.voxelModelId}.glb`
+      const targetPath = `uploads/glb/${id}.glb`
 
       fs.rename(tempPath, targetPath, (err) => {
         if (err) {
