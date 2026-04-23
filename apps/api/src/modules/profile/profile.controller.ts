@@ -1,9 +1,9 @@
 import { Profile, User } from '@prisma/client';
-import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 
 import { profileSchema, userProfileSchema } from './profile.validation';
 
+import { prisma } from '@/config/client.config';
 import { IProfileService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
@@ -40,13 +40,14 @@ export default class ProfileController {
 
     const data: { profile: Profile; user?: User } = { profile };
 
-    let isParentalCodeValid = false;
-    if (req.body.parental_code && user.parental_code) {
-      isParentalCodeValid = await bcrypt.compare(
-        req.body.parental_code,
-        user.parental_code
-      );
-    }
+    const setting = await prisma.setting.findUnique({
+      where: { id: 1 },
+      select: { orgParentalCode: true },
+    });
+    const isParentalCodeValid =
+      req.body.parental_code && setting?.orgParentalCode
+        ? req.body.parental_code == setting.orgParentalCode
+        : false;
 
     if (user.role !== 'INTERN' || isParentalCodeValid) {
       data.user = user;

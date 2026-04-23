@@ -48,14 +48,31 @@ export const updateStoreSettingsSchema = z
  *
  * @property {string} orgCode - The registration code supervisors must provide at sign-up.
  *                              Minimum 4 characters.
- *
+ * @property {string} orgParentalCode - The parental code for child intern
+ *                              Minimum 4 characters.
  * Messages are in French (FR)
  */
-export const updateOrgSettingsSchema = z.object({
-  orgCode: z
-    .string()
-    .min(4, 'Le code organisation doit comporter au moins 4 caractères'),
-});
+export const updateOrgSettingsSchema = z
+  .object({
+    orgCode: z
+      .number({
+        error: () => 'Le code organisation doit être un nombre',
+      })
+      .min(6, 'Le code organisation doit comporter au moins 6 chiffres')
+      .optional(),
+    orgParentalCode: z
+      .number({
+        error: () => 'Le code parental doit être un nombre',
+      })
+      .min(4, 'Le code parental doit comporter au moins 4 chiffres')
+      .optional(),
+  })
+  .refine(
+    data => data.orgCode !== undefined || data.orgParentalCode !== undefined,
+    {
+      message: 'Au moins un champ doit être fourni.',
+    }
+  );
 
 // ---------------------------------------------------------------------------
 // Integrations

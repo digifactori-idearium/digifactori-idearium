@@ -82,15 +82,13 @@ export default class ProfileService implements IProfileService {
           id: userId,
         },
       });
-      const { password, parental_code, ...data } = {
+      const { password, ...data } = {
         ...body.user,
       };
       const hashedPassword: string | undefined = password
         ? await bcrypt.hash(password, 10)
         : user?.password;
-      const hashedParentalCode: string | undefined = parental_code
-        ? await bcrypt.hash(parental_code, 10)
-        : user?.parental_code;
+
       response.user = await userTable.update({
         where: {
           id: userId,
@@ -98,7 +96,6 @@ export default class ProfileService implements IProfileService {
         data: {
           ...data,
           password: hashedPassword,
-          parental_code: hashedParentalCode,
         },
       });
     }

@@ -2,7 +2,8 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = process.env.EMAIL_FROM ?? 'blessingtutka298@gmail.com';
+// const FROM = process.env.EMAIL_FROM ?? 'blessingtutka298@gmail.com';
+const FROM = 'Idearium <website@resent.dev>';
 
 export class EmailService {
   /**
@@ -12,7 +13,7 @@ export class EmailService {
    * @param token - The signed JWT reset token
    */
   static async sendPasswordReset(to: string, token: string): Promise<void> {
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
+    const resetUrl = `${process.env.CLIENT_URL || 'digifactori-idearium.netlify.app'}/reset-password?token=${token}`;
 
     await resend.emails.send({
       from: FROM,
