@@ -17,7 +17,7 @@ interface ApiResponse<T> {
 }
 
 // Services
-export const getProfile = async (
+export const getMyProfile = async (
   parentalCode: string = ''
 ): Promise<ApiResponse<getProfileResponse>> => {
   try {
@@ -26,6 +26,25 @@ export const getProfile = async (
       parentalCode == '' ? {} : { parental_code: parentalCode }
     );
 
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error?.message || 'Échec du profil');
+  }
+};
+
+export const getProfile = async (
+  pseudo: string
+): Promise<ApiResponse<getProfileResponse>> => {
+  try {
+    const response = await axios.post(
+      `http://localhost:3001/api/profile`,
+      {pseudo: pseudo}
+    );
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message

@@ -7,13 +7,14 @@ import DeleteIdeoramaDialog from './deleteIdeoramaDialog';
 import { SuperButton } from '@/components/common/button/SuperButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { deleteIdeorama } from '@/services/ideorama.service';
+import { deleteIdeorama, likeIdeorama } from '@/services/ideorama.service';
 
 const IdeoramasGroup: React.FC<{
   ideoramas: Ideorama[];
   profile: Partial<Profile>;
   setIdeoramas: React.Dispatch<React.SetStateAction<Ideorama[]>>;
-}> = ({ ideoramas, profile, setIdeoramas }) => {
+  setProfile: React.Dispatch<React.SetStateAction<Partial<Profile>>>;
+}> = ({ ideoramas, profile, setIdeoramas, setProfile }) => {
   const navigate = useNavigate();
   const [ideoramaToDelete, setIdeoramaToDelete] = useState<Ideorama | null>(
     null
@@ -44,16 +45,90 @@ const IdeoramasGroup: React.FC<{
                 {ideorama.name}
               </p>
               <p className="text-xl font-bold tracking-tight text-foreground/90">
+              <SuperButton
+                className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+                tooltip={`Voir le profil de ${profile.pseudo}`}
+                onClick={e => {
+                  e.stopPropagation();
+                  if(ideorama.userId == profile.userId) {
+                    navigate(`/app/profile`);
+                  } else {
+                    navigate(`/app/profile`);
+                  }
+                }}
+              >
                 {profile.pseudo}
+              </SuperButton>
               </p>
               <div className="flex items-center gap-3 text-muted-foreground/80">
-                <div className="flex items-center gap-1">
-                  <span className="text-lg font-semibold text-mauve">
-                    {/* {ideorama.likes} */}
-                    {50}
-                  </span>
-                  <Heart className="w-5 h-5 fill-mauve stroke-mauve" />
-                </div>{' '}
+                  <SuperButton
+                    className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+                    tooltip='Montre que tu aimes cet idéorama'
+                    onClick={async e => {
+                      e.stopPropagation();
+                      console.log('like ideorama: ', ideorama.id);
+                      await likeIdeorama(ideorama.id);
+                      if (
+                        profile.ideoramaLiked?.some(
+                          liked => liked.ideoramaId == ideorama.id
+                        )
+                      ) {
+                        setProfile(pro => {
+                          return {
+                            ...pro,
+                            ideoramaLiked:
+                              pro.ideoramaLiked?.filter(
+                                liked => liked.ideoramaId !== ideorama.id
+                              ) || [],
+                          };
+                        });
+
+                        setIdeoramas(ideoramas =>
+                          ideoramas.map(ideoram => {
+                            if (ideoram.id == ideorama.id) {
+                              return {
+                                ...ideoram,
+                                _count: { likers: ideoram._count.likers - 1 },
+                              };
+                            }
+                            return ideoram;
+                          })
+                        );
+                      } else {
+                        setProfile(pro => {
+                          return {
+                            ...pro,
+                            ideoramaLiked: pro.ideoramaLiked
+                              ? [
+                                  ...pro.ideoramaLiked,
+                                  { ideoramaId: ideorama.id },
+                                ]
+                              : [{ ideoramaId: ideorama.id }],
+                          };
+                        });
+                        setIdeoramas(ideoramas =>
+                          ideoramas.map(ideoram => {
+                            if (ideoram.id == ideorama.id) {
+                              return {
+                                ...ideoram,
+                                _count: { likers: ideoram._count.likers + 1 },
+                              };
+                            }
+                            return ideoram;
+                          })
+                        );
+                      }
+                    }}
+                  >
+                      {ideorama._count.likers}
+                      {profile.ideoramaLiked?.some(
+                        liked => liked.ideoramaId == ideorama.id
+                      ) ? (
+                        <Heart className="w-5 h-5 fill-mauve stroke-mauve" />
+                      ) : (
+                        <Heart className="w-5 h-5 stroke-mauve" />
+                      )}
+                  </SuperButton>
               </div>
               <SuperButton
                 tooltip="Supprime ton idéorama"
@@ -67,16 +142,29 @@ const IdeoramasGroup: React.FC<{
                 <Trash2 /> Supprimer
               </SuperButton>
             </div>
-            <Avatar className="h-14 w-14 border-2 border-white/20 shadow-sm shrink-0">
-              <AvatarImage
-                src={
-                  profile.avatar ||
-                  'https://api.dicebear.com/7.x/bottts/svg?seed=Emma'
-                }
-                alt="Profile"
-              />
-              <AvatarFallback>{profile.pseudo}</AvatarFallback>
-            </Avatar>
+            <SuperButton
+              className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+              tooltip={`Voir le profil de ${profile.pseudo}`}
+              onClick={e => {
+                  e.stopPropagation();
+                  if(ideorama.userId == profile.userId) {
+                    navigate(`/app/profile`);
+                  } else {
+                    navigate(`/app/profile`);
+                  }
+                }}
+            >
+              <Avatar className="h-14 w-14 border-2 border-white/20 shadow-sm shrink-0">
+                <AvatarImage
+                  src={
+                    profile.avatar ||
+                    'https://api.dicebear.com/7.x/bottts/svg?seed=Emma'
+                  }
+                  alt="Profile"
+                />
+                <AvatarFallback>{profile.pseudo}</AvatarFallback>
+              </Avatar>
+            </SuperButton>
           </div>
         </Card>
       ))}
