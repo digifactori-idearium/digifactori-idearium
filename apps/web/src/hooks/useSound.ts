@@ -18,6 +18,33 @@ async function translateToFrench(text: string): Promise<string> {
   }
 }
 
+export async function searchSounds(query: string): Promise<any[]> {
+  const params = new URLSearchParams({
+    query: query.trim() || 'sound effects',
+    fields: 'id,name,previews,tags',
+    page_size: '10',
+    page: '1',
+    token: API_KEY,
+  });
+
+  const finalUrl = `https://freesound.org/apiv2/search/text/?${params.toString()}`;
+  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(finalUrl)}`;
+
+  const res = await fetch(proxyUrl);
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  const results: any[] = Array.isArray(data?.results) ? data.results : [];
+
+  return results.map(item => ({
+    value:
+      item.previews?.['preview-hq-mp3'] ??
+      item.previews?.['preview-lq-mp3'] ??
+      '',
+    label: (item.name ?? 'Unknown').replace(/\.[^/.]+$/, '').slice(0, 40),
+  }));
+}
+
 export function useSound(searchTerm: string = '', category?: number) {
   const [sounds, setSounds] = useState<MusicItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,8 +90,6 @@ export function useSound(searchTerm: string = '', category?: number) {
 
         const data = await response.json();
         const results: any[] = Array.isArray(data?.results) ? data.results : [];
-
-        console.log(results);
 
         const nextHasMore = Boolean(data.next);
         hasMoreRef.current = nextHasMore;

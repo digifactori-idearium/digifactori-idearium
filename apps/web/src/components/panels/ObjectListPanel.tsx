@@ -31,9 +31,13 @@ function useObjectsHierarchy() {
   Object.entries(snap).forEach(([id, obj]) => {
     map[id] = { id, ...obj, children: [] };
   });
+
   Object.values(map).forEach(obj => {
-    if (obj.advanced.parent && map[obj.advanced.parent]) {
-      map[obj.advanced.parent].children.push(obj);
+    const parentId = obj.advanced.parent;
+    const isValid = parentId && map[parentId];
+
+    if (isValid) {
+      map[parentId].children.push(obj);
     } else {
       roots.push(obj);
     }
@@ -74,7 +78,7 @@ const ObjectNode = memo(
         <AccordionTrigger
           onClick={handleClick}
           className={`
-          p-1.5 rounded-sm hover:no-underline w-full!
+          p-1.5 rounded-sm hover:no-underline w-full! [&>svg]:text-white!
           ${isActive ? 'bg-white/20' : ''}
         `}
         >
@@ -118,7 +122,7 @@ export const ObjectListPanel = memo(() => {
           className={`h-full bg-transparent border-none! shadow-none p-2! pt-3! text-white!`}
         >
           <CardContent className="overflow-y-auto custom-scrollbar p-0!">
-            <Accordion type="multiple" className="w-full">
+            <Accordion type="multiple" className="w-full ">
               {hierarchy.map(node => (
                 <ObjectNode key={node.id} node={node} />
               ))}

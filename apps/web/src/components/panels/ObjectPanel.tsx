@@ -23,7 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import { objectConfigInputs } from '@/lib/input';
 import { sceneState, actions } from '@/stores/ideorama.store';
 
-type ConfigSlice = 'transform' | 'style' | 'advanced';
+type ConfigSlice = 'transform' | 'style' | 'advanced' | 'info';
 
 interface AccordionSection {
   id: ConfigSlice;
@@ -31,8 +31,9 @@ interface AccordionSection {
 }
 
 const accordionSections: AccordionSection[] = [
+  { id: 'info', label: 'Information' },
   { id: 'style', label: 'Style' },
-  { id: 'advanced', label: 'Advanced' },
+  { id: 'advanced', label: 'Plus' },
 ];
 
 export const ObjectConfigPanel = () => {
@@ -95,6 +96,7 @@ export const ObjectConfigPanel = () => {
         {/* Transform Section */}
         <div className="px-4 pt-2">
           <FormThree
+            key={`transform-${selectedId}`}
             inputs={objectConfigInputs['transform']}
             objectId={selectedId}
             sliceKey="transform"
@@ -122,6 +124,7 @@ export const ObjectConfigPanel = () => {
 
                 <AccordionContent className="pt-2 border-t border-white/5">
                   <FormThree
+                    key={`${section.id}-${selectedId}`}
                     inputs={objectConfigInputs[section.id]}
                     objectId={selectedId}
                     sliceKey={section.id}

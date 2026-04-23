@@ -7,16 +7,20 @@ import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import createAuthRoutes from './modules/auth/auth.route';
-import AuthService from './modules/auth/auth.service';
-import createEditorRoutes from './modules/editor/editor.route';
-import EditorService from './modules/editor/editor.service';
-import createIdeoramaRoutes from './modules/ideorama/ideorama.route';
-import IdeoramaService from './modules/ideorama/ideorama.services';
-import createProfileRoutes from './modules/profile/profile.route';
-import ProfileService from './modules/profile/profile.service';
-import createVoxelRoutes from './modules/voxel/voxel.route';
-import VoxelService from './modules/voxel/voxel.service';
+import createAuthRoutes from '@/modules/auth/auth.route';
+import AuthService from '@/modules/auth/auth.service';
+import createEditorRoutes from '@/modules/editor/editor.route';
+import EditorService from '@/modules/editor/editor.service';
+import createIdeoramaRoutes from '@/modules/ideorama/ideorama.route';
+import IdeoramaService from '@/modules/ideorama/ideorama.services';
+import createProfileRoutes from '@/modules/profile/profile.route';
+import ProfileService from '@/modules/profile/profile.service';
+import createSettingsRoutes from '@/modules/setting/settings.route';
+import SettingsService from '@/modules/setting/settings.service';
+import createUserRoutes from '@/modules/user/user.route';
+import UserService from '@/modules/user/user.service';
+import createVoxelRoutes from '@/modules/voxel/voxel.route';
+import VoxelService from '@/modules/voxel/voxel.service';
 
 // Env variables
 dotenv.config();
@@ -44,6 +48,9 @@ app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 const authService = new AuthService();
 app.use('/api/auth', createAuthRoutes(authService));
 
+const userService = new UserService();
+app.use('/api/user', createUserRoutes(userService));
+
 const profileService = new ProfileService();
 app.use('/api/profile', createProfileRoutes(profileService));
 
@@ -55,6 +62,9 @@ app.use('/api/voxel', createVoxelRoutes(voxelService));
 
 const editorService = new EditorService();
 app.use('/api/editor', createEditorRoutes(editorService));
+
+const settingsService = new SettingsService();
+app.use('/api/settings', createSettingsRoutes(settingsService));
 
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));

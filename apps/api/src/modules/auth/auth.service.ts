@@ -1,4 +1,7 @@
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+import { EmailService } from './email.service';
 
 import { prisma, Profile, User } from '@/config/client.config';
 import { IAuthService } from '@/types';
@@ -14,16 +17,14 @@ export default class AuthService implements IAuthService {
    * @returns a Promise with the new user (Promise<User>)
    */
   async createUser(input: UserInput): Promise<User> {
-    const { password, parental_code, ...user } = input;
+    const { password, ...user } = input;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const hashedParentalCode = await bcrypt.hash(parental_code, 10);
 
     const newUser = await userTable.create({
       data: {
         ...user,
         password: hashedPassword,
-        parental_code: hashedParentalCode,
       },
     });
     return newUser;
@@ -55,20 +56,15 @@ export default class AuthService implements IAuthService {
   async createAccount(
     data: RegisterInput
   ): Promise<{ user: User; profile: Profile }> {
-    const { password, parental_code, ...userData } = data.user;
+    const { password, ...userData } = data.user;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    let hashedParentalCode: string | null = null;
-    if (parental_code !== undefined && parental_code !== null) {
-      hashedParentalCode = await bcrypt.hash(parental_code.toString(), 10);
-    }
 
     const result = await prisma.$transaction(async tx => {
       const newUser = await tx.user.create({
         data: {
           ...userData,
           password: hashedPassword,
-          parental_code: hashedParentalCode,
         },
       });
 
@@ -131,5 +127,94 @@ export default class AuthService implements IAuthService {
     } else {
       return null;
     }
+  }
+
+  /**
+   * Changes the password for an authenticated user.
+   * Verifies the current password before applying the change.
+   *
+   * @param userId          - The authenticated user's id
+   * @param currentPassword - The user's current plain password to verify
+   * @param newPassword     - The new plain password to hash and store
+   * @returns Promise<true> on success
+   * @throws Error if the current password is wrong or the user is not found
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<true> {
+    const user = await userTable.findUnique({ where: { id: userId } });
+    if (!user) throw new Error('Utilisateur introuvable.');
+
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) throw new Error('Mot de passe actuel incorrect.');
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await userTable.update({
+      where: { id: userId },
+      data: { password: hashed },
+    });
+
+    return true;
+  }
+
+  /**
+   * Generates a short-lived reset JWT and emails it to the user.
+   *
+   * We always respond with 200 even if the email does not exist to avoid
+   * user enumeration attacks.
+   *
+   * @param email - The account email to send the reset link to
+   * @returns Promise<void>
+   */
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await userTable.findUnique({
+      where: { email },
+      include: { profile: true },
+    });
+
+    if (!user || !user.isActive) return;
+
+    const secret = process.env.JWT_SECRET + user.password;
+    const token = jwt.sign({ userId: user.id, email: user.email }, secret, {
+      expiresIn: '1h',
+    });
+
+    await EmailService.sendPasswordReset(email, token);
+  }
+
+  /**
+   * Verifies the reset token and applies the new password.
+   *
+   * The token is verified against JWT_SECRET + currentHashedPassword.
+   * If the password was already reset (hash changed), the old token is invalid.
+   *
+   * @param token       - The JWT from the reset link
+   * @param newPassword - The new plain password to hash and store
+   * @returns Promise<true> on success
+   * @throws Error if the token is invalid, expired, or the user is not found
+   */
+  async resetPassword(token: string, newPassword: string): Promise<true> {
+    const decoded = jwt.decode(token) as { userId?: string } | null;
+    if (!decoded?.userId) throw new Error('Token invalide.');
+
+    const user = await userTable.findUnique({ where: { id: decoded.userId } });
+    if (!user || !user.isActive) throw new Error('Utilisateur introuvable.');
+
+    const secret = process.env.JWT_SECRET + user.password;
+    try {
+      jwt.verify(token, secret);
+    } catch {
+      throw new Error('Le lien de réinitialisation est invalide ou a expiré.');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await userTable.update({
+      where: { id: user.id },
+      data: { password: hashed },
+    });
+
+    return true;
   }
 }

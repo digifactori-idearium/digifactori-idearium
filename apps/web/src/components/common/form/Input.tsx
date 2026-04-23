@@ -1,6 +1,12 @@
-import { LucideProps, TriangleAlert } from 'lucide-react';
-import React from 'react';
+import { Eye, EyeOff, LucideProps, TriangleAlert } from 'lucide-react';
+import React, { useState } from 'react';
 import { UseFormRegister, FieldValues, FieldErrors } from 'react-hook-form';
+
+export interface FieldMappingMeta {
+  label: string;
+  placeholder: string;
+  required: boolean;
+}
 
 export interface FormInputData {
   label: string;
@@ -16,6 +22,9 @@ export interface FormInputData {
   options?: Option[];
   // dialogue
   dialogueContent?: React.ReactElement;
+
+  mappingFields?: Record<string, FieldMappingMeta>;
+
   // Slider/Number
   max?: number;
   min?: number;
@@ -44,6 +53,8 @@ export const FormInput: React.FC<FormInputProps> = ({
   const hasError = !!errorMessages;
 
   const registerOptions = input.required ? { required: true } : {};
+
+  const [showPassword, setShowPassword] = useState(false);
 
   // Render different html input types
   const renderInput = () => {
@@ -171,16 +182,32 @@ export const FormInput: React.FC<FormInputProps> = ({
           </div>
         );
 
-      default:
+      default: {
+        const isPassword = input.type === 'password';
+        const inputType = isPassword && showPassword ? 'text' : input.type;
+
         return (
-          <input
-            id={`Input${input.name}`}
-            type={input.type}
-            placeholder={input.placeholder}
-            {...register(input.name, registerOptions)}
-            className={`form-control form-input px-9 py-3! ${hasError ? 'error' : ''}`}
-          />
+          <div className="relative w-full">
+            <input
+              id={`Input${input.name}`}
+              type={inputType}
+              placeholder={input.placeholder}
+              {...register(input.name, registerOptions)}
+              className={`form-control form-input px-9 py-3! w-full ${isPassword ? 'pr-10' : ''} ${hasError ? 'error' : ''}`}
+            />
+            {isPassword && (
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            )}
+          </div>
         );
+      }
     }
   };
 

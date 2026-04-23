@@ -1,10 +1,11 @@
-import { Music, Play, Pause, Check, Search, X } from 'lucide-react';
-import { useState, useRef, useMemo } from 'react';
+import { Music, Play, Pause, Check } from 'lucide-react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { useSnapshot } from 'valtio';
 
+import { Search } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useSound } from '@/hooks/useSound';
+import { useSound, searchSounds } from '@/hooks/useSound';
 import { cn } from '@/lib/utils';
 import { sceneState } from '@/stores';
 
@@ -38,8 +39,6 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
     ? snap.objects[selectedObjectId]
     : null;
 
-  // console.log(sounds);
-
   const [previewId, setPreviewId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -53,7 +52,7 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
 
   const selectedUrl = type === 'global' ? globalTrack : actionTrack;
 
-  const togglePreview = (sound: AssetItem) => {
+  const togglePreview = (sound: MusicItem) => {
     if (previewId === String(sound.id)) {
       audioRef.current?.pause();
       setPreviewId(null);
@@ -67,7 +66,7 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
     }
   };
 
-  const selectTrack = (url: string) => {
+  const selectTrack = useCallback((url: string) => {
     if (type === 'global') {
       setGlobalTrack(url, globalTrack);
       return;
@@ -76,29 +75,23 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
     const currentTrigger = sceneState.pendingTrigger;
     if (!objId || !currentTrigger) return;
     setActionTrack(objId, currentTrigger, url);
-  };
+  }, []);
+
+  const handleAsyncSearch = useCallback(async (query: string) => {
+    const results = await searchSounds(query);
+    setSearchQuery(query);
+    return results;
+  }, []);
 
   return (
     <div className="flex flex-col gap-3">
-      <div
-        className={`w-4/5 flex items-center self-center gap-2 bg-neutral-900/80 backdrop-blur-md rounded-md px-2 py-2 transition-all duration-300 ${'opacity-100 scale-100'}`}
-      >
-        <Search className="size-5 cursor-pointer" />
-        <input
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Chercher un son, une musique..."
-          className="flex-1 bg-transparent outline-none text-sm placeholder:text-white/50 py-1"
-        />
+      <Search
+        label="son"
+        placeholder="Chercher un son, une musique..."
+        onSearch={handleAsyncSearch}
+        onSelect={() => {}}
+      />
 
-        <button
-          onClick={() => {
-            setSearchQuery('');
-          }}
-        >
-          <X className="size-4 text-white/70 mr-2" />
-        </button>
-      </div>
       <ScrollArea
         className="h-72 pr-4"
         onScrollCapture={e => {
@@ -192,7 +185,6 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
               Chargement...
             </div>
           )}
-
           {!hasMore && sounds.length === 0 && !loading && (
             <div className="py-4 text-center text-sm text-muted-foreground">
               Aucun son trouvé.
@@ -200,6 +192,7 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
           )}
         </div>
       </ScrollArea>
+
       <audio ref={audioRef} onEnded={() => setPreviewId(null)} hidden />
     </div>
   );

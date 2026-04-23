@@ -34,7 +34,7 @@ export const searchIdeoramas = async (query: string) => {
   return [query];
 };
 
-export const getEmptyIdeorama = async(): Promise<ApiResponse<ModelsInfo>> => {
+export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
   try {
     const response = await axios.get(
       `http://localhost:3001/api/ideorama/empty`
@@ -149,7 +149,7 @@ export const autoSaveIdeorama = (
 };
 
 export const getAllIdeoramas = async (
-  userId :string | undefined
+  userId: string | undefined
 ): Promise<ApiResponse<Ideorama[]>> => {
   try {
     const response = await axios.post(

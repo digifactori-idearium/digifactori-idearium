@@ -1,10 +1,11 @@
 import { Plus } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import { DocumentCard } from './DocumentCard';
 import { EditorCreator } from './EditorCreator';
 
 import { Loading } from '@/components/common';
+import { Search } from '@/components/common/form';
 import { useDocumentList } from '@/hooks/editor';
 
 interface DocumentListProps {
@@ -16,25 +17,55 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   userId,
   onOpen,
 }) => {
-  const { documents, loading, fetchDocuments, deleteDocument } =
-    useDocumentList();
+  const {
+    documents,
+    loading,
+    fetchDocuments,
+    deleteDocument,
+    searchDocuments,
+  } = useDocumentList();
+
+  const [searchResults, setSearchResults] = useState<DocumentListItem[] | null>(
+    null
+  );
+
+  const searchOptions = documents.map(e => {
+    return { value: e.title, label: e.title };
+  });
 
   useEffect(() => {
     fetchDocuments();
   }, [userId, fetchDocuments]);
+
+  const displayDocuments = useMemo(() => {
+    if (searchResults !== null) {
+      return searchResults;
+    }
+    return documents;
+  }, [documents, searchResults]);
+
+  const handleSearch = async (term: string) => {
+    if (!term || term.trim() === '') {
+      setSearchResults(null);
+    } else {
+      const results = await searchDocuments(term);
+      setSearchResults(results);
+    }
+  };
 
   const [createsNew, setCreatesNew] = useState(false);
 
   return (
     <div className="h-full w-full p-6">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-wrap gap-y-3 items-center justify-between">
         <div>
           <h1 className="text-3xl font-black magic-text">Mes documents</h1>
           <p className="text-slate-500 text-sm mt-1">
-            {documents.length === 0
-              ? 'Crée ton premier document !'
-              : `${documents.length} document${documents.length > 1 ? 's' : ''}`}
+            {!loading &&
+              (displayDocuments.length === 0
+                ? 'Crée ton premier document !'
+                : `${displayDocuments.length} document${displayDocuments.length > 1 ? 's' : ''}`)}
           </p>
         </div>
         <button
@@ -51,11 +82,19 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         </button>
       </div>
 
+      <Search
+        onSelect={handleSearch}
+        options={searchOptions}
+        limit={5}
+        label="document"
+        placeholder="Rechercher un document..."
+      />
+
       {/* Grid */}
       <div className="p-2">
         {loading ? (
           <Loading />
-        ) : documents.length === 0 ? (
+        ) : displayDocuments.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="text-6xl mb-4">📖</div>
             <h2 className="text-xl font-bold mb-2">
@@ -74,7 +113,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {documents.map(doc => (
+            {displayDocuments.map(doc => (
               <DocumentCard
                 key={doc.id}
                 doc={doc}
