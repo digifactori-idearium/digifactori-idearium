@@ -76,12 +76,7 @@ export default function AssetHandling() {
             </DialogContent>
           </Dialog>
         </div>
-        <DataTable
-          columns={columns}
-          data={data}
-          filterColumn="name"
-          filterColumnText="assets"
-        />
+        <DataTable columns={columns} data={data} />
       </div>
     </div>
   );
