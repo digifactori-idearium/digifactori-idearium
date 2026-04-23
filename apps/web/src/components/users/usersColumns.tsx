@@ -1,36 +1,35 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-import { DataTableColumnHeader } from '../common/data-table/dataTableColumnHeader';
+import { UserDeleteDialog } from './UserDeleteDialog';
+import { UserDialog } from './UserDialog';
 
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { adminUserInputs } from '@/lib/input';
+import { updateUser } from '@/services/user.service';
 
-export const columns: ColumnDef<Profile>[] = [
+export const columns = (
+  onDelete: (id: string) => void,
+  refresh: () => void,
+  currentUser: UserSession | null
+): ColumnDef<User>[] => [
   {
     id: 'select',
     header: ({ table }: { table: any }) => (
       <Checkbox
         className="
-          !h-5 !w-5
+          h-5! w-5!
           flex justify-center items-center
-          !border-1 !border-mauve
-          !bg-transparent 
-          data-[state=checked]:!bg-mauve
-          data-[state=indeterminate]:!bg-mauve
-          data-[state=checked]:!border-mauve
-          data-[state=indeterminate]:!border-mauve
-          data-[state=checked]:!text-white
-          data-[state=indeterminate]:!text-white
-          [&>svg]:!text-white
+          border! border-mauve!
+          bg-transparent! 
+          data-[state=checked]:bg-mauve!
+          data-[state=indeterminate]:bg-mauve!
+          data-[state=checked]:border-mauve!
+          data-[state=indeterminate]:border-mauve!
+          data-[state=checked]:text-white!
+          data-[state=indeterminate]:text-white!
+          [&>svg]:text-white!
         "
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -43,15 +42,15 @@ export const columns: ColumnDef<Profile>[] = [
     cell: ({ row }: { row: any }) => (
       <Checkbox
         className="
-          !h-5 !w-5
+          h-5! w-5!
           flex justify-center items-center
-          !border-1 !border-mauve
-          data-[state=checked]:!bg-mauve
-          data-[state=checked]:!border-mauve
-          data-[state=checked]:!text-white
-          data-[state=unchecked]:!bg-transparent
-          data-[state=unchecked]:!border-mauve
-          [&>svg]:!text-white
+          border! border-mauve!
+          data-[state=checked]:bg-mauve!
+          data-[state=checked]:border-mauve!
+          data-[state=checked]:text-white!
+          data-[state=unchecked]:bg-transparent!
+          data-[state=unchecked]:border-mauve!
+          [&>svg]:text-white!
         "
         checked={row.getIsSelected()}
         onCheckedChange={value => row.toggleSelected(!!value)}
@@ -63,79 +62,79 @@ export const columns: ColumnDef<Profile>[] = [
   },
   {
     accessorKey: 'id',
-    header: 'id',
+    header: 'ID',
   },
   {
-    accessorKey: 'userId',
-    header: 'user id',
+    accessorKey: 'profile.pseudo',
+    header: 'Pseudo',
   },
   {
-    accessorKey: 'pseudo',
-    header: 'pseudo',
+    accessorKey: 'email',
+    header: 'Email',
   },
   {
-    accessorKey: 'avatar',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="email" />
-    ),
-    meta: { label: 'Email' },
+    accessorKey: 'first_name',
+    header: 'Prénom',
   },
   {
-    accessorKey: 'createdAt',
-    header: 'Date de création',
-    cell: ({ row }: { row: any }) => {
-      const date = new Date(row.getValue('createdAt') as string);
-
-      const formatted = new Intl.DateTimeFormat('fr-FR', {
-        dateStyle: 'long',
-        timeStyle: 'short',
-      }).format(date);
-
-      return <div>{formatted}</div>;
-    },
+    accessorKey: 'last_name',
+    header: 'Nom',
   },
   {
-    accessorKey: 'updatedAt',
-    header: 'Date de mise à jour',
-    cell: ({ row }: { row: any }) => {
-      const date = new Date(row.getValue('updatedAt') as string);
-
-      const formatted = new Intl.DateTimeFormat('fr-FR', {
-        dateStyle: 'long',
-        timeStyle: 'short',
-      }).format(date);
-
-      return <div>{formatted}</div>;
-    },
+    accessorKey: 'role',
+    header: 'Rôle',
   },
   {
     id: 'actions',
-    cell: ({ row }: { row: any }) => {
-      const profile = row.original;
+    cell: ({ row }) => {
+      const user = row.original;
+      const isSelf = currentUser!.id === user.id;
+
+      if (isSelf) return null;
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="h-8 w-8 p-0 text-white! bg-mauve! hover:bg-mauve/80! !border-mauve"
-            >
-              <span className="sr-only  ">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(profile.userId)}
-            >
-              Copier l'id du profil
-            </DropdownMenuItem>
-            <DropdownMenuItem>Voir le profil</DropdownMenuItem>
-            <DropdownMenuItem>Supprimer le profil</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <UserDialog
+            trigger={
+              <button
+                className="p-2 rounded-full hover:bg-mauve/30 bg-mauve/10 text-mauve transition-colors"
+                title="Modifier"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            }
+            title="Modifier utilisateur"
+            description="Modifier les informations de l'utilisateur"
+            inputs={adminUserInputs}
+            initialValues={{
+              email: user.email,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              pseudo: user.profile?.pseudo,
+              role: user.role,
+            }}
+            loading={false}
+            onsubmit={async data => {
+              await updateUser(user.id, data);
+              toast.success('Utilisateur mis à jour');
+              refresh();
+            }}
+          />
+
+          <UserDeleteDialog
+            trigger={
+              <button
+                className="p-2 rounded-full  hover:bg-red-500/30 bg-red-500/10 text-red-500 transition-colors"
+                title="Supprimer"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            }
+            pseudo={user.profile?.pseudo}
+            onConfirm={() => onDelete(user.id)}
+            onCancel={() => {}}
+          />
+        </div>
       );
     },
   },
