@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/preserve-manual-memoization */
 import { Music, Play, Pause, Check } from 'lucide-react';
 import { useState, useRef, useMemo, useCallback } from 'react';
 import { useSnapshot } from 'valtio';

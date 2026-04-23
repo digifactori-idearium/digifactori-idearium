@@ -72,9 +72,10 @@ beforeAll(async () => {
     first_name: 'Gauthier',
     last_name: 'Mambourg',
     password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
+    isActive: true,
     parental_code:
       '$2b$10$5gQSEfb2bYTl.v38bhJPteNnWu2YXrjbgARZ/QfOsh1EKwHkQIXI.',
-    role: 'CHILD',
+    role: 'INTERN',
     createdAt: new Date(),
     updatedAt: new Date(),
   });

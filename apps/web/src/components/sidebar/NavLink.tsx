@@ -21,7 +21,7 @@ interface NavLinkItem {
   path: string;
   label: string;
   icon: LucideIcon;
-  role?: string;
+  role?: string[];
 }
 
 export function NavLink() {
@@ -47,28 +47,34 @@ export function NavLink() {
     },
     userHandling: {
       path: 'users',
-      label: 'Gestion stagiaires',
+      label: 'Gestion Utilisateurs',
       icon: Users,
-      role: 'SUPERVISOR',
+      role: ['SUPERVISOR', 'ADMIN'],
     },
     assetHandling: {
       path: 'assets',
       label: 'Gestion assets',
       icon: Box,
-      role: 'SUPERVISOR',
+      role: ['ADMIN'],
     },
     settings: {
       path: 'settings',
       label: 'Paramètres',
       icon: Settings,
-      role: 'SUPERVISOR',
+      role: ['ADMIN'],
     },
   };
 
   return (
     <SidebarMenu className="h-fit">
       {Object.entries(links)
-        .filter(([_, link]) => !link.role || user?.role === link.role)
+        .filter(([_, link]) => {
+          if (!link.role) return true;
+
+          if (!user?.role) return false;
+
+          return link.role.includes(user.role);
+        })
         .map(([key, link]) => (
           <SidebarMenuItem key={key} className="my-1">
             <SidebarMenuButton asChild className="h-auto!">

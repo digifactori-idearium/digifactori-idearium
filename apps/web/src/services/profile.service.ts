@@ -23,7 +23,7 @@ export const getMyProfile = async (
   try {
     const response = await axios.post(
       `http://localhost:3001/api/profile/`,
-      parentalCode == '' ? {} : { parental_code: parentalCode }
+      parentalCode == '' ? {} : { parental_code: parseInt(parentalCode) ?? 0 }
     );
 
     if (response.data.status === 'error') {

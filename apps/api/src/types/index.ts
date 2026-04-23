@@ -29,6 +29,13 @@ export interface IAuthService {
   ) => Promise<{ profile: Profile; user: User }>;
   loginEmail: (email: string, password: string) => Promise<User | null>;
   loginPseudo: (email: string, password: string) => Promise<User | null>;
+  changePassword: (
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<true>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<true>;
 }
 
 export interface IIdeoramaService {
@@ -116,6 +123,8 @@ export interface ISettingsService {
     storeName?: string;
     storeURL?: string;
     storeKey?: string;
+    orgCode?: number;
+    orgParentalCode?: number;
   }): Promise<Setting & { integrations: Integration[] }>;
 
   // Integrations
@@ -142,4 +151,23 @@ export interface ISettingsService {
   ): Promise<Integration>;
   toggleIntegration(integrationId: string): Promise<Integration>;
   deleteIntegration(integrationId: string): Promise<Integration>;
+}
+
+export interface IUserService {
+  getUsers(requesterRole: Role): Promise<User[]>;
+  getUserById(id: string, requesterRole: Role): Promise<User | null>;
+  createUser(data: {
+    email: string;
+    first_name: string;
+    last_name: string;
+    pseudo: string;
+    role: Role;
+  }): Promise<{ user: User }>;
+  updateUser(
+    id: string,
+    data: Partial<Pick<User, 'email' | 'first_name' | 'last_name'>>
+  ): Promise<User>;
+  setActive(id: string, isActive: boolean): Promise<User>;
+  updateRole(id: string, role: Role): Promise<User>;
+  deleteUser(id: string): Promise<{ user: User }>;
 }

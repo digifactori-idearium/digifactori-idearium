@@ -31,10 +31,10 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
   onDelete,
   children,
 }) => {
-  const { user: sessionUser, removeToken } = useUser();
+  const { user: sessionUser } = useUser();
   const [user, setUser] = useState<any>();
   const [open, setOpen] = useState(false);
-  const [isUnlocked, setIsUnlocked] = useState(sessionUser?.role !== 'CHILD');
+  const [isUnlocked, setIsUnlocked] = useState(sessionUser?.role !== 'INTERN');
   const [code, setCode] = useState('');
 
   const effectiveUser = propUser || user;
@@ -46,6 +46,8 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
         setUser(response.data?.user);
         setIsUnlocked(true);
         toast.success('Accès autorisé');
+      } else {
+        toast.error('Code parental incorrect');
       }
     } catch {
       toast.error('Code parental incorrect');
@@ -55,22 +57,8 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
   const handleFormSubmit = async (formData: any) => {
     const userData = { ...formData };
 
-    if (userData.parental_code === '****' || !userData.parental_code.trim()) {
-      delete userData.parental_code;
-    }
-
     try {
       await onUpdate(userData, profile);
-
-      if (
-        sessionUser?.role &&
-        formData.role &&
-        sessionUser?.role !== formData.role
-      ) {
-        toast.success('Rôle mis à jour. Veuillez vous reconnecter.');
-        removeToken();
-        return;
-      }
 
       toast.success('Paramètres mis à jour');
       setOpen(false);
@@ -85,13 +73,13 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
       onOpenChange={val => {
         setOpen(val);
         if (!val) {
-          setIsUnlocked(sessionUser?.role !== 'CHILD');
+          setIsUnlocked(sessionUser?.role !== 'INTERN');
           setCode('');
         }
       }}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[85vh] z-1000 flex flex-col overflow-hidden bg-sidebar! border-mauve! dialog-btn">
+      <DialogContent className="sm:max-w-md max-h-[85vh] z-110 flex flex-col overflow-hidden bg-sidebar! border-mauve! dialog-btn">
         <DialogHeader>
           <DialogTitle>
             {isUnlocked ? 'Paramètres du compte' : 'Code Parental Requis'}
@@ -118,27 +106,12 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
                     },
                     { label: 'Prénom', type: 'text', name: 'first_name' },
                     { label: 'Nom', type: 'text', name: 'last_name' },
-                    {
-                      label: 'Rôle',
-                      type: 'select',
-                      name: 'role',
-                      options: [
-                        { text: 'Enfant', value: 'CHILD' },
-                        { text: 'Superviseur', value: 'SUPERVISOR' },
-                      ],
-                    },
-                    {
-                      label: 'Changer Code Parental',
-                      type: 'text',
-                      name: 'parental_code',
-                    },
                   ]}
                   initialValues={{
                     email: effectiveUser?.email || '',
                     first_name: effectiveUser?.first_name || '',
                     last_name: effectiveUser?.last_name || '',
                     role: effectiveUser?.role || '',
-                    parental_code: effectiveUser?.parental_code ? '****' : '',
                   }}
                   handleOnSubmit={handleFormSubmit}
                 />
@@ -149,7 +122,7 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
               </div>
             )
           ) : (
-            <>
+            <div className="flex flex-col gap-4 py-4">
               <Input
                 type="password"
                 placeholder="0 0 0 0"
@@ -159,12 +132,14 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
                 onChange={e => setCode(e.target.value)}
               />
               <Button
+                type="button"
+                disabled={false}
                 onClick={handleUnlock}
-                className="w-full text-foreground!"
+                className="w-full text-foreground! bg-mauve!"
               >
                 Déverrouiller
               </Button>
-            </>
+            </div>
           )}
         </div>
       </DialogContent>
