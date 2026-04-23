@@ -22,7 +22,7 @@ export const authenticate = (
     return HttpResponse.unAuthorized('Aucun token fourni').send(res);
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(' ')[1] || req.body?.token;
   if (!token) {
     return HttpResponse.unAuthorized('Aucun token fourni').send(res);
   }

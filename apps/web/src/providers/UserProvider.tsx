@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
+import { toast } from 'sonner';
 
 import useLocalStorage from '@/hooks/useLocaleStorage';
 
@@ -61,13 +62,44 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   }, [token]);
 
+  // Handle expired token on load
   useEffect(() => {
     const decoded = getDecodedToken();
 
     if (!decoded && token) {
+      toast.error('Session expirée. Veuillez vous reconnecter.', {
+        id: 'session-expired',
+      });
       removeToken();
     }
   }, [getDecodedToken, token, removeToken]);
+
+  // Handle 401/403 from the custom event in axios
+  useEffect(() => {
+    const handleUnauthorized = (e: CustomEvent) => {
+      const message =
+        e.detail.status === 403
+          ? 'Accès refusé.'
+          : 'Session expirée. Veuillez vous reconnecter.';
+
+      toast.error(message, { id: 'session-expired' });
+      removeToken();
+
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
+    };
+
+    window.addEventListener(
+      'auth:unauthorized',
+      handleUnauthorized as EventListener
+    );
+    return () =>
+      window.removeEventListener(
+        'auth:unauthorized',
+        handleUnauthorized as EventListener
+      );
+  }, [removeToken]);
 
   const user = useMemo<UserSession | null>(() => {
     const decoded = getDecodedToken();
