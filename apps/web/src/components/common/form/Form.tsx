@@ -1,7 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SendHorizontal } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
+import {
+  useForm,
+  SubmitHandler,
+  FieldValues,
+  UseFormReturn,
+} from 'react-hook-form';
 
 import { FormInputRenderer } from './FormInputRenderer';
 import { FormInputData } from './Input';
@@ -14,6 +19,7 @@ interface FormProps {
   handleOnSubmit: SubmitHandler<FieldValues>;
   loading?: boolean;
   initialValues?: FieldValues;
+  form?: UseFormReturn<FieldValues>;
 }
 
 export const Form: React.FC<FormProps> = ({
@@ -21,8 +27,14 @@ export const Form: React.FC<FormProps> = ({
   handleOnSubmit,
   initialValues,
   loading = false,
+  form: externalForm,
 }) => {
   const formSchema = createFormSchema(inputs);
+
+  const internalForm = useForm<FieldValues>({
+    defaultValues: initialValues || {},
+    resolver: zodResolver(formSchema as any),
+  });
 
   const {
     register,
@@ -31,10 +43,7 @@ export const Form: React.FC<FormProps> = ({
     control,
     setValue,
     reset,
-  } = useForm<FieldValues>({
-    defaultValues: initialValues || {},
-    resolver: zodResolver(formSchema as any),
-  });
+  } = externalForm ?? internalForm;
 
   useEffect(() => {
     if (initialValues) {
@@ -42,9 +51,13 @@ export const Form: React.FC<FormProps> = ({
     }
   }, [initialValues, reset]);
 
-  const onSubmit: SubmitHandler<FieldValues> = data => {
-    handleOnSubmit(data);
-    reset();
+  const onSubmit: SubmitHandler<FieldValues> = async data => {
+    try {
+      await handleOnSubmit(data);
+      reset();
+    } catch {
+      // Reset is intentionally skipped on error so the user keeps their input
+    }
   };
 
   return (
@@ -65,7 +78,7 @@ export const Form: React.FC<FormProps> = ({
           />
         ))}
 
-        <button type="submit" className="w-full form-button ">
+        <button type="submit" className="w-full form-button">
           {loading ? (
             <div className="flex gap-2 justify-center items-center">
               <ButtonLoading />
