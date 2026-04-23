@@ -75,22 +75,21 @@ export default class VoxelController {
 
       // Update existing voxel model
       const uploadPath = getUploadPath(req.body.voxelModelId);
-      const uploadPath2 = getUploadPath(req.body.voxelModelId + "25");
       fs.writeFileSync(uploadPath, req.body.model);
 
       const tempPath = req.file.path
-      const targetPath = `uploads/glb/${req.body.voxelModelId + "25"}.glb`
+       const id = String(req.body.voxelModelId);
+      // The id must be alphanumerical
+      if (!/^[a-z0-9]+$/i.test(id)) {
+        throw new Error('Invalid ideoramaId');
+      }
+      const targetPath = `uploads/glb/${req.body.voxelModelId}.glb`
 
       fs.rename(tempPath, targetPath, (err) => {
         if (err) {
           // return res.status(500).send('Erreur upload')
         }
-      
-        // res.send('Fichier sauvegardé')
       })
-
-      // console.log("req.body.formData: ", req.body);
-      // console.log("req.file: ", req.file);
 
       HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(
         res
