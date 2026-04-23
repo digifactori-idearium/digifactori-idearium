@@ -193,6 +193,7 @@ export const Model = memo(function Model({
       if (!mat) continue;
 
       if (!mat.userData.originalColor) {
+        // eslint-disable-next-line react-hooks/immutability
         mat.userData.originalColor = mat.color.clone();
       }
       const originalColor = mat.userData.originalColor as THREE.Color;
