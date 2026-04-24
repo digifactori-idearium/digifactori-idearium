@@ -67,9 +67,6 @@ app.use('/api/editor', createEditorRoutes(editorService));
 const settingsService = new SettingsService();
 app.use('/api/settings', createSettingsRoutes(settingsService));
 
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
-
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({

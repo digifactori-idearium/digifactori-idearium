@@ -46,6 +46,7 @@ export default class VoxelController {
   saveVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
       const user = req.user!;
+      console.log("controller");
 
       if (!req.body.voxelModelId) {
         // Create new voxel model
@@ -76,20 +77,6 @@ export default class VoxelController {
       // Update existing voxel model
       const uploadPath = getUploadPath(req.body.voxelModelId);
       fs.writeFileSync(uploadPath, req.body.model);
-
-      const tempPath = req.file.path
-       const id = String(req.body.voxelModelId);
-      // The id must be alphanumerical
-      if (!/^[a-z0-9]+$/i.test(id)) {
-        throw new Error('Invalid ideoramaId');
-      }
-      const targetPath = `uploads/glb/${id}.glb`
-
-      fs.rename(tempPath, targetPath, (err) => {
-        if (err) {
-          // return res.status(500).send('Erreur upload')
-        }
-      })
 
       HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(
         res

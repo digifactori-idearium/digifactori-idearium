@@ -55,8 +55,7 @@ export const saveVoxelModel = async (
     blob: Blob
 ): Promise<ApiResponse<null>> => {
     const formData = new FormData()
-    console.log("saveVoxelModel - blob: ", blob);
-    formData.append('file', blob, 'scene.glb')
+    formData.append('file', blob, `${voxelModelId}.glb`)
     formData.append('voxelModelId', voxelModelId)
     formData.append('model', JSON.stringify(voxels))
     const response = await axios.post(
