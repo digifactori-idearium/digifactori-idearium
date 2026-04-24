@@ -1,21 +1,12 @@
 import { SquarePlus } from 'lucide-react';
-import { useState } from 'react';
 
 import { DataTable } from '../common/data-table/dataTable';
 
 import { columns } from './assetsColumns';
 
-import { Form } from '@/components/common/form';
+import { AssetFilesUpload } from '@/components/assets-upload/AssetFilesUpload';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { assetInputs } from '@/lib/input';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 function getData(): Asset[] {
   return [
@@ -44,7 +35,6 @@ function getData(): Asset[] {
 
 export default function AssetHandling() {
   const data = getData();
-  const [loading, _setLoading] = useState(false);
 
   return (
     <div className="w-full min-h-screen p-6">
@@ -57,22 +47,11 @@ export default function AssetHandling() {
           <Dialog>
             <DialogTrigger asChild>
               <Button className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! !border-mauve">
-                Ajouter un asset <SquarePlus />
+                Ajouter des assets <SquarePlus />
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-sidebar ">
-              <DialogHeader>
-                <DialogTitle>Ajouter un asset</DialogTitle>
-                <DialogDescription>
-                  Complétez les informations du nouvel asset et cliquer sur
-                  envoyer pour le sauvegarder.
-                </DialogDescription>
-              </DialogHeader>
-              <Form
-                inputs={assetInputs}
-                handleOnSubmit={() => {}}
-                loading={loading}
-              />
+            <DialogContent className="bg-sidebar !max-w-3xl w-full">
+              <AssetFilesUpload />
             </DialogContent>
           </Dialog>
         </div>

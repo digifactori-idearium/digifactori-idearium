@@ -318,6 +318,9 @@ importers:
       cmdk:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      convert-size:
+        specifier: ^1.2.1
+        version: 1.2.1
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.2.5)
@@ -3623,6 +3626,12 @@ packages:
     resolution: {integrity: sha512-tvRg7FIBNlyPzjdG8wWRlPHQJJHI7DylhtRGeU9Lq+JuoPh5BKpPRX83ZdLrvXuOSu5Eo/e7SzOQhU4Hd2Miuw==}
     engines: {node: '>=18'}
     hasBin: true
+
+  convert-pro@1.3.2:
+    resolution: {integrity: sha512-61d0G/HTsDPBIfJVo3dW3jCQ8FUjVk0jOTWvkMyLKGOF/LRlkdh1IZ5EmVuWV9QmkyHfoXpoXV969zzm04chIA==}
+
+  convert-size@1.2.1:
+    resolution: {integrity: sha512-WlRxOQmxPQZdHMklvLruNp0j+X1qsfza1OOMqJZ3hoYmsj8XIXLoiOoenGVx2gnwA7NVxzY/gpUCc3T/6xlZmA==}
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
@@ -10525,6 +10534,12 @@ snapshots:
     dependencies:
       '@simple-libs/stream-utils': 1.2.0
       meow: 13.2.0
+
+  convert-pro@1.3.2: {}
+
+  convert-size@1.2.1:
+    dependencies:
+      convert-pro: 1.3.2
 
   convert-source-map@2.0.0: {}
 

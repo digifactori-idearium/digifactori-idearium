@@ -399,14 +399,6 @@ export const assetInputs = [
     required: true,
     icon: TextAlignStart,
   },
-  {
-    label: 'Source',
-    type: 'text',
-    name: 'source',
-    placeholder: "Entrez la source de l'asset",
-    required: true,
-    icon: FileBox,
-  },
 ];
 
 /* =========================
