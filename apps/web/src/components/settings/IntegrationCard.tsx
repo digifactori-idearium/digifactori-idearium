@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 import DeleteIntegrationDialog from './DeleteIntegrationDialog';
 
-import { FormDialog } from '@/components/settings/FormDialog';
+import { FormDialog } from '@/components/common/form/FormDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { integrationInputs } from '@/lib/input';

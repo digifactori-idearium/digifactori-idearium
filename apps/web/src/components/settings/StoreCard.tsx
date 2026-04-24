@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { CurrentStatus } from '@/components/settings/CurrentStatus';
-import { FormDialog } from '@/components/settings/FormDialog';
+import { FormDialog } from '@/components/common/form/FormDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { storeInputs } from '@/lib/input';

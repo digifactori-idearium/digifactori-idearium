@@ -2,7 +2,7 @@ import { SquarePen, EarthLock, UserLock } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { FormDialog } from '@/components/settings/FormDialog';
+import { FormDialog } from '@/components/common/form/FormDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { orgInputs } from '@/lib/input';
