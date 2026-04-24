@@ -1,12 +1,12 @@
 import {
+  Document,
   Ideorama,
+  Integration,
   Profile,
   Role,
+  Setting,
   User,
   VoxelModel,
-  Document,
-  Setting,
-  Integration,
 } from '@prisma/client';
 
 export interface UserPayload {
@@ -48,6 +48,7 @@ export interface IIdeoramaService {
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
   updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama>;
   isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
+  likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
 }
 

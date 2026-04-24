@@ -172,6 +172,31 @@ export const getAllIdeoramas = async (
   }
 };
 
+export const likeIdeorama = async (
+  ideoramaId: string | undefined,
+): Promise<ApiResponse<Ideorama>> => {
+  try {
+    const response = await axios.post(
+      `http://localhost:3001/api/ideorama/like`,
+      {
+        ideoramaId: ideoramaId,
+      }
+    );
+
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.error?.message ||
+        "Échec lors de la récupération de l'idéorama"
+    );
+  }
+};
+
 export const deleteIdeorama = async (
   ideoramaId: string | undefined
 ): Promise<boolean> => {

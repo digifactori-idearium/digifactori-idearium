@@ -39,6 +39,11 @@ type Profile = {
   pseudo: string;
   avatar: string | null;
   bio: string | null;
+  followers: Profile[];
+  following: Profile[];
+  ideoramaLiked: {
+    ideoramaId: string;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -72,6 +77,9 @@ type Ideorama = {
   updatedAt: Date;
   userId: string;
   model: ModelsInfo;
+  _count: {
+    likers: number;
+  };
 };
 
 type ModelsInfo = {

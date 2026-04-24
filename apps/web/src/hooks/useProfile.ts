@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
-  getProfile,
-  updateProfile,
   deleteProfile,
+  getMyProfile,
+  updateProfile,
 } from '../services/profile.service';
 
 import { useUser } from '@/providers/UserProvider';
@@ -16,7 +16,7 @@ export const useProfile = () => {
   const fetchProfile = useCallback(async (parentalCode?: string) => {
     setLoading(true);
     try {
-      const res = await getProfile(parentalCode);
+      const res = await getMyProfile(parentalCode);
       return res.data;
     } catch (error: any) {
       toast.error(error.message);
