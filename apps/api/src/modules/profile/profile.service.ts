@@ -47,7 +47,7 @@ export default class ProfileService implements IProfileService {
           select: {
             ideoramaId: true,
           },
-        }
+        },
       },
     });
   }
@@ -82,25 +82,12 @@ export default class ProfileService implements IProfileService {
   ): Promise<{ user?: User; profile: Profile }> {
     const response: { user?; profile } = { profile: {} };
     if (body.user) {
-      const user = await userTable.findUnique({
-        where: {
-          id: userId,
-        },
-      });
-      const { password, ...data } = {
-        ...body.user,
-      };
-      const hashedPassword: string | undefined = password
-        ? await bcrypt.hash(password, 10)
-        : user?.password;
-
       response.user = await userTable.update({
         where: {
           id: userId,
         },
         data: {
-          ...data,
-          password: hashedPassword,
+          ...body.user,
         },
       });
     }

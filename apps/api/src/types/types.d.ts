@@ -17,6 +17,13 @@ interface UserInput {
   role: 'INTERN' | 'SUPERVISOR' | 'ADMIN';
 }
 
+interface UserProfileInput {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: 'INTERN' | 'SUPERVISOR' | 'ADMIN';
+}
+
 interface ProfileInput {
   pseudo: string;
   bio?: string;
@@ -29,7 +36,7 @@ type RegisterInput = {
 };
 
 type SetProfileInput = {
-  user?: Partial<UserInput>;
+  user?: Partial<UserProfileInput>;
   profile: Partial<ProfileInput>;
 };
 
