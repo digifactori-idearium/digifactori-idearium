@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import { SuperButton } from "@/components/common/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getProfile } from "@/services/profile.service";
 
@@ -30,6 +31,11 @@ const ProfilePage: React.FC = () => {
         />
         <AvatarFallback>{profile?.pseudo}</AvatarFallback>
     </Avatar>
+    <SuperButton
+        tooltip={`Follow ${profile?.pseudo}`}
+    >
+        Follow {profile?.pseudo}
+    </SuperButton>
     </div>;
 };
 
