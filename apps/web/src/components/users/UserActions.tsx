@@ -53,7 +53,7 @@ export const UserActions = ({
     }
   };
 
-  if (isSelf) return null;
+  if (isSelf || user.role == 'ADMIN') return null;
 
   return (
     <div className="flex items-center gap-2">
