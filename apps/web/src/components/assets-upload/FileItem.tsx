@@ -1,6 +1,8 @@
+import WavesurferPlayer from '@wavesurfer/react';
 import convertSize from 'convert-size';
 import { File, Trash } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import WaveSurfer from 'wavesurfer.js';
 
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
 import { Button } from '@/components/ui/button';
@@ -15,6 +17,17 @@ export const FileItem = ({
 }) => {
   const is3D = file.name.endsWith('.glb') || file.name.endsWith('.gltf');
   const objectUrl = useMemo(() => URL.createObjectURL(file), [file]);
+  const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const onReady = (ws: WaveSurfer) => {
+    setWavesurfer(ws);
+    setIsPlaying(false);
+  };
+
+  const onPlayPause = () => {
+    if (wavesurfer) wavesurfer.playPause();
+  };
 
   useEffect(() => {
     return () => URL.revokeObjectURL(objectUrl);
@@ -35,11 +48,25 @@ export const FileItem = ({
           </Button>
         </div>
         <CardContent className="flex items-center space-x-3 p-0">
-          <span className="flex h-32 w-32 items-center justify-center rounded-md bg-muted overflow-hidden">
+          <span className="flex h-32 w-32 items-center justify-center rounded-md bg-sidebar overflow-hidden">
             {is3D ? (
               <AssetThumbnail file={objectUrl} />
             ) : (
-              <File className="h-5 w-5 text-foreground" aria-hidden={true} />
+              <>
+                <div onClick={onPlayPause} className="cursor-pointer">
+                  <WavesurferPlayer
+                    height={100}
+                    width={128}
+                    waveColor="#f3bee1"
+                    progressColor="#6f51b0"
+                    url={objectUrl}
+                    interact={false}
+                    onReady={onReady}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                  />
+                </div>
+              </>
             )}
           </span>
           <div>
@@ -47,7 +74,8 @@ export const FileItem = ({
               {file.name}
             </p>
             <p className="text-pretty mt-0.5 text-sm text-muted-foreground">
-              {Math.round(parseFloat(convertSize(file.size)))} MB
+              {Math.round(parseFloat(convertSize(file.size)))}{' '}
+              {convertSize(file.size).split(' ')[1]}
             </p>
           </div>
         </CardContent>

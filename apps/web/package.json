@@ -50,6 +50,7 @@
     "@tiptap/pm": "^3.22.3",
     "@tiptap/react": "^3.22.3",
     "@tiptap/starter-kit": "^3.22.3",
+    "@wavesurfer/react": "^1.0.12",
     "aos": "^2.3.4",
     "axios": "^1.13.5",
     "class-variance-authority": "^0.7.1",
@@ -79,6 +80,7 @@
     "three.quarks": "^0.17.0",
     "translate": "^3.0.1",
     "valtio": "^2.3.1",
+    "wavesurfer.js": "^7.12.6",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"
   },
