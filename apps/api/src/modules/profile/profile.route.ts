@@ -22,7 +22,7 @@ export default function createProfileRoutes(profileService: IProfileService) {
     profileController.setProfile
   );
   profileRoutes.post(
-    '/profile',
+    '/find',
     authenticate,
     requireAuth,
     profileController.getProfile

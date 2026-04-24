@@ -53,7 +53,7 @@ const IdeoramasGroup: React.FC<{
                   if(ideorama.userId == profile.userId) {
                     navigate(`/app/profile`);
                   } else {
-                    navigate(`/app/profile`);
+                    navigate(`/app/profile/${ideorama.userId}`);
                   }
                 }}
               >
@@ -148,7 +148,7 @@ const IdeoramasGroup: React.FC<{
               onClick={e => {
                   e.stopPropagation();
                   if(ideorama.userId == profile.userId) {
-                    navigate(`/app/profile`);
+                    navigate(`/profile/${ideorama.userId}`);
                   } else {
                     navigate(`/app/profile`);
                   }

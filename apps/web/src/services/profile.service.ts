@@ -39,12 +39,12 @@ export const getMyProfile = async (
 };
 
 export const getProfile = async (
-  pseudo: string
+  userId: string
 ): Promise<ApiResponse<getProfileResponse>> => {
   try {
     const response = await axios.post(
-      `http://localhost:3001/api/profile`,
-      {pseudo: pseudo}
+      `http://localhost:3001/api/profile/find`,
+      {userId: userId}
     );
     if (response.data.status === 'error') {
       throw new Error(

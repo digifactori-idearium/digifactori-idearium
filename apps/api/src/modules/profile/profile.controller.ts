@@ -110,14 +110,26 @@ export default class ProfileController {
     HttpResponse.success(profile, 'Profil mis à jour avec succès').send(res);
   });
 
+  /**
+   * Retrieves a user's profile by its pseudo.
+   *
+   * @route  PATCH /profile/find
+   * @access No restriction
+   *
+   * @body   { userId?: string }
+   *
+   * @returns
+   *   - 200 { data: Profile }
+   *   - 404 profile not found
+   */
   getProfile = asyncHandler(async (req: Request, res: Response) => {
     const profile = await this.profileService.getSingleProfile(
-      req.body.pseudo
+      req.body.userId
     );
     if (!profile) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
-    HttpResponse.success(profile, 'Utilisateur trouvé').send(res);
+    HttpResponse.success({profile: profile}, 'Utilisateur trouvé').send(res);
   })
     
   
