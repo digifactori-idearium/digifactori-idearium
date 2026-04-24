@@ -29,7 +29,13 @@ export function AssetFilesUpload() {
     'audio/x-aiff': ['.aiff', '.aif'],
   };
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: acceptedFiles => setFiles(acceptedFiles),
+    onDrop: acceptedFiles =>
+      setFiles(prev => {
+        const newFiles = acceptedFiles.filter(
+          f => !prev.some(p => p.name === f.name && p.size === f.size)
+        );
+        return [...prev, ...newFiles];
+      }),
     accept: ACCEPTED_TYPES,
   });
 
