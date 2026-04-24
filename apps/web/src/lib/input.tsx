@@ -526,7 +526,8 @@ export const integrationInputs = [
     type: 'switch',
     name: 'isActive',
     placeholder: "Entrez le nom de l'intégration",
-    required: true,
+    required: false,
+    default: true,
     icon: Box,
   },
   {
@@ -619,8 +620,29 @@ export const storeInputs = [
     label: 'Clef',
     type: 'password',
     name: 'storeKey',
-    placeholder: 'Entrez la source du store',
+    placeholder: 'Entrez la clef du store',
     required: false,
     icon: KeyRound,
+  },
+];
+
+export const orgInputs = [
+  {
+    label: "Code de l'organisation",
+    type: 'password',
+    name: 'orgCode',
+    placeholder: "Code d'accès de l'organisation",
+    max: 6,
+    required: true,
+    icon: Box,
+  },
+  {
+    label: 'Code parental Stagiaires',
+    type: 'password',
+    name: 'orgParentalCode',
+    placeholder: "Code d'accès pour les stagiaires",
+    max: 4,
+    required: true,
+    icon: FileBox,
   },
 ];

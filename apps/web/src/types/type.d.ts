@@ -236,13 +236,28 @@ interface Integration {
   name: string;
   url: string;
   type: IntegrationType;
-  key: string;
+  key?: string;
   isActive: boolean;
   fieldMapping?: FieldMapping;
   createdAt?: string;
 }
 
+interface MediaItem {
+  id: string;
+  name: string;
+  category: string;
+  file: string;
+  thumbnail?: string;
+}
+
+interface FetchResult {
+  items: MediaItem[];
+  hasMore: boolean;
+}
+
 interface Settings {
+  orgCode?: string;
+  orgParentalCode?: string;
   storeName?: string;
   storeURL?: string;
   integrations?: Integration[];

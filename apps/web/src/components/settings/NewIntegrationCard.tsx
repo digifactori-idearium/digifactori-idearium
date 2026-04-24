@@ -22,7 +22,7 @@ export const NewIntegrationCard: React.FC<Props> = ({ onCreated }) => {
       onCreated?.();
     } catch (error: any) {
       toast.error(error?.message || "Échec de la création de l'intégration");
-      throw error;
+      return false;
     } finally {
       setLoading(false);
     }
