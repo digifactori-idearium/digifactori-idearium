@@ -75,7 +75,7 @@ export default function VoxelLayout() {
       exporter.parse(
         exportScene,
         result => {
-          const blob = new Blob([result], {
+          const blob = new Blob([result as BlobPart], {
             type: 'model/gltf-binary',
           });
 

@@ -46,6 +46,7 @@ const Ideoramas: React.FC = () => {
           avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix',
         }}
         setIdeoramas={() => {}}
+        setProfile={() => {}}
       />
     </div>
   );

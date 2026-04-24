@@ -275,26 +275,6 @@ function VoxelPainter({
   );
 }
 
-type RefObject<T> = {
-  current: T | null
-}
-
-// const SceneRef = forwardRef<THREE.Scene | null>((props, ref) => {
-//   const sceneRef = useRef<THREE.Scene | null>(null)
-
-//   useEffect(() => {
-//     sceneRef.current = new THREE.Scene()
-//     if (ref) {
-//       if (typeof ref === 'function') {
-//         ref(sceneRef.current)
-//       } else {
-//         ref.current = sceneRef.current
-//       }
-//     }
-//   }, [ref])
-
-//   return null
-// })
 
 function SceneBridge({ setScene }: { setScene: React.Dispatch<React.SetStateAction<THREE.Scene | null>> }) {
   const { scene } = useThree()
