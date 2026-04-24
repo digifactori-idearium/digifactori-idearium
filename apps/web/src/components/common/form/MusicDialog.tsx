@@ -1,11 +1,11 @@
-import { Music, Play, Pause, Check } from 'lucide-react';
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { Check, Music, Pause, Play } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { Search } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useSound, searchSounds } from '@/hooks/useSound';
+import { searchSounds, useSound } from '@/hooks/useSound';
 import { cn } from '@/lib/utils';
 import { sceneState } from '@/stores';
 
@@ -66,6 +66,7 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
     }
   };
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const selectTrack = useCallback((url: string) => {
     if (type === 'global') {
       setGlobalTrack(url, globalTrack);

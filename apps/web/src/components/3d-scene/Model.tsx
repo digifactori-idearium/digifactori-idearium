@@ -1,18 +1,17 @@
-import { useGLTF, useCursor } from '@react-three/drei';
+import { useCursor, useGLTF } from '@react-three/drei';
 import { ThreeEvent, useFrame } from '@react-three/fiber';
 import {
   JSX,
+  memo,
+  useCallback,
   useEffect,
   useLayoutEffect,
-  useState,
-  useRef,
-  useCallback,
-  memo,
   useMemo,
+  useRef,
+  useState,
 } from 'react';
 import * as THREE from 'three';
-import { GLTF } from 'three-stdlib';
-import { SkeletonUtils } from 'three-stdlib';
+import { GLTF, SkeletonUtils } from 'three-stdlib';
 import { useSnapshot } from 'valtio';
 
 import { Controls } from './Gismo';
@@ -20,7 +19,7 @@ import { SpeechBubble } from './SpeechBubble';
 
 import { useTrigger } from '@/hooks/useTrigger';
 import { cleanObject } from '@/lib/actions/runtime';
-import { sceneState, actions } from '@/stores';
+import { actions, sceneState } from '@/stores';
 
 // Scratch objects
 const _initPos = new THREE.Vector3();
@@ -194,6 +193,7 @@ export const Model = memo(function Model({
       if (!mat) continue;
 
       if (!mat.userData.originalColor) {
+        // eslint-disable-next-line react-hooks/immutability
         mat.userData.originalColor = mat.color.clone();
       }
       const originalColor = mat.userData.originalColor as THREE.Color;
@@ -216,7 +216,7 @@ export const Model = memo(function Model({
           mat.emissiveIntensity = 0;
         }
       } else {
-        mat.emissive.set('#000000');
+        // mat.emissive.set('#000000');
         mat.emissiveIntensity = 0;
       }
 
