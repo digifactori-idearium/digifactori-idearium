@@ -1,5 +1,6 @@
 import { SquarePlus } from 'lucide-react';
 import { useState } from 'react';
+import { FieldValues } from 'react-hook-form';
 
 import { DataTable } from '../common/data-table/dataTable';
 
@@ -46,6 +47,10 @@ export default function AssetHandling() {
   const data = getData();
   const [loading, _setLoading] = useState(false);
 
+  const handleSubmit = async (data: FieldValues): Promise<boolean | void> => {
+    console.log(data);
+  };
+
   return (
     <div className="w-full min-h-screen p-6">
       <div className="magic-text text-center md:text-5xl text-3xl justify-center flex items-center gap-2 font-bold mb-6">
@@ -70,7 +75,7 @@ export default function AssetHandling() {
               </DialogHeader>
               <Form
                 inputs={assetInputs}
-                handleOnSubmit={() => {}}
+                handleOnSubmit={handleSubmit}
                 loading={loading}
               />
             </DialogContent>
