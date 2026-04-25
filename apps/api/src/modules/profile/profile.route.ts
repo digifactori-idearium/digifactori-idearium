@@ -27,6 +27,24 @@ export default function createProfileRoutes(profileService: IProfileService) {
     requireAuth,
     profileController.getProfile
   );
+  profileRoutes.post(
+    '/follow',
+    authenticate,
+    requireAuth,
+    profileController.followUser
+  );
+  profileRoutes.post(
+    '/followers',
+    authenticate,
+    requireAuth,
+    profileController.getFollowers
+  );
+  profileRoutes.post(
+    '/following',
+    authenticate,
+    requireAuth,
+    profileController.getFollowing
+  );
   profileRoutes.delete(
     '/delete',
     authenticate,

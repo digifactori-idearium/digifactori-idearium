@@ -60,6 +60,9 @@ export interface IProfileService {
     userId: string,
     body: SetProfileInput
   ): Promise<{ user?: User; profile: Profile }>;
+  followUser(userId: string, followedUserId: string): Promise<boolean>;
+  getFollowers(userId: string): Promise<{ pseudo: string; avatar: string | null }[]>;
+  getFollowing(userId: string): Promise<{ pseudo: string; avatar: string | null }[]>;
   deleteUser(userId: string): Promise<{ user: User; profile: Profile }>;
 }
 

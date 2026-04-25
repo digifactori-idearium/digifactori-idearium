@@ -39,13 +39,17 @@ type Profile = {
   pseudo: string;
   avatar: string | null;
   bio: string | null;
-  followers: Profile[];
-  following: Profile[];
+  // followers: { followingId: string }[];
+  // following: { followedById: string }[];
+  followers: string[];
+  following: string[];
   ideoramaLiked: {
     ideoramaId: string;
   }[];
-  createdAt: Date;
-  updatedAt: Date;
+  ideoramas: {
+    id: string;
+    name: string;
+  }[];
 };
 
 interface CreateUserInput {
