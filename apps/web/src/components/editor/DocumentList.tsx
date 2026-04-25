@@ -56,7 +56,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const [createsNew, setCreatesNew] = useState(false);
 
   return (
-    <div className="h-full w-full p-6">
+    <div className="h-full w-full">
       {/* Header */}
       <div className="mb-8 flex flex-wrap gap-y-3 items-center justify-between">
         <div>
@@ -91,7 +91,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       />
 
       {/* Grid */}
-      <div className="p-2">
+      <div className="pt-8">
         {loading ? (
           <Loading />
         ) : displayDocuments.length === 0 ? (

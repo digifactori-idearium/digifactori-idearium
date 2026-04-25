@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 
+import { Loading } from '@/components/common';
 import { SuperButton } from '@/components/common/button';
 import EditPanel from '@/components/voxel/panel';
 import Voxel, { VoxelPoint } from '@/pages/Voxel';
@@ -49,7 +50,6 @@ export default function VoxelLayout() {
     loadModel();
   }, [modelId]);
 
-
   const exportGLB = (): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const exporter = new GLTFExporter();
@@ -58,18 +58,18 @@ export default function VoxelLayout() {
         throw new Error('Scene is not initialized');
       }
 
-      const exportScene = scene.clone(true)
-      exportScene.traverse((obj) => {
-      if (obj.name == "cubeToSave") {
-        console.log("scale: ", obj.scale)
-        const scale = 0.005
-        obj.scale.set(scale, scale, scale)
-        obj.position.multiplyScalar(scale)
-        console.log("scale: ", obj.scale)
-      } else {
-        obj.visible = false
-      }
-    })
+      const exportScene = scene.clone(true);
+      exportScene.traverse(obj => {
+        if (obj.name == 'cubeToSave') {
+          console.log('scale: ', obj.scale);
+          const scale = 0.005;
+          obj.scale.set(scale, scale, scale);
+          obj.position.multiplyScalar(scale);
+          console.log('scale: ', obj.scale);
+        } else {
+          obj.visible = false;
+        }
+      });
 
       console.log('Exporting scene:', scene.children.length);
       exporter.parse(
@@ -97,7 +97,6 @@ export default function VoxelLayout() {
       const blob = await exportGLB();
       console.log('Exported GLB blob:', blob);
       await saveVoxelModel(modelId, voxels, blob);
-      
     } catch (error) {
       console.error('Erreur sauvegarde', error);
     } finally {
@@ -110,15 +109,11 @@ export default function VoxelLayout() {
   };
 
   if (isLoading) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center">
-        Chargement du modèle...
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
-    <div className="w-full h-screen relative">
+    <div className="w-full h-full  overflow-hidden relative">
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex gap-3">
         <SuperButton
           tooltip="Sauvegarde ton modèle"
@@ -139,7 +134,7 @@ export default function VoxelLayout() {
         </SuperButton>
       </div>
 
-      <div className="absolute top-6 left-6 z-50 w-[280px]">
+      <div className="absolute top-6 left-6 z-50 w-70">
         <EditPanel
           mode={mode}
           setMode={setMode}
@@ -156,14 +151,16 @@ export default function VoxelLayout() {
         </div>
       </div>
 
-      <Voxel
-        setScene={setScene}
-        mode={mode}
-        shape={shape}
-        rotation={rotation}
-        voxels={voxels}
-        onVoxelsChange={setVoxels}
-      />
+      <div className="absolute inset-0 z-0">
+        <Voxel
+          setScene={setScene}
+          mode={mode}
+          shape={shape}
+          rotation={rotation}
+          voxels={voxels}
+          onVoxelsChange={setVoxels}
+        />
+      </div>
     </div>
   );
 }
