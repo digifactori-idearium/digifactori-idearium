@@ -9,11 +9,17 @@ export default function createProfileRoutes(profileService: IProfileService) {
   const profileController = new ProfileController(profileService);
 
   const profileRoutes: ExpressRouter = Router();
-  profileRoutes.post(
+  profileRoutes.get(
     '/',
     authenticate,
     requireAuth,
     profileController.getMyProfile
+  );
+  profileRoutes.post(
+    '/user',
+    authenticate,
+    requireAuth,
+    profileController.getUser
   );
   profileRoutes.post(
     '/setting',

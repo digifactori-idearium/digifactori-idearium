@@ -65,19 +65,12 @@ function createFakeIdeorama(overrides = {}): {
 
 class MockIdeoramaService implements IIdeoramaService {
   createIdeorama = jest.fn<Promise<Ideorama>, [Ideorama]>();
-
   updateIdeoramaModelPath = jest.fn<Promise<Ideorama>, [string, string]>();
-
   getIdeoramaById = jest.fn<Promise<Ideorama | null>, [string]>();
-
   getUserIdeoramas = jest.fn<Promise<Ideorama[]>, [string]>();
-
   updateIdeorama = jest.fn<Promise<Ideorama>, [string, Ideorama]>();
-
   isIdeoramaInBD = jest.fn<Promise<boolean>, [string]>();
-
   likeIdeorama = jest.fn<Promise<boolean>, [string, string]>();
-
   deleteIdeorama = jest.fn<Promise<Ideorama>, [string]>();
 }
 

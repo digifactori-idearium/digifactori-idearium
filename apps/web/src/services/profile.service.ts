@@ -19,14 +19,29 @@ interface ApiResponse<T> {
 
 // Services
 export const getMyProfile = async (
-  parentalCode: string = ''
 ): Promise<ApiResponse<getProfileResponse>> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/profile/`,
-      parentalCode == '' ? {} : { parental_code: parseInt(parentalCode) ?? 0 }
+    const response = await axios.get(
+      `http://localhost:3001/api/profile/`
     );
 
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return response.data;
+  } catch (error: any) {
+    return handleApiError(error);
+  }
+};
+
+export const getUser = async (parentalCode: string | undefined): Promise<ApiResponse<{user: User | null}>> => {
+  try {
+    const response = await axios.post(
+      `http://localhost:3001/api/profile/user`,
+      { parental_code: parentalCode }
+    );
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message

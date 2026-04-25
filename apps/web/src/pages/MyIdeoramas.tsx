@@ -29,7 +29,7 @@ const MyIdeoramas: React.FC = () => {
     getAllIdeoramas(user?.id).then(res => {
       setIdeoramas(res.data);
     });
-    getMyProfile('').then(res => {
+    getMyProfile().then(res => {
       setProfile(res.data.profile);
     });
   }, []);

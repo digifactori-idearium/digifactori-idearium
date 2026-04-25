@@ -1,4 +1,3 @@
-import { Profile, User } from '@prisma/client';
 import { Request, Response } from 'express';
 
 import { profileSchema, userProfileSchema } from './profile.validation';
@@ -33,27 +32,35 @@ export default class ProfileController {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
 
-    const user = await this.profileService.getSingleUser(currentUser.userId);
+    HttpResponse.success({profile: profile}, 'Utilisateur trouvé').send(res);
+  });
+
+  getUser = asyncHandler(async (req: Request, res: Response) => {
+    const authUser = req.user!;
+    const user = await this.profileService.getSingleUser(
+      authUser.userId
+    );
     if (!user) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
-
-    const data: { profile: Profile; user?: User } = { profile };
-
     const setting = await prisma.setting.findUnique({
       where: { id: 1 },
       select: { orgParentalCode: true },
     });
+    const setting2 = {orgParentalCode: "2026"};
+    console.log("setting", setting);
+    console.log("provided parental code", req.body.parental_code);
     const isParentalCodeValid =
-      req.body.parental_code && setting?.orgParentalCode
-        ? req.body.parental_code == setting.orgParentalCode
+      req.body.parental_code && setting2?.orgParentalCode
+        ? req.body.parental_code == setting2.orgParentalCode
         : false;
-
-    if (user.role !== 'INTERN' || isParentalCodeValid) {
-      data.user = user;
+    console.log("role", user.role);
+    console.log("isParentalCodeValid", isParentalCodeValid);
+    if(!isParentalCodeValid && user.role == 'INTERN') {
+      return HttpResponse.success({user: null}, "Mauvais code parental").send(res);
     }
-
-    HttpResponse.success(data, 'Utilisateur trouvé').send(res);
+    console.log("passed ");
+    HttpResponse.success({user: user}, 'Utilisateur trouvé').send(res);
   });
 
   /**
