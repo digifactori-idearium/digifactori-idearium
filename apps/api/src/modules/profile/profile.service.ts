@@ -53,12 +53,6 @@ export default class ProfileService implements IProfileService {
             ideoramaId: true,
           },
         },
-        // ideoramas: {
-        //   select: {
-        //     id: true,
-        //     name: true,
-        //   }
-        // }
       },
     });
     return profile;
