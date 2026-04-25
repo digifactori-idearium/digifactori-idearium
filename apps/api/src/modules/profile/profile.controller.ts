@@ -147,9 +147,9 @@ export default class ProfileController {
   followUser = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user!;
     const followingId = req.body.followedUserId;
-    // if (user.userId === followingId) {
-    //   return HttpResponse.badRequest("Vous ne pouvez pas vous suivre vous-même").send(res);
-    // }
+    if (user.userId === followingId) {
+      return HttpResponse.badRequest("Vous ne pouvez pas vous suivre vous-même").send(res);
+    }
     const followed = await this.profileService.followUser(user.userId, followingId);
     HttpResponse.success(followed, 'Utilisateur suivi avec succès').send(res);
   })
