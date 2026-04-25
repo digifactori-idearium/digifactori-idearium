@@ -191,7 +191,7 @@ export default class ProfileService implements IProfileService {
         followerId: userId,
       },
       include: {
-        followers: {
+        follower: {
           select: {
             pseudo: true,
             avatar: true,
@@ -199,7 +199,7 @@ export default class ProfileService implements IProfileService {
         },
       }
     })
-    return following.map(follow => follow.followers);
+    return following.map(follow => follow.follower);
   }
 
   /**
