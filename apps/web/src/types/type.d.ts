@@ -3,6 +3,11 @@ interface Option {
   value: string;
 }
 
+interface SearchOption {
+  value: string;
+  label: string;
+}
+
 type Role = 'INTERN' | 'SUPERVISOR' | 'ADMIN';
 
 interface ApiResponse<T> {
@@ -246,7 +251,7 @@ interface Integration {
   type: IntegrationType;
   key?: string;
   isActive: boolean;
-  fieldMapping?: FieldMapping;
+  fieldMapping: Record<string, string>;
   createdAt?: string;
 }
 
