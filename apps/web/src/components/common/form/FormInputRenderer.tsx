@@ -212,6 +212,10 @@ export function FormInputRenderer({
 
   // DIALOG
   if (input.type === 'dialog') {
+    const content =
+      typeof input.dialogueContent === 'function'
+        ? null
+        : input.dialogueContent;
     return (
       <div className="form-input-container flex flex-col gap-2">
         {commonLabel}
@@ -232,7 +236,7 @@ export function FormInputRenderer({
                 Personnalisation ci-dessous.
               </DialogDescription>
             </DialogHeader>
-            {input.dialogueContent || 'Nothing to display'}
+            {content ?? 'Rien à afficher'}
           </DialogContent>
         </Dialog>
       </div>

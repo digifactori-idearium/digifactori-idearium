@@ -20,8 +20,11 @@ export interface FormInputData {
   color?: string;
   // Select
   options?: Option[];
+
   // dialogue
-  dialogueContent?: React.ReactElement;
+  dialogueContent?:
+    | React.ReactElement
+    | ((actionId: string) => React.ReactElement);
 
   mappingFields?: Record<string, FieldMappingMeta>;
 
