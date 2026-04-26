@@ -27,6 +27,10 @@ export default function createProfileRoutes(profileService: IProfileService) {
     requireAuth,
     profileController.deleteProfile
   );
+  profileRoutes.get(
+    '/public/:pseudo',
+    profileController.getPublicProfile
+  );
 
   return profileRoutes;
 }

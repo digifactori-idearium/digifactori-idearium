@@ -43,7 +43,13 @@ const IdeoramasGroup: React.FC<{
               <p className="text-xl font-bold tracking-tight text-foreground/90">
                 {ideorama.name}
               </p>
-              <p className="text-xl font-bold tracking-tight text-foreground/90">
+              <p
+                className="text-xl font-bold tracking-tight text-foreground/90 cursor-pointer hover:underline"
+                onClick={e => {
+                  e.stopPropagation();
+                  navigate(`/app/profile/${profile.pseudo}`);
+                }}
+              >
                 {profile.pseudo}
               </p>
               <div className="flex items-center gap-3 text-muted-foreground/80">
@@ -67,7 +73,13 @@ const IdeoramasGroup: React.FC<{
                 <Trash2 /> Supprimer
               </SuperButton>
             </div>
-            <Avatar className="h-14 w-14 border-2 border-white/20 shadow-sm shrink-0">
+            <Avatar
+              className="h-14 w-14 border-2 border-white/20 shadow-sm shrink-0 cursor-pointer"
+              onClick={e => {
+                e.stopPropagation();
+                navigate(`/app/profile/${profile.pseudo}`);
+              }}
+            >
               <AvatarImage
                 src={
                   profile.avatar ||

@@ -46,6 +46,14 @@ export interface IIdeoramaService {
   ): Promise<Ideorama>;
   getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
+  getPublicIdeoramas(): Promise<
+    (Ideorama & {
+      user: {
+        profile: Pick<Profile, 'pseudo' | 'avatar'> | null;
+      };
+    })[]
+  >;
+  getPublicIdeoramasByPseudo(pseudo: string): Promise<Ideorama[]>;
   updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama>;
   isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
@@ -55,6 +63,9 @@ export interface IProfileService {
   verifyPassword(userId: string, password: string): Promise<boolean>;
   getSingleProfile(userId: string): Promise<Profile | null>;
   getSingleUser(userId: string): Promise<User | null>;
+  getPublicProfileByPseudo(
+    pseudo: string
+  ): Promise<Pick<Profile, 'id' | 'userId' | 'pseudo' | 'avatar' | 'bio'> | null>;
   updateProfile(
     userId: string,
     body: SetProfileInput

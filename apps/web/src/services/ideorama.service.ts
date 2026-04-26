@@ -25,7 +25,7 @@ export const searchIdeorama = async (
   } catch (error: any) {
     throw new Error(
       error.response?.data?.error?.message ||
-        "Échec lors de la récupération de l'idéorama"
+      "Échec lors de la récupération de l'idéorama"
     );
   }
 };
@@ -48,7 +48,7 @@ export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
   } catch (error: any) {
     throw new Error(
       error.response?.data?.error?.message ||
-        "Échec lors de la récupération de l'idéorama vide"
+      "Échec lors de la récupération de l'idéorama vide"
     );
   }
 };
@@ -77,7 +77,7 @@ export const createIdeorama = async (
   } catch (error: any) {
     throw new Error(
       error.response?.data?.error?.message ||
-        "Échec lors de la récupération de l'idéorama"
+      "Échec lors de la récupération de l'idéorama"
     );
   }
 };
@@ -109,7 +109,7 @@ export const saveIdeorama = async (
     console.error('Save error:', error);
     throw new Error(
       error.response?.data?.error?.message ||
-        "Échec lors de la récupération de l'idéorama"
+      "Échec lors de la récupération de l'idéorama"
     );
   }
 };
@@ -167,7 +167,7 @@ export const getAllIdeoramas = async (
   } catch (error: any) {
     throw new Error(
       error.response?.data?.error?.message ||
-        'Échec lors de la récupération des idéoramas'
+      'Échec lors de la récupération des idéoramas'
     );
   }
 };
@@ -191,5 +191,51 @@ export const deleteIdeorama = async (
   } catch (error: any) {
     // toast.error(error.message)
     return false;
+  }
+};
+
+export const getPublicIdeoramasByPseudo = async (
+  pseudo: string
+): Promise<ApiResponse<Ideorama[]>> => {
+  try {
+    const response = await axios.get(
+      `http://localhost:3001/api/ideorama/public/${pseudo}`
+    );
+
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors?.[0]?.message || response.data.error?.message
+      );
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.error?.message ||
+      'Échec lors de la récupération des idéoramas publics'
+    );
+  }
+};
+
+export const getPublicIdeoramas = async (): Promise<ApiResponse<any[]>> => {
+  try {
+    const response = await axios.get(
+      `http://localhost:3001/api/ideorama/public`
+    );
+
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors?.[0]?.message ||
+        response.data.error?.message ||
+        'Erreur lors de la récupération des idéoramas publics'
+      );
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.error?.message ||
+      'Échec lors de la récupération des idéoramas publics'
+    );
   }
 };

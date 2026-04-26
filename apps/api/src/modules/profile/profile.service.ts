@@ -48,6 +48,29 @@ export default class ProfileService implements IProfileService {
   }
 
   /**
+ * Retrieves a public profile by pseudo.
+ *
+ * @param pseudo - the public pseudo
+ * @returns only public profile fields
+ */
+  async getPublicProfileByPseudo(
+    pseudo: string
+  ): Promise<Pick<Profile, 'id' | 'userId' | 'pseudo' | 'avatar' | 'bio'> | null> {
+    return profileTable.findUnique({
+      where: {
+        pseudo,
+      },
+      select: {
+        id: true,
+        userId: true,
+        pseudo: true,
+        avatar: true,
+        bio: true,
+      },
+    });
+  }
+
+  /**
    * Finds the user in DB.
    *
    * @param userId - the user id (string)

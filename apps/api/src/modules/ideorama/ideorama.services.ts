@@ -76,6 +76,62 @@ export default class IdeoramaService implements IIdeoramaService {
   }
 
   /**
+ * Retrieves all public ideoramas of a user identified by pseudo.
+ *
+ * @param pseudo - the profile pseudo
+ * @returns public ideoramas ordered by newest first
+ */
+  async getPublicIdeoramasByPseudo(pseudo: string): Promise<Ideorama[]> {
+    return ideoramaTable.findMany({
+      where: {
+        isPublic: true,
+        user: {
+          profile: {
+            pseudo,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  /**
+   * Retrieves all public ideoramas.
+   *
+   * @returns public ideoramas ordered by newest first, with their owner's pseudo and avatar  (if they exist)
+   */
+  async getPublicIdeoramas(): Promise<
+    (Ideorama & {
+      user: {
+        profile: Pick<Profile, 'pseudo' | 'avatar'> | null;
+      };
+    })[]
+  > {
+    return ideoramaTable.findMany({
+      where: {
+        isPublic: true,
+      },
+      include: {
+        user: {
+          select: {
+            profile: {
+              select: {
+                pseudo: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  /**
    * Updates an ideorama from DB with the given ID.
    *
    * @param ideoramaId - the unique id of the ideorama to update

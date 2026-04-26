@@ -74,8 +74,8 @@ export const deleteProfile = async (): Promise<
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors?.[0]?.message ||
-          response.data.error?.message ||
-          'Erreur lors de la suppression du profil'
+        response.data.error?.message ||
+        'Erreur lors de la suppression du profil'
       );
     }
 
@@ -83,7 +83,32 @@ export const deleteProfile = async (): Promise<
   } catch (error: any) {
     throw new Error(
       error.response?.data?.error?.message ||
-        'Échec de la suppression du profil'
+      'Échec de la suppression du profil'
+    );
+  }
+};
+
+export const getPublicProfile = async (
+  pseudo: string
+): Promise<
+  ApiResponse<Pick<Profile, 'id' | 'userId' | 'pseudo' | 'avatar' | 'bio'>>
+> => {
+  try {
+    const response = await axios.get(
+      `http://localhost:3001/api/profile/public/${pseudo}`
+    );
+
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors?.[0]?.message || response.data.error?.message
+      );
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.error?.message ||
+      'Échec lors de la récupération du profil public'
     );
   }
 };

@@ -9,7 +9,7 @@ import HttpResponse from '@/utils/http-response';
 import { getUploadPath } from '@/utils/ideorama';
 
 export default class IdeoramaController {
-  constructor(private readonly ideoramaService: IdeoramaService) {}
+  constructor(private readonly ideoramaService: IdeoramaService) { }
 
   /**
    * Creates a new ideorama project
@@ -150,6 +150,29 @@ export default class IdeoramaController {
         fs.readFileSync(getUploadPath('empty'), 'utf-8')
       );
       HttpResponse.success(emptyModel, 'Empty ideorama template').send(res);
+    }
+  );
+
+  getPublicIdeoramas = asyncHandler(async (req: Request, res: Response) => {
+    const { pseudo } = req.params;
+
+    const ideoramas =
+      await this.ideoramaService.getPublicIdeoramasByPseudo(pseudo);
+
+    HttpResponse.success(
+      ideoramas,
+      'Idéoramas publics récupérés'
+    ).send(res);
+  });
+
+  getAllPublicIdeoramas = asyncHandler(
+    async (req: Request, res: Response) => {
+      const ideoramas = await this.ideoramaService.getPublicIdeoramas();
+
+      HttpResponse.success(
+        ideoramas,
+        'Idéoramas publics récupérés'
+      ).send(res);
     }
   );
 }

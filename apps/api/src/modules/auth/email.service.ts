@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+//const resend = new Resend(process.env.RESEND_API_KEY);
 
 // const FROM = process.env.EMAIL_FROM ?? 'blessingtutka298@gmail.com';
 const FROM = 'Idearium <website@resent.dev>';

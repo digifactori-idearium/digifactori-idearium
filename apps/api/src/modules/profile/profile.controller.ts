@@ -9,7 +9,7 @@ import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
 
 export default class ProfileController {
-  constructor(private readonly profileService: IProfileService) {}
+  constructor(private readonly profileService: IProfileService) { }
 
   /**
    * Retrieves the authenticated user's profile and user data.
@@ -54,6 +54,18 @@ export default class ProfileController {
     }
 
     HttpResponse.success(data, 'Utilisateur trouvé').send(res);
+  });
+
+  getPublicProfile = asyncHandler(async (req: Request, res: Response) => {
+    const { pseudo } = req.params;
+
+    const profile = await this.profileService.getPublicProfileByPseudo(pseudo);
+
+    if (!profile) {
+      return HttpResponse.notFound('Profil non trouvé').send(res);
+    }
+
+    HttpResponse.success(profile, 'Profil public récupéré').send(res);
   });
 
   /**

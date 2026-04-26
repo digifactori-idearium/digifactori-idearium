@@ -30,6 +30,14 @@ export default function createIdeoramaRoutes(
     requireAuth,
     ideoramaController.saveIdeoramaController
   );
+  ideoramasRoutes.get(
+    '/public',
+    ideoramaController.getAllPublicIdeoramas
+  );
+  ideoramasRoutes.get(
+    '/public/:pseudo',
+    ideoramaController.getPublicIdeoramas
+  );
   ideoramasRoutes.post(
     '/all',
     authenticate,
