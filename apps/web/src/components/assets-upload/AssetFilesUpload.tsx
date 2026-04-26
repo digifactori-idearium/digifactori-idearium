@@ -1,4 +1,4 @@
-import { File } from 'lucide-react';
+import { FileInput } from 'lucide-react';
 import React from 'react';
 import { useDropzone } from 'react-dropzone';
 
@@ -14,7 +14,11 @@ import {
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
-export function AssetFilesUpload() {
+export function AssetFilesUpload({
+  onUpload,
+}: {
+  onUpload: (files: File[]) => void;
+}) {
   const MAX_SIZE = 25;
   const [files, setFiles] = React.useState<File[]>([]);
   const ACCEPTED_TYPES = {
@@ -39,15 +43,26 @@ export function AssetFilesUpload() {
     accept: ACCEPTED_TYPES,
   });
 
+  const onRename = (oldName: string, newName: string) => {
+    setFiles(prev =>
+      prev.map(f => {
+        if (f.name !== oldName) return f;
+        return new File([f], newName, { type: f.type });
+      })
+    );
+  };
+
   const filesList = files.map(file => (
     <FileItem
       key={file.name}
       file={file}
+      files={files}
       onRemove={() =>
         setFiles(prevFiles =>
           prevFiles.filter(prevFile => prevFile.name !== file.name)
         )
       }
+      onRename={onRename}
     ></FileItem>
   ));
 
@@ -76,7 +91,7 @@ export function AssetFilesUpload() {
                 )}
               >
                 <div>
-                  <File
+                  <FileInput
                     className="mx-auto h-12 w-12 text-mauve"
                     aria-hidden={true}
                   />
@@ -126,7 +141,8 @@ export function AssetFilesUpload() {
           <div className="flex items-center justify-end space-x-3">
             <Button
               className="mt-6 ml-auto text-white! bg-mauve! hover:bg-mauve/80! !border-mauve"
-              type="submit"
+              type="button"
+              onClick={() => onUpload(files)}
             >
               Télécharger
             </Button>

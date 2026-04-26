@@ -2,6 +2,7 @@ import WavesurferPlayer from '@wavesurfer/react';
 import convertSize from 'convert-size';
 import { RotateCcw, Trash } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import WaveSurfer from 'wavesurfer.js';
 
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
@@ -10,16 +11,30 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export const FileItem = ({
   file,
+  files,
   onRemove,
+  onRename,
 }: {
   file: File;
+  files: File[];
   onRemove: () => void;
+  onRename: (oldName: string, newName: string) => void;
 }) => {
   const is3D = file.name.endsWith('.glb') || file.name.endsWith('.gltf');
   const objectUrl = useMemo(() => URL.createObjectURL(file), [file]);
   const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
-  const [fileName, setFileName] = useState<string>(file.name);
-  const [originalName] = useState<string>(file.name);
+
+  const nameSplit = file.name.split('.');
+  const ext = nameSplit.length > 1 ? nameSplit.pop() : '';
+  // Name without the extension
+  const baseName = nameSplit.join('.');
+
+  const [fileName, setFileName] = useState<string>(baseName);
+  const [originalName] = useState<string>(baseName);
+
+  function undoRename() {
+    setFileName(originalName);
+  }
 
   const onReady = (ws: WaveSurfer) => {
     setWavesurfer(ws);
@@ -32,10 +47,6 @@ export const FileItem = ({
   useEffect(() => {
     return () => URL.revokeObjectURL(objectUrl);
   }, [objectUrl]);
-
-  function undoRename() {
-    setFileName(originalName);
-  }
 
   return (
     <li className="relative">
@@ -67,32 +78,44 @@ export const FileItem = ({
             {is3D ? (
               <AssetThumbnail file={objectUrl} />
             ) : (
-              <>
-                <div onClick={onPlayPause} className="cursor-pointer">
-                  <WavesurferPlayer
-                    height={100}
-                    width={128}
-                    waveColor="#f3bee1"
-                    progressColor="#6f51b0"
-                    url={objectUrl}
-                    interact={false}
-                    onReady={onReady}
-                  />
-                </div>
-              </>
+              <div onClick={onPlayPause} className="cursor-pointer">
+                <WavesurferPlayer
+                  height={100}
+                  width={128}
+                  waveColor="#f3bee1"
+                  progressColor="#6f51b0"
+                  url={objectUrl}
+                  interact={false}
+                  onReady={onReady}
+                />
+              </div>
             )}
           </span>
           <div className="min-w-0 pr-24">
             <p
-              className="text-foreground hover:text-foreground/70 cursor-text text-pretty font-medium break-words"
+              className="rounded-sm border-2 border-transparent focus:border-mauve focus:outline-none transition-colors text-foreground hover:text-foreground/70 cursor-text text-pretty font-medium break-words"
               contentEditable
               suppressContentEditableWarning
               onBlur={e => {
                 const newName = e.currentTarget.textContent?.trim();
-                if (newName) {
-                  setFileName(newName);
-                } else {
+                if (!newName) {
                   e.currentTarget.textContent = fileName;
+                } else {
+                  const fullNewName = newName + '.' + ext;
+                  const nameExists = files.some(
+                    // Check if the name already exists (with the same extension)
+                    // Ignore the current file when renaming with the same name
+                    f => f.name === fullNewName && f.name !== file.name
+                  );
+                  if (nameExists) {
+                    e.currentTarget.textContent = fileName;
+                    toast.error(
+                      'Un fichier de même type existe déjà avec ce nom.'
+                    );
+                  } else {
+                    setFileName(newName);
+                    onRename(file.name, newName + '.' + ext);
+                  }
                 }
               }}
               onKeyDown={e => {
@@ -105,8 +128,11 @@ export const FileItem = ({
               {fileName}
             </p>
             <p className="text-pretty mt-0.5 text-sm text-muted-foreground">
-              {Math.round(parseFloat(convertSize(file.size)))}{' '}
+              <b>Taille</b>: {Math.round(parseFloat(convertSize(file.size)))}
               {convertSize(file.size).split(' ')[1]}
+            </p>
+            <p className="text-pretty mt-0.5 text-sm text-muted-foreground">
+              <b>Type</b>: {ext}
             </p>
           </div>
         </CardContent>

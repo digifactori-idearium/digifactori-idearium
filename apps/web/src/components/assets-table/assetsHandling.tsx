@@ -1,4 +1,5 @@
 import { SquarePlus } from 'lucide-react';
+import { useState } from 'react';
 
 import { DataTable } from '../common/data-table/dataTable';
 
@@ -8,33 +9,23 @@ import { AssetFilesUpload } from '@/components/assets-upload/AssetFilesUpload';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
-function getData(): Asset[] {
-  return [
-    {
-      name: 'pizza',
-      category: 'nourriture',
-      description: 'pizza kebab',
-      preview:
-        'https://media.sketchfab.com/models/638719eba7234613b869550dcdefa597/thumbnails/982febf106a0414da2d35995bd26c396/31775e4da53a46c3937ef6ee1fcbfd12.jpeg',
-    },
-    {
-      name: 'burger',
-      category: 'nourriture',
-      description: 'burger sans sauce',
-      preview:
-        'https://preview.free3d.com/img/2010/10/1688650028991645249/a7b0bqps.jpg',
-    },
-    {
-      name: 'voiture',
-      category: 'vehicules',
-      description: 'vieille voiture verte',
-      preview: 'https://s3.envato.com/files/509493379/Cycles%201.png',
-    },
-  ];
-}
-
 export default function AssetHandling() {
-  const data = getData();
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [open, setOpen] = useState(false);
+
+  const onUpload = (files: File[]) => {
+    const newAssets: Asset[] = files.map(file => ({
+      name: file.name,
+      category: '',
+      description: '',
+      type: file.type.startsWith('/audio')
+        ? 'MUSIC'
+        : ('ASSET' as IntegrationType),
+      preview: URL.createObjectURL(file),
+    }));
+    setAssets(prev => [...prev, ...newAssets]);
+    setOpen(false);
+  };
 
   return (
     <div className="w-full min-h-screen p-6">
@@ -44,20 +35,20 @@ export default function AssetHandling() {
 
       <div className="container mx-auto py-10">
         <div className="w-full max-w-6xl mx-auto sm:px-6 lg:px-8">
-          <Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! !border-mauve">
                 Ajouter des assets <SquarePlus />
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-sidebar !max-w-3xl w-full">
-              <AssetFilesUpload />
+              <AssetFilesUpload onUpload={onUpload} />
             </DialogContent>
           </Dialog>
         </div>
         <DataTable
           columns={columns}
-          data={data}
+          data={assets}
           filterColumn="name"
           filterColumnText="assets"
         />
