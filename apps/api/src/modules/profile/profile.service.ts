@@ -159,7 +159,6 @@ export default class ProfileService implements IProfileService {
    * 
    * @param userId the id of the user (string)
    * @returns an array of followers with their pseudo and avatar ({pseudo: string, avatar: string | null}[])
-   * @throws error if the user is not found
    */
   async getFollowers(userId: string): Promise<{ pseudo: string; avatar: string | null }[]> {
     const followers = await followTable.findMany({
@@ -180,10 +179,9 @@ export default class ProfileService implements IProfileService {
 
   /**
    * Gets the following of a user
-   * 
+   *
    * @param userId the id of the user (string)
    * @returns an array of following with their pseudo and avatar ({pseudo: string, avatar: string | null}[])
-   * @throws error if the user is not found
    */
   async getFollowing(userId: string): Promise<{ pseudo: string; avatar: string | null }[]> {
     const following = await followTable.findMany({

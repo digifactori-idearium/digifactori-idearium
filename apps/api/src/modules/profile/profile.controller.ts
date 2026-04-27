@@ -16,8 +16,6 @@ export default class ProfileController {
    * @route  GET /profile
    * @access Authenticated
    *
-   * @body   { parental_code?: string }
-   *
    * @returns
    *   - 200 { data: { profile: Profile, user?: User } }
    *   - 404 user or profile not found
@@ -35,6 +33,18 @@ export default class ProfileController {
     HttpResponse.success({profile: profile}, 'Utilisateur trouvé').send(res);
   });
 
+  /**
+   * Retrieves a user's data if the parental code is valid or if the user is not an intern.
+   *
+   * @route  POST /profile/user
+   * @access Authenticated
+   * 
+   * @body   { parental_code?: string }
+   * 
+   * @returns
+   *   - 200 { data: { user: User | null } }
+   *  - 404 user not found
+   */
   getUser = asyncHandler(async (req: Request, res: Response) => {
     const authUser = req.user!;
     const user = await this.profileService.getSingleUser(
@@ -48,18 +58,13 @@ export default class ProfileController {
       select: { orgParentalCode: true },
     });
     const setting2 = {orgParentalCode: "2026"};
-    console.log("setting", setting);
-    console.log("provided parental code", req.body.parental_code);
     const isParentalCodeValid =
       req.body.parental_code && setting2?.orgParentalCode
         ? req.body.parental_code == setting2.orgParentalCode
         : false;
-    console.log("role", user.role);
-    console.log("isParentalCodeValid", isParentalCodeValid);
     if(!isParentalCodeValid && user.role == 'INTERN') {
       return HttpResponse.success({user: null}, "Mauvais code parental").send(res);
     }
-    console.log("passed ");
     HttpResponse.success({user: user}, 'Utilisateur trouvé').send(res);
   });
 
@@ -78,7 +83,7 @@ export default class ProfileController {
    */
   setProfile = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user!;
-
+    console.log("Received profile update request:", req.body);
     let profileErrors: any[] = [];
     let userErrors: any[] = [];
 
@@ -106,15 +111,15 @@ export default class ProfileController {
       return res.status(400).json({ profileErrors, userErrors });
     }
 
-    const profile = await this.profileService.updateProfile(
+    const data = await this.profileService.updateProfile(
       user.userId,
       req.body
     );
-    if (!profile) {
+    if (!data) {
       return HttpResponse.notFound('Profil non trouvé').send(res);
     }
 
-    HttpResponse.success(profile, 'Profil mis à jour avec succès').send(res);
+    HttpResponse.success(data, 'Profil mis à jour avec succès').send(res);
   });
 
   /**
@@ -157,6 +162,10 @@ export default class ProfileController {
     if (user.userId === followingId) {
       return HttpResponse.badRequest("Vous ne pouvez pas vous suivre vous-même").send(res);
     }
+    const followedUser = await this.profileService.getSingleUser(followingId);
+    if(!followedUser) {
+      return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
+    }
     const followed = await this.profileService.followUser(user.userId, followingId);
     HttpResponse.success(followed, 'Utilisateur suivi avec succès').send(res);
   })
@@ -175,7 +184,7 @@ export default class ProfileController {
  */
   getFollowers = asyncHandler(async (req: Request, res: Response) => {
     const followers = await this.profileService.getFollowers(req.body.userId);
-    HttpResponse.success(followers, 'Followers récupérés avec succès').send(res);
+    HttpResponse.success({followers}, 'Followers récupérés avec succès').send(res);
   })
 
   /**
@@ -193,7 +202,7 @@ export default class ProfileController {
    */
   getFollowing = asyncHandler(async (req: Request, res: Response) => {
     const following = await this.profileService.getFollowing(req.body.userId);
-    HttpResponse.success(following, 'Utilisateurs suivis récupérés avec succès').send(res);
+    HttpResponse.success({following}, 'Utilisateurs suivis récupérés avec succès').send(res);
   })
   
   /**
@@ -207,9 +216,12 @@ export default class ProfileController {
    *   - 401 not authenticated
    */
   deleteProfile = asyncHandler(async (req: Request, res: Response) => {
-    const user = req.user!;
-
-    const deleted = await this.profileService.deleteUser(user.userId);
+    const authUser = req.user!;
+    const user = await this.profileService.getSingleUser(authUser.userId);
+    if(!user) {
+      return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
+    }
+    const deleted = await this.profileService.deleteUser(user.id);
     HttpResponse.success(deleted, 'Utilisateur supprimé avec succès').send(res);
   });
 }
