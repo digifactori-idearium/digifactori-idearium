@@ -20,8 +20,11 @@ export interface FormInputData {
   color?: string;
   // Select
   options?: Option[];
+
   // dialogue
-  dialogueContent?: React.ReactElement;
+  dialogueContent?:
+    | React.ReactElement
+    | ((actionId: string) => React.ReactElement);
 
   mappingFields?: Record<string, FieldMappingMeta>;
 
@@ -192,6 +195,7 @@ export const FormInput: React.FC<FormInputProps> = ({
               id={`Input${input.name}`}
               type={inputType}
               placeholder={input.placeholder}
+              maxLength={input.max}
               {...register(input.name, registerOptions)}
               className={`form-control form-input px-9 py-3! w-full ${isPassword ? 'pr-10' : ''} ${hasError ? 'error' : ''}`}
             />

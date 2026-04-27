@@ -35,7 +35,7 @@ const MyIdeoramas: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="w-full h-full">
       <div className="magic-text text-center md:text-5xl text-3xl justify-center flex items-center gap-2 font-bold mb-6">
         Tes idéoramas, {profile.pseudo}
       </div>

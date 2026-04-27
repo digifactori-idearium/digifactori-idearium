@@ -31,7 +31,7 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
   onDelete,
   children,
 }) => {
-  const { user: sessionUser } = useUser();
+  const { user: sessionUser, removeToken } = useUser();
   const [user, setUser] = useState<any>();
   const [open, setOpen] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(sessionUser?.role !== 'INTERN');
@@ -56,15 +56,9 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
 
   const handleFormSubmit = async (formData: any) => {
     const userData = { ...formData };
-
-    try {
-      await onUpdate(userData, profile);
-
-      toast.success('Paramètres mis à jour');
-      setOpen(false);
-    } catch {
-      toast.error('Erreur lors de la mise à jour');
-    }
+    await onUpdate(userData, profile);
+    setOpen(false);
+    removeToken();
   };
 
   return (

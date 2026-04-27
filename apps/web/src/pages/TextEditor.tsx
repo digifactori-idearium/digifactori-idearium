@@ -1,31 +1,31 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { Editor } from '@/components/editor';
 import { DocumentList } from '@/components/editor/DocumentList';
 import { useUser } from '@/providers/UserProvider';
 
-type View = { type: 'list' } | { type: 'editor'; documentId: string };
-
-const TextEditor: React.FC = () => {
-  const [view, setView] = useState<View>({ type: 'list' });
+export const TextEditor: React.FC = () => {
   const { user } = useUser();
+  const navigate = useNavigate();
   if (!user) return null;
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
-      {view.type === 'list' ? (
-        <DocumentList
-          userId={user.id}
-          onOpen={id => setView({ type: 'editor', documentId: id })}
-        />
-      ) : (
-        <Editor
-          documentId={view.documentId}
-          onBack={() => setView({ type: 'list' })}
-        />
-      )}
-    </div>
+    <DocumentList
+      userId={user.id}
+      onOpen={id => navigate(`/app/text-editor/${id}`)}
+    />
   );
 };
 
-export default TextEditor;
+export const EditorPage: React.FC = () => {
+  const { documentId } = useParams();
+  const navigate = useNavigate();
+
+  return (
+    <Editor
+      documentId={documentId!}
+      onBack={() => navigate('/app/text-editor')}
+    />
+  );
+};

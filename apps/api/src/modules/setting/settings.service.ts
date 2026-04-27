@@ -77,12 +77,15 @@ export default class SettingsService implements ISettingsService {
   // ---------------------------------------------------------------------------
 
   /**
-   * List all integrations attached to the singleton settings row.
+   * List all integrations by type if any
    */
-  async getIntegrations() {
+  async getIntegrations(type?: string) {
     try {
       const integrations = await integrationTable.findMany({
-        where: { settingId: 1 },
+        where: {
+          settingId: 1,
+          ...(type ? { type: type as any } : {}),
+        },
         orderBy: { createdAt: 'desc' },
       });
 

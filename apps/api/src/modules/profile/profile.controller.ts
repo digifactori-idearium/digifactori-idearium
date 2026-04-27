@@ -1,12 +1,16 @@
 import { Profile, User } from '@prisma/client';
 import { Request, Response } from 'express';
 
-import { profileSchema, userProfileSchema } from './profile.validation';
+import {
+  createUserProfileSchema,
+  createProfileSchema,
+} from './profile.validation';
 
 import { prisma } from '@/config/client.config';
 import { IProfileService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
+import { failOnValidation } from '@/utils/validation-errors';
 
 export default class ProfileController {
   constructor(private readonly profileService: IProfileService) {}
@@ -72,31 +76,16 @@ export default class ProfileController {
   setProfile = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user!;
 
-    let profileErrors: any[] = [];
-    let userErrors: any[] = [];
-
     if (req.body.profile) {
+      const profileSchema = createProfileSchema(user.userId);
       const result = await profileSchema.safeParseAsync(req.body.profile);
-      if (!result.success) {
-        profileErrors = result.error.issues.map(err => ({
-          field: err.path.join('.'),
-          message: err.message,
-        }));
-      }
+      if (failOnValidation(result, res)) return;
     }
 
     if (req.body.user) {
+      const userProfileSchema = createUserProfileSchema(user.userId);
       const result = await userProfileSchema.safeParseAsync(req.body.user);
-      if (!result.success) {
-        userErrors = result.error.issues.map(err => ({
-          field: err.path.join('.'),
-          message: err.message,
-        }));
-      }
-    }
-
-    if (profileErrors.length > 0 || userErrors.length > 0) {
-      return res.status(400).json({ profileErrors, userErrors });
+      if (failOnValidation(result, res)) return;
     }
 
     const profile = await this.profileService.updateProfile(
@@ -123,12 +112,11 @@ export default class ProfileController {
    *   - 404 profile not found
    */
   getProfile = asyncHandler(async (req: Request, res: Response) => {
-    const profile = await this.profileService.getSingleProfile(
-      req.body.userId
-    );
+    const profile = await this.profileService.getSingleProfile(req.body.userId);
     if (!profile) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
+<<<<<<< robin/feat/apiservice
     HttpResponse.success({profile: profile}, 'Utilisateur trouvé').send(res);
   })
 
@@ -189,6 +177,11 @@ export default class ProfileController {
     HttpResponse.success(following, 'Utilisateurs suivis récupérés avec succès').send(res);
   })
   
+=======
+    HttpResponse.success({ profile: profile }, 'Utilisateur trouvé').send(res);
+  });
+
+>>>>>>> dev
   /**
    * Permanently deletes the authenticated user's account and profile.
    *

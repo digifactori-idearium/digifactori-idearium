@@ -2,7 +2,7 @@ import { Form } from '@/components/common/form';
 
 interface Props {
   initialValues: any;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any) => Promise<boolean | void>;
 }
 
 const ProfileForm: React.FC<Props> = ({ initialValues, onSubmit }) => {

@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import {
   createUserSchema,
   updateRoleSchema,
-  updateUserSchema,
+  CreateUpdateUserSchema,
 } from './user.validation';
 
 import { IUserService } from '@/types';
@@ -113,6 +113,7 @@ export default class UserController {
     const requester = req.user!;
     const id = req.params.id as string;
 
+    const updateUserSchema = CreateUpdateUserSchema(id);
     const result = await updateUserSchema.safeParseAsync(req.body);
     if (failOnValidation(result, res)) return;
 

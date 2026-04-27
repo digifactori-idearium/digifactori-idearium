@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FieldValues, SubmitHandler } from 'react-hook-form';
+import { FieldValues } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -21,7 +21,7 @@ const IdeoramaCreator: React.FC<{
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onSubmit: SubmitHandler<FieldValues> = async data => {
+  const onSubmit = async (data: FieldValues): Promise<boolean | void> => {
     try {
       setLoading(true);
       const response = await createIdeorama(data.name, userId);
@@ -30,6 +30,7 @@ const IdeoramaCreator: React.FC<{
       toast.success("Création de l'idéorama réussie");
     } catch (error: any) {
       toast.error(error?.message || "Échec de la création de l'idéorama");
+      return false;
     } finally {
       setLoading(false);
     }
