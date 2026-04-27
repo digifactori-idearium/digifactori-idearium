@@ -25,14 +25,11 @@ const appRoutes = [
     path: 'profile',
     element: <ProtectedRoute element={<ProfilePage />} />,
   },
-<<<<<<< robin/feat/apiservice
   {
     path: 'profile/:userId',
-    element: <Profile />,
+    element: <ProtectedRoute element={<Profile />} />,
   },
   { path: 'ideorama', element: <ProtectedRoute element={<Ideorama />} /> },
-=======
->>>>>>> dev
   {
     path: 'ideorama/:ideoramaid',
     element: <ProtectedRoute element={<Ideorama />} />,
