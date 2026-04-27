@@ -189,6 +189,7 @@ describe('Profile Handling', () => {
       app.use('/api/profile', createProfileRoutes(mockService));
       const {user: newUser, userJSON: newUserJSON} = createFakeUser({ first_name: 'NewFirstName' });
       const {profile: newProfile, profileJSON: newProfileJSON} = createFakeProfile({ pseudo: 'NewPseudo' });
+      mockService.getSingleUser.mockResolvedValue(newUser);
       mockService.updateProfile.mockResolvedValue({ user: newUser, profile: newProfile});
 
       const res = await request(app)
@@ -213,9 +214,9 @@ describe('Profile Handling', () => {
       const mockService = new MockProfileService();
       app.use(express.json());
       app.use('/api/profile', createProfileRoutes(mockService));
-      const {user: newUser, userJSON: newUserJSON} = createFakeUser({ first_name: 'NewFirstName' });
-      const {profile: newProfile, profileJSON: newProfileJSON} = createFakeProfile({ pseudo: 'NewPseudo' });
-      mockService.updateProfile.mockResolvedValue(null);
+      const {user: newUser} = createFakeUser({ first_name: 'NewFirstName' });
+      const {profile: newProfile} = createFakeProfile({ pseudo: 'NewPseudo' });
+      mockService.getSingleUser.mockResolvedValue(null);
 
       const res = await request(app)
         .post('/api/profile/setting')
@@ -225,12 +226,27 @@ describe('Profile Handling', () => {
           profile: newProfile,
         });
 
-      expect(mockService.updateProfile).toHaveBeenCalledWith(newUser.id, {
-        user: newUserJSON,
-        profile: newProfileJSON,
-      });
       expect(res.status).toBe(404);
     });
+
+      it('should return 400 if the data provided is invalid', async () => {
+        const app = express();
+        const mockService = new MockProfileService();
+        app.use(express.json());
+        app.use('/api/profile', createProfileRoutes(mockService));
+        const {user} = createFakeUser();
+        const {profile} = createFakeProfile();
+
+        const res = await request(app)
+          .post('/api/profile/setting')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            user: { ...user, email: 'e' },
+            profile,
+          });
+
+        expect(res.status).toBe(400);
+      });
   });
   
   describe('POST /profile/find', () => {
