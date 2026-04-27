@@ -54,7 +54,7 @@ export const Editor: React.FC<TextEditorrProps> = ({ documentId, onBack }) => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-linear-to-br from-violet-50 via-pink-50 to-sky-50">
+    <div className="flex flex-col w-full h-full bg-linear-to-br from-violet-50 via-pink-50 to-sky-50">
       <EditorHeader
         document={document}
         saveStatus={saveStatus}

@@ -129,7 +129,7 @@ export interface ISettingsService {
   }): Promise<Setting & { integrations: Integration[] }>;
 
   // Integrations
-  getIntegrations(): Promise<Integration[]>;
+  getIntegrations(type?: string): Promise<Integration[]>;
   getIntegrationById(integrationId: string): Promise<Integration>;
   createIntegration(data: {
     name: string;

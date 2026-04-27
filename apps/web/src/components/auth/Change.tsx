@@ -34,6 +34,7 @@ export const ChangePasswordDialog = () => {
       setOpen(false);
     } catch (error: any) {
       toast.error(error.message || 'Une erreur est survenue');
+      return false;
     } finally {
       setLoading(false);
     }

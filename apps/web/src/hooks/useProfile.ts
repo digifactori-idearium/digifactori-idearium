@@ -19,7 +19,7 @@ export const useProfile = () => {
       const res = await getMyProfile(parentalCode);
       return res.data;
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message ?? 'Erreur lors de la récupération du profil');
       throw error;
     } finally {
       setLoading(false);
@@ -32,7 +32,7 @@ export const useProfile = () => {
       await updateProfile(user, profile);
       toast.success('Profil mis à jour !');
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message ?? 'Profil non mis à jour !');
       throw error;
     } finally {
       setLoading(false);
@@ -46,7 +46,7 @@ export const useProfile = () => {
       toast.success('Profil supprimé avec succès');
       removeToken();
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message ?? 'Profil non supprimé');
       throw error;
     } finally {
       setLoading(false);

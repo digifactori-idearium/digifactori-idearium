@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SubmitHandler, FieldValues, useForm, useWatch } from 'react-hook-form';
+import { FieldValues, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { Form } from '@/components/common/form';
@@ -43,7 +43,7 @@ export default function Register() {
 
   const inputs = buildInputs(selectedRole);
 
-  const onSubmit: SubmitHandler<FieldValues> = async data => {
+  const onSubmit = async (data: FieldValues): Promise<boolean | void> => {
     try {
       setLoading(true);
       await registerService(data);
@@ -51,6 +51,7 @@ export default function Register() {
       toast.success('Création du compte réussie');
     } catch (error: any) {
       toast.error(error.message || 'Échec de la création du compte');
+      return false;
     } finally {
       setLoading(false);
     }

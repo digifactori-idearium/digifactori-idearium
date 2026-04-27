@@ -16,7 +16,7 @@ import { createFormSchema } from '@/lib/validation';
 
 interface FormProps {
   inputs: FormInputData[];
-  handleOnSubmit: SubmitHandler<FieldValues>;
+  handleOnSubmit: (data: FieldValues) => Promise<boolean | void>;
   loading?: boolean;
   initialValues?: FieldValues;
   form?: UseFormReturn<FieldValues>;
@@ -29,11 +29,19 @@ export const Form: React.FC<FormProps> = ({
   loading = false,
   form: externalForm,
 }) => {
-  const formSchema = createFormSchema(inputs);
-
   const internalForm = useForm<FieldValues>({
-    defaultValues: initialValues || {},
-    resolver: zodResolver(formSchema as any),
+    defaultValues:
+      initialValues ||
+      inputs.reduce(
+        (acc, input) => ({
+          ...acc,
+          ...(input.default !== undefined
+            ? { [input.name]: input.default }
+            : {}),
+        }),
+        {}
+      ),
+    resolver: zodResolver(createFormSchema(inputs) as any),
   });
 
   const {
@@ -46,18 +54,12 @@ export const Form: React.FC<FormProps> = ({
   } = externalForm ?? internalForm;
 
   useEffect(() => {
-    if (initialValues) {
-      reset(initialValues);
-    }
+    if (initialValues) reset(initialValues);
   }, [initialValues, reset]);
 
   const onSubmit: SubmitHandler<FieldValues> = async data => {
-    try {
-      await handleOnSubmit(data);
-      reset();
-    } catch {
-      // Reset is intentionally skipped on error so the user keeps their input
-    }
+    const result = await handleOnSubmit(data);
+    if (result !== false) reset(); // reset only on success
   };
 
   return (
@@ -77,8 +79,7 @@ export const Form: React.FC<FormProps> = ({
             errors={errors}
           />
         ))}
-
-        <button type="submit" className="w-full form-button">
+        <button type="submit" className="w-full form-button" disabled={loading}>
           {loading ? (
             <div className="flex gap-2 justify-center items-center">
               <ButtonLoading />

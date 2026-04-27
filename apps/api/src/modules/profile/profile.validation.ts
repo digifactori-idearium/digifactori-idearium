@@ -4,17 +4,41 @@ import { prisma } from '@/config/client.config';
 
 const getPseudoExists = async (
   pseudo: string,
-  excludePseudo?: string
+  excludeCurrentUserID?: string
 ): Promise<boolean> => {
   try {
-    // Skip the check if the user is keeping their own pseudo
-    if (excludePseudo && pseudo === excludePseudo) return false;
-
-    const profile = await prisma.profile.findUnique({
-      where: { pseudo },
+    const profile = await prisma.profile.findFirst({
+      where: {
+        pseudo,
+        ...(excludeCurrentUserID && {
+          NOT: { userId: excludeCurrentUserID },
+        }),
+      },
       select: { id: true },
     });
+
     return profile !== null;
+  } catch {
+    return false;
+  }
+};
+
+const getEmailExists = async (
+  email: string,
+  excludeCurrentUserID?: string
+): Promise<boolean> => {
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+        ...(excludeCurrentUserID && {
+          NOT: { id: excludeCurrentUserID },
+        }),
+      },
+      select: { id: true },
+    });
+
+    return user !== null;
   } catch {
     return false;
   }
@@ -30,20 +54,36 @@ const getPseudoExists = async (
  *
  * Messages are in French (FR)
  */
-export const userProfileSchema = z.object({
-  email: z.email({
-    error: iss =>
-      iss.input === undefined
-        ? "L'adresse mail est requise"
-        : 'Adresse mail invalide',
-  }),
-  first_name: z
-    .string('Le prénom est requis')
-    .min(2, "Le prénom doit être composé d'au moins 2 caractères"),
-  last_name: z
-    .string('Le nom de famille est requis')
-    .min(2, 'Le nom de famille doit comporter au moins 2 caractères'),
-});
+export const createUserProfileSchema = (currentUserId?: string) =>
+  z.object({
+    email: z
+      .email({
+        error: iss =>
+          iss.input === undefined
+            ? "L'adresse mail est requise"
+            : 'Adresse mail invalide',
+      })
+      .superRefine(async (emailValue, ctx) => {
+        const exists = await getEmailExists(emailValue, currentUserId);
+        if (exists) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Cet email est déjà utilisé.',
+          });
+        }
+      }),
+    first_name: z
+      .string('Le prénom est requis')
+      .min(2, "Le prénom doit être composé d'au moins 2 caractères"),
+    last_name: z
+      .string('Le nom de famille est requis')
+      .min(2, 'Le nom de famille doit comporter au moins 2 caractères'),
+  });
+
+/**
+ * Default userProfileSchema with no exclusion — use for registration and admin user creation.
+ */
+export const userProfileSchema = createUserProfileSchema();
 
 /**
  * Factory that returns a profileSchema with pseudo uniqueness check.
@@ -54,7 +94,7 @@ export const userProfileSchema = z.object({
  *
  * Messages are in French (FR)
  */
-export const createProfileSchema = (excludePseudo?: string) =>
+export const createProfileSchema = (currentUser?: string) =>
   z
     .object({
       pseudo: z
@@ -62,7 +102,7 @@ export const createProfileSchema = (excludePseudo?: string) =>
         .min(2, 'Le pseudo doit comporter au moins 2 caractères.'),
     })
     .superRefine(async (data, ctx) => {
-      const exists = await getPseudoExists(data.pseudo, excludePseudo);
+      const exists = await getPseudoExists(data.pseudo, currentUser);
       if (exists) {
         ctx.addIssue({
           code: 'custom',

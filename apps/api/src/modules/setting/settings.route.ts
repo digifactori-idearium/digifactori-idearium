@@ -16,6 +16,7 @@ export default function createSettingsRoutes(
   // Singleton settings
   settingsRoutes.get('/', settingsController.getSettings);
   settingsRoutes.patch('/store', settingsController.updateStoreSettings);
+  settingsRoutes.patch('/org', settingsController.updateOrgSettings);
 
   // Integrations
   settingsRoutes.get('/integrations', settingsController.getIntegrations);

@@ -3,13 +3,38 @@ import { z } from 'zod';
 
 import { prisma } from '@/config/client.config';
 
-const getPseudoExists = async (pseudo: string): Promise<boolean> => {
+// --- DB Helpers ---
+const getPseudoExists = async (
+  pseudo: string,
+  excludeUserId?: string
+): Promise<boolean> => {
   try {
-    const profile = await prisma.profile.findUnique({
-      where: { pseudo },
+    const profile = await prisma.profile.findFirst({
+      where: {
+        pseudo,
+        ...(excludeUserId && { NOT: { userId: excludeUserId } }),
+      },
       select: { id: true },
     });
     return profile !== null;
+  } catch {
+    return false;
+  }
+};
+
+const getEmailExists = async (
+  email: string,
+  excludeUserId?: string
+): Promise<boolean> => {
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+        ...(excludeUserId && { NOT: { id: excludeUserId } }),
+      },
+      select: { id: true },
+    });
+    return user !== null;
   } catch {
     return false;
   }
@@ -28,12 +53,22 @@ const getPseudoExists = async (pseudo: string): Promise<boolean> => {
  */
 export const createUserSchema = z
   .object({
-    email: z.email({
-      error: iss =>
-        iss.input === undefined
-          ? "L'adresse mail est requise"
-          : 'Adresse mail invalide',
-    }),
+    email: z
+      .email({
+        error: iss =>
+          iss.input === undefined
+            ? "L'adresse mail est requise"
+            : 'Adresse mail invalide',
+      })
+      .superRefine(async (emailVal, ctx) => {
+        const exists = await getEmailExists(emailVal);
+        if (exists) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Cet email est déjà utilisé.',
+          });
+        }
+      }),
     first_name: z
       .string()
       .min(2, "Le prénom doit être composé d'au moins 2 caractères"),
@@ -66,19 +101,34 @@ export const createUserSchema = z
  *
  * Messages are in French (FR)
  */
-export const updateUserSchema = z.object({
-  email: z.email({ error: () => 'Adresse mail invalide' }).optional(),
-  first_name: z
-    .string()
-    .min(2, "Le prénom doit être composé d'au moins 2 caractères")
-    .optional(),
-  last_name: z
-    .string()
-    .min(2, 'Le nom de famille doit comporter au moins 2 caractères')
-    .optional(),
+export const CreateUpdateUserSchema = (UserID?: string) =>
+  z.object({
+    email: z
+      .email({ error: () => 'Adresse mail invalide' })
+      .optional()
+      .superRefine(async (emailVal, ctx) => {
+        if (!emailVal) return;
+        const exists = await getEmailExists(emailVal, UserID);
+        if (exists) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Cet email est déjà utilisé.',
+          });
+        }
+      }),
+    first_name: z
+      .string()
+      .min(2, "Le prénom doit être composé d'au moins 2 caractères")
+      .optional(),
+    last_name: z
+      .string()
+      .min(2, 'Le nom de famille doit comporter au moins 2 caractères')
+      .optional(),
 
-  role: z.enum(Role).optional(),
-});
+    role: z.enum(Role).optional(),
+  });
+
+export const updateUserSchema = CreateUpdateUserSchema();
 
 /**
  * Schema for changing a user's role.

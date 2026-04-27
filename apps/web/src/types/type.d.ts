@@ -3,6 +3,11 @@ interface Option {
   value: string;
 }
 
+interface SearchOption {
+  value: string;
+  label: string;
+}
+
 type Role = 'INTERN' | 'SUPERVISOR' | 'ADMIN';
 
 interface ApiResponse<T> {
@@ -244,13 +249,28 @@ interface Integration {
   name: string;
   url: string;
   type: IntegrationType;
-  key: string;
+  key?: string;
   isActive: boolean;
-  fieldMapping?: FieldMapping;
+  fieldMapping: Record<string, string>;
   createdAt?: string;
 }
 
+interface MediaItem {
+  id: string;
+  name: string;
+  category: string;
+  file: string;
+  thumbnail?: string;
+}
+
+interface FetchResult {
+  items: MediaItem[];
+  hasMore: boolean;
+}
+
 interface Settings {
+  orgCode?: string;
+  orgParentalCode?: string;
   storeName?: string;
   storeURL?: string;
   integrations?: Integration[];

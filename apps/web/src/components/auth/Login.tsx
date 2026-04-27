@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FieldValues, SubmitHandler } from 'react-hook-form';
+import { FieldValues } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -16,7 +16,7 @@ export default function Login() {
   const { setToken, removeToken } = useUser();
   const [loading, setLoading] = useState(false);
 
-  const onSubmit: SubmitHandler<FieldValues> = async data => {
+  const onSubmit = async (data: FieldValues): Promise<boolean | void> => {
     try {
       setLoading(true);
       const response = await loginService(data.pseudo, data.password);
@@ -28,6 +28,7 @@ export default function Login() {
     } catch (error: any) {
       removeToken();
       toast.error(error?.message || 'Échec de la connexion');
+      return false;
     } finally {
       setLoading(false);
     }
