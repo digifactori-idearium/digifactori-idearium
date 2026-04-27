@@ -130,17 +130,17 @@ export default class IdeoramaService implements IIdeoramaService {
   }
 
   /**
-   * 
-   * @param ideoramaId 
-   * @param userId 
+   * Likes an ideorama.
+   * @param ideoramaId - the unique id of the ideorama to like
+   * @param userId - the unique id of the user who wants to like the ideorama
+   * @return Promise<true> if the like/unlike action is successful, Promise<false> otherwise
+    * @throws error if the ideoramaId or userId does not exist in DB
    */
   async likeIdeorama(ideoramaId: string, userId: string): Promise<boolean> {
-    const like = await ideoramaLikeTable.findUnique({
+    const like = await ideoramaLikeTable.findFirst({
       where: {
-        ideoramaId_userId: {
-          ideoramaId: ideoramaId,
-          userId: userId,
-        },
+        ideoramaId: ideoramaId,
+        userId: userId,
       },
     });
     if (like) {
@@ -152,14 +152,14 @@ export default class IdeoramaService implements IIdeoramaService {
           },
       },
       });
-    } else {
-      await ideoramaLikeTable.create({
-        data: {
-          ideoramaId: ideoramaId,
-          userId: userId
-        }
-      });
+      return true;
     }
+    await ideoramaLikeTable.create({
+      data: {
+        ideoramaId: ideoramaId,
+        userId: userId
+      }
+    })
     return true;
   }
 

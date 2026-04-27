@@ -7,18 +7,20 @@ import DeleteIdeoramaDialog from './deleteIdeoramaDialog';
 import { SuperButton } from '@/components/common/button/SuperButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
+import { useUser } from '@/providers/UserProvider';
 import { deleteIdeorama, likeIdeorama } from '@/services/ideorama.service';
 
 const IdeoramasGroup: React.FC<{
   ideoramas: Ideorama[];
   profile: Partial<Profile>;
   setIdeoramas: React.Dispatch<React.SetStateAction<Ideorama[]>>;
-  setProfile: React.Dispatch<React.SetStateAction<Partial<Profile>>>;
+  setProfile: React.Dispatch<React.SetStateAction<Profile>>;
 }> = ({ ideoramas, profile, setIdeoramas, setProfile }) => {
   const navigate = useNavigate();
   const [ideoramaToDelete, setIdeoramaToDelete] = useState<Ideorama | null>(
     null
   );
+  const user = useUser().user
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       {ideoramas.map((ideorama, index) => (
@@ -130,7 +132,7 @@ const IdeoramasGroup: React.FC<{
                       )}
                   </SuperButton>
               </div>
-              <SuperButton
+              {profile.userId == user?.id && <SuperButton
                 tooltip="Supprime ton idéorama"
                 voiceText="Supprime ton idéorama"
                 onClick={e => {
@@ -140,7 +142,7 @@ const IdeoramasGroup: React.FC<{
                 className="main-btn"
               >
                 <Trash2 /> Supprimer
-              </SuperButton>
+              </SuperButton>}
             </div>
             <SuperButton
               className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
@@ -148,7 +150,7 @@ const IdeoramasGroup: React.FC<{
               onClick={e => {
                   e.stopPropagation();
                   if(ideorama.userId == profile.userId) {
-                    navigate(`/profile/${ideorama.userId}`);
+                    navigate(`/app/profile/${ideorama.userId}`);
                   } else {
                     navigate(`/app/profile`);
                   }
