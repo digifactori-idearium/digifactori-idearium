@@ -61,10 +61,9 @@ export default class ProfileController {
       where: { id: 1 },
       select: { orgParentalCode: true },
     });
-    const setting2 = {orgParentalCode: "2026"};
     const isParentalCodeValid =
-      req.body.parental_code && setting2?.orgParentalCode
-        ? req.body.parental_code == setting2.orgParentalCode
+      req.body.parental_code && setting?.orgParentalCode
+        ? req.body.parental_code == setting.orgParentalCode
         : false;
     if(!isParentalCodeValid && user.role == 'INTERN') {
       return HttpResponse.success({user: null}, "Mauvais code parental").send(res);
@@ -86,27 +85,30 @@ export default class ProfileController {
    *   - 404 profile not found
    */
   setProfile = asyncHandler(async (req: Request, res: Response) => {
-    const user = req.user!;
+    const authUser = req.user!;
 
     if (req.body.profile) {
-      const profileSchema = createProfileSchema(user.userId);
+      const profileSchema = createProfileSchema(authUser.userId);
       const result = await profileSchema.safeParseAsync(req.body.profile);
       if (failOnValidation(result, res)) return;
     }
 
     if (req.body.user) {
-      const userProfileSchema = createUserProfileSchema(user.userId);
+      const userProfileSchema = createUserProfileSchema(authUser.userId);
       const result = await userProfileSchema.safeParseAsync(req.body.user);
       if (failOnValidation(result, res)) return;
     }
 
+    const user = await this.profileService.getSingleUser(authUser.userId);
+    
+    if (!user) {
+      return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
+    }
+
     const data = await this.profileService.updateProfile(
-      user.userId,
+      user.id,
       req.body
     );
-    if (!data) {
-      return HttpResponse.notFound('Profil non trouvé').send(res);
-    }
 
     HttpResponse.success(data, 'Profil mis à jour avec succès').send(res);
   });
