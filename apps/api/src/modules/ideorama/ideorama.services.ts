@@ -5,6 +5,7 @@ import { prisma } from '../../config/client.config';
 import { IIdeoramaService } from '@/types';
 
 const ideoramaTable = prisma.ideorama;
+const ideoramaLikeTable = prisma.ideoramaLikes;
 
 export default class IdeoramaService implements IIdeoramaService {
   /**
@@ -55,6 +56,13 @@ export default class IdeoramaService implements IIdeoramaService {
       where: {
         id: ideoramaId,
       },
+      include: {
+        _count: {
+          select: {
+            likers: true,
+          },
+        },
+      },
     });
   }
 
@@ -68,6 +76,18 @@ export default class IdeoramaService implements IIdeoramaService {
     return ideoramaTable.findMany({
       where: {
         userId: userId,
+      },
+      include: {
+        _count: {
+          select: {
+            likers: true,
+          },
+        },
+        likers: {
+          select: {
+            userId: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -164,6 +184,41 @@ export default class IdeoramaService implements IIdeoramaService {
     }
     return false;
   }
+
+  /**
+   * 
+   * @param ideoramaId 
+   * @param userId 
+   */
+  async likeIdeorama(ideoramaId: string, userId: string): Promise<boolean> {
+    const like = await ideoramaLikeTable.findUnique({
+      where: {
+        ideoramaId_userId: {
+          ideoramaId: ideoramaId,
+          userId: userId,
+        },
+      },
+    });
+    if (like) {
+      await ideoramaLikeTable.delete({
+        where: {
+          ideoramaId_userId: {
+            ideoramaId: ideoramaId,
+            userId: userId,
+          },
+      },
+      });
+    } else {
+      await ideoramaLikeTable.create({
+        data: {
+          ideoramaId: ideoramaId,
+          userId: userId
+        }
+      });
+    }
+    return true;
+  }
+
 
   /**
    * Deletes an ideorama from DB based on its ID.

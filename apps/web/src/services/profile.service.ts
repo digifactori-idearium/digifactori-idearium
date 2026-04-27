@@ -1,5 +1,6 @@
 import axios from '../services/axios.service';
 
+import { handleApiError } from '@/lib/api';
 type getProfileResponse = {
   profile: Profile;
   user: User;
@@ -17,7 +18,7 @@ interface ApiResponse<T> {
 }
 
 // Services
-export const getProfile = async (
+export const getMyProfile = async (
   parentalCode: string = ''
 ): Promise<ApiResponse<getProfileResponse>> => {
   try {
@@ -26,6 +27,25 @@ export const getProfile = async (
       parentalCode == '' ? {} : { parental_code: parseInt(parentalCode) ?? 0 }
     );
 
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return response.data;
+  } catch (error: any) {
+    return handleApiError(error);
+  }
+};
+
+export const getProfile = async (
+  userId: string
+): Promise<ApiResponse<getProfileResponse>> => {
+  try {
+    const response = await axios.post(
+      `http://localhost:3001/api/profile/find`,
+      { userId: userId }
+    );
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -57,9 +77,7 @@ export const updateProfile = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message || 'Échec du profil' + error
-    );
+    return handleApiError(error);
   }
 };
 
@@ -81,10 +99,7 @@ export const deleteProfile = async (): Promise<
 
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message ||
-      'Échec de la suppression du profil'
-    );
+    return handleApiError(error);
   }
 };
 

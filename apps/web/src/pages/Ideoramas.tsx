@@ -40,6 +40,7 @@ const Ideoramas: React.FC = () => {
       <IdeoramasGroup
         ideoramas={ideoramas}
         profile={{}}
+        setProfile={() => { }}
         setIdeoramas={setIdeoramas}
       />
     </div>

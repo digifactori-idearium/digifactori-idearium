@@ -114,7 +114,7 @@ export default class UserService implements IUserService {
    */
   async updateUser(
     id: string,
-    data: Partial<Pick<User, 'email' | 'first_name' | 'last_name'>>
+    data: Partial<Pick<User, 'email' | 'first_name' | 'last_name' | 'role'>>
   ): Promise<User> {
     return userTable.update({ where: { id }, data });
   }

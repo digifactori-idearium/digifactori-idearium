@@ -13,13 +13,19 @@ export default function createProfileRoutes(profileService: IProfileService) {
     '/',
     authenticate,
     requireAuth,
-    profileController.getProfile
+    profileController.getMyProfile
   );
   profileRoutes.post(
     '/setting',
     authenticate,
     requireAuth,
     profileController.setProfile
+  );
+  profileRoutes.post(
+    '/find',
+    authenticate,
+    requireAuth,
+    profileController.getProfile
   );
   profileRoutes.delete(
     '/delete',

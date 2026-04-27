@@ -85,7 +85,7 @@ model Ideorama {
 }
 
 model IdeoramaLikes {
-  profile    Profile  @relation("ideoramaLiked", fields: [userId], references: [id])
+  profile    Profile  @relation("ideoramaLiked", fields: [userId], references: [userId])
   userId     String
   ideorama   Ideorama @relation("likers", fields: [ideoramaId], references: [id])
   ideoramaId String
@@ -116,11 +116,10 @@ model VoxelModel {
   updatedAt DateTime @updatedAt
 }
 
-
 model Document {
   id        String   @id @default(cuid())
   title     String   @default("Sans titre")
-  content   String   @default("") 
+  content   String   @default("")
   json      Json?
   wordCount Int      @default(0)
   emoji     String   @default("📝")
@@ -137,8 +136,6 @@ enum IntegrationType {
   MUSIC
   OTHER
 }
-
-
 
 model Setting {
   id              Int        @id @default(1)
@@ -159,10 +156,9 @@ model Integration {
   name         String
   url          String
   type         IntegrationType
-  key          String?          
+  key          String?
   isActive     Boolean         @default(true)
-  fieldMapping Json            @default("{}")  
+  fieldMapping Json            @default("{}")
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 }
-

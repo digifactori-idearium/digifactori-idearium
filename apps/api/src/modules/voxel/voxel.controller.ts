@@ -46,6 +46,7 @@ export default class VoxelController {
   saveVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
       const user = req.user!;
+      console.log("controller");
 
       if (!req.body.voxelModelId) {
         // Create new voxel model
@@ -75,7 +76,7 @@ export default class VoxelController {
 
       // Update existing voxel model
       const uploadPath = getUploadPath(req.body.voxelModelId);
-      fs.writeFileSync(uploadPath, req.body.voxelModel.model);
+      fs.writeFileSync(uploadPath, req.body.model);
 
       HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(
         res

@@ -23,7 +23,7 @@ export default class ProfileController {
    *   - 200 { data: { profile: Profile, user?: User } }
    *   - 404 user or profile not found
    */
-  getProfile = asyncHandler(async (req: Request, res: Response) => {
+  getMyProfile = asyncHandler(async (req: Request, res: Response) => {
     const currentUser = req.user!;
 
     const profile = await this.profileService.getSingleProfile(
@@ -122,6 +122,29 @@ export default class ProfileController {
     HttpResponse.success(profile, 'Profil mis à jour avec succès').send(res);
   });
 
+  /**
+   * Retrieves a user's profile by its pseudo.
+   *
+   * @route  PATCH /profile/find
+   * @access No restriction
+   *
+   * @body   { userId?: string }
+   *
+   * @returns
+   *   - 200 { data: Profile }
+   *   - 404 profile not found
+   */
+  getProfile = asyncHandler(async (req: Request, res: Response) => {
+    const profile = await this.profileService.getSingleProfile(
+      req.body.userId
+    );
+    if (!profile) {
+      return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
+    }
+    HttpResponse.success({profile: profile}, 'Utilisateur trouvé').send(res);
+  })
+    
+  
   /**
    * Permanently deletes the authenticated user's account and profile.
    *

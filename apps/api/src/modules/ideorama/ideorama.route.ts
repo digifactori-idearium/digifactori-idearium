@@ -45,6 +45,12 @@ export default function createIdeoramaRoutes(
     ideoramaController.getUserIdeoramasController
   );
   ideoramasRoutes.post(
+    '/like',
+    authenticate,
+    requireAuth,
+    ideoramaController.likeIdeoramaController
+  );
+  ideoramasRoutes.post(
     '/delete',
     authenticate,
     requireAuth,

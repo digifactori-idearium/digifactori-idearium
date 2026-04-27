@@ -8,7 +8,11 @@ import { DataTable } from '../common/data-table/dataTable';
 import { UserDialog } from './UserDialog';
 import { columns } from './usersColumns';
 
-import { adminUserInputs } from '@/lib/input';
+import {
+  manageUserInputs,
+  adminUserRole,
+  supervisorUserRole,
+} from '@/lib/input';
 import { useUser } from '@/providers/UserProvider';
 import { getUsers, deleteUser, createUser } from '@/services/user.service';
 
@@ -17,6 +21,11 @@ export default function UserHandling() {
   const { user: currentUser } = useUser();
 
   const [_loading, setLoading] = useState(false);
+
+  const roleInput =
+    currentUser?.role === 'ADMIN' ? adminUserRole : supervisorUserRole;
+
+  const userInputs = [...manageUserInputs, roleInput];
 
   const fetchUsers = async () => {
     try {
@@ -66,7 +75,7 @@ export default function UserHandling() {
         }
         title="Créer un utilisateur"
         description="Ajouter un nouvel utilisateur"
-        inputs={adminUserInputs}
+        inputs={userInputs}
         loading={false}
         onsubmit={async data => {
           console.log(data);

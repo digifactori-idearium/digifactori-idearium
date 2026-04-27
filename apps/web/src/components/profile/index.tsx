@@ -21,7 +21,7 @@ const AVATAR_OPTIONS = [
   { id: 6, url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Emery' },
 ];
 
-const Profile: React.FC = () => {
+const MyProfile: React.FC = () => {
   const navigate = useNavigate();
   const { fetchProfile, updateUserProfile, removeProfile, loading } =
     useProfile();
@@ -143,4 +143,4 @@ const Profile: React.FC = () => {
   );
 };
 
-export default Profile;
+export default MyProfile;

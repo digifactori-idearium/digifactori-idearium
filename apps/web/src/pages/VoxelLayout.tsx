@@ -1,6 +1,8 @@
 import { RotateCcw, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import * as THREE from 'three';
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 
 import { SuperButton } from '@/components/common/button';
 import EditPanel from '@/components/voxel/panel';
@@ -21,6 +23,8 @@ export default function VoxelLayout() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  // const sceneRef = useRef<THREE.Scene>(null);
+  const [scene, setScene] = useState<THREE.Scene | null>(null);
   useEffect(() => {
     if (!modelId) {
       setIsLoading(false);
@@ -45,12 +49,55 @@ export default function VoxelLayout() {
     loadModel();
   }, [modelId]);
 
+
+  const exportGLB = (): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const exporter = new GLTFExporter();
+
+      if (!scene) {
+        throw new Error('Scene is not initialized');
+      }
+
+      const exportScene = scene.clone(true)
+      exportScene.traverse((obj) => {
+      if (obj.name == "cubeToSave") {
+        console.log("scale: ", obj.scale)
+        const scale = 0.005
+        obj.scale.set(scale, scale, scale)
+        obj.position.multiplyScalar(scale)
+        console.log("scale: ", obj.scale)
+      } else {
+        obj.visible = false
+      }
+    })
+
+      console.log('Exporting scene:', scene.children.length);
+      exporter.parse(
+        exportScene,
+        result => {
+          const blob = new Blob([result as BlobPart], {
+            type: 'model/gltf-binary',
+          });
+
+          console.log('GLB size:', blob.size);
+
+          resolve(blob);
+        },
+        error => reject(error),
+        { binary: true }
+      );
+    });
+  };
+
   const handleSave = async () => {
     if (!modelId) return;
 
     try {
       setIsSaving(true);
-      await saveVoxelModel(modelId, voxels);
+      const blob = await exportGLB();
+      console.log('Exported GLB blob:', blob);
+      await saveVoxelModel(modelId, voxels, blob);
+      
     } catch (error) {
       console.error('Erreur sauvegarde', error);
     } finally {
@@ -110,6 +157,7 @@ export default function VoxelLayout() {
       </div>
 
       <Voxel
+        setScene={setScene}
         mode={mode}
         shape={shape}
         rotation={rotation}

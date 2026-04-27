@@ -26,14 +26,14 @@ export const UserDeleteDialog: React.FC<Props> = ({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
-      <AlertDialogContent className="rounded-4xl border-mauve bg-sidebar shadow-2xl p-8">
+      <AlertDialogContent className="rounded-4xl border-mauve bg-sidebar shadow-2xl p-8 z-120">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl font-black text-mauve text-center">
             Êtes-vous sûr ?
           </AlertDialogTitle>
 
           <AlertDialogDescription className="text-center text-lg">
-            Cela supprimera définitivement l'utilisateur
+            Cela supprimera définitivement l'utilisateur{' '}
             <span className="font-bold text-mauve">{pseudo}</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -6,7 +6,7 @@ import { IdeoramaCreator } from '@/components/ideorama/IdeoramaCreator';
 import IdeoramasGroup from '@/components/ideorama/IdeoramasGroup';
 import { useUser } from '@/providers/UserProvider';
 import { getAllIdeoramas } from '@/services/ideorama.service';
-import { getProfile } from '@/services/profile.service';
+import { getMyProfile } from '@/services/profile.service';
 
 const MyIdeoramas: React.FC = () => {
   const user = useUser().user;
@@ -22,7 +22,7 @@ const MyIdeoramas: React.FC = () => {
     getAllIdeoramas(user?.id).then(res => {
       setIdeoramas(res.data);
     });
-    getProfile('').then(res => {
+    getMyProfile('').then(res => {
       setProfile(res.data.profile);
     });
   }, []);
@@ -51,6 +51,7 @@ const MyIdeoramas: React.FC = () => {
         ideoramas={ideoramas}
         profile={profile}
         setIdeoramas={setIdeoramas}
+        setProfile={setProfile}
       />
     </div>
   );
