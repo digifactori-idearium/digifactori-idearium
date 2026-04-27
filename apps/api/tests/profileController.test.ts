@@ -10,7 +10,7 @@ let token;
 function createFakeUser(overrides = {}): {user: User, userJSON: any} {
   const user: User = {
     id: 'cmnup6jyf0000p0utn33xhdpq',
-    email: 'gyfenfer1@gmail.com',
+    email: 'pseudo@gmail.com',
     first_name: 'FirstName',
     last_name: 'LastName',
     password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
@@ -70,6 +70,10 @@ class MockProfileService implements IProfileService {
 beforeAll(async () => {
   const {user} = createFakeUser();
   token = generateToken(user);
+});
+
+beforeEach(() => {
+  jest.clearAllMocks();
 });
 
 describe('Profile Handling', () => {
@@ -229,24 +233,24 @@ describe('Profile Handling', () => {
       expect(res.status).toBe(404);
     });
 
-      it('should return 400 if the data provided is invalid', async () => {
-        const app = express();
-        const mockService = new MockProfileService();
-        app.use(express.json());
-        app.use('/api/profile', createProfileRoutes(mockService));
-        const {user} = createFakeUser();
-        const {profile} = createFakeProfile();
+    it('should return 400 if the data provided is invalid', async () => {
+      const app = express();
+      const mockService = new MockProfileService();
+      app.use(express.json());
+      app.use('/api/profile', createProfileRoutes(mockService));
+      const {user} = createFakeUser();
+      const {profile} = createFakeProfile();
 
-        const res = await request(app)
-          .post('/api/profile/setting')
-          .set('Authorization', `Bearer ${token}`)
-          .send({
-            user: { ...user, email: 'e' },
-            profile,
-          });
+      const res = await request(app)
+        .post('/api/profile/setting')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          user: { ...user, email: 'e' },
+          profile,
+        });
 
-        expect(res.status).toBe(400);
-      });
+      expect(res.status).toBe(400);
+    });
   });
   
   describe('POST /profile/find', () => {
