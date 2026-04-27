@@ -52,7 +52,7 @@ const IdeoramasGroup: React.FC<{
                 tooltip={`Voir le profil de ${profile.pseudo}`}
                 onClick={e => {
                   e.stopPropagation();
-                  if(ideorama.userId == profile.userId) {
+                  if(ideorama.userId == user?.id) {
                     navigate(`/app/profile`);
                   } else {
                     navigate(`/app/profile/${ideorama.userId}`);
