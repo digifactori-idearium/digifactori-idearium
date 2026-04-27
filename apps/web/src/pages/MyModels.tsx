@@ -1,6 +1,7 @@
 import { Wand } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
+import { Loading } from '@/components/common';
 import { SuperButton } from '@/components/common/button';
 import { VoxelModelCreator } from '@/components/voxel/VoxelModelCreator';
 import VoxelModelsGroup from '@/components/voxel/VoxelModelsGroup';
@@ -33,15 +34,11 @@ const MyModels: React.FC = () => {
   }, [fetchProfile]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen p-6 w-full justify-center items-center">
-        Chargement des modèles...
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
-    <div className="min-h-screen p-6 w-full">
+    <div className="w-full h-full">
       <div className="magic-text text-center md:text-5xl text-3xl justify-center flex items-center gap-2 font-bold mb-6">
         Tes modèles, {profile.pseudo}
       </div>

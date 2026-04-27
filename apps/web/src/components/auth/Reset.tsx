@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SubmitHandler, FieldValues } from 'react-hook-form';
+import { FieldValues } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { Form } from '@/components/common/form';
@@ -11,7 +11,7 @@ export default function Reset() {
   const { switchToLogin } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const onSubmit: SubmitHandler<FieldValues> = async data => {
+  const onSubmit = async (data: FieldValues): Promise<boolean | void> => {
     try {
       setLoading(true);
 
@@ -21,6 +21,7 @@ export default function Reset() {
       switchToLogin();
     } catch (error: any) {
       toast.error(error.message || 'Failed to send reset link');
+      return false;
     } finally {
       setLoading(false);
     }

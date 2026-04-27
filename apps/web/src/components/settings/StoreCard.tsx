@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { CurrentStatus } from '@/components/settings/CurrentStatus';
-import { FormDialog } from '@/components/settings/FormDialog';
+import { FormDialog } from '@/components/common/form/FormDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { storeInputs } from '@/lib/input';
-import { updateSettings } from '@/services/settings.service';
+import { updateStoreSettings } from '@/services/settings.service';
 
 interface StoreCardProps {
   store: Settings | null;
@@ -20,12 +20,12 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onUpdated }) => {
   const handleSubmit = async (data: Partial<Settings>) => {
     try {
       setLoading(true);
-      console.log(data);
-      await updateSettings(data);
+      await updateStoreSettings(data);
       onUpdated?.();
       toast.success('Reussite de la configuration du store');
     } catch (error: any) {
       toast.error(error?.message || 'Échec de la configuration du store');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onUpdated }) => {
             <FormDialog
               trigger={
                 <Button className="w-full sm:w-auto text-white! bg-mauve! hover:bg-mauve/80! border-mauve! uppercase text-xs font-bold px-6 py-5">
-                  <SquarePen /> Mettre à jour le store
+                  <SquarePen /> Mettre à jour la store
                 </Button>
               }
               title="Modifier le store"

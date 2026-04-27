@@ -402,7 +402,9 @@ export const ActionRegistry: Record<
         type: 'dialog',
         placeholder: 'Choisir la Music',
         required: false,
-        dialogueContent: <MusicSelector type="action" />,
+        dialogueContent: actionId => (
+          <MusicSelector type="action" actionId={actionId} />
+        ),
       },
       {
         name: 'volume',
@@ -554,7 +556,9 @@ export const ActionRegistry: Record<
         type: 'dialog',
         placeholder: "Choisis l'object à supprimer",
         required: false,
-        dialogueContent: <ObjectSelector type="action" />,
+        dialogueContent: actionId => (
+          <ObjectSelector type="action" actionId={actionId} />
+        ),
       },
     ],
     execute(ref, { delete_object_id }) {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SubmitHandler, FieldValues } from 'react-hook-form';
+import { FieldValues } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -20,7 +20,7 @@ const VoxelModelCreator: React.FC<{
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit: SubmitHandler<FieldValues> = async data => {
+  const handleSubmit = async (data: FieldValues): Promise<boolean | void> => {
     try {
       setLoading(true);
       const response = await createVoxelModel(data.name);
@@ -29,6 +29,7 @@ const VoxelModelCreator: React.FC<{
       toast.success('Création du modèle réussie');
     } catch (error: any) {
       toast.error(error?.message || 'Échec de la création du modèle');
+      return false;
     } finally {
       setLoading(false);
     }

@@ -120,7 +120,8 @@ export default class SettingsController {
    *   - 200 { data: Integration[] }
    */
   getIntegrations = asyncHandler(async (req: Request, res: Response) => {
-    const integrations = await this.settingsService.getIntegrations();
+    const type = req.query.type ? String(req.query.type) : undefined;
+    const integrations = await this.settingsService.getIntegrations(type);
     HttpResponse.success(
       integrations,
       'Intégrations récupérées avec succès'

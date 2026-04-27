@@ -12,7 +12,7 @@ import ProfilePage from '@/pages/MyProfile';
 import MySpace from '@/pages/MySpace';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
-import TextEditor from '@/pages/TextEditor';
+import { EditorPage, TextEditor } from '@/pages/TextEditor';
 import VoxelLayout from '@/pages/VoxelLayout';
 
 const appRoutes = [
@@ -27,12 +27,13 @@ const appRoutes = [
   },
   {
     path: 'profile/:userId',
-    element: <Profile />,
+    element: <ProtectedRoute element={<Profile />} />
   },
   { path: 'ideorama', element: <ProtectedRoute element={<Ideorama />} /> },
   {
     path: 'ideorama/:ideoramaid',
     element: <ProtectedRoute element={<Ideorama />} />,
+    handle: { isCanvas: true },
   },
   {
     path: 'my-ideoramas',
@@ -50,8 +51,22 @@ const appRoutes = [
     path: 'assets',
     element: <ProtectedRoute element={<AssetHandling />} />,
   },
-  { path: 'my-space', element: <ProtectedRoute element={<MySpace />} /> },
-  { path: 'text-editor', element: <ProtectedRoute element={<TextEditor />} /> },
+  {
+    path: 'my-space',
+    element: <ProtectedRoute element={<MySpace />} />,
+    handle: { isCanvas: true },
+  },
+  {
+    path: 'text-editor',
+    children: [
+      { index: true, element: <ProtectedRoute element={<TextEditor />} /> },
+      {
+        path: ':documentId',
+        element: <ProtectedRoute element={<EditorPage />} />,
+        handle: { isCanvas: true },
+      },
+    ],
+  },
   {
     path: 'audio-editor',
     element: <ProtectedRoute element={<AudioEditor />} />,
@@ -67,10 +82,7 @@ const appRoutes = [
       {
         path: ':modelId',
         element: <ProtectedRoute element={<VoxelLayout />} />,
-      },
-      {
-        path: 'playground',
-        element: <ProtectedRoute element={<VoxelLayout />} />,
+        handle: { isCanvas: true },
       },
     ],
   },
