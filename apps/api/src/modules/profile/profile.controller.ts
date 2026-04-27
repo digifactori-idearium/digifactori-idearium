@@ -116,7 +116,6 @@ export default class ProfileController {
     if (!profile) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
-<<<<<<< robin/feat/apiservice
     HttpResponse.success({profile: profile}, 'Utilisateur trouvé').send(res);
   })
 
@@ -175,13 +174,8 @@ export default class ProfileController {
   getFollowing = asyncHandler(async (req: Request, res: Response) => {
     const following = await this.profileService.getFollowing(req.body.userId);
     HttpResponse.success(following, 'Utilisateurs suivis récupérés avec succès').send(res);
-  })
-  
-=======
-    HttpResponse.success({ profile: profile }, 'Utilisateur trouvé').send(res);
   });
 
->>>>>>> dev
   /**
    * Permanently deletes the authenticated user's account and profile.
    *
