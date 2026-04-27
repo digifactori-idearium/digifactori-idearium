@@ -144,6 +144,12 @@ export default class IdeoramaService implements IIdeoramaService {
             },
           },
         },
+        _count: {
+          select: {
+            likers: true,
+          },
+        },
+
       },
       orderBy: {
         createdAt: 'desc',
@@ -206,7 +212,7 @@ export default class IdeoramaService implements IIdeoramaService {
             ideoramaId: ideoramaId,
             userId: userId,
           },
-      },
+        },
       });
     } else {
       await ideoramaLikeTable.create({
