@@ -27,7 +27,7 @@ const appRoutes = [
   },
   {
     path: 'profile/:userId',
-    element: <ProtectedRoute element={<Profile />} />
+    element: <ProtectedRoute element={<Profile />} />,
   },
   { path: 'ideorama', element: <ProtectedRoute element={<Ideorama />} /> },
   {

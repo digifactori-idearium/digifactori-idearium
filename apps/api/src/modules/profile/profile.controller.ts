@@ -192,7 +192,7 @@ export default class ProfileController {
   getFollowing = asyncHandler(async (req: Request, res: Response) => {
     const following = await this.profileService.getFollowing(req.body.userId);
     HttpResponse.success({following}, 'Utilisateurs suivis récupérés avec succès').send(res);
-  })
+  });
   
   /**
    * Permanently deletes the authenticated user's account and profile.
