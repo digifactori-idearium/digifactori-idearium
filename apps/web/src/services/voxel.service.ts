@@ -49,29 +49,59 @@ export const getVoxelModelById = async (
     return response.data;
 };
 
-export const saveVoxelModel = async (
-    voxelModelId: string,
-    voxels: VoxelPoint[],
-    blob: Blob
-): Promise<ApiResponse<null>> => {
+export const autoSaveVoxelModel = (
+  voxelModelId: string | undefined,
+  voxels: string,
+  blob: Blob,
+): boolean => {
+  try {
+    console.log("save")
+    if (!voxelModelId) {
+      console.warn('Cannot save: missing ideoramaid or userid');
+      return false;
+    }
+
+    const baseURL =
+      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
     const formData = new FormData()
     formData.append('file', blob, `${voxelModelId}.glb`)
     formData.append('voxelModelId', voxelModelId)
-    formData.append('model', JSON.stringify(voxels))
-    const response = await axios.post(
-  'http://localhost:3001/api/voxel/save',
-  formData,
-)
+    formData.append('model', voxels)
+    axios
+      .post(
+        `${baseURL}/api/voxel/save`,
+        formData,
+        {
+          fetchOptions: { keepalive: true },
+        }
+      )
+      .catch(err => console.error('Keepalive save failed:', err));
 
-    return response.data;
+    return true;
+  } catch (error) {
+    console.error('Error queuing keepalive save:', error);
+    return false;
+  }
 };
 
 export const deleteVoxelModel = async (
-    voxelModelId: string
-): Promise<ApiResponse<null>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/delete', {
-        voxelModelId,
-    });
-
-    return response.data;
+    voxelModelId: string | undefined
+): Promise<boolean> => {
+    try {
+    const response = await axios.post(
+      `http://localhost:3001/api/voxel/delete`,
+      {
+        voxelModelId: voxelModelId,
+      }
+    );
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return true;
+  } catch (error: any) {
+    return false;
+  }
 };
