@@ -11,9 +11,16 @@ import { getMyProfile } from '@/services/profile.service';
 const MyIdeoramas: React.FC = () => {
   const user = useUser().user;
   const [ideoramas, setIdeoramas] = useState<Ideorama[]>([]);
-  const [profile, setProfile] = useState<Partial<Profile>>({
+  const [profile, setProfile] = useState<Profile>({
+    id: '',
+    userId: '',
     pseudo: 'Unknown',
     avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix',
+    bio: '',
+    followers: [],
+    following: [],
+    ideoramaLiked: [],
+    ideoramas: [],
   });
 
   const [createsNew, setCreatesNew] = useState(false);

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { Ideorama } from '@prisma/client';
+import { Ideorama, User } from '@prisma/client';
 import express from 'express';
 import request from 'supertest';
 
@@ -16,6 +16,22 @@ jest.mock('fs', () => ({
   unlink: jest.fn(),
   writeFileSync: jest.fn(),
 }));
+
+function createFakeUser(overrides = {}): User {
+  const user: User = {
+    id: 'cmnup6jyf0000p0utn33xhdpq',
+    email: 'gyfenfer1@gmail.com',
+    first_name: 'FirstName',
+    last_name: 'LastName',
+    password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
+    isActive: true,
+    role: 'INTERN',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+  return user;
+}
 
 function createFakeIdeorama(overrides = {}): {
   ideorama: Ideorama;
@@ -66,19 +82,7 @@ class MockIdeoramaService implements IIdeoramaService {
 }
 
 beforeAll(async () => {
-  token = generateToken({
-    id: 'cmnup6jyf0000p0utn33xhdpq',
-    email: 'gyfenfer1@gmail.com',
-    first_name: 'Gauthier',
-    last_name: 'Mambourg',
-    password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
-    isActive: true,
-    parental_code:
-      '$2b$10$5gQSEfb2bYTl.v38bhJPteNnWu2YXrjbgARZ/QfOsh1EKwHkQIXI.',
-    role: 'INTERN',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
+  token = generateToken(createFakeUser());
 });
 
 beforeEach(() => {
@@ -116,14 +120,14 @@ describe('Ideorama handling', () => {
       const mockService = new MockIdeoramaService();
       app.use(express.json());
       app.use('/api/ideorama', createIdeoramaRoutes(mockService));
+      const user = createFakeUser();
 
       const res = await request(app)
         .post('/api/ideorama/all')
-        .set('Authorization', 'Bearer ' + token);
+        .set('Authorization', 'Bearer ' + token)
+        .send({ userId: user.id });
 
-      expect(mockService.getUserIdeoramas).toHaveBeenCalledWith(
-        'cmnup6jyf0000p0utn33xhdpq'
-      );
+      expect(mockService.getUserIdeoramas).toHaveBeenCalledWith(user.id);
       expect(res.status).toBe(200);
     });
 
@@ -195,16 +199,16 @@ describe('Ideorama handling', () => {
       const mockService = new MockIdeoramaService();
       app.use(express.json());
       app.use('/api/ideorama', createIdeoramaRoutes(mockService));
-      const ideoramaId = 'cmnup6jyf0000p0utn33xhdpq';
+      const { ideorama } = createFakeIdeorama();
 
       const res = await request(app)
         .post('/api/ideorama/delete')
         .set('Authorization', 'Bearer ' + token)
-        .send({ ideoramaId: ideoramaId });
+        .send({ ideoramaId: ideorama.id });
 
-      expect(mockService.deleteIdeorama).toHaveBeenCalledWith(ideoramaId);
+      expect(mockService.deleteIdeorama).toHaveBeenCalledWith(ideorama.id);
       expect(fs.unlink).toHaveBeenCalledWith(
-        path.join(process.cwd(), 'uploads/scenes', `scene-${ideoramaId}.json`),
+        path.join(process.cwd(), 'uploads/scenes', `scene-${ideorama.id}.json`),
         expect.anything()
       );
       expect(res.status).toBe(204);
@@ -215,13 +219,13 @@ describe('Ideorama handling', () => {
       const mockService = new MockIdeoramaService();
       app.use(express.json());
       app.use('/api/ideorama', createIdeoramaRoutes(mockService));
+      const { ideorama } = createFakeIdeorama();
       mockService.deleteIdeorama.mockRejectedValue(new Error('Not found'));
-      const ideoramaId = 'cmnup6jyf0000p0utn33xhdpq';
 
       const res = await request(app)
         .post('/api/ideorama/delete')
         .set('Authorization', 'Bearer ' + token)
-        .send({ ideoramaId: ideoramaId });
+        .send({ ideoramaId: ideorama.id });
 
       expect(mockService.deleteIdeorama).toHaveBeenCalled();
       expect(fs.unlink).not.toHaveBeenCalled();
@@ -235,15 +239,19 @@ describe('Ideorama handling', () => {
       const mockService = new MockIdeoramaService();
       app.use(express.json());
       app.use('/api/ideorama', createIdeoramaRoutes(mockService));
-      const ideoramaId = 'cmnup6jyf0000p0utn33xhdpq';
+      const { ideorama } = createFakeIdeorama();
+      const user = createFakeUser();
       mockService.likeIdeorama.mockResolvedValue(true);
 
       const res = await request(app)
         .post('/api/ideorama/like')
         .set('Authorization', 'Bearer ' + token)
-        .send({ ideoramaId: ideoramaId });
+        .send({ ideoramaId: ideorama.id });
 
-      expect(mockService.likeIdeorama).toHaveBeenCalledWith(ideoramaId, "cmnup6jyf0000p0utn33xhdpq");
+      expect(mockService.likeIdeorama).toHaveBeenCalledWith(
+        ideorama.id,
+        user.id
+      );
       expect(res.status).toBe(200);
     });
   });

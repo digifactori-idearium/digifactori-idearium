@@ -120,6 +120,73 @@ export default class ProfileController {
   });
 
   /**
+   * Follows or unfollows a user.
+   *
+   * @route  PATCH /profile/follow
+   * @access Authenticated
+   *
+   * @body   { followedUserId: string }
+   *
+   * @returns
+   *   - 200 { data: boolean }
+   *   - 400 cannot follow/unfollow oneself
+   */
+  followUser = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user!;
+    const followingId = req.body.followedUserId;
+    if (user.userId === followingId) {
+      return HttpResponse.badRequest(
+        'Vous ne pouvez pas vous suivre vous-même'
+      ).send(res);
+    }
+    const followed = await this.profileService.followUser(
+      user.userId,
+      followingId
+    );
+    HttpResponse.success(followed, 'Utilisateur suivi avec succès').send(res);
+  });
+
+  /**
+   * Retrieves a user's followers by its userId.
+   *
+   * @route  PATCH /profile/followers
+   * @access No restriction
+   *
+   * @body   { userId?: string }
+   *
+   * @returns
+   *   - 200 { data: {pseudo: string, avatar: string}[] }
+   *   - 404 profile not found
+   */
+  getFollowers = asyncHandler(async (req: Request, res: Response) => {
+    const followers = await this.profileService.getFollowers(req.body.userId);
+    HttpResponse.success(followers, 'Followers récupérés avec succès').send(
+      res
+    );
+  });
+
+  /**
+   *
+   * Retrieves the users followed by the user.
+   *
+   * @route  PATCH /profile/following
+   * @access No restriction
+   *
+   * @body   { userId?: string }
+   *
+   * @returns
+   *   - 200 { data: {pseudo: string, avatar: string}[] }
+   *   - 404 profile not found
+   */
+  getFollowing = asyncHandler(async (req: Request, res: Response) => {
+    const following = await this.profileService.getFollowing(req.body.userId);
+    HttpResponse.success(
+      following,
+      'Utilisateurs suivis récupérés avec succès'
+    ).send(res);
+  });
+
+  /**
    * Permanently deletes the authenticated user's account and profile.
    *
    * @route  DELETE /profile
