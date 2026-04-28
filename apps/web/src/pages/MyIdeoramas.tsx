@@ -20,7 +20,7 @@ const MyIdeoramas: React.FC = () => {
     followers: [],
     following: [],
     ideoramaLiked: [],
-    ideoramas: []
+    ideoramas: [],
   });
 
   const [createsNew, setCreatesNew] = useState(false);

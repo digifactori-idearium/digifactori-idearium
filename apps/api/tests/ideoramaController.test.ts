@@ -19,18 +19,18 @@ jest.mock('fs', () => ({
 
 function createFakeUser(overrides = {}): User {
   const user: User = {
-      id: 'cmnup6jyf0000p0utn33xhdpq',
-      email: 'gyfenfer1@gmail.com',
-      first_name: 'FirstName',
-      last_name: 'LastName',
-      password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
-      isActive: true,
-      role: 'INTERN',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      ...overrides,
-    };
-    return user;
+    id: 'cmnup6jyf0000p0utn33xhdpq',
+    email: 'gyfenfer1@gmail.com',
+    first_name: 'FirstName',
+    last_name: 'LastName',
+    password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
+    isActive: true,
+    role: 'INTERN',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+  return user;
 }
 
 function createFakeIdeorama(overrides = {}): {
@@ -120,12 +120,12 @@ describe('Ideorama handling', () => {
       const mockService = new MockIdeoramaService();
       app.use(express.json());
       app.use('/api/ideorama', createIdeoramaRoutes(mockService));
-      const user = createFakeUser()
+      const user = createFakeUser();
 
       const res = await request(app)
         .post('/api/ideorama/all')
         .set('Authorization', 'Bearer ' + token)
-        .send({userId: user.id});
+        .send({ userId: user.id });
 
       expect(mockService.getUserIdeoramas).toHaveBeenCalledWith(user.id);
       expect(res.status).toBe(200);
@@ -199,7 +199,7 @@ describe('Ideorama handling', () => {
       const mockService = new MockIdeoramaService();
       app.use(express.json());
       app.use('/api/ideorama', createIdeoramaRoutes(mockService));
-      const {ideorama} = createFakeIdeorama();
+      const { ideorama } = createFakeIdeorama();
 
       const res = await request(app)
         .post('/api/ideorama/delete')
@@ -248,7 +248,10 @@ describe('Ideorama handling', () => {
         .set('Authorization', 'Bearer ' + token)
         .send({ ideoramaId: ideorama.id });
 
-      expect(mockService.likeIdeorama).toHaveBeenCalledWith(ideorama.id, user.id);
+      expect(mockService.likeIdeorama).toHaveBeenCalledWith(
+        ideorama.id,
+        user.id
+      );
       expect(res.status).toBe(200);
     });
   });
