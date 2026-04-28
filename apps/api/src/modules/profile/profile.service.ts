@@ -42,11 +42,16 @@ export default class ProfileService implements IProfileService {
         userId: userId,
       },
       include: {
-        followers: {select: {
-          followerId: true,
-        }},
-        following: {select: {
-          followedId: true}},
+        followers: {
+          select: {
+            followerId: true,
+          },
+        },
+        following: {
+          select: {
+            followedId: true,
+          },
+        },
 
         ideoramaLiked: {
           select: {
@@ -109,7 +114,7 @@ export default class ProfileService implements IProfileService {
 
   /**
    * Follows a user.
-   * 
+   *
    * @param userId the id of the user who wants to follow (string)
    * @param followedUserId the id of the user to follow (string)
    * @returns Promise<true> if the follow/unfollow action is successful, Promise<false> otherwise
@@ -120,9 +125,9 @@ export default class ProfileService implements IProfileService {
       where: {
         followerId: userId,
         followedId: followedUserId,
-      }
+      },
     });
-    
+
     if (existingFollow) {
       await followTable.deleteMany({
         where: {
@@ -138,17 +143,19 @@ export default class ProfileService implements IProfileService {
         followedId: followedUserId,
       },
     });
-    return true
+    return true;
   }
 
   /**
    * Gets the followers of a user
-   * 
+   *
    * @param userId the id of the user (string)
    * @returns an array of followers with their pseudo and avatar ({pseudo: string, avatar: string | null}[])
    * @throws error if the user is not found
    */
-  async getFollowers(userId: string): Promise<{ pseudo: string; avatar: string | null }[]> {
+  async getFollowers(
+    userId: string
+  ): Promise<{ pseudo: string; avatar: string | null }[]> {
     const followers = await followTable.findMany({
       where: {
         followedId: userId,
@@ -160,19 +167,21 @@ export default class ProfileService implements IProfileService {
             avatar: true,
           },
         },
-      }
-    })
+      },
+    });
     return followers.map(follow => follow.following);
   }
 
   /**
    * Gets the following of a user
-   * 
+   *
    * @param userId the id of the user (string)
    * @returns an array of following with their pseudo and avatar ({pseudo: string, avatar: string | null}[])
    * @throws error if the user is not found
    */
-  async getFollowing(userId: string): Promise<{ pseudo: string; avatar: string | null }[]> {
+  async getFollowing(
+    userId: string
+  ): Promise<{ pseudo: string; avatar: string | null }[]> {
     const following = await followTable.findMany({
       where: {
         followerId: userId,
@@ -184,8 +193,8 @@ export default class ProfileService implements IProfileService {
             avatar: true,
           },
         },
-      }
-    })
+      },
+    });
     return following.map(follow => follow.follower);
   }
 

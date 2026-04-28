@@ -20,7 +20,7 @@ const IdeoramasGroup: React.FC<{
   const [ideoramaToDelete, setIdeoramaToDelete] = useState<Ideorama | null>(
     null
   );
-  const user = useUser().user
+  const user = useUser().user;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       {ideoramas.map((ideorama, index) => (
@@ -47,114 +47,116 @@ const IdeoramasGroup: React.FC<{
                 {ideorama.name}
               </p>
               <p className="text-xl font-bold tracking-tight text-foreground/90">
-              <SuperButton
-                className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
-                tooltip={`Voir le profil de ${profile.pseudo}`}
-                onClick={e => {
-                  e.stopPropagation();
-                  if(ideorama.userId == profile.userId) {
-                    navigate(`/app/profile`);
-                  } else {
-                    navigate(`/app/profile/${ideorama.userId}`);
-                  }
-                }}
-              >
-                {profile.pseudo}
-              </SuperButton>
+                <SuperButton
+                  className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+                  tooltip={`Voir le profil de ${profile.pseudo}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (ideorama.userId == profile.userId) {
+                      navigate(`/app/profile`);
+                    } else {
+                      navigate(`/app/profile/${ideorama.userId}`);
+                    }
+                  }}
+                >
+                  {profile.pseudo}
+                </SuperButton>
               </p>
               <div className="flex items-center gap-3 text-muted-foreground/80">
-                  <SuperButton
-                    className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
-                    tooltip='Montre que tu aimes cet idéorama'
-                    onClick={async e => {
-                      e.stopPropagation();
-                      console.log('like ideorama: ', ideorama.id);
-                      await likeIdeorama(ideorama.id);
-                      if (
-                        profile.ideoramaLiked?.some(
-                          liked => liked.ideoramaId == ideorama.id
-                        )
-                      ) {
-                        setProfile(pro => {
-                          return {
-                            ...pro,
-                            ideoramaLiked:
-                              pro.ideoramaLiked?.filter(
-                                liked => liked.ideoramaId !== ideorama.id
-                              ) || [],
-                          };
-                        });
-
-                        setIdeoramas(ideoramas =>
-                          ideoramas.map(ideoram => {
-                            if (ideoram.id == ideorama.id) {
-                              return {
-                                ...ideoram,
-                                _count: { likers: ideoram._count.likers - 1 },
-                              };
-                            }
-                            return ideoram;
-                          })
-                        );
-                      } else {
-                        setProfile(pro => {
-                          return {
-                            ...pro,
-                            ideoramaLiked: pro.ideoramaLiked
-                              ? [
-                                  ...pro.ideoramaLiked,
-                                  { ideoramaId: ideorama.id },
-                                ]
-                              : [{ ideoramaId: ideorama.id }],
-                          };
-                        });
-                        setIdeoramas(ideoramas =>
-                          ideoramas.map(ideoram => {
-                            if (ideoram.id == ideorama.id) {
-                              return {
-                                ...ideoram,
-                                _count: { likers: ideoram._count.likers + 1 },
-                              };
-                            }
-                            return ideoram;
-                          })
-                        );
-                      }
-                    }}
-                  >
-                      {ideorama._count.likers}
-                      {profile.ideoramaLiked?.some(
+                <SuperButton
+                  className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+                  tooltip="Montre que tu aimes cet idéorama"
+                  onClick={async e => {
+                    e.stopPropagation();
+                    console.log('like ideorama: ', ideorama.id);
+                    await likeIdeorama(ideorama.id);
+                    if (
+                      profile.ideoramaLiked?.some(
                         liked => liked.ideoramaId == ideorama.id
-                      ) ? (
-                        <Heart className="w-5 h-5 fill-mauve stroke-mauve" />
-                      ) : (
-                        <Heart className="w-5 h-5 stroke-mauve" />
-                      )}
-                  </SuperButton>
+                      )
+                    ) {
+                      setProfile(pro => {
+                        return {
+                          ...pro,
+                          ideoramaLiked:
+                            pro.ideoramaLiked?.filter(
+                              liked => liked.ideoramaId !== ideorama.id
+                            ) || [],
+                        };
+                      });
+
+                      setIdeoramas(ideoramas =>
+                        ideoramas.map(ideoram => {
+                          if (ideoram.id == ideorama.id) {
+                            return {
+                              ...ideoram,
+                              _count: { likers: ideoram._count.likers - 1 },
+                            };
+                          }
+                          return ideoram;
+                        })
+                      );
+                    } else {
+                      setProfile(pro => {
+                        return {
+                          ...pro,
+                          ideoramaLiked: pro.ideoramaLiked
+                            ? [
+                                ...pro.ideoramaLiked,
+                                { ideoramaId: ideorama.id },
+                              ]
+                            : [{ ideoramaId: ideorama.id }],
+                        };
+                      });
+                      setIdeoramas(ideoramas =>
+                        ideoramas.map(ideoram => {
+                          if (ideoram.id == ideorama.id) {
+                            return {
+                              ...ideoram,
+                              _count: { likers: ideoram._count.likers + 1 },
+                            };
+                          }
+                          return ideoram;
+                        })
+                      );
+                    }
+                  }}
+                >
+                  {ideorama._count.likers}
+                  {profile.ideoramaLiked?.some(
+                    liked => liked.ideoramaId == ideorama.id
+                  ) ? (
+                    <Heart className="w-5 h-5 fill-mauve stroke-mauve" />
+                  ) : (
+                    <Heart className="w-5 h-5 stroke-mauve" />
+                  )}
+                </SuperButton>
               </div>
-              {profile.userId == user?.id && <SuperButton
-                tooltip="Supprime ton idéorama"
-                voiceText="Supprime ton idéorama"
-                onClick={e => {
-                  e.stopPropagation();
-                  setIdeoramaToDelete(ideorama);
-                }}
-                className="main-btn"
-              >
-                <Trash2 /> Supprimer
-              </SuperButton>}
+              {profile.userId == user?.id && (
+                <SuperButton
+                  tooltip="Supprime ton idéorama"
+                  voiceText="Supprime ton idéorama"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setIdeoramaToDelete(ideorama);
+                  }}
+                  className="main-btn"
+                >
+                  <Trash2 /> Supprimer
+                </SuperButton>
+              )}
             </div>
             <SuperButton
               className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
               tooltip={`Voir le profil de ${profile.pseudo}`}
               onClick={e => {
-                  e.stopPropagation();
-                  if(ideorama.userId == profile.userId) {
-                    navigate(`/app/profile/${ideorama.userId}`);
-                  } else {
-                    navigate(`/app/profile`);
-                  }
-                }}
+                e.stopPropagation();
+                if (ideorama.userId == profile.userId) {
+                  navigate(`/app/profile/${ideorama.userId}`);
+                } else {
+                  navigate(`/app/profile`);
+                }
+              }}
             >
               <Avatar className="h-14 w-14 border-2 border-white/20 shadow-sm shrink-0">
                 <AvatarImage

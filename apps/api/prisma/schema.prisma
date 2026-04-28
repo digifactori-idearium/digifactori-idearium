@@ -63,14 +63,7 @@ model Ideorama {
   id          String  @id @default(cuid())
   name        String  @default("New Ideorama")
   description String?
-  theme       String  @default("black-orange")
-  brightness  String  @default("bright")
   isPublic    Boolean @default(true)
-
-  backgroundColor String @default("#f0d400")
-  leftWallColor   String @default("#f45405")
-  rightWallColor  String @default("#e80606")
-  floorColor      String @default("#100101")
 
   model String
 
@@ -139,15 +132,40 @@ enum IntegrationType {
 }
 
 model Setting {
-  id              Int           @id @default(1)
-  orgCode         Int           @default(202026)
-  orgParentalCode Int           @default(2026)
-  storeName       String
-  storeURL        String
-  storeKey        String?
+  id              Int            @id @default(1)
+  orgCode         Int            @default(202026)
+  orgParentalCode Int            @default(2026)
+  storage         CloudStorage?
   integrations    Integration[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+enum StorageProvider {
+  S3
+  R2
+  GCS
+  AZURE
+  MINIO
+  LOCAL
+}
+
+model CloudStorage {
+  id        Int             @id @default(1)
+  name      String?
+  provider  StorageProvider @default(LOCAL)
+  region    String?
+  endpoint  String?
+  bucket    String?
+  accessKey String?
+  secretKey String?
+  publicUrl String?
+
+  settingId Int     @unique
+  setting   Setting @relation(fields: [settingId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Integration {
@@ -162,4 +180,17 @@ model Integration {
   fieldMapping Json            @default("{}")
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
+}
+
+model Asset {
+  id        String          @id @default(cuid())
+  name      String
+  category  IntegrationType
+  tags      String[]
+
+  file      String
+  thumbnail String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
