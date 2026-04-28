@@ -7,6 +7,10 @@ import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
+import createStorageRoutes from './modules/storage/storage.route';
+
+import createAssetRoutes from '@/modules/asset/asset.route';
+import AssetService from '@/modules/asset/asset.service';
 import createAuthRoutes from '@/modules/auth/auth.route';
 import AuthService from '@/modules/auth/auth.service';
 import createEditorRoutes from '@/modules/editor/editor.route';
@@ -35,6 +39,8 @@ const limiter = RateLimit({
   max: 60, // max 60 requests per windowMs
 });
 
+const LOCAL_UPLOADS_DIR = path.resolve(process.cwd(), 'uploads');
+
 // Middleware
 app.use(limiter);
 app.use(helmet());
@@ -43,8 +49,10 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/uploads', express.static(LOCAL_UPLOADS_DIR));
+}
 // Routes
 const authService = new AuthService();
 app.use('/api/auth', createAuthRoutes(authService));
@@ -64,8 +72,13 @@ app.use('/api/voxel', createVoxelRoutes(voxelService));
 const editorService = new EditorService();
 app.use('/api/editor', createEditorRoutes(editorService));
 
+const assetService = new AssetService();
+app.use('/api/asset', createAssetRoutes(assetService));
+
 const settingsService = new SettingsService();
 app.use('/api/settings', createSettingsRoutes(settingsService));
+
+app.use('/api/storage', createStorageRoutes());
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
