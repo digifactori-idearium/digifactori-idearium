@@ -1,24 +1,26 @@
 
 import {
-    AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
+    AlertDialog as AlertDialogPrimtive,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
 interface Props {
   open: boolean,
+  description: React.ReactNode,
+  confirmationMessage: string,
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-const ResetIdeoramaDialog: React.FC<Props> = ({ open, onConfirm, onCancel }) => {
+const AlertDialog: React.FC<Props> = ({ open, description, confirmationMessage, onConfirm, onCancel }) => {
   return (
-    <AlertDialog open={open}>
+    <AlertDialogPrimtive open={open}>
       <AlertDialogContent className="rounded-4xl border-mauve bg-sidebar shadow-2xl p-8">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl font-black text-mauve text-center">
@@ -26,7 +28,7 @@ const ResetIdeoramaDialog: React.FC<Props> = ({ open, onConfirm, onCancel }) => 
           </AlertDialogTitle>
 
           <AlertDialogDescription className="text-center text-lg">
-            Cela réinitialisera l'idéorama.
+            {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -36,12 +38,12 @@ const ResetIdeoramaDialog: React.FC<Props> = ({ open, onConfirm, onCancel }) => 
           </AlertDialogCancel>
 
           <AlertDialogAction onClick={(e) => {e.stopPropagation(); e.preventDefault(); onConfirm()}} className="danger-btn">
-            Oui, réinitialiser
+            {confirmationMessage}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
-    </AlertDialog>
+    </AlertDialogPrimtive>
   );
 };
 
-export default ResetIdeoramaDialog;
+export default AlertDialog;
