@@ -490,7 +490,7 @@ export const assetInputs = [
     type: 'text',
     name: 'name',
     placeholder: "Entrez le nom de l'asset",
-    required: true,
+    required: false,
     icon: Box,
   },
   {
@@ -498,7 +498,7 @@ export const assetInputs = [
     type: 'text',
     name: 'category',
     placeholder: "Entrez le type de catégorie de l'asset",
-    required: true,
+    required: false,
     icon: ChartBarStacked,
   },
   {
@@ -506,7 +506,7 @@ export const assetInputs = [
     type: 'text',
     name: 'description',
     placeholder: "Entrez la description de l'asset",
-    required: true,
+    required: false,
     icon: TextAlignStart,
   },
 ];

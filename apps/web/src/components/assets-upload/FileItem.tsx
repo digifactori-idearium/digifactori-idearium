@@ -1,11 +1,10 @@
-import WavesurferPlayer from '@wavesurfer/react';
 import convertSize from 'convert-size';
 import { RotateCcw, Trash } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import WaveSurfer from 'wavesurfer.js';
 
-import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
+import { AssetPreview } from '../assets/AssetPreview';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -20,9 +19,7 @@ export const FileItem = ({
   onRemove: () => void;
   onRename: (oldName: string, newName: string) => void;
 }) => {
-  const is3D = file.name.endsWith('.glb') || file.name.endsWith('.gltf');
   const objectUrl = useMemo(() => URL.createObjectURL(file), [file]);
-  const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
 
   const nameSplit = file.name.split('.');
   const ext = nameSplit.length > 1 ? nameSplit.pop() : '';
@@ -35,14 +32,6 @@ export const FileItem = ({
   function undoRename() {
     setFileName(originalName);
   }
-
-  const onReady = (ws: WaveSurfer) => {
-    setWavesurfer(ws);
-  };
-
-  const onPlayPause = () => {
-    if (wavesurfer) wavesurfer.playPause();
-  };
 
   useEffect(() => {
     return () => URL.revokeObjectURL(objectUrl);
@@ -57,7 +46,7 @@ export const FileItem = ({
               type="button"
               variant="outline"
               size="icon"
-              aria-label="Rename file"
+              aria-label="Undo"
               onClick={undoRename}
             >
               <RotateCcw className="h-5 w-5" aria-hidden={true} />
@@ -74,23 +63,7 @@ export const FileItem = ({
           </Button>
         </div>
         <CardContent className="flex items-center space-x-3 p-0">
-          <span className="shrink-0 flex h-32 w-32 items-center justify-center rounded-md bg-sidebar overflow-hidden">
-            {is3D ? (
-              <AssetThumbnail file={objectUrl} />
-            ) : (
-              <div onClick={onPlayPause} className="cursor-pointer">
-                <WavesurferPlayer
-                  height={100}
-                  width={128}
-                  waveColor="#f3bee1"
-                  progressColor="#6f51b0"
-                  url={objectUrl}
-                  interact={false}
-                  onReady={onReady}
-                />
-              </div>
-            )}
-          </span>
+          <AssetPreview name={file.name} url={objectUrl}></AssetPreview>
           <div className="min-w-0 pr-24">
             <p
               className="rounded-sm border-2 border-transparent focus:border-mauve focus:outline-none transition-colors text-foreground hover:text-foreground/70 cursor-text text-pretty font-medium break-words"

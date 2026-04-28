@@ -54,7 +54,7 @@ export function AssetFilesUpload({
 
   const filesList = files.map(file => (
     <FileItem
-      key={file.name}
+      key={'${file.name}-${file.size}-${file.lastModified}'}
       file={file}
       files={files}
       onRemove={() =>

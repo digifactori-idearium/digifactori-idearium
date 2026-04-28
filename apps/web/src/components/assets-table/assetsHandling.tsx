@@ -1,17 +1,16 @@
-import { SquarePlus } from 'lucide-react';
-import { useState } from 'react';
-import { FieldValues } from 'react-hook-form';
+import { Plus } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 import { DataTable } from '../common/data-table/dataTable';
 
 import { columns } from './assetsColumns';
 
 import { AssetFilesUpload } from '@/components/assets-upload/AssetFilesUpload';
-import { Button } from '@/components/ui/button';
+import { SuperButton } from '@/components/common/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 export default function AssetHandling() {
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const [data, setData] = useState<Asset[]>([]);
   const [open, setOpen] = useState(false);
 
   const onUpload = (files: File[]) => {
@@ -19,44 +18,44 @@ export default function AssetHandling() {
       name: file.name,
       category: '',
       description: '',
-      type: file.type.startsWith('/audio')
+      type: file.type.startsWith('audio/')
         ? 'MUSIC'
         : ('ASSET' as IntegrationType),
       preview: URL.createObjectURL(file),
     }));
-    setAssets(prev => [...prev, ...newAssets]);
+    setData(prev => [...prev, ...newAssets]);
     setOpen(false);
   };
 
-  const handleSubmit = async (data: FieldValues): Promise<boolean | void> => {
-    console.log(data);
-  };
+  const refresh = useCallback(() => {}, []);
 
   return (
-    <div className="w-full min-h-screen p-6">
-      <div className="magic-text text-center md:text-5xl text-3xl justify-center flex items-center gap-2 font-bold mb-6">
-        Gérez les assets
+    <div className="container mx-auto h-full">
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="magic-text md:text-5xl text-3xl font-bold">
+          Gérez les assets
+        </h1>
       </div>
 
-      <div className="container mx-auto py-10">
-        <div className="w-full max-w-6xl mx-auto sm:px-6 lg:px-8">
+      <div className="fcontainer mx-auto">
+        <div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! !border-mauve">
-                Ajouter des assets <SquarePlus />
-              </Button>
+              <SuperButton
+                voiceText={"Le paramètre avancé, c'est pour les grands."}
+                className="flex items-center gap-2 form-button"
+              >
+                <Plus className="w-4 h-4" />
+                Ajouter des assets
+              </SuperButton>
             </DialogTrigger>
             <DialogContent className="bg-sidebar !max-w-3xl w-full">
               <AssetFilesUpload onUpload={onUpload} />
             </DialogContent>
           </Dialog>
         </div>
-        <DataTable
-          columns={columns}
-          data={assets}
-          filterColumn="name"
-          filterColumnText="assets"
-        />
+        <DataTable columns={columns(refresh)} data={data} />
       </div>
     </div>
   );
