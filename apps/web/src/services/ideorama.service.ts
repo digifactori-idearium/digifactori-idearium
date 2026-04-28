@@ -1,6 +1,7 @@
-import { toast } from 'sonner';
 
 import axios from '../services/axios.service';
+
+import { handleApiError } from '@/lib/api';
 
 interface ApiResponse<T> {
   status: string;
@@ -23,15 +24,8 @@ export const searchIdeorama = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message ||
-        "Échec lors de la récupération de l'idéorama"
-    );
+    return handleApiError(error);
   }
-};
-
-export const searchIdeoramas = async (query: string) => {
-  return [query];
 };
 
 export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
@@ -46,10 +40,7 @@ export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message ||
-        "Échec lors de la récupération de l'idéorama vide"
-    );
+    return handleApiError(error);
   }
 };
 
@@ -75,42 +66,7 @@ export const createIdeorama = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message ||
-        "Échec lors de la récupération de l'idéorama"
-    );
-  }
-};
-
-export const saveIdeorama = async (
-  model: string | null,
-  ideoramaId: string | undefined,
-  userId: string | undefined
-): Promise<ApiResponse<Ideorama>> => {
-  try {
-    const response = await axios.post(
-      `http://localhost:3001/api/ideorama/save`,
-      {
-        ideoramaId: ideoramaId,
-        ideorama: {
-          model: model,
-          userId: userId,
-        },
-      }
-    );
-
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
-    return response.data;
-  } catch (error: any) {
-    console.error('Save error:', error);
-    throw new Error(
-      error.response?.data?.error?.message ||
-        "Échec lors de la récupération de l'idéorama"
-    );
+    return handleApiError(error);
   }
 };
 
@@ -165,10 +121,7 @@ export const getAllIdeoramas = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message ||
-        'Échec lors de la récupération des idéoramas'
-    );
+    return handleApiError(error);
   }
 };
 
@@ -190,10 +143,7 @@ export const likeIdeorama = async (
     }
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error?.message ||
-        "Échec lors de la récupération de l'idéorama"
-    );
+    return handleApiError(error);
   }
 };
 
@@ -207,14 +157,13 @@ export const deleteIdeorama = async (
         ideoramaId: ideoramaId,
       }
     );
-    console.log('response: ', response);
     if (response.data.status === 'error') {
-      // toast.error(response.data.error?.message)
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
     }
-    toast.success("Suppression de l'idéorama réussie");
     return true;
   } catch (error: any) {
-    // toast.error(error.message)
-    return false;
+    return handleApiError(error);
   }
 };
