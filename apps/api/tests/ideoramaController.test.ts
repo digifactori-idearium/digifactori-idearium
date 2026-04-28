@@ -60,6 +60,8 @@ class MockIdeoramaService implements IIdeoramaService {
 
   isIdeoramaInBD = jest.fn<Promise<boolean>, [string]>();
 
+  likeIdeorama = jest.fn<Promise<boolean>, [string, string]>();
+
   deleteIdeorama = jest.fn<Promise<Ideorama>, [string]>();
 }
 
@@ -70,9 +72,10 @@ beforeAll(async () => {
     first_name: 'Gauthier',
     last_name: 'Mambourg',
     password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
+    isActive: true,
     parental_code:
       '$2b$10$5gQSEfb2bYTl.v38bhJPteNnWu2YXrjbgARZ/QfOsh1EKwHkQIXI.',
-    role: 'CHILD',
+    role: 'INTERN',
     createdAt: new Date(),
     updatedAt: new Date(),
   });
@@ -223,6 +226,25 @@ describe('Ideorama handling', () => {
       expect(mockService.deleteIdeorama).toHaveBeenCalled();
       expect(fs.unlink).not.toHaveBeenCalled();
       expect(res.status).toBe(500);
+    });
+  });
+
+  describe('Ideorama liking', () => {
+    it('should like an ideorama correctly', async () => {
+      const app = express();
+      const mockService = new MockIdeoramaService();
+      app.use(express.json());
+      app.use('/api/ideorama', createIdeoramaRoutes(mockService));
+      const ideoramaId = 'cmnup6jyf0000p0utn33xhdpq';
+      mockService.likeIdeorama.mockResolvedValue(true);
+
+      const res = await request(app)
+        .post('/api/ideorama/like')
+        .set('Authorization', 'Bearer ' + token)
+        .send({ ideoramaId: ideoramaId });
+
+      expect(mockService.likeIdeorama).toHaveBeenCalledWith(ideoramaId, "cmnup6jyf0000p0utn33xhdpq");
+      expect(res.status).toBe(200);
     });
   });
 

@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei';
-import { Canvas, ThreeEvent } from '@react-three/fiber';
-import { useMemo, useRef, useState } from 'react';
+import { Canvas, ThreeEvent, useThree } from '@react-three/fiber';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 export interface VoxelPoint {
@@ -11,6 +11,7 @@ export interface VoxelPoint {
 }
 
 interface VoxelProps {
+  setScene: React.Dispatch<React.SetStateAction<THREE.Scene | null>>;
   mode: 'add' | 'remove' | 'paint';
   shape: 'cube' | 'mur' | 'plateforme' | 'escalier';
   rotation: number;
@@ -90,7 +91,11 @@ function VoxelPainter({
     }
 
     snapPosition(pos);
-    if (mode === 'paint' && isPainting.current && event.object !== planeRef.current) {
+    if (
+      mode === 'paint' &&
+      isPainting.current &&
+      event.object !== planeRef.current
+    ) {
       const basePosition = event.object.position.clone();
       const positionsToPaint: VoxelPoint[] = [];
 
@@ -108,8 +113,6 @@ function VoxelPainter({
         )
       );
     }
-
-
   };
 
   const onPointerDown = (event: ThreeEvent<PointerEvent>) => {
@@ -132,8 +135,12 @@ function VoxelPainter({
     const position = new THREE.Vector3();
 
     if (event.face) {
-      if (mode === 'add') position.copy(event.point).add(event.face.normal);
-      else position.copy(event.object.position);
+      console.log('here');
+      if (mode === 'add') {
+        position.copy(event.point).add(event.face.normal);
+      } else {
+        position.copy(event.object.position);
+      }
     } else {
       position.copy(rollOverRef.current.position);
     }
@@ -158,7 +165,7 @@ function VoxelPainter({
       getShapeOffsets().forEach(o => {
         const p = position.clone().add(new THREE.Vector3(o[0], o[1], o[2]));
         snapPosition(p);
-        newVoxels.push({ ...vector3ToVoxelPoint(p), color: '#feb74c', });
+        newVoxels.push({ ...vector3ToVoxelPoint(p), color: '#feb74c' });
       });
 
       onVoxelsChange(prev => {
@@ -238,7 +245,11 @@ function VoxelPainter({
         {getShapeOffsets().map((o, i) => (
           <mesh key={i} position={o as [number, number, number]}>
             <boxGeometry args={[50, 50, 50]} />
-            <meshBasicMaterial color={selectedColor} transparent opacity={0.4} />
+            <meshBasicMaterial
+              color={selectedColor}
+              transparent
+              opacity={0.4}
+            />
           </mesh>
         ))}
       </group>
@@ -258,6 +269,7 @@ function VoxelPainter({
 
       {voxels.map((voxel, i) => (
         <mesh
+          name="cubeToSave"
           key={`${voxel.x}-${voxel.y}-${voxel.z}-${i}`}
           position={voxelPointToVector3(voxel)}
           onPointerMove={onPointerMove}
@@ -272,7 +284,24 @@ function VoxelPainter({
   );
 }
 
+function SceneBridge({
+  setScene,
+}: {
+  setScene: React.Dispatch<React.SetStateAction<THREE.Scene | null>>;
+}) {
+  const { scene } = useThree();
+
+  useEffect(() => {
+    setScene(scene);
+  }, [scene]);
+
+  return null;
+}
+
+// SceneRef.displayName = 'SceneRef'
+
 export default function Voxel({
+  setScene,
   mode,
   shape,
   rotation,
@@ -282,13 +311,28 @@ export default function Voxel({
   const [isDragging, setIsDragging] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#f97316');
   const COLORS = [
-    '#f97316', '#fb923c', '#fdba74',
-    '#3b82f6', '#60a5fa', '#93c5fd',
-    '#10b981', '#34d399', '#6ee7b7',
-    '#ef4444', '#f87171', '#fca5a5',
-    '#eab308', '#fde047', '#fef08a',
-    '#8b5cf6', '#a78bfa', '#c4b5fd',
-    '#000000', '#374151', '#9ca3af', '#ffffff'
+    '#f97316',
+    '#fb923c',
+    '#fdba74',
+    '#3b82f6',
+    '#60a5fa',
+    '#93c5fd',
+    '#10b981',
+    '#34d399',
+    '#6ee7b7',
+    '#ef4444',
+    '#f87171',
+    '#fca5a5',
+    '#eab308',
+    '#fde047',
+    '#fef08a',
+    '#8b5cf6',
+    '#a78bfa',
+    '#c4b5fd',
+    '#000000',
+    '#374151',
+    '#9ca3af',
+    '#ffffff',
   ];
 
   return (
@@ -297,6 +341,7 @@ export default function Voxel({
         style={{ width: '100%', height: '100%' }}
         camera={{ position: [500, 800, 1300], fov: 45, near: 1, far: 10000 }}
       >
+        <SceneBridge setScene={setScene} />
         <VoxelPainter
           mode={mode}
           shape={shape}
@@ -312,12 +357,15 @@ export default function Voxel({
       {/* 🎨 PALETTE */}
       {mode === 'paint' && (
         <div className="absolute top-4 right-4 grid grid-cols-4 gap-2 p-4 bg-black/40 backdrop-blur-md rounded-xl shadow-xl">
-          {COLORS.map((c) => (
+          {COLORS.map(c => (
             <div
               key={c}
               onClick={() => setSelectedColor(c)}
-              className={`w-8 h-8 rounded-lg cursor-pointer border-2 transition ${selectedColor === c ? 'border-white scale-110' : 'border-transparent'
-                }`}
+              className={`w-8 h-8 rounded-lg cursor-pointer border-2 transition ${
+                selectedColor === c
+                  ? 'border-white scale-110'
+                  : 'border-transparent'
+              }`}
               style={{ backgroundColor: c }}
             />
           ))}

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 import DeleteIntegrationDialog from './DeleteIntegrationDialog';
 
-import { FormDialog } from '@/components/settings/FormDialog';
+import { FormDialog } from '@/components/common/form/FormDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { integrationInputs } from '@/lib/input';
@@ -77,7 +77,7 @@ export const IntegrationCard: React.FC<Props> = ({
       onUpdated?.();
     } catch (error: any) {
       toast.error(error?.message || "Échec de la mise à jour de l'intégration");
-      throw error;
+      return false;
     } finally {
       setLoading(false);
     }
@@ -92,6 +92,7 @@ export const IntegrationCard: React.FC<Props> = ({
       onDeleted?.();
     } catch (error: any) {
       toast.error(error?.message || "Échec de suppression de l'intégration");
+      return false;
     } finally {
       setLoading(false);
     }

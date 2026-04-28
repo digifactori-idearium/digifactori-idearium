@@ -63,9 +63,9 @@ function buildCandidateUrls(endpointUrl: string, apiKey?: string): string[] {
 
   try {
     for (const paramName of AUTH_QUERY_PARAM_NAMES) {
-      const urlWithParam = new URL(endpointUrl);
-      urlWithParam.searchParams.set(paramName, apiKey);
-      candidates.push(urlWithParam.toString());
+      const url = new URL(endpointUrl);
+      url.searchParams.set(paramName, apiKey);
+      candidates.push(url.toString());
     }
   } catch {
     // Invalid URL - use original only
@@ -80,8 +80,10 @@ function buildCandidateAuthHeaders(apiKey?: string): AuthHeaders[] {
   return [
     { Authorization: `Bearer ${apiKey}` },
     { Authorization: `Token ${apiKey}` },
+    { Authorization: `Basic ${btoa(`${apiKey}:`)}` },
     { 'X-API-Key': apiKey },
     { 'api-key': apiKey },
+    { 'x-auth-token': apiKey },
     {},
   ];
 }
@@ -103,15 +105,42 @@ async function sendProbeRequest(
   }
 }
 
-async function probeEndpoint(
-  targetUrl: string,
-  authHeaders: AuthHeaders,
-  expectedStatus: number
+async function probeOnce(
+  url: string,
+  headers: AuthHeaders
+): Promise<number | null> {
+  return sendProbeRequest(url, headers, 'GET'); // GET only (more reliable)
+}
+
+function isSuccess(status: number | null): boolean {
+  return status !== null && status >= 200 && status < 300;
+}
+
+function isAuthError(status: number | null): boolean {
+  return status === 401 || status === 403;
+}
+
+async function probeEndpointWithAuthCheck(
+  url: string,
+  apiKey: string
 ): Promise<boolean> {
-  for (const method of ['GET', 'HEAD'] as HttpMethod[]) {
-    const status = await sendProbeRequest(targetUrl, authHeaders, method);
-    if (status === expectedStatus) return true;
+  // Baseline (no auth)
+  const baselineStatus = await probeOnce(url, {});
+
+  for (const headers of buildCandidateAuthHeaders(apiKey)) {
+    const authStatus = await probeOnce(url, headers);
+
+    if (isSuccess(authStatus)) return true;
+
+    if (
+      isAuthError(baselineStatus) &&
+      authStatus !== baselineStatus &&
+      authStatus !== null
+    ) {
+      return true;
+    }
   }
+
   return false;
 }
 
@@ -121,8 +150,15 @@ async function probeEndpoint(
 
 /**
  * Validates if a URL is accessible with the given credentials.
- * @param url - Endpoint URL (supports http/https/cloudinary)
- * @param apiKey - Optional API key/secret
+ *
+ * Strategy:
+ *  - Cloudinary URLs → dedicated ping endpoint with Basic auth
+ *  - No key         → public API, just check reachability (200)
+ *  - With key       → try all known auth header/param combos first.
+ *                     Covers lenient APIs and return 401/403 without credentials.
+ *
+ * @param rawUrl - Endpoint URL (supports http / https / cloudinary)
+ * @param apiKey - Optional API key / secret
  * @returns true if validation passes
  */
 export async function isUrlReachable(
@@ -132,35 +168,31 @@ export async function isUrlReachable(
   const scheme = detectUrlScheme(rawUrl);
   if (scheme === 'unknown') return false;
 
-  // Cloudinary validation
+  // Cloudinary
   if (scheme === 'cloudinary') {
     const credentials = parseCloudinaryUrl(rawUrl, apiKey);
     if (!credentials) return false;
 
     const { apiKey: cloudKey, apiSecret, cloudName } = credentials;
     const pingUrl = `https://api.cloudinary.com/v1_1/${cloudName}/ping`;
+
     const authHeaders = {
       Authorization: `Basic ${btoa(`${cloudKey}:${apiSecret}`)}`,
     };
 
-    return probeEndpoint(pingUrl, authHeaders, 200);
+    const status = await probeOnce(pingUrl, authHeaders);
+    return isSuccess(status);
   }
 
-  // HTTP/HTTPS validation
-  // No key  public API
+  // Public API (no key)
   if (!apiKey) {
-    return probeEndpoint(rawUrl, {}, 200);
+    const status = await probeOnce(rawUrl, {});
+    return isSuccess(status);
   }
 
-  // With key; the base URL must reject without key first
-  const noKeyStatus = await sendProbeRequest(rawUrl, {}, 'GET');
-  if (noKeyStatus !== 401 && noKeyStatus !== 403) return false;
-
-  // Then must accept with key
+  // Authenticated API
   for (const url of buildCandidateUrls(rawUrl, apiKey)) {
-    for (const headers of buildCandidateAuthHeaders(apiKey)) {
-      if (await probeEndpoint(url, headers, 200)) return true;
-    }
+    if (await probeEndpointWithAuthCheck(url, apiKey)) return true;
   }
 
   return false;

@@ -38,6 +38,8 @@ export default class SettingsService implements ISettingsService {
     storeName?: string;
     storeURL?: string;
     storeKey?: string;
+    orgCode?: number;
+    orgParentalCode?: number;
   }) {
     try {
       const settings = await settingTable.upsert({
@@ -47,11 +49,17 @@ export default class SettingsService implements ISettingsService {
           storeName: data.storeName ?? '',
           storeURL: data.storeURL ?? '',
           storeKey: data.storeKey ?? '',
+          orgCode: data.orgCode ?? undefined,
+          orgParentalCode: data.orgParentalCode ?? undefined,
         },
         update: {
           ...(data.storeName !== undefined && { storeName: data.storeName }),
           ...(data.storeURL !== undefined && { storeURL: data.storeURL }),
           ...(data.storeKey !== undefined && { storeKey: data.storeKey }),
+          ...(data.orgCode !== undefined && { orgCode: data.orgCode }),
+          ...(data.orgParentalCode !== undefined && {
+            orgParentalCode: data.orgParentalCode,
+          }),
         },
         include: { integrations: true },
       });
@@ -69,12 +77,15 @@ export default class SettingsService implements ISettingsService {
   // ---------------------------------------------------------------------------
 
   /**
-   * List all integrations attached to the singleton settings row.
+   * List all integrations by type if any
    */
-  async getIntegrations() {
+  async getIntegrations(type?: string) {
     try {
       const integrations = await integrationTable.findMany({
-        where: { settingId: 1 },
+        where: {
+          settingId: 1,
+          ...(type ? { type: type as any } : {}),
+        },
         orderBy: { createdAt: 'desc' },
       });
 

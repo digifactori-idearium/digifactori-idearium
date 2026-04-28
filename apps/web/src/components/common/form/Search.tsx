@@ -17,11 +17,6 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-interface SearchOption {
-  value: string;
-  label: string;
-}
-
 interface SearchProps {
   onSelect: (value: string) => void;
   className?: string;
@@ -183,9 +178,9 @@ export function Search({
               )}
               {hasTyped && results.length > 0 && (
                 <CommandGroup>
-                  {results.map(option => (
+                  {results.map((option, id) => (
                     <CommandItem
-                      key={option.value}
+                      key={id}
                       value={option.value}
                       onSelect={() => handleSelect(option.value, option.label)}
                       className="text-white hover:bg-white/10 cursor-pointer"

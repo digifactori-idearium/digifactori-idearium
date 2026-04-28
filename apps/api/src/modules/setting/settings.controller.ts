@@ -1,32 +1,33 @@
+import { Role } from '@prisma/client';
 import { type Request, type Response } from 'express';
+
+import {
+  updateStoreSettingsSchema,
+  createIntegrationSchema,
+  updateIntegrationSchema,
+  updateOrgSettingsSchema,
+} from './setting.validation';
 
 import { ISettingsService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
 import { isUrlReachable } from '@/utils/url-validation';
 import { failOnValidation } from '@/utils/validation-errors';
-import {
-  updateSettingsSchema,
-  createIntegrationSchema,
-  updateIntegrationSchema,
-} from '@/utils/validations';
 
 export default class SettingsController {
   constructor(private readonly settingsService: ISettingsService) {}
 
-  // ---------------------------------------------------------------------------
   // Settings (singleton)
-  // ---------------------------------------------------------------------------
 
   /**
-   * Retrieves the application settings
+   * Retrieves the application settings.
+   * Creates the singleton row with empty defaults if it doesn't exist yet.
    *
-   * @description Returns the singleton settings row, including all linked integrations.
-   * If the row doesn't exist yet it is created automatically with empty defaults.
+   * @route  GET /settings
+   * @access Authenticated
    *
-   * @param {Request} req - Express request with authenticated user (req.user)
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response containing the settings and integrations
+   * @returns
+   *   - 200 { data: Setting & { integrations: Integration[] } }
    */
   getSettings = asyncHandler(async (req: Request, res: Response) => {
     const settings = await this.settingsService.getSettings();
@@ -36,18 +37,21 @@ export default class SettingsController {
   });
 
   /**
-   * Updates the application settings
-   *
-   * @description Partially updates the singleton settings row (storeName, storeURL).
-   * storeURL is validated for format and reachability before saving.
+   * Updates the store settings (storeName, storeURL, storeKey).
+   * storeURL is validated for reachability before saving.
    * At least one field must be provided.
    *
-   * @param {Request} req - Express request with body: { storeName?: string, storeURL?: string }
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response containing the updated settings
+   * @route  PATCH /settings/store
+   * @access ADMIN
+   *
+   * @body   { storeName?: string, storeURL?: string, storeKey?: string }
+   *
+   * @returns
+   *   - 200 { data: Setting & { integrations: Integration[] } }
+   *   - 400 validation errors | unreachable store URL or invalid key
    */
-  updateSettings = asyncHandler(async (req: Request, res: Response) => {
-    const result = await updateSettingsSchema.safeParseAsync(req.body);
+  updateStoreSettings = asyncHandler(async (req: Request, res: Response) => {
+    const result = await updateStoreSettingsSchema.safeParseAsync(req.body);
     if (failOnValidation(result, res)) return;
 
     const { storeURL, storeKey } = result.data!;
@@ -67,27 +71,57 @@ export default class SettingsController {
     }
 
     const settings = await this.settingsService.updateSettings(result.data!);
-    HttpResponse.success(settings, 'Paramètres mis à jour avec succès').send(
-      res
-    );
+    HttpResponse.success(
+      settings,
+      'Paramètres du store mis à jour avec succès'
+    ).send(res);
   });
 
-  // ---------------------------------------------------------------------------
+  /**
+   * Updates the organisation settings (orgCode).
+   * The orgCode is used as the registration code for new supervisor accounts.
+   *
+   * @route  PATCH /settings/org
+   * @access ADMIN only
+   *
+   * @body   { orgCode: string }
+   *
+   * @returns
+   *   - 200 { data: Setting & { integrations: Integration[] } }
+   *   - 400 validation errors
+   *   - 403 requester is not ADMIN
+   */
+  updateOrgSettings = asyncHandler(async (req: Request, res: Response) => {
+    if (req.user?.role !== Role.ADMIN) {
+      return HttpResponse.forbidden(
+        'Seul un administrateur peut modifier le code organisation.'
+      ).send(res);
+    }
+
+    const result = await updateOrgSettingsSchema.safeParseAsync(req.body);
+    if (failOnValidation(result, res)) return;
+
+    const settings = await this.settingsService.updateSettings(result.data!);
+    HttpResponse.success(
+      settings,
+      'Code organisation mis à jour avec succès'
+    ).send(res);
+  });
+
   // Integrations
-  // ---------------------------------------------------------------------------
 
   /**
-   * Retrieves all integrations for the application
+   * Retrieves all integrations linked to the singleton settings row.
    *
-   * @description Returns all integration records linked to the singleton settings row,
-   * ordered by creation date descending.
+   * @route  GET /settings/integrations
+   * @access Authenticated
    *
-   * @param {Request} req - Express request with authenticated user (req.user)
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response containing the list of integrations
+   * @returns
+   *   - 200 { data: Integration[] }
    */
   getIntegrations = asyncHandler(async (req: Request, res: Response) => {
-    const integrations = await this.settingsService.getIntegrations();
+    const type = req.query.type ? String(req.query.type) : undefined;
+    const integrations = await this.settingsService.getIntegrations(type);
     HttpResponse.success(
       integrations,
       'Intégrations récupérées avec succès'
@@ -95,14 +129,14 @@ export default class SettingsController {
   });
 
   /**
-   * Retrieves a single integration by ID
+   * Retrieves a single integration by ID.
    *
-   * @description Fetches one integration record by its unique ID.
-   * Returns 404 if the integration does not exist.
+   * @route  GET /settings/integrations/:integrationId
+   * @access Authenticated
    *
-   * @param {Request} req - Express request with integrationId in params
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response containing the integration, or 404
+   * @returns
+   *   - 200 { data: Integration }
+   *   - 404 integration not found
    */
   getIntegrationById = asyncHandler(async (req: Request, res: Response) => {
     const integrationId = String(req.params.integrationId);
@@ -119,25 +153,26 @@ export default class SettingsController {
   });
 
   /**
-   * Creates a new integration
+   * Creates a new integration linked to the singleton settings row.
+   * The URL is validated for reachability and the key is checked against
+   * the provided endpoint before saving.
    *
-   * @description Validates the request body against the integration schema, including:
-   * - URL format and reachability (live HTTP check)
-   * - API key length and validity against the provided endpoint (live auth check)
-   * - Integration type must be one of: WEBHOOK, REST, GRAPHQL
+   * @route  POST /settings/integrations
+   * @access ADMIN
    *
-   * @param {Request} req - Express request with body:
-   *   {
-   *     id: string,
-   *     name: string,
-   *     url: string,
-   *     type: 'ASSET' | 'MUSIC' | 'OTHER',
-   *     key?: string,
-   *     isActive?: boolean,
-   *     fieldMapping?: { id: string, name: string, category?: string, file: string, thumbnail?: string }
-   *   }
-   * @param {Response} res - Express response object
-   * @returns {Response} 201 JSON response containing the created integration, or 400 on validation failure
+   * @body   {
+   *   id: string,
+   *   name: string,
+   *   url: string,
+   *   type: 'ASSET' | 'MUSIC' | 'OTHER',
+   *   key?: string,
+   *   isActive?: boolean,
+   *   fieldMapping?: { id: string, name: string, category?: string, file: string, thumbnail?: string }
+   * }
+   *
+   * @returns
+   *   - 201 { data: Integration }
+   *   - 400 validation errors | unreachable URL or invalid key
    */
   createIntegration = asyncHandler(async (req: Request, res: Response) => {
     const result = await createIntegrationSchema.safeParseAsync(req.body);
@@ -158,23 +193,25 @@ export default class SettingsController {
   });
 
   /**
-   * Updates an existing integration
+   * Partially updates an existing integration.
+   * If url or key are provided, a live reachability check is performed
+   * against the resolved URL and key before saving.
    *
-   * @description Partially updates an integration. All fields are optional.
-   * If both url and key are provided together, a live endpoint/key check is performed.
-   * At least one field must be present in the request body.
+   * @route  PATCH /settings/integrations/:integrationId
+   * @access ADMIN
    *
-   * @param {Request} req - Express request with integrationId in params and body:
-   *   {
-   *     name?: string,
-   *     url?: string,
-   *     type?: 'ASSET' | 'MUSIC' | 'OTHER',
-   *     key?: string,
-   *     isActive?: boolean,
-   *     fieldMapping?: { id: string, name: string, category?: string, file: string, thumbnail?: string }
-   *   }
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response containing the updated integration, or 400 on validation failure
+   * @body   {
+   *   name?: string,
+   *   url?: string,
+   *   type?: 'ASSET' | 'MUSIC' | 'OTHER',
+   *   key?: string,
+   *   isActive?: boolean,
+   *   fieldMapping?: { id: string, name: string, category?: string, file: string, thumbnail?: string }
+   * }
+   *
+   * @returns
+   *   - 200 { data: Integration }
+   *   - 400 validation errors | unreachable URL or invalid key
    */
   updateIntegration = asyncHandler(async (req: Request, res: Response) => {
     const integrationId = String(req.params.integrationId);
@@ -206,14 +243,15 @@ export default class SettingsController {
   });
 
   /**
-   * Toggles the active state of an integration
+   * Toggles the isActive flag of an integration.
+   * The current value is read from the database and inverted — no body required.
    *
-   * @description Flips the isActive boolean on the integration.
-   * No request body required — the current value is read from the database and inverted.
+   * @route  PATCH /settings/integrations/:integrationId/toggle
+   * @access ADMIN
    *
-   * @param {Request} req - Express request with integrationId in params
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response containing the updated integration with new isActive value
+   * @returns
+   *   - 200 { data: Integration }
+   *   - 404 integration not found
    */
   toggleIntegration = asyncHandler(async (req: Request, res: Response) => {
     const integrationId = String(req.params.integrationId);
@@ -226,14 +264,14 @@ export default class SettingsController {
   });
 
   /**
-   * Deletes an integration permanently
+   * Permanently deletes an integration.
+   * This action is irreversible — the fieldMapping data is also removed.
    *
-   * @description Removes the integration record from the database.
-   * This action is irreversible. The associated fieldMapping data is also removed.
+   * @route  DELETE /settings/integrations/:integrationId
+   * @access ADMIN
    *
-   * @param {Request} req - Express request with integrationId in params
-   * @param {Response} res - Express response object
-   * @returns {Response} 204 response on success
+   * @returns
+   *   - 204
    */
   deleteIntegration = asyncHandler(async (req: Request, res: Response) => {
     const integrationId = String(req.params.integrationId);

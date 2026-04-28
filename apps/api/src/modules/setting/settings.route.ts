@@ -2,7 +2,7 @@ import { Router, type Router as ExpressRouter } from 'express';
 
 import SettingsController from './settings.controller';
 
-import { authenticate, requireAuth } from '@/middlewares/authentication';
+import { authenticate, requireRole } from '@/middlewares/authentication';
 import { ISettingsService } from '@/types';
 
 export default function createSettingsRoutes(
@@ -11,13 +11,14 @@ export default function createSettingsRoutes(
   const settingsController = new SettingsController(settingsService);
   const settingsRoutes: ExpressRouter = Router();
 
-  settingsRoutes.use(authenticate, requireAuth);
+  settingsRoutes.use(authenticate, requireRole('ADMIN'));
 
-  // -- Singleton settings
+  // Singleton settings
   settingsRoutes.get('/', settingsController.getSettings);
-  settingsRoutes.patch('/', settingsController.updateSettings);
+  settingsRoutes.patch('/store', settingsController.updateStoreSettings);
+  settingsRoutes.patch('/org', settingsController.updateOrgSettings);
 
-  // -- Integrations
+  // Integrations
   settingsRoutes.get('/integrations', settingsController.getIntegrations);
   settingsRoutes.post('/integrations', settingsController.createIntegration);
   settingsRoutes.get(

@@ -76,9 +76,24 @@ export function ActionConfigForm({
     isHydrating.current = false;
   }, [actionId]);
 
+  const resolvedInputs = useMemo(
+    () =>
+      inputs.map(input => {
+        if (input.type !== 'dialog') return input;
+        return {
+          ...input,
+          dialogueContent:
+            typeof input.dialogueContent === 'function'
+              ? input.dialogueContent(actionId)
+              : input.dialogueContent,
+        };
+      }),
+    [inputs, actionId]
+  );
+
   return (
     <div className="w-full ideorama-form flex flex-col gap-4">
-      {inputs.map(input => (
+      {resolvedInputs.map(input => (
         <FormInputRenderer
           key={input.name}
           input={input as any}

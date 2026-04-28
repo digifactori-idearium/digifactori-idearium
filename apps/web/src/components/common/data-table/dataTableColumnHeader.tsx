@@ -1,14 +1,7 @@
 import { type Column } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ChevronsUpDown, EyeOff } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface DataTableColumnHeaderProps<
@@ -28,41 +21,33 @@ export function DataTableColumnHeader<TData, TValue>({
     return <div className={cn(className)}>{title}</div>;
   }
 
+  const sorted = column.getIsSorted();
+
+  const handleSort = () => {
+    if (sorted === false)
+      column.toggleSorting(false); // none → asc
+    else if (sorted === 'asc')
+      column.toggleSorting(true); // asc  → desc
+    else column.clearSorting(); // desc → none
+  };
+
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 data-[state=open]:!bg-mauve text-white! bg-mauve! hover:bg-mauve/80! !border-mauve"
-          >
-            <span>{title}</span>
-            {column.getIsSorted() === 'desc' ? (
-              <ArrowDown />
-            ) : column.getIsSorted() === 'asc' ? (
-              <ArrowUp />
-            ) : (
-              <ChevronsUpDown />
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
-            <ArrowUp />
-            Asc
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
-            <ArrowDown />
-            Desc
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
-            <EyeOff />
-            Cacher
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleSort}
+        className="h-8 text-white! bg-mauve! hover:bg-mauve/80! border-mauve!"
+      >
+        <span>{title}</span>
+        {sorted === 'desc' ? (
+          <ArrowDown className="h-4 w-4" />
+        ) : sorted === 'asc' ? (
+          <ArrowUp className="h-4 w-4" />
+        ) : (
+          <ChevronsUpDown className="h-4 w-4 opacity-50" />
+        )}
+      </Button>
     </div>
   );
 }

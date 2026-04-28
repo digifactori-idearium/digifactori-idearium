@@ -43,6 +43,11 @@ export default class ProfileService implements IProfileService {
       include: {
         followers: true,
         following: true,
+        ideoramaLiked: {
+          select: {
+            ideoramaId: true,
+          },
+        },
       },
     });
   }
@@ -77,28 +82,12 @@ export default class ProfileService implements IProfileService {
   ): Promise<{ user?: User; profile: Profile }> {
     const response: { user?; profile } = { profile: {} };
     if (body.user) {
-      const user = await userTable.findUnique({
-        where: {
-          id: userId,
-        },
-      });
-      const { password, parental_code, ...data } = {
-        ...body.user,
-      };
-      const hashedPassword: string | undefined = password
-        ? await bcrypt.hash(password, 10)
-        : user?.password;
-      const hashedParentalCode: string | undefined = parental_code
-        ? await bcrypt.hash(parental_code, 10)
-        : user?.parental_code;
       response.user = await userTable.update({
         where: {
           id: userId,
         },
         data: {
-          ...data,
-          password: hashedPassword,
-          parental_code: hashedParentalCode,
+          ...body.user,
         },
       });
     }

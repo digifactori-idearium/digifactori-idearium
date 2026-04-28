@@ -1,5 +1,6 @@
 import { SquarePlus } from 'lucide-react';
 import { useState } from 'react';
+import { FieldValues } from 'react-hook-form';
 
 import { DataTable } from '../common/data-table/dataTable';
 
@@ -25,6 +26,10 @@ export default function AssetHandling() {
     }));
     setAssets(prev => [...prev, ...newAssets]);
     setOpen(false);
+  };
+
+  const handleSubmit = async (data: FieldValues): Promise<boolean | void> => {
+    console.log(data);
   };
 
   return (
