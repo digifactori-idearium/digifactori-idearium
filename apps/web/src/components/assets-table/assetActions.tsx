@@ -16,7 +16,7 @@ interface UserActionsProps {
 export const AssetActions = ({ asset, refresh }: UserActionsProps) => {
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (_data: any) => {
     try {
       setLoading(true);
       // await updateAsset(asset.id, data);
