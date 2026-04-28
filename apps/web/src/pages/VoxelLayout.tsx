@@ -7,7 +7,7 @@ import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 
 import { Loading } from '@/components/common';
 import { SuperButton } from '@/components/common/button/SuperButton';
-import AlertDialog from '@/components/dialog/AlertDialog';
+import ResetVoxelDialog from '@/components/dialog/AlertDialog';
 import EditPanel from '@/components/voxel/panel';
 import Voxel, { VoxelPoint } from '@/pages/Voxel';
 import { autoSaveVoxelModel, getVoxelModelById } from '@/services/voxel.service';
@@ -62,7 +62,6 @@ export default function VoxelLayout() {
 
   const [modelName, setModelName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   const [scene, setScene] = useState<THREE.Scene | null>(null);
   const sceneRef = useRef(scene)
@@ -135,30 +134,25 @@ export default function VoxelLayout() {
   return (
     <div className="w-full h-full  overflow-hidden relative">
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex gap-3">
-      <SuperButton
-          tooltip="Réinitialiser"
-          voiceText="Réinitialiser"
-          onClick={() => {
-            setResetDialogOpen(true);
-          }}
-          className="z-50 p-2 main-small-btn"
-        >
-          <span className="flex items-center gap-1">
-            <RotateCcw className="w-4 h-4 text-white!" />
-          </span>
-        </SuperButton>
-        <AlertDialog
-          open={resetDialogOpen}
+        <ResetVoxelDialog
+          trigger={
+            <SuperButton
+              tooltip="Réinitialiser"
+              voiceText="Réinitialiser"
+              className="z-50 p-2 main-small-btn"
+            >
+              <span className="flex items-center gap-1">
+                <RotateCcw className="w-4 h-4 text-white!" />
+              </span>
+            </SuperButton>
+          }
           description="Cela réinitialisera votre modèle"
           confirmationMessage="Oui, réinitialiser"
           onConfirm={() => {
-            handleReset(setVoxels)
-            toast.success('Idéorama réinitialisé')
-            setResetDialogOpen(false);
+            handleReset(setVoxels);
+            toast.success('Idéorama réinitialisé');
           }}
-          onCancel={() => {
-            setResetDialogOpen(false);
-          }}
+          onCancel={() => {}}
         />
       </div>
 

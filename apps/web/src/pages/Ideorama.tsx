@@ -28,7 +28,7 @@ import { useSnapshot } from 'valtio';
 import Scene from '@/components/3d-scene';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
 import { SuperButton } from '@/components/common/button';
-import AlertDialog from '@/components/dialog/AlertDialog';
+import ResetIdeoramaDialog from '@/components/dialog/AlertDialog';
 import { AssetsPanel } from '@/components/panels/AssetsPanel';
 import { ObjectListPanel } from '@/components/panels/ObjectListPanel';
 import { SettingPanel } from '@/components/panels/SettingPanel';
@@ -206,40 +206,41 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
-            {isEditMode ? (
-              <SuperButton
-                tooltip="Réinitialiser"
-                voiceText="Réinitialiser"
-                onClick={() => {
-                  setResetDialogOpen(true);
+            {isEditMode && (
+              <ResetIdeoramaDialog
+                trigger={
+                  <SuperButton
+                    tooltip="Réinitialiser"
+                    voiceText="Réinitialiser"
+                    onClick={() => {
+                      setResetDialogOpen(true);
+                    }}
+                    className="z-50 p-2 main-small-btn"
+                  >
+                    <span className="flex items-center gap-1">
+                      <RotateCcw className="w-4 h-4 text-white!" />
+                    </span>
+                  </SuperButton>
+                }
+                description="Cela réinitialisera votre ideorama"
+                confirmationMessage="Oui, réinitialiser"
+                onConfirm={() => {
+                  actions.resetIdeorama().then(res => {
+                    if (res) {
+                      toast.success('Idéorama réinitialisé');
+                    } else {
+                      toast.error(
+                        "Échec lors de la réinitialisation de l'idéorama"
+                      );
+                    }
+                  });
+                  setResetDialogOpen(false);
                 }}
-                className="z-50 p-2 main-small-btn"
-              >
-                <span className="flex items-center gap-1">
-                  <RotateCcw className="w-4 h-4 text-white!" />
-                </span>
-              </SuperButton>
-            ) : null}
-            <AlertDialog
-              open={resetDialogOpen}
-              description="Cela réinitialisera votre ideorama"
-              confirmationMessage="Oui, réinitialiser"
-              onConfirm={() => {
-                actions.resetIdeorama().then(res => {
-                  if (res) {
-                    toast.success('Idéorama réinitialisé');
-                  } else {
-                    toast.error(
-                      "Échec lors de la réinitialisation de l'idéorama"
-                    );
-                  }
-                });
-                setResetDialogOpen(false);
-              }}
-              onCancel={() => {
-                setResetDialogOpen(false);
-              }}
-            />
+                onCancel={() => {
+                  setResetDialogOpen(false);
+                }}
+              />
+            )}
           </div>
           {/* Assets Button */}
           {isEditMode && (

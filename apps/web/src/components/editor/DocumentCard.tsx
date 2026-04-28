@@ -1,9 +1,9 @@
-import { Trash2, FileText, Clock } from 'lucide-react';
+import { Clock, FileText, Trash2 } from 'lucide-react';
 import React from 'react';
 
 import { SuperButton } from '../common/button';
 
-import { EditorDeleter } from './EditorDeleter';
+import DocumentDeleter from '@/components/dialog/AlertDialog';
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -27,8 +27,6 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   onOpen,
   onDelete,
 }) => {
-  const [open, setOpen] = React.useState(false);
-
   return (
     <div
       className="group relative rounded-2xl border border-mauve-100 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer overflow-hidden"
@@ -60,24 +58,29 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
       </div>
 
       {/* Delete button */}
-      <SuperButton
-        onClick={e => {
-          e.stopPropagation();
-          setOpen(true);
-        }}
-        className="absolute top-3 right-3 transition-opacity flex items-center justify-center w-7 h-7 rounded-lg bg-red-400 hover:bg-red-600 text-white"
-        tooltip={'Supprimer'}
-      >
-        <Trash2 className="w-3.5 h-3.5" />
-      </SuperButton>
       {doc != null && (
-        <EditorDeleter
-          open={open}
-          editor={doc.title}
+        <DocumentDeleter
+          trigger={
+            <SuperButton
+              className="absolute top-3 right-3 transition-opacity flex items-center justify-center w-7 h-7 rounded-lg bg-red-400 hover:bg-red-600 text-white"
+              tooltip='Supprimer le document'
+              voiceText='Supprimer le document'
+              onClick={e => e.stopPropagation()}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </SuperButton>
+          }
+          description={
+            <>
+              Cela supprimera définitivemennnnnt le document{' '}
+              <span className="font-bold text-mauve">{doc.title}</span>
+            </>
+          }
+          confirmationMessage="Oui, supprimer"
           onConfirm={() => {
             onDelete(doc.id);
           }}
-          onCancle={() => setOpen(false)}
+          onCancel={() => {}}
         />
       )}
     </div>

@@ -1,17 +1,19 @@
-import { Trash2, SquarePen, Music, Zap, Box } from 'lucide-react';
+import { Box, Music, SquarePen, Trash2, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import DeleteIntegrationDialog from './DeleteIntegrationDialog';
+
+import AlertDialog from '../dialog/AlertDialog';
 
 import { FormDialog } from '@/components/common/form/FormDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { integrationInputs } from '@/lib/input';
 import {
-  updateIntegration,
   deleteIntegration,
+  updateIntegration,
 } from '@/services/settings.service';
+
 
 type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
 
@@ -63,7 +65,6 @@ export const IntegrationCard: React.FC<Props> = ({
   onUpdated,
   onDeleted,
 }) => {
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const config =
@@ -87,7 +88,6 @@ export const IntegrationCard: React.FC<Props> = ({
     try {
       setLoading(true);
       await deleteIntegration(integration.id);
-      setDeleteDialogOpen(false);
       toast.success('Intégration supprimée avec succès');
       onDeleted?.();
     } catch (error: any) {
@@ -158,20 +158,21 @@ export const IntegrationCard: React.FC<Props> = ({
             loading={loading}
             initialValues={integration}
           />
-          <Button
+          
+        </div>
+      </div>
+      
+      <AlertDialog
+        trigger={<Button
             variant="outline"
-            onClick={() => setDeleteDialogOpen(true)}
             className="w-9 h-9 p-0 border-red-900/40 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent"
           >
             <Trash2 size={13} />
-          </Button>
-        </div>
-      </div>
-
-      <DeleteIntegrationDialog
-        open={deleteDialogOpen}
+          </Button>}
+        description="Cela supprimera l'intégration."
+        confirmationMessage="Oui, Supprimer"
         onConfirm={handleDelete}
-        onCancel={() => setDeleteDialogOpen(false)}
+        onCancel={() => {}}
       />
     </Card>
   );

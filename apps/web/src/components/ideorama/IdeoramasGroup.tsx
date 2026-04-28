@@ -1,10 +1,9 @@
 import { Heart, Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import AlertDialog from '../dialog/AlertDialog';
-
+import IdeoramaDeleter from '../dialog/AlertDialog';
 
 import { SuperButton } from '@/components/common/button/SuperButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,9 +18,6 @@ const IdeoramasGroup: React.FC<{
   setProfile: React.Dispatch<React.SetStateAction<Profile>>;
 }> = ({ ideoramas, profile, setIdeoramas, setProfile }) => {
   const navigate = useNavigate();
-  const [ideoramaToDelete, setIdeoramaToDelete] = useState<Ideorama | null>(
-    null
-  );
   const user = useUser().user;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -49,20 +45,20 @@ const IdeoramasGroup: React.FC<{
                 {ideorama.name}
               </p>
               <p className="text-xl font-bold tracking-tight text-foreground/90">
-              <SuperButton
-                className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
-                tooltip={`Voir le profil de ${profile.pseudo}`}
-                onClick={e => {
-                  e.stopPropagation();
-                  if(ideorama.userId == user?.id) {
-                    navigate(`/app/profile`);
-                  } else {
-                    navigate(`/app/profile/${ideorama.userId}`);
-                  }
-                }}
-              >
-                {profile.pseudo}
-              </SuperButton>
+                <SuperButton
+                  className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+                  tooltip={`Voir le profil de ${profile.pseudo}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (ideorama.userId == user?.id) {
+                      navigate(`/app/profile`);
+                    } else {
+                      navigate(`/app/profile/${ideorama.userId}`);
+                    }
+                  }}
+                >
+                  {profile.pseudo}
+                </SuperButton>
               </p>
               <div className="flex items-center gap-3 text-muted-foreground/80">
                 <SuperButton
@@ -135,17 +131,46 @@ const IdeoramasGroup: React.FC<{
                 </SuperButton>
               </div>
               {profile.userId == user?.id && (
-                <SuperButton
-                  tooltip="Supprime ton idéorama"
-                  voiceText="Supprime ton idéorama"
-                  onClick={e => {
-                    e.stopPropagation();
-                    setIdeoramaToDelete(ideorama);
+                <IdeoramaDeleter
+                  trigger={
+                    <SuperButton
+                      tooltip="Supprime ton idéorama"
+                      voiceText="Supprime ton idéorama"
+                      onClick={e => {
+                        e.stopPropagation();
+                      }}
+                      className="main-btn"
+                    >
+                      <Trash2 /> Supprimer
+                    </SuperButton>
+                  }
+                  description={
+                    <>
+                      Cela supprimera définitivement l'idéorama{' '}
+                      <span className="font-bold text-mauve">
+                        {ideorama.name}
+                      </span>
+                    </>
+                  }
+                  confirmationMessage="Oui, supprimer"
+                  onConfirm={() => {
+                    deleteIdeorama(ideorama.id).then(res => {
+                      if (res) {
+                        setIdeoramas(
+                          ideoramas.filter(
+                            ider => ider.id != ideorama.id
+                          )
+                        );
+                        toast.success('Idéorama supprimé avec succès');
+                      } else {
+                        toast.error(
+                          "Échec lors de la suppression de l'idéorama"
+                        );
+                      }
+                    });
                   }}
-                  className="main-btn"
-                >
-                  <Trash2 /> Supprimer
-                </SuperButton>
+                  onCancel={() => {}}
+                />
               )}
             </div>
             <SuperButton
@@ -174,28 +199,6 @@ const IdeoramasGroup: React.FC<{
           </div>
         </Card>
       ))}
-      <AlertDialog
-        open={ideoramaToDelete != null}
-        description={<>
-            Cela supprimera définitivement l'idéorama{" "}
-            <span className="font-bold text-mauve">{ideoramaToDelete?.name}</span>
-          </>}
-        confirmationMessage="Oui, supprimer"
-        onConfirm={() => {
-            deleteIdeorama(ideoramaToDelete?.id).then(res => {
-              if (res) {
-                setIdeoramas(
-                  ideoramas.filter(ideoram => ideoram.id != ideoramaToDelete?.id)
-                );
-                toast.success("Idéorama supprimé avec succès")
-              } else {
-                toast.error("Échec lors de la suppression de l'idéorama")
-              }
-            });
-            setIdeoramaToDelete(null);
-          }}
-        onCancel={() => setIdeoramaToDelete(null)}
-      />
     </div>
   );
 };

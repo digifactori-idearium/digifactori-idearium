@@ -1,10 +1,9 @@
 import { Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import AlertDialog from '../dialog/AlertDialog';
-
+import DeleteVoxelDialog from '../dialog/AlertDialog';
 
 import { SuperButton } from '@/components/common/button/SuperButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,7 +16,6 @@ const VoxelModelsGroup: React.FC<{
   setModels: React.Dispatch<React.SetStateAction<VoxelModel[]>>;
 }> = ({ models, profile, setModels }) => {
   const navigate = useNavigate();
-  const [modelToDelete, setModelToDelete] = useState<VoxelModel | null>(null);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -45,18 +43,40 @@ const VoxelModelsGroup: React.FC<{
               <p className="text-xl font-bold tracking-tight text-foreground/90">
                 {profile.pseudo}
               </p>
-
-              <SuperButton
-                tooltip="Supprime ton modèle"
-                voiceText="Supprime ton modèle"
-                onClick={e => {
-                  e.stopPropagation();
-                  setModelToDelete(model);
+              <DeleteVoxelDialog
+                trigger={
+                  <SuperButton
+                    tooltip="Supprime ton modèle"
+                    voiceText="Supprime ton modèle"
+                    onClick={e => {
+                      e.stopPropagation();
+                    }}
+                    className="main-btn"
+                  >
+                    <Trash2 /> Supprimer
+                  </SuperButton>
+                }
+                description={
+                  <>
+                    Cela supprimera définitivement le modèle{' '}
+                    <span className="font-bold text-mauve">{model.name}</span>
+                  </>
+                }
+                confirmationMessage="Oui, supprimer"
+                onConfirm={() => {
+                  deleteVoxelModel(model.id).then(res => {
+                    if (res) {
+                      setModels(prev =>
+                        prev.filter(mod => mod.id !== model.id)
+                      );
+                      toast.success('modèle supprimé avec succès');
+                    } else {
+                      toast.error('Échec lors de la suppression du modèle');
+                    }
+                  });
                 }}
-                className="main-btn"
-              >
-                <Trash2 /> Supprimer
-              </SuperButton>
+                onCancel={() => {}}
+              />
             </div>
 
             <Avatar className="h-14 w-14 border-2 border-white/20 shadow-sm shrink-0">
@@ -72,30 +92,6 @@ const VoxelModelsGroup: React.FC<{
           </div>
         </Card>
       ))}
-      <AlertDialog
-        open={modelToDelete != null}
-        description={
-          <>
-            Cela supprimera définitivement le modèle{' '}
-            <span className="font-bold text-mauve">{modelToDelete?.name}</span>
-          </>
-        }
-        confirmationMessage="Oui, supprimer"
-        onConfirm={() => {
-          deleteVoxelModel(modelToDelete?.id).then(res => {
-            if (res) {
-              setModels(prev =>
-                prev.filter(model => model.id !== modelToDelete?.id)
-              );
-              toast.success('modèle supprimé avec succès');
-            } else {
-              toast.error("Échec lors de la suppression du modèle");
-            }
-          });
-          setModelToDelete(null);
-        }}
-        onCancel={() => setModelToDelete(null)}
-      />
     </div>
   );
 };
