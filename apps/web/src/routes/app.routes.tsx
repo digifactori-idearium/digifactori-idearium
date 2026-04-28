@@ -10,6 +10,7 @@ import MyIdeoramas from '@/pages/MyIdeoramas';
 import MyModels from '@/pages/MyModels';
 import ProfilePage from '@/pages/MyProfile';
 import MySpace from '@/pages/MySpace';
+import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
 import { TextEditor, EditorPage } from '@/pages/TextEditor';
 import VoxelLayout from '@/pages/VoxelLayout';
@@ -24,6 +25,11 @@ const appRoutes = [
     path: 'profile',
     element: <ProtectedRoute element={<ProfilePage />} />,
   },
+  {
+    path: 'profile/:userId',
+    element: <ProtectedRoute element={<Profile />} />,
+  },
+  { path: 'ideorama', element: <ProtectedRoute element={<Ideorama />} /> },
   {
     path: 'ideorama/:ideoramaid',
     element: <ProtectedRoute element={<Ideorama />} />,

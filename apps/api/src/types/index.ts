@@ -1,4 +1,5 @@
 import {
+  CloudStorage,
   Document,
   Ideorama,
   Integration,
@@ -60,6 +61,13 @@ export interface IProfileService {
     userId: string,
     body: SetProfileInput
   ): Promise<{ user?: User; profile: Profile }>;
+  followUser(userId: string, followedUserId: string): Promise<boolean>;
+  getFollowers(
+    userId: string
+  ): Promise<{ pseudo: string; avatar: string | null }[]>;
+  getFollowing(
+    userId: string
+  ): Promise<{ pseudo: string; avatar: string | null }[]>;
   deleteUser(userId: string): Promise<{ user: User; profile: Profile }>;
 }
 
@@ -119,14 +127,15 @@ export interface IEditorService {
 
 export interface ISettingsService {
   // Settings (singleton)
-  getSettings(): Promise<Setting & { integrations: Integration[] }>;
+  getSettings(): Promise<
+    Setting & { integrations: Integration[] } & { storage: CloudStorage | null }
+  >;
   updateSettings(data: {
-    storeName?: string;
-    storeURL?: string;
-    storeKey?: string;
     orgCode?: number;
     orgParentalCode?: number;
-  }): Promise<Setting & { integrations: Integration[] }>;
+  }): Promise<
+    Setting & { integrations: Integration[] } & { storage: CloudStorage | null }
+  >;
 
   // Integrations
   getIntegrations(type?: string): Promise<Integration[]>;
@@ -171,4 +180,18 @@ export interface IUserService {
   setActive(id: string, isActive: boolean): Promise<User>;
   updateRole(id: string, role: Role): Promise<User>;
   deleteUser(id: string): Promise<{ user: User }>;
+}
+
+export interface IAssetService {
+  getAssets(filter: ListAssetsFilter): Promise<PaginatedAssets>;
+  getAssetById(id: string): Promise<AssetRecord>;
+  createAsset(input: CreateAssetInput): Promise<AssetRecord>;
+  bulkCreateAssets(
+    descriptors: BulkCreateAssetInput[],
+    files: UploadedFile[],
+    thumbnails: UploadedFile[]
+  ): Promise<BulkCreateResult>;
+  updateAsset(id: string, input: UpdateAssetInput): Promise<AssetRecord>;
+  deleteAsset(id: string): Promise<AssetRecord>;
+  bulkDeleteAssets(ids: string[]): Promise<BulkDeleteResult>;
 }

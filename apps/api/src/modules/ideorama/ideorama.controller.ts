@@ -42,19 +42,18 @@ export default class IdeoramaController {
   );
 
   /**
-   * Retrieves all ideoramas for the authenticated user with profile info
+   * Retrieves all ideoramas of the user
    *
-   * @description Fetches all ideorama projects created by the authenticated user
-   * and includes the user's profile information in the response
+   * @description Fetches all ideorama projects created by the user
    *
-   * @param {Request} req - Express request with authenticated user (req.user)
+   * @param {Request} req - Express request with userId in body
    * @param {Response} res - Express response object
    * @returns {Response} JSON response
    */
   getUserIdeoramasController = asyncHandler(
     async (req: Request, res: Response) => {
       const ideoramas = await this.ideoramaService.getUserIdeoramas(
-        req.user!.userId
+        req.body.userId
       );
       HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
         res

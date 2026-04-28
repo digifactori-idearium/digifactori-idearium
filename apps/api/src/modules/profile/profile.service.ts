@@ -6,6 +6,7 @@ import { IProfileService } from '@/types';
 
 const profileTable = prisma.profile;
 const userTable = prisma.user;
+const followTable = prisma.follow;
 
 export default class ProfileService implements IProfileService {
   /**
@@ -36,13 +37,22 @@ export default class ProfileService implements IProfileService {
    * - otherwise, a Promise with null (Promise<null>)
    */
   async getSingleProfile(userId: string): Promise<Profile | null> {
-    return profileTable.findUnique({
+    const profile = await profileTable.findUnique({
       where: {
         userId: userId,
       },
       include: {
-        followers: true,
-        following: true,
+        followers: {
+          select: {
+            followerId: true,
+          },
+        },
+        following: {
+          select: {
+            followedId: true,
+          },
+        },
+
         ideoramaLiked: {
           select: {
             ideoramaId: true,
@@ -50,6 +60,7 @@ export default class ProfileService implements IProfileService {
         },
       },
     });
+    return profile;
   }
 
   /**
@@ -99,6 +110,92 @@ export default class ProfileService implements IProfileService {
       data: { pseudo, bio, avatar },
     });
     return response;
+  }
+
+  /**
+   * Follows a user.
+   *
+   * @param userId the id of the user who wants to follow (string)
+   * @param followedUserId the id of the user to follow (string)
+   * @returns Promise<true> if the follow/unfollow action is successful, Promise<false> otherwise
+   * @throws error if the user or the followed user is not found
+   */
+  async followUser(userId: string, followedUserId: string): Promise<boolean> {
+    const existingFollow = await followTable.findFirst({
+      where: {
+        followerId: userId,
+        followedId: followedUserId,
+      },
+    });
+
+    if (existingFollow) {
+      await followTable.deleteMany({
+        where: {
+          followerId: userId,
+          followedId: followedUserId,
+        },
+      });
+      return true;
+    }
+    await followTable.create({
+      data: {
+        followerId: userId,
+        followedId: followedUserId,
+      },
+    });
+    return true;
+  }
+
+  /**
+   * Gets the followers of a user
+   *
+   * @param userId the id of the user (string)
+   * @returns an array of followers with their pseudo and avatar ({pseudo: string, avatar: string | null}[])
+   * @throws error if the user is not found
+   */
+  async getFollowers(
+    userId: string
+  ): Promise<{ pseudo: string; avatar: string | null }[]> {
+    const followers = await followTable.findMany({
+      where: {
+        followedId: userId,
+      },
+      include: {
+        following: {
+          select: {
+            pseudo: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+    return followers.map(follow => follow.following);
+  }
+
+  /**
+   * Gets the following of a user
+   *
+   * @param userId the id of the user (string)
+   * @returns an array of following with their pseudo and avatar ({pseudo: string, avatar: string | null}[])
+   * @throws error if the user is not found
+   */
+  async getFollowing(
+    userId: string
+  ): Promise<{ pseudo: string; avatar: string | null }[]> {
+    const following = await followTable.findMany({
+      where: {
+        followerId: userId,
+      },
+      include: {
+        follower: {
+          select: {
+            pseudo: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+    return following.map(follow => follow.follower);
   }
 
   /**
