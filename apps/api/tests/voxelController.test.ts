@@ -1,5 +1,4 @@
 import fs from 'fs';
-import fsPromises from 'fs/promises';
 
 import { User, VoxelModel } from '@prisma/client';
 import express from 'express';
@@ -14,10 +13,6 @@ jest.mock('fs', () => ({
   readFileSync: jest.fn(),
   unlink: jest.fn(),
   writeFileSync: jest.fn(),
-}));
-
-jest.mock('fs/promises', () => ({
-  access: jest.fn(),
 }));
 
 const FAKE_USER_ID = 'cmnup6jyf0000p0utn33xhdpq';
@@ -103,17 +98,17 @@ describe('Voxel model handling', () => {
       expect(res.body.data).toEqual(modelJSON);
       expect(res.status).toBe(200);
     });
-  });
 
-  it('should return 404 if the model is not found', async () => {
-    mockService.getVoxelModelById.mockResolvedValue(null);
+    it('should return 404 if the model is not found', async () => {
+      mockService.getVoxelModelById.mockResolvedValue(null);
 
-    const res = await request(app)
-      .post('/api/voxel/')
-      .set('Authorization', authHeader())
-      .send({ voxelModelId: 'notFound' });
+      const res = await request(app)
+        .post('/api/voxel/')
+        .set('Authorization', authHeader())
+        .send({ voxelModelId: 'notFound' });
 
-    expect(res.status).toBe(404);
+      expect(res.status).toBe(404);
+    });
   });
 
   describe('POST /voxel/create', () => {
@@ -136,9 +131,9 @@ describe('Voxel model handling', () => {
   });
 
   describe('POST /voxel/save', () => {
-    it('should save the model', async () => {
+    it('should update the model in the filesystem', async () => {
       const { model } = createFakeModel();
-      (fsPromises.access as jest.Mock).mockResolvedValue(undefined);
+      mockService.getVoxelModelById.mockResolvedValue(model);
 
       const res = await request(app)
         .post('/api/voxel/save')
@@ -153,64 +148,66 @@ describe('Voxel model handling', () => {
       expect(res.status).toBe(200);
     });
 
-    it('should return 404 if the file does not already exist', async () => {
+    it('should return 404 if the file does not already exist in the filesystem', async () => {
       const { model } = createFakeModel();
-      (fsPromises.access as jest.Mock).mockRejectedValue(
-        new Error('not found')
-      );
+      mockService.getVoxelModelById.mockResolvedValue(null);
+      
 
       const res = await request(app)
         .post('/api/voxel/save')
         .set('Authorization', authHeader())
         .send({ voxelModelId: model.id, model: model.model });
 
-      expect(fsPromises.access).toHaveBeenCalledWith(
-        getVoxelModelUploadPath(model.id)
-      );
+      expect(mockService.getVoxelModelById).toHaveBeenCalledWith(model.id);
+      expect(fs.writeFileSync).not.toHaveBeenCalled()
       expect(res.status).toBe(404);
     });
   });
 
   describe('POST /voxel/all', () => {
     it('should get all voxel models of the authenticated user', async () => {
-      const { model, modelJSON } = createFakeModel({ model: {} });
+      const { model, modelJSON } = createFakeModel();
       mockService.getUserVoxelModels.mockResolvedValue([model]);
 
       const res = await request(app)
         .post('/api/voxel/all')
-        .set('Authorization', authHeader())
+        .set('Authorization', authHeader());
 
       expect(mockService.getUserVoxelModels).toHaveBeenCalledWith(FAKE_USER_ID);
-      expect(res.body.data).toEqual([modelJSON])
+      expect(res.body.data).toEqual([modelJSON]);
       expect(res.status).toBe(200);
     });
   });
 
   describe('POST /voxel/delete ', () => {
-    it("should delete the model", async () => {
-        const { model } = createFakeModel({ model: {} });
+    it('should delete the model', async () => {
+      const { model } = createFakeModel();
       mockService.getVoxelModelById.mockResolvedValue(model);
 
       const res = await request(app)
         .post('/api/voxel/delete')
         .set('Authorization', authHeader())
-        .send({voxelModelId: model.id})
+        .send({ voxelModelId: model.id });
 
       expect(mockService.deleteVoxelModel).toHaveBeenCalledWith(model.id);
+      expect(fs.unlink).toHaveBeenCalledWith(
+        getVoxelModelUploadPath(FAKE_MODEL_ID),
+        expect.anything()
+      );
       expect(res.status).toBe(204);
     });
 
-    it("should return 404 if the model is not found", async () => {
-        const { model } = createFakeModel({ model: {} });
+    it('should return 404 if the model is not found', async () => {
       mockService.getVoxelModelById.mockResolvedValue(null);
 
       const res = await request(app)
         .post('/api/voxel/delete')
         .set('Authorization', authHeader())
-        .send({voxelModelId: model.id})
+        .send({ voxelModelId: FAKE_MODEL_ID });
 
-      expect(mockService.deleteVoxelModel).not.toHaveBeenCalled()
+      expect(mockService.deleteVoxelModel).not.toHaveBeenCalled();
+      expect(fs.unlink).not.toHaveBeenCalledWith()
       expect(res.status).toBe(404);
     });
-  })
+  });
 });
