@@ -76,6 +76,7 @@ export default class VoxelController {
 
       // Update existing voxel model
       const uploadPath = getUploadPath(req.body.voxelModelId);
+      console.log("model: ", req.body.model)
       fs.writeFileSync(uploadPath, req.body.model);
 
       HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(
@@ -161,6 +162,7 @@ export default class VoxelController {
    */
   deleteVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
+
       const user = req.user!;
 
       const uploadPath = getUploadPath(req.body.voxelModelId);

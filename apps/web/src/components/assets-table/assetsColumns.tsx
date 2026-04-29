@@ -1,19 +1,12 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { AssetPreview } from '../assets/AssetPreview';
+
+import { AssetActions } from './assetActions';
+
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
-export const columns: ColumnDef<Asset>[] = [
+export const columns = (refresh: () => void): ColumnDef<Asset>[] => [
   {
     id: 'select',
     header: ({ table }: { table: any }) => (
@@ -65,6 +58,10 @@ export const columns: ColumnDef<Asset>[] = [
     header: 'Nom',
   },
   {
+    accessorKey: 'type',
+    header: 'Type',
+  },
+  {
     accessorKey: 'category',
     header: 'Catégorie',
   },
@@ -75,53 +72,18 @@ export const columns: ColumnDef<Asset>[] = [
   {
     accessorKey: 'preview',
     header: 'Aperçu',
-    cell: ({ row }) => {
+    cell: ({ row }: { row: any }) => {
       const asset = row.original;
-
       return (
-        <div className="w-24 h-24">
-          <Card className="bg-sidebar overflow-hidden border-mauve/20 shadow-sm h-full">
-            <CardContent className="p-0 h-full">
-              <img
-                src={asset.preview}
-                alt="Asset preview"
-                className="w-full h-full object-cover"
-              />
-            </CardContent>
-          </Card>
-        </div>
+        <AssetPreview name={asset.name} url={asset.preview}></AssetPreview>
       );
     },
   },
   {
     id: 'actions',
-    header: 'Actions',
-    cell: ({ row }: { row: any }) => {
+    cell: ({ row }) => {
       const asset = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="h-8 w-8 p-0 text-white! bg-mauve! hover:bg-mauve/80! !border-mauve"
-            >
-              <span className="sr-only  ">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(asset.name)}
-            >
-              Copier le nom de l'asset
-            </DropdownMenuItem>
-            <DropdownMenuItem>Supprimer l'asset</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      return <AssetActions asset={asset} refresh={refresh} />;
     },
   },
 ];

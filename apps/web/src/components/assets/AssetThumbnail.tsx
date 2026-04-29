@@ -72,7 +72,7 @@ export function AssetThumbnail({ file }: { file: string }) {
   }
 
   return (
-    <div className="w-50 h-50 flex items-center justify-center relative rounded-lg overflow-hidden">
+    <div className="w-32 h-32 flex items-center justify-center relative rounded-lg overflow-hidden">
       <Canvas
         gl={{
           preserveDrawingBuffer: true,

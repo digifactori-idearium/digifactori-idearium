@@ -55,22 +55,26 @@ export const getUser = async (parentalCode: string | undefined): Promise<ApiResp
 
 export const getProfile = async (
   userId: string
-): Promise<ApiResponse<{profile: Profile}>> => {
+): Promise<ApiResponse<{ profile: Profile }>> => {
   try {
     const response = await axios.post(
       `http://localhost:3001/api/profile/find`,
-      {userId: userId}
+      { userId: userId }
     );
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
       );
     }
-    response.data.data.profile.followers = response.data.data.profile.followers.map((f: any) => f.followerId);
-    response.data.data.profile.following = response.data.data.profile.following.map((f: any) => f.followedId);
+    response.data.data.profile.followers =
+      response.data.data.profile.followers.map((f: any) => f.followerId);
+    response.data.data.profile.following =
+      response.data.data.profile.following.map((f: any) => f.followedId);
     return response.data;
   } catch (error: any) {
-    return handleApiError(error.response?.data?.error?.message || 'Échec du profil');
+    return handleApiError(
+      error.response?.data?.error?.message || 'Échec du profil'
+    );
   }
 };
 
@@ -111,11 +115,15 @@ export const followUser = async (followedUserId: string) => {
     }
     return response.data;
   } catch (error: any) {
-    return handleApiError(error.response?.data?.error?.message || 'Échec du suivi de l\'utilisateur');
+    return handleApiError(
+      error.response?.data?.error?.message || "Échec du suivi de l'utilisateur"
+    );
   }
 };
 
-export const getFollowers = async (userId: string): Promise<ApiResponse<{followers: {pseudo: string, avatar: string}[]}>> => {
+export const getFollowers = async (
+  userId: string
+): Promise<ApiResponse<{ pseudo: string; avatar: string }[]>> => {
   try {
     const response = await axios.post(
       `http://localhost:3001/api/profile/followers`,
@@ -126,14 +134,19 @@ export const getFollowers = async (userId: string): Promise<ApiResponse<{followe
         response.data.errors[0]?.message || response.data.error?.message
       );
     }
-    console.log("Followers:", response.data);
+    console.log('Followers:', response.data);
     return response.data;
   } catch (error: any) {
-    return handleApiError(error.response?.data?.error?.message || 'Échec du chargement des followers');
+    return handleApiError(
+      error.response?.data?.error?.message ||
+        'Échec du chargement des followers'
+    );
   }
-}
+};
 
-export const getFollowing = async (userId: string): Promise<ApiResponse<{following: {pseudo: string, avatar: string}[]}>> => {
+export const getFollowing = async (
+  userId: string
+): Promise<ApiResponse<{ pseudo: string; avatar: string }[]>> => {
   try {
     const response = await axios.post(
       `http://localhost:3001/api/profile/following`,
@@ -144,10 +157,13 @@ export const getFollowing = async (userId: string): Promise<ApiResponse<{followi
         response.data.errors[0]?.message || response.data.error?.message
       );
     }
-    console.log("Following:", response.data);
+    console.log('Following:', response.data);
     return response.data;
   } catch (error: any) {
-    return handleApiError(error.response?.data?.error?.message || 'Échec du chargement des utilisateurs suivis');
+    return handleApiError(
+      error.response?.data?.error?.message ||
+        'Échec du chargement des utilisateurs suivis'
+    );
   }
 };
 

@@ -130,17 +130,17 @@ export default class ProfileController {
     if (!profile) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
-    HttpResponse.success({profile: profile}, 'Utilisateur trouvé').send(res);
-  })
+    HttpResponse.success({ profile: profile }, 'Utilisateur trouvé').send(res);
+  });
 
   /**
    * Follows or unfollows a user.
    *
    * @route  PATCH /profile/follow
    * @access Authenticated
-   * 
+   *
    * @body   { followedUserId: string }
-   * 
+   *
    * @returns
    *   - 200 { data: boolean }
    *   - 400 cannot follow/unfollow oneself
@@ -149,7 +149,9 @@ export default class ProfileController {
     const user = req.user!;
     const followingId = req.body.followedUserId;
     if (user.userId === followingId) {
-      return HttpResponse.badRequest("Vous ne pouvez pas vous suivre vous-même").send(res);
+      return HttpResponse.badRequest(
+        'Vous ne pouvez pas vous suivre vous-même'
+      ).send(res);
     }
     const followedUser = await this.profileService.getSingleUser(followingId);
     if(!followedUser) {
@@ -175,16 +177,16 @@ export default class ProfileController {
     const followers = await this.profileService.getFollowers(req.body.userId);
     HttpResponse.success({followers}, 'Followers récupérés avec succès').send(res);
   })
-
+  
   /**
-   * 
+   *
    * Retrieves the users followed by the user.
-   * 
+   *
    * @route  PATCH /profile/following
    * @access No restriction
-   * 
+   *
    * @body   { userId?: string }
-   * 
+   *
    * @returns
    *   - 200 { data: {pseudo: string, avatar: string}[] }
    *   - 404 profile not found

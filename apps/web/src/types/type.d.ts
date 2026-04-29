@@ -112,6 +112,7 @@ type Asset = {
   name: string;
   category: string;
   description: string;
+  type: IntegrationType;
   source?: string;
   preview?: source;
   createdAt?: Date;
