@@ -83,16 +83,15 @@ beforeEach(() => {
 });
 
 describe('Voxel model handling', () => {
-  describe('POST /voxel', () => {
+  describe('GET /voxel/voxelModelId', () => {
     it('should get the voxel model with the corresponding id', async () => {
       const { model, modelJSON } = createFakeModel({ model: {} });
       mockService.getVoxelModelById.mockResolvedValue(model);
       (fs.readFileSync as jest.Mock).mockReturnValue('{}');
 
       const res = await request(app)
-        .post('/api/voxel/')
+        .get(`/api/voxel/${model.id}`)
         .set('Authorization', authHeader())
-        .send({ voxelModelId: model.id });
 
       expect(mockService.getVoxelModelById).toHaveBeenCalledWith(model.id);
       expect(res.body.data).toEqual(modelJSON);
@@ -103,21 +102,20 @@ describe('Voxel model handling', () => {
       mockService.getVoxelModelById.mockResolvedValue(null);
 
       const res = await request(app)
-        .post('/api/voxel/')
+        .get(`/api/voxel/${"notFound"}`)
         .set('Authorization', authHeader())
-        .send({ voxelModelId: 'notFound' });
 
       expect(res.status).toBe(404);
     });
   });
 
-  describe('POST /voxel/create', () => {
+  describe('POST /voxel', () => {
     it('should create the model', async () => {
       const { model, modelJSON } = createFakeModel();
       mockService.createVoxelModel.mockResolvedValue(model);
 
       const res = await request(app)
-        .post('/api/voxel/create')
+        .post('/api/voxel/')
         .set('Authorization', authHeader())
         .send({ voxelModel: { name: model.name } });
 
@@ -130,15 +128,15 @@ describe('Voxel model handling', () => {
     });
   });
 
-  describe('POST /voxel/save', () => {
+  describe('PATCH /voxel/voxelModelId/save', () => {
     it('should update the model in the filesystem', async () => {
       const { model } = createFakeModel();
       mockService.getVoxelModelById.mockResolvedValue(model);
 
       const res = await request(app)
-        .post('/api/voxel/save')
+        .patch(`/api/voxel/${model.id}/save`)
         .set('Authorization', authHeader())
-        .send({ voxelModelId: model.id, model: model.model });
+        .send({model: model.model });
 
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         getVoxelModelUploadPath(model.id),
@@ -154,9 +152,9 @@ describe('Voxel model handling', () => {
       
 
       const res = await request(app)
-        .post('/api/voxel/save')
+        .patch(`/api/voxel/${model.id}/save`)
         .set('Authorization', authHeader())
-        .send({ voxelModelId: model.id, model: model.model });
+        .send({ model: model.model });
 
       expect(mockService.getVoxelModelById).toHaveBeenCalledWith(model.id);
       expect(fs.writeFileSync).not.toHaveBeenCalled()
@@ -164,13 +162,13 @@ describe('Voxel model handling', () => {
     });
   });
 
-  describe('POST /voxel/all', () => {
+  describe('GET /voxel', () => {
     it('should get all voxel models of the authenticated user', async () => {
       const { model, modelJSON } = createFakeModel();
       mockService.getUserVoxelModels.mockResolvedValue([model]);
 
       const res = await request(app)
-        .post('/api/voxel/all')
+        .get('/api/voxel')
         .set('Authorization', authHeader());
 
       expect(mockService.getUserVoxelModels).toHaveBeenCalledWith(FAKE_USER_ID);
@@ -179,15 +177,14 @@ describe('Voxel model handling', () => {
     });
   });
 
-  describe('POST /voxel/delete ', () => {
+  describe('DELETE /voxel/voxelModelId ', () => {
     it('should delete the model', async () => {
       const { model } = createFakeModel();
       mockService.getVoxelModelById.mockResolvedValue(model);
 
       const res = await request(app)
-        .post('/api/voxel/delete')
+        .delete(`/api/voxel/${model.id}`)
         .set('Authorization', authHeader())
-        .send({ voxelModelId: model.id });
 
       expect(mockService.deleteVoxelModel).toHaveBeenCalledWith(model.id);
       expect(fs.unlink).toHaveBeenCalledWith(
@@ -201,9 +198,8 @@ describe('Voxel model handling', () => {
       mockService.getVoxelModelById.mockResolvedValue(null);
 
       const res = await request(app)
-        .post('/api/voxel/delete')
+        .delete(`/api/voxel/${FAKE_MODEL_ID}`)
         .set('Authorization', authHeader())
-        .send({ voxelModelId: FAKE_MODEL_ID });
 
       expect(mockService.deleteVoxelModel).not.toHaveBeenCalled();
       expect(fs.unlink).not.toHaveBeenCalledWith()

@@ -21,12 +21,12 @@ export const checkIdeoramaExistence = (
 };
 
 export const checkVoxelModelExistence = (
-  req: Request,
+  voxelModelId: string,
   res: Response,
   next: NextFunction,
   getvoxelModelById: (voxelModelId: string) => Promise<VoxelModel | null>
 ): void => {
-  getvoxelModelById(req.body.voxelModelId).then(model => {
+  getvoxelModelById(voxelModelId).then(model => {
     if (model) {
       next();
     } else {

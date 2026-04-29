@@ -12,7 +12,7 @@ import { IVoxelService } from '@/types';
 // config stockage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join( process.cwd(), 'uploads', 'glb'));
+    cb(null, path.join(process.cwd(), 'uploads', 'glb'));
   },
   filename: (req, file, cb) => {
     const id = String(path.parse(file.originalname).name);
@@ -23,10 +23,9 @@ const storage = multer.diskStorage({
     }
 
     cb(null, `${id}.glb`);
-  }
+  },
 });
 
-// filtre optionnel (fortement conseillé)
 const fileFilter = (req, file, cb) => {
   if (file.mimetype !== 'model/gltf-binary') {
     return cb(new Error('Only GLB files allowed'));
@@ -38,39 +37,38 @@ const upload = multer({ storage, fileFilter });
 
 export default function createVoxelRoutes(voxelService: IVoxelService) {
   const voxelController = new VoxelController(voxelService);
-
   const voxelRoutes: ExpressRouter = Router();
-  voxelRoutes.post(
-    '/',
-    authenticate,
-    requireAuth,
+
+  voxelRoutes.use(authenticate, requireAuth);
+
+  voxelRoutes.get(
+    '/:voxelModelId',
     voxelController.getVoxelModelByIdController
   );
-  voxelRoutes.post(
-    '/create',
-    authenticate,
-    requireAuth,
-    voxelController.createVoxelModelController
-  );
-  voxelRoutes.post(
-    '/save',
-    authenticate,
-    requireAuth,
-    (req, res, next) => checkVoxelModelExistence(req, res, next, voxelService.getVoxelModelById),
+  voxelRoutes.post('/', voxelController.createVoxelModelController);
+  voxelRoutes.patch<{ voxelModelId: string }>(
+    '/:voxelModelId/save',
+    (req, res, next) =>
+      checkVoxelModelExistence(
+        req.params.voxelModelId,
+        res,
+        next,
+        voxelService.getVoxelModelById
+      ),
     upload.single('file'),
     voxelController.saveVoxelModelController
   );
-  voxelRoutes.post(
-    '/all',
-    authenticate,
-    requireAuth,
-    voxelController.getUserVoxelModelsController
-  );
-  voxelRoutes.post(
-    '/delete',
-    authenticate,
-    requireAuth,
-    (req, res, next) => checkVoxelModelExistence(req, res, next, voxelService.getVoxelModelById),
+  voxelRoutes.get('/', voxelController.getUserVoxelModelsController);
+  voxelRoutes.delete<{ voxelModelId: string }>(
+    '/:voxelModelId',
+    (req, res, next) => {
+      checkVoxelModelExistence(
+        req.params.voxelModelId,
+        res,
+        next,
+        voxelService.getVoxelModelById
+      );
+    },
     voxelController.deleteVoxelModelController
   );
 

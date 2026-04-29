@@ -17,16 +17,15 @@ export default class VoxelController {
    * @description Fetches a voxel model by ID and loads the associated 3D model data from the file system.
    * Ensures the authenticated user can only access their own models
    *
-   * @param {Request} req - Express request with authenticated user and voxelModelId in body
+   * @param {Request} req - Express request with authenticated user and voxelModelId in params
    * @param {Response} res - Express response object
    * @returns {Response} JSON response
    */
   getVoxelModelByIdController = asyncHandler(
     async (req: Request, res: Response) => {
       const voxelModel = await this.voxelService.getVoxelModelById(
-        req.body.voxelModelId
+        req.params.voxelModelId as string
       );
-      console.log(voxelModel);
       if (!voxelModel) {
         return HttpResponse.notFound('Modèle voxel introuvable').send(res);
       }
@@ -88,15 +87,13 @@ export default class VoxelController {
    * @description Creates a new voxel model with an empty template if voxelModelId is not provided.
    * If updating (voxelModelId provided), persists the model data to the file system
    *
-   * @param {Request} req - Express request with authenticated user and body containing:
-   *   - voxelModelId?: string (if updating)
-   *   - voxelModel: { name?: string, model?: object }
+   * @param {Request} req - Express request with authenticated user, voxelModelId in params and update data in body
    * @param {Response} res - Express response object
    * @returns {Response} JSON response
    */
   saveVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
-      const uploadPath = getVoxelModelUploadPath(req.body.voxelModelId);
+      const uploadPath = getVoxelModelUploadPath(req.params.voxelModelId as string);
       fs.writeFileSync(uploadPath, req.body.model);
       HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(
         res
@@ -132,15 +129,15 @@ export default class VoxelController {
    * @description Permanently removes a voxel model from the database and deletes its associated file from the file system.
    * Only allows deletion of models owned by the authenticated user
    *
-   * @param {Request} req - Express request with authenticated user and voxelModelId in body
+   * @param {Request} req - Express request with authenticated user and voxelModelId in params
    * @param {Response} res - Express response object
    * @returns {Response}
    */
   deleteVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
-      const uploadPath = getVoxelModelUploadPath(req.body.voxelModelId);
+      const uploadPath = getVoxelModelUploadPath(req.params.voxelModelId as string);
 
-      await this.voxelService.deleteVoxelModel(req.body.voxelModelId);
+      await this.voxelService.deleteVoxelModel(req.params.voxelModelId as string);
 
       fs.unlink(uploadPath, err => {
         if (err) {

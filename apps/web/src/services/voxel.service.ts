@@ -27,9 +27,7 @@ export interface VoxelModel {
 export const getVoxelModelById = async (
     voxelModelId: string
 ): Promise<ApiResponse<VoxelModel>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/', {
-        voxelModelId,
-    });
+    const response = await axios.get(`http://localhost:3001/api/voxel/${voxelModelId}`);
 
     return response.data;
 };
@@ -37,17 +35,12 @@ export const getVoxelModelById = async (
 export const createVoxelModel = async (
     name: string
 ): Promise<ApiResponse<VoxelModel>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/create', {
+    const response = await axios.post('http://localhost:3001/api/voxel/', {
         voxelModel: {
             name,
         },
     });
 
-    return response.data;
-};
-
-export const getAllVoxelModels = async (): Promise<ApiResponse<VoxelModel[]>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/all', {});
     return response.data;
 };
 
@@ -67,11 +60,10 @@ export const autoSaveVoxelModel = async (
 
     const formData = new FormData()
     formData.append('file', blob, `${voxelModelId}.glb`)
-    formData.append('voxelModelId', voxelModelId)
     formData.append('model', voxels)
     const response = await axios
-      .post(
-        `${baseURL}/api/voxel/save`,
+      .patch(
+        `${baseURL}/api/voxel/${voxelModelId}/save`,
         formData,
         {
           fetchOptions: { keepalive: true },
@@ -87,17 +79,19 @@ export const autoSaveVoxelModel = async (
           console.log("handleapierror")
           return handleApiError(error);
         }
-      };
+};
+
+export const getAllVoxelModels = async (): Promise<ApiResponse<VoxelModel[]>> => {
+    const response = await axios.get('http://localhost:3001/api/voxel/');
+    return response.data;
+};
 
 export const deleteVoxelModel = async (
     voxelModelId: string | undefined
 ): Promise<boolean> => {
     try {
-    const response = await axios.post(
-      `http://localhost:3001/api/voxel/delete`,
-      {
-        voxelModelId: voxelModelId,
-      }
+    const response = await axios.delete(
+      `http://localhost:3001/api/voxel/${voxelModelId}`
     );
     if (response.data.status === 'error') {
       throw new Error(
