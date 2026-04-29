@@ -41,13 +41,7 @@ function createFakeIdeorama(overrides = {}): {
     id: 'id',
     name: 'test',
     description: null,
-    theme: 'theme',
-    brightness: 'bright',
     isPublic: true,
-    backgroundColor: '#000',
-    leftWallColor: '#000',
-    rightWallColor: '#000',
-    floorColor: '#000',
     model: 'path',
     userId: 'user',
     createdAt: new Date(),
@@ -64,12 +58,11 @@ function createFakeIdeorama(overrides = {}): {
 }
 
 class MockIdeoramaService implements IIdeoramaService {
-  createIdeorama = jest.fn<Promise<Ideorama>, [Ideorama]>();
+  createIdeorama = jest.fn<Promise<Ideorama>, [string, string]>();
   updateIdeoramaModelPath = jest.fn<Promise<Ideorama>, [string, string]>();
   getIdeoramaById = jest.fn<Promise<Ideorama | null>, [string]>();
   getUserIdeoramas = jest.fn<Promise<Ideorama[]>, [string]>();
   updateIdeorama = jest.fn<Promise<Ideorama>, [string, Ideorama]>();
-  isIdeoramaInBD = jest.fn<Promise<boolean>, [string]>();
   likeIdeorama = jest.fn<Promise<boolean>, [string, string]>();
   deleteIdeorama = jest.fn<Promise<Ideorama>, [string]>();
 }
@@ -90,6 +83,7 @@ describe('Ideorama handling', () => {
       app.use(express.json());
       app.use('/api/ideorama', createIdeoramaRoutes(mockService));
       const { ideorama, ideoramaJSON } = createFakeIdeorama();
+      const user = createFakeUser()
       mockService.createIdeorama.mockResolvedValue(ideorama);
 
       const res = await request(app)
@@ -97,7 +91,7 @@ describe('Ideorama handling', () => {
         .set('Authorization', 'Bearer ' + token)
         .send({ ideorama: ideorama });
 
-      expect(mockService.createIdeorama).toHaveBeenCalledWith(ideoramaJSON);
+      expect(mockService.createIdeorama).toHaveBeenCalledWith(ideorama.name, user.id);
       expect(mockService.updateIdeoramaModelPath).toHaveBeenCalledWith(
         ideorama.id,
         path.join(process.cwd(), 'uploads/scenes', `scene-${ideorama.id}.json`)
@@ -118,7 +112,6 @@ describe('Ideorama handling', () => {
       const res = await request(app)
         .post('/api/ideorama/all')
         .set('Authorization', 'Bearer ' + token)
-        .send({ userId: user.id });
 
       expect(mockService.getUserIdeoramas).toHaveBeenCalledWith(user.id);
       expect(res.status).toBe(200);
@@ -129,11 +122,10 @@ describe('Ideorama handling', () => {
       const mockService = new MockIdeoramaService();
       app.use(express.json());
       app.use('/api/ideorama', createIdeoramaRoutes(mockService));
-      const { ideorama, ideoramaJSON } = createFakeIdeorama();
+      const { ideorama, ideoramaJSON } = createFakeIdeorama({model: {}});
       mockService.getIdeoramaById.mockResolvedValue(ideorama);
       const readFileSyncMock = fs.readFileSync as jest.Mock;
       readFileSyncMock.mockReturnValue('{}');
-      ideoramaJSON.model = {};
 
       const res = await request(app)
         .post('/api/ideorama/')
