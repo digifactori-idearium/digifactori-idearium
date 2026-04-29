@@ -73,25 +73,6 @@ export default class IdeoramaController {
   );
 
   /**
-   * Retrieves all ideoramas of the user
-   *
-   * @description Fetches all ideorama projects created by the user
-   *
-   * @param {Request} req - Express request with userId in body
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response
-   */
-  getUserIdeoramasController = asyncHandler(
-    async (req: Request, res: Response) => {
-      const ideoramas = await this.ideoramaService.getUserIdeoramas(req.user!.userId
-      );
-      HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
-        res
-      );
-    }
-  );
-
-  /**
    * Updates an ideorama and its scene model
    *
    * @description Persists the scene data to the file system
@@ -103,11 +84,30 @@ export default class IdeoramaController {
    * @returns {Response} JSON response
    */
   saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
-    const uploadPath = getIdeoramaUploadPath(req.body.ideoramaId);
-    fs.writeFileSync(uploadPath, req.body.ideorama.model);
-
-    HttpResponse.success(null, 'Ideorama updated successfully').send(res);
+      const uploadPath = getIdeoramaUploadPath(req.body.ideoramaId)
+      fs.writeFileSync(uploadPath, req.body.ideorama.model);
+      HttpResponse.success(null, 'Ideorama updated successfully').send(res);
   });
+
+  /**
+   * Retrieves all ideoramas of the user
+   *
+   * @description Fetches all ideorama projects created by the user
+   *
+   * @param {Request} req - Express request with userId in body
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  getUserIdeoramasController = asyncHandler(
+    async (req: Request, res: Response) => {
+      const ideoramas = await this.ideoramaService.getUserIdeoramas(
+        req.user!.userId
+      );
+      HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
+        res
+      );
+    }
+  );
 
   /**
    * Updates the like status of an ideorama for the authenticated user
@@ -125,7 +125,7 @@ export default class IdeoramaController {
       req.user!.userId
     );
 
-    return HttpResponse.success(null, 'Ideorama liked successfully').send(res);
+    return HttpResponse.success(null, 'Ideorama liké avec succès').send(res);
   });
 
   /**

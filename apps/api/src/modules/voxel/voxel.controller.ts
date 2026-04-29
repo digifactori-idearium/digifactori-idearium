@@ -1,5 +1,4 @@
 import fs from 'fs';
-import fsPromises from 'fs/promises';
 import path from 'path';
 
 import { Request, Response } from 'express';
@@ -97,19 +96,11 @@ export default class VoxelController {
    */
   saveVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
-      // Update existing voxel model
       const uploadPath = getVoxelModelUploadPath(req.body.voxelModelId);
-      try {
-        await fsPromises.access(uploadPath);
-        fs.writeFileSync(uploadPath, req.body.model);
-
-        HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(
-          res
-        );
-      } catch {
-        console.log('not found');
-        return HttpResponse.notFound('Modèle voxel introuvable').send(res);
-      }
+      fs.writeFileSync(uploadPath, req.body.model);
+      HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(
+        res
+      );
     }
   );
 
@@ -147,19 +138,9 @@ export default class VoxelController {
    */
   deleteVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
-
-      const model = await this.voxelService.getVoxelModelById(
-        req.body.voxelModelId
-      );
-      if (!model) {
-        return HttpResponse.notFound("Cet modèle voxel n'existe pas").send(res);
-      }
-
       const uploadPath = getVoxelModelUploadPath(req.body.voxelModelId);
 
-      await this.voxelService.deleteVoxelModel(
-        req.body.voxelModelId,
-      );
+      await this.voxelService.deleteVoxelModel(req.body.voxelModelId);
 
       fs.unlink(uploadPath, err => {
         if (err) {

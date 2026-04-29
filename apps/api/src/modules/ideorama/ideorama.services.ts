@@ -8,6 +8,7 @@ const ideoramaTable = prisma.ideorama;
 const ideoramaLikeTable = prisma.ideoramaLikes;
 
 export default class IdeoramaService implements IIdeoramaService {
+  
   /**
    * Finds an ideorama in DB based on its ID.
    *
