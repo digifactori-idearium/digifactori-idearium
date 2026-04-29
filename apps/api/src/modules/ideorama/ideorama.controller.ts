@@ -5,61 +5,11 @@ import { Request, RequestHandler, Response } from 'express';
 import IdeoramaService from './ideorama.services';
 
 import asyncHandler from '@/utils/async-handler';
+import { getIdeoramaUploadPath } from '@/utils/getUploadPath';
 import HttpResponse from '@/utils/http-response';
-import { getUploadPath } from '@/utils/ideorama';
 
 export default class IdeoramaController {
   constructor(private readonly ideoramaService: IdeoramaService) {}
-
-  /**
-   * Creates a new ideorama project
-   *
-   * @description Creates a new ideorama record in the database.
-   * Does not automatically create or initialize the scene file
-   *
-   * @param {Request} req - Express request with ideorama data in body: { ideorama: Object }
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response
-   */
-  createIdeoramaController = asyncHandler(
-    async (req: Request, res: Response) => {
-      // Save in DB
-      const newIdeorama = await this.ideoramaService.createIdeorama(
-        req.body.ideorama
-      );
-      const uploadPath = getUploadPath(newIdeorama.id);
-      await this.ideoramaService.updateIdeoramaModelPath(
-        newIdeorama.id,
-        uploadPath
-      );
-
-      // Save in uploads dir
-      const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json');
-      fs.writeFileSync(uploadPath, emptyScene);
-
-      HttpResponse.created(newIdeorama, 'Idéorama créé avec succès').send(res);
-    }
-  );
-
-  /**
-   * Retrieves all ideoramas of the user
-   *
-   * @description Fetches all ideorama projects created by the user
-   *
-   * @param {Request} req - Express request with userId in body
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response
-   */
-  getUserIdeoramasController = asyncHandler(
-    async (req: Request, res: Response) => {
-      const ideoramas = await this.ideoramaService.getUserIdeoramas(
-        req.body.userId
-      );
-      HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
-        res
-      );
-    }
-  );
 
   /**
    * Retrieves a specific ideorama with its scene data loaded from file
@@ -92,6 +42,56 @@ export default class IdeoramaController {
   );
 
   /**
+   * Creates a new ideorama project
+   *
+   * @description Creates a new ideorama record in the database.
+   * Does not automatically create or initialize the scene file
+   *
+   * @param {Request} req - Express request with ideorama data in body: { ideorama: {name: string} }
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  createIdeoramaController = asyncHandler(
+    async (req: Request, res: Response) => {
+      // Save in DB
+      const newIdeorama = await this.ideoramaService.createIdeorama(
+        req.body.ideorama.name,
+        req.user!.userId
+      );
+      const uploadPath = getIdeoramaUploadPath(newIdeorama.id);
+      await this.ideoramaService.updateIdeoramaModelPath(
+        newIdeorama.id,
+        uploadPath
+      );
+
+      // Save in uploads dir
+      const emptyScene = fs.readFileSync('uploads/scenes/scene-empty.json');
+      fs.writeFileSync(uploadPath, emptyScene);
+
+      HttpResponse.created(newIdeorama, 'Idéorama créé avec succès').send(res);
+    }
+  );
+
+  /**
+   * Retrieves all ideoramas of the user
+   *
+   * @description Fetches all ideorama projects created by the user
+   *
+   * @param {Request} req - Express request with userId in body
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  getUserIdeoramasController = asyncHandler(
+    async (req: Request, res: Response) => {
+      const ideoramas = await this.ideoramaService.getUserIdeoramas(req.user!.userId
+      );
+      HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
+        res
+      );
+    }
+  );
+
+  /**
    * Updates an ideorama and its scene model
    *
    * @description Persists the scene data to the file system
@@ -103,7 +103,7 @@ export default class IdeoramaController {
    * @returns {Response} JSON response
    */
   saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
-    const uploadPath = getUploadPath(req.body.ideoramaId);
+    const uploadPath = getIdeoramaUploadPath(req.body.ideoramaId);
     fs.writeFileSync(uploadPath, req.body.ideorama.model);
 
     HttpResponse.success(null, 'Ideorama updated successfully').send(res);
@@ -141,7 +141,7 @@ export default class IdeoramaController {
   deleteIdeoramaController = asyncHandler(
     async (req: Request, res: Response) => {
       await this.ideoramaService.deleteIdeorama(req.body.ideoramaId);
-      const uploadPath = getUploadPath(req.body.ideoramaId);
+      const uploadPath = getIdeoramaUploadPath(req.body.ideoramaId);
 
       fs.unlink(uploadPath, err => {
         if (err) console.log(err);
@@ -164,7 +164,7 @@ export default class IdeoramaController {
   getEmptyIdeorama: RequestHandler = asyncHandler(
     async (req: Request, res: Response) => {
       const emptyModel = JSON.parse(
-        fs.readFileSync(getUploadPath('empty'), 'utf-8')
+        fs.readFileSync(getIdeoramaUploadPath('empty'), 'utf-8')
       );
       HttpResponse.success(emptyModel, 'Empty ideorama template').send(res);
     }

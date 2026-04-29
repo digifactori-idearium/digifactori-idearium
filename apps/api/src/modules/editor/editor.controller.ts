@@ -2,18 +2,17 @@ import { IEditorService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
 
-/**
- * Create a new document
- *
- * @description Creates a new document for the authenticated user
- * @param {Request} req - Express request with userId from auth middleware
- * @param {Response} res - Express response object
- * @returns {Response} JSON response with created document
- */
-
 export default class EditorController {
   constructor(private readonly editorService: IEditorService) {}
 
+  /**
+   * Create a new document
+   *
+   * @description Creates a new document for the authenticated user
+   * @param {Request} req - Express request with userId from auth middleware
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response with created document
+   */
   createDocument = asyncHandler(async (req, res) => {
     const { title, content, json, wordCount, emoji, color } = req.body;
     const userId = req.user!.userId;

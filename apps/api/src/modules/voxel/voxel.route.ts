@@ -1,6 +1,4 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
-
 
 import { Router, type Router as ExpressRouter } from 'express';
 import multer from 'multer';
@@ -10,13 +8,10 @@ import VoxelController from './voxel.controller';
 import { authenticate, requireAuth } from '@/middlewares/authentication';
 import { IVoxelService } from '@/types';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // config stockage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '..', '..', '..', 'uploads', 'glb'));
+    cb(null, path.join( process.cwd(), 'uploads', 'glb'));
   },
   filename: (req, file, cb) => {
     const id = String(path.parse(file.originalname).name);
@@ -49,6 +44,12 @@ export default function createVoxelRoutes(voxelService: IVoxelService) {
     authenticate,
     requireAuth,
     voxelController.getVoxelModelByIdController
+  );
+  voxelRoutes.post(
+    '/create',
+    authenticate,
+    requireAuth,
+    voxelController.createVoxelModelController
   );
   voxelRoutes.post(
     '/save',

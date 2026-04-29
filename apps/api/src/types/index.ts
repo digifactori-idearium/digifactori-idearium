@@ -40,7 +40,10 @@ export interface IAuthService {
 }
 
 export interface IIdeoramaService {
-  createIdeorama(ideoramaData: Ideorama): Promise<Ideorama>;
+  createIdeorama(
+    name: string,
+    userId: string
+  ): Promise<Ideorama>;
   updateIdeoramaModelPath(
     ideoramaId: string,
     uploadPath: string
@@ -48,7 +51,6 @@ export interface IIdeoramaService {
   getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
   updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama>;
-  isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
   likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
 }
@@ -72,20 +74,19 @@ export interface IProfileService {
 }
 
 export interface IVoxelService {
-  createVoxelModel(data: {
-    name?: string;
-    userId: string;
-  }): Promise<VoxelModel>;
+  createVoxelModel(
+    name: string,
+    userId: string
+  ): Promise<VoxelModel>;
   updateVoxelModelPath(
     voxelModelId: string,
     uploadPath: string
   ): Promise<VoxelModel>;
   getVoxelModelById(
     voxelModelId: string,
-    userId: string
   ): Promise<VoxelModel | null>;
   getUserVoxelModels(userId: string): Promise<VoxelModel[]>;
-  deleteVoxelModel(voxelModelId: string, userId: string): Promise<VoxelModel>;
+  deleteVoxelModel(voxelModelId: string): Promise<VoxelModel>;
 }
 
 export interface IEditorService {
