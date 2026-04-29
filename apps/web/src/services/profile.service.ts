@@ -121,9 +121,7 @@ export const followUser = async (followedUserId: string) => {
   }
 };
 
-export const getFollowers = async (
-  userId: string
-): Promise<ApiResponse<{ pseudo: string; avatar: string }[]>> => {
+export const getFollowers = async (userId: string): Promise<ApiResponse<{followers: {pseudo: string, avatar: string}[]}>> => {
   try {
     const response = await axios.post(
       `http://localhost:3001/api/profile/followers`,
@@ -144,9 +142,7 @@ export const getFollowers = async (
   }
 };
 
-export const getFollowing = async (
-  userId: string
-): Promise<ApiResponse<{ pseudo: string; avatar: string }[]>> => {
+export const getFollowing = async (userId: string): Promise<ApiResponse<{following: {pseudo: string, avatar: string}[]}>> => {
   try {
     const response = await axios.post(
       `http://localhost:3001/api/profile/following`,
