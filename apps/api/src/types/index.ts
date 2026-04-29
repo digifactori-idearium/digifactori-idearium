@@ -40,6 +40,7 @@ export interface IAuthService {
 }
 
 export interface IIdeoramaService {
+  getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   createIdeorama(
     name: string,
     userId: string
@@ -48,7 +49,6 @@ export interface IIdeoramaService {
     ideoramaId: string,
     uploadPath: string
   ): Promise<Ideorama>;
-  getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
   updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama>;
   likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;

@@ -28,22 +28,6 @@ export const searchIdeorama = async (
   }
 };
 
-export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
-  try {
-    const response = await axios.get(
-      `http://localhost:3001/api/ideorama/empty`
-    );
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
-};
-
 export const createIdeorama = async (
   name: string,
 ): Promise<ApiResponse<Ideorama>> => {
@@ -157,6 +141,22 @@ export const deleteIdeorama = async (
       );
     }
     return true;
+  } catch (error: any) {
+    return handleApiError(error);
+  }
+};
+
+export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
+  try {
+    const response = await axios.get(
+      `http://localhost:3001/api/ideorama/empty`
+    );
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return response.data;
   } catch (error: any) {
     return handleApiError(error);
   }
