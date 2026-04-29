@@ -4,6 +4,7 @@ import { authenticate, requireAuth } from '../../middlewares/authentication';
 
 import IdeoramaController from './ideorama.controller';
 
+import { checkIdeoramaExistence } from '@/middlewares/checkExistence';
 import { IIdeoramaService } from '@/types';
 
 export default function createIdeoramaRoutes(
@@ -28,6 +29,7 @@ export default function createIdeoramaRoutes(
     '/save',
     authenticate,
     requireAuth,
+    (req, res, next) => checkIdeoramaExistence(req, res, next, ideoramaService.getIdeoramaById),
     ideoramaController.saveIdeoramaController
   );
   ideoramasRoutes.post(
@@ -40,12 +42,14 @@ export default function createIdeoramaRoutes(
     '/like',
     authenticate,
     requireAuth,
+    (req, res, next) => checkIdeoramaExistence(req, res, next, ideoramaService.getIdeoramaById),
     ideoramaController.likeIdeoramaController
   );
   ideoramasRoutes.post(
     '/delete',
     authenticate,
     requireAuth,
+    (req, res, next) => checkIdeoramaExistence(req, res, next, ideoramaService.getIdeoramaById),
     ideoramaController.deleteIdeoramaController
   );
   ideoramasRoutes.get('/empty', ideoramaController.getEmptyIdeorama);

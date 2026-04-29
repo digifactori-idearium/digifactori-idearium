@@ -6,6 +6,7 @@ import multer from 'multer';
 import VoxelController from './voxel.controller';
 
 import { authenticate, requireAuth } from '@/middlewares/authentication';
+import { checkVoxelModelExistence } from '@/middlewares/checkExistence';
 import { IVoxelService } from '@/types';
 
 // config stockage
@@ -55,6 +56,7 @@ export default function createVoxelRoutes(voxelService: IVoxelService) {
     '/save',
     authenticate,
     requireAuth,
+    (req, res, next) => checkVoxelModelExistence(req, res, next, voxelService.getVoxelModelById),
     upload.single('file'),
     voxelController.saveVoxelModelController
   );
@@ -68,6 +70,7 @@ export default function createVoxelRoutes(voxelService: IVoxelService) {
     '/delete',
     authenticate,
     requireAuth,
+    (req, res, next) => checkVoxelModelExistence(req, res, next, voxelService.getVoxelModelById),
     voxelController.deleteVoxelModelController
   );
 
