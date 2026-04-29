@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Loading } from '@/components/common';
 import { IdeoramaCreator } from '@/components/ideorama/IdeoramaCreator';
@@ -280,7 +280,6 @@ const MySpace: React.FC = () => {
         <IdeoramaCreator
           isOpen={createsNew}
           setIsOpen={setCreatesNew}
-          userId={acc.user?.id}
         />
       )}
     </div>

@@ -92,7 +92,6 @@ export default function VoxelLayout() {
         const response = await getVoxelModelById(modelId);
 
         if (Array.isArray(response.data.model)) {
-          console.log("model: ", response.data.model)
           setVoxels(response.data.model);
           setModelName(response.data.name);
         }
@@ -109,7 +108,10 @@ export default function VoxelLayout() {
   const saveModel = () => {
     if(sceneRef.current) {
         exportGLB(sceneRef.current).then(blob => {
-          autoSaveVoxelModel(modelId, JSON.stringify(voxelsRef.current), blob);
+          const hasBeenSaved = autoSaveVoxelModel(modelId, JSON.stringify(voxelsRef.current), blob)
+          if(!hasBeenSaved) {
+            toast.error("error")
+          };
         })
       } else {
         console.log("scene is not initialized")

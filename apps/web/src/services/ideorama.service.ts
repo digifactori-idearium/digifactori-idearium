@@ -46,7 +46,6 @@ export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
 
 export const createIdeorama = async (
   name: string,
-  userId: string | undefined
 ): Promise<ApiResponse<Ideorama>> => {
   try {
     const response = await axios.post(
@@ -54,7 +53,6 @@ export const createIdeorama = async (
       {
         ideorama: {
           name: name,
-          userId: userId,
         },
       }
     );
@@ -105,14 +103,10 @@ export const autoSaveIdeorama = (
 };
 
 export const getAllIdeoramas = async (
-  userId: string | undefined
 ): Promise<ApiResponse<Ideorama[]>> => {
   try {
     const response = await axios.post(
-      `http://localhost:3001/api/ideorama/all`,
-      {
-        userId: userId,
-      }
+      `http://localhost:3001/api/ideorama/all`,{}
     );
     if (response.data.status === 'error') {
       throw new Error(

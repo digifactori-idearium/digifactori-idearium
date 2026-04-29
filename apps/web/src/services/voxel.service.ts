@@ -1,5 +1,7 @@
 import axios from './axios.service';
 
+import { handleApiError } from '@/lib/api';
+
 interface ApiResponse<T> {
     status: string;
     message?: string;
@@ -22,10 +24,20 @@ export interface VoxelModel {
     updatedAt: string;
 }
 
+export const getVoxelModelById = async (
+    voxelModelId: string
+): Promise<ApiResponse<VoxelModel>> => {
+    const response = await axios.post('http://localhost:3001/api/voxel/', {
+        voxelModelId,
+    });
+
+    return response.data;
+};
+
 export const createVoxelModel = async (
     name: string
 ): Promise<ApiResponse<VoxelModel>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/save', {
+    const response = await axios.post('http://localhost:3001/api/voxel/create', {
         voxelModel: {
             name,
         },
@@ -39,23 +51,12 @@ export const getAllVoxelModels = async (): Promise<ApiResponse<VoxelModel[]>> =>
     return response.data;
 };
 
-export const getVoxelModelById = async (
-    voxelModelId: string
-): Promise<ApiResponse<VoxelModel>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/', {
-        voxelModelId,
-    });
-
-    return response.data;
-};
-
-export const autoSaveVoxelModel = (
+export const autoSaveVoxelModel = async (
   voxelModelId: string | undefined,
   voxels: string,
   blob: Blob,
-): boolean => {
+): Promise<boolean> => {
   try {
-    console.log("save")
     if (!voxelModelId) {
       console.warn('Cannot save: missing ideoramaid or userid');
       return false;
@@ -68,7 +69,7 @@ export const autoSaveVoxelModel = (
     formData.append('file', blob, `${voxelModelId}.glb`)
     formData.append('voxelModelId', voxelModelId)
     formData.append('model', voxels)
-    axios
+    const response = await axios
       .post(
         `${baseURL}/api/voxel/save`,
         formData,
@@ -76,14 +77,17 @@ export const autoSaveVoxelModel = (
           fetchOptions: { keepalive: true },
         }
       )
-      .catch(err => console.error('Keepalive save failed:', err));
-
-    return true;
-  } catch (error) {
-    console.error('Error queuing keepalive save:', error);
-    return false;
-  }
-};
+      if (response.data.status === 'error') {
+            throw new Error(
+              response.data.errors[0]?.message || response.data.error?.message
+            );
+          }
+          return response.data;
+        } catch (error: any) {
+          console.log("handleapierror")
+          return handleApiError(error);
+        }
+      };
 
 export const deleteVoxelModel = async (
     voxelModelId: string | undefined
