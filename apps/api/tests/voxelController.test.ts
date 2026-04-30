@@ -83,7 +83,7 @@ beforeEach(() => {
 });
 
 describe('Voxel model handling', () => {
-  describe('GET /voxel/voxelModelId', () => {
+  describe('GET /voxel/:voxelModelId', () => {
     it('should get the voxel model with the corresponding id', async () => {
       const { model, modelJSON } = createFakeModel({ model: {} });
       mockService.getVoxelModelById.mockResolvedValue(model);
@@ -128,7 +128,7 @@ describe('Voxel model handling', () => {
     });
   });
 
-  describe('PATCH /voxel/voxelModelId/save', () => {
+  describe('PATCH /voxel/:voxelModelId/save', () => {
     it('should update the model in the filesystem', async () => {
       const { model } = createFakeModel();
       mockService.getVoxelModelById.mockResolvedValue(model);
@@ -177,7 +177,7 @@ describe('Voxel model handling', () => {
     });
   });
 
-  describe('DELETE /voxel/voxelModelId ', () => {
+  describe('DELETE /voxel/:voxelModelId ', () => {
     it('should delete the model', async () => {
       const { model } = createFakeModel();
       mockService.getVoxelModelById.mockResolvedValue(model);
