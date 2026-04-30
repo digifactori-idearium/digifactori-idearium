@@ -27,7 +27,7 @@ export default class EditorController {
    * Create a new document
    *
    * @description Creates a new document for the authenticated user
-   * @param {Request} req - Express request with userId from auth middleware and coument data in body
+   * @param {Request} req - Express request with userId from auth middleware and document data in body
    * @param {Response} res - Express response object
    * @returns {Response} JSON response with created document
    */

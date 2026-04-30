@@ -59,6 +59,7 @@ export interface IProfileService {
   verifyPassword(userId: string, password: string): Promise<boolean>;
   getSingleProfile(userId: string): Promise<Profile | null>;
   getSingleUser(userId: string): Promise<User | null>;
+  getCorrectParentalCode(): Promise<number | undefined>
   updateProfile(
     userId: string,
     body: SetProfileInput
