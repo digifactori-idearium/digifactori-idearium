@@ -20,7 +20,7 @@ export const updateStoreSettings = async (
   payload: Partial<Settings>
 ): Promise<Settings> => {
   try {
-    const response = await axios.patch('api/settings/store', payload);
+    const response = await axios.patch('api/storage', payload);
 
     if (response.data.status === 'error') {
       throw new Error(response.data.error?.message);

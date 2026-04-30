@@ -1,4 +1,3 @@
-
 import axios from '../services/axios.service';
 
 import { handleApiError } from '@/lib/api';
@@ -126,7 +125,7 @@ export const getAllIdeoramas = async (
 };
 
 export const likeIdeorama = async (
-  ideoramaId: string | undefined,
+  ideoramaId: string | undefined
 ): Promise<ApiResponse<Ideorama>> => {
   try {
     const response = await axios.post(
