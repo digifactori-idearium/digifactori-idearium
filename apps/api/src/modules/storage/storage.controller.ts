@@ -1,5 +1,8 @@
+import { Readable } from 'stream';
+
 import { type Request, type Response } from 'express';
 
+import { resolveStorageAdapter } from './storage.factory';
 import StorageService from './storage.service';
 import { updateStorageSchema, testStorageSchema } from './storage.validation';
 import { validateStorageCredentials } from './storage.validator';
@@ -10,6 +13,66 @@ import { failOnValidation } from '@/utils/validation-errors';
 
 export default class StorageController {
   constructor(private readonly storageService: StorageService) {}
+
+  /**
+   * Streams an asset file from the storage provider (R2 / S3 / Azure)
+   * through the backend to avoid CORS issues on the frontend.
+   *
+   * @route  GET /assets/file/:key
+   * @access Authenticated
+   *
+   * @param  key {string} required — storage key (e.g. "assets/abc123.glb")
+   *
+   * @returns
+   *   200 {file stream}
+   *   400 {message: "Clé de fichier manquante"}
+   *   404 {message: "Fichier introuvable"}
+   */
+  getStorageFile = asyncHandler(async (req: Request, res: Response) => {
+    let key = req.params.splat;
+
+    if (Array.isArray(key)) {
+      key = key.join('/');
+    }
+
+    if (typeof key === 'string' && key.includes(',')) {
+      key = key.replace(/,/g, '/');
+    }
+
+    if (!key) {
+      return HttpResponse.badRequest('Clé de fichier manquante').send(res);
+    }
+
+    const adapter = await resolveStorageAdapter();
+    const fileUrl = adapter.getPublicUrl(key);
+
+    try {
+      const response = await fetch(fileUrl);
+
+      if (!response.ok) {
+        return HttpResponse.notFound('Fichier introuvable').send(res);
+      }
+
+      if (!response.body) {
+        return HttpResponse.serverError(
+          'Le flux du fichier est indisponible'
+        ).send(res);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (contentType) {
+        res.setHeader('Content-Type', contentType);
+      }
+
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+
+      const stream = Readable.fromWeb(response.body as any);
+
+      stream.pipe(res);
+    } catch (error: any) {
+      throw new Error(`Erreur lors du proxy du fichier: ${error.message}`);
+    }
+  });
 
   /**
    * Returns the storage configuration (credentials are included — ADMIN only).

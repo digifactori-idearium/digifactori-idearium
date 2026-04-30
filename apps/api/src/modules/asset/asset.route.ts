@@ -14,7 +14,7 @@ export default function createAssetRoutes(
 
   assetRoutes.use(authenticate);
 
-  assetRoutes.get('/', assetController.getAssets);
+  assetRoutes.get('/list', assetController.getAssets);
 
   assetRoutes.get('/:assetId', assetController.getAssetById);
 

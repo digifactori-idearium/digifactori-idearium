@@ -19,10 +19,10 @@ class Database {
     if (!Database.instance) {
       Database.instance = new PrismaClient({
         adapter: adapter,
-        log:
-          process.env.NODE_ENV === 'development'
-            ? ['query', 'info', 'warn', 'error']
-            : ['error'],
+        // log:
+        //   process.env.NODE_ENV === 'development'
+        //     ? ['query', 'info', 'warn', 'error']
+        //     : ['error'],
       });
     }
     return Database.instance;
