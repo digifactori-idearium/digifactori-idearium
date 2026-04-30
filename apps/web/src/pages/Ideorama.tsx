@@ -35,7 +35,11 @@ import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useUser } from '@/providers/UserProvider';
-import { autoSaveIdeorama, searchIdeorama } from '@/services/ideorama.service';
+import {
+  autoSaveIdeorama,
+  searchIdeorama,
+  fetchIdeoramaModelFromStorage,
+} from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 import { createReplacer } from '@/utils/utils';
 
@@ -75,31 +79,47 @@ export default function Ideorama() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      const sceneData = localStorage.getItem('sceneState');
+  const performAutoSave = useCallback(() => {
+    const sceneData = localStorage.getItem('sceneState');
+    if (sceneData && ideoramaid) {
       autoSaveIdeorama(sceneData, ideoramaid, userId);
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
   }, [ideoramaid, userId]);
 
+  // Handle browser tab closing/refresh
   useEffect(() => {
+    const handleBeforeUnload = () => {
+      performAutoSave();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
-      const sceneData = localStorage.getItem('sceneState');
-      autoSaveIdeorama(sceneData, ideoramaid, userId);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      performAutoSave();
+
       sceneState.selectedObjectId = null;
       sceneState.history = [];
       sceneState.current = -1;
       sceneState.newest = 0;
     };
-  }, []);
+  }, [performAutoSave]);
 
   useEffect(() => {
     if (!ideoramaid) return;
+
     searchIdeorama(ideoramaid)
       .then(res => {
-        const model = res.data.model;
+        const fileKey = res.data.model;
+
+        if (fileKey && typeof fileKey === 'string') {
+          return fetchIdeoramaModelFromStorage(fileKey);
+        }
+        if (fileKey && typeof fileKey === 'object') {
+          return Promise.resolve(fileKey as ModelsInfo);
+        }
+        return Promise.reject(new Error('No model data available'));
+      })
+      .then((model: ModelsInfo) => {
         if (!model) return;
 
         localStorage.setItem('sceneState', JSON.stringify(model));
@@ -111,7 +131,11 @@ export default function Ideorama() {
         if (model.floor) Object.assign(sceneState.floor, model.floor);
         if (model.objects) sceneState.objects = model.objects;
       })
-      .then(() => actions.stackState());
+      .then(() => actions.stackState())
+      .catch(err => {
+        console.error('Error loading ideorama:', err);
+        toast.error('Erreur lors du chargement du idéorama');
+      });
   }, [ideoramaid]);
 
   useEffect(() => {
