@@ -6,24 +6,24 @@ import { AssetDeleteDialog } from '../assets/AssetDeleteDialog';
 
 import { FormDialog } from '@/components/common/form/FormDialog';
 import { assetInputs } from '@/lib/input';
-// import { deleteAsset, updateAsset } from '@/services/asset.service';
+import { deleteAsset, updateAsset } from '@/services/asset.service';
 
-interface UserActionsProps {
-  asset: any;
+interface AssetActionsProps {
+  asset: Asset;
   refresh: () => void;
 }
 
-export const AssetActions = ({ asset, refresh }: UserActionsProps) => {
+export const AssetActions = ({ asset, refresh }: AssetActionsProps) => {
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (_data: any) => {
+  const handleSubmit = async (data: UpdateAssetInput) => {
     try {
       setLoading(true);
-      // await updateAsset(asset.id, data);
+      await updateAsset(asset.id, data);
       toast.success('Asset mis à jour');
       refresh();
     } catch (error: any) {
-      toast.error(error?.message || 'Erreur lors de la mise à jour');
+      toast.error(error?.message ?? 'Erreur lors de la mise à jour');
     } finally {
       setLoading(false);
     }
@@ -31,7 +31,7 @@ export const AssetActions = ({ asset, refresh }: UserActionsProps) => {
 
   const handleDelete = async () => {
     try {
-      // await deleteAsset(asset.id);
+      await deleteAsset(asset.id);
       toast.success('Asset supprimé');
       refresh();
     } catch {
@@ -55,8 +55,8 @@ export const AssetActions = ({ asset, refresh }: UserActionsProps) => {
         inputs={assetInputs}
         initialValues={{
           name: asset.name,
-          description: asset.description,
           category: asset.category,
+          tags: asset.tags,
         }}
         loading={loading}
         onsubmit={handleSubmit}

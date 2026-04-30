@@ -13,7 +13,7 @@ export function AssetsGrid({ query }: { query?: string }) {
     number | undefined
   >(undefined);
 
-  const { assets, loading, fetchNextPage, hasMore } = useAssets(
+  const { items, loading, fetchNextPage, hasMore } = useAssets(
     query,
     selectedCategoryId
   );
@@ -21,7 +21,7 @@ export function AssetsGrid({ query }: { query?: string }) {
   const observerRef = useRef<HTMLDivElement>(null);
 
   const grouped = useMemo(() => {
-    return assets.reduce(
+    return items.reduce(
       (acc, asset) => {
         const catConfig = CATEGORIES.find(c => c.en === asset.category);
 
@@ -33,7 +33,7 @@ export function AssetsGrid({ query }: { query?: string }) {
       },
       {} as Record<string, AssetItem[]>
     );
-  }, [assets]);
+  }, [items]);
 
   const activeCategoryLabel = useMemo(() => {
     return CATEGORIES.find(c => c.id === selectedCategoryId)?.fr;

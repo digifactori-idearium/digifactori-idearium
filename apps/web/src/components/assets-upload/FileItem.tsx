@@ -3,7 +3,7 @@ import { RotateCcw, Trash } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { AssetPreview } from '../assets/AssetPreview';
+import { AssetUplaodPreview } from '../assets/AssetUploadPreview';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -63,10 +63,10 @@ export const FileItem = ({
           </Button>
         </div>
         <CardContent className="flex items-center space-x-3 p-0">
-          <AssetPreview name={file.name} url={objectUrl}></AssetPreview>
+          <AssetUplaodPreview name={file.name} url={objectUrl} />
           <div className="min-w-0 pr-24">
             <p
-              className="rounded-sm border-2 border-transparent focus:border-mauve focus:outline-none transition-colors text-foreground hover:text-foreground/70 cursor-text text-pretty font-medium break-words"
+              className="rounded-sm border-2 border-transparent focus:border-mauve focus:outline-none transition-colors text-foreground hover:text-foreground/70 cursor-text text-pretty font-medium wrap-break-word"
               contentEditable
               suppressContentEditableWarning
               onBlur={e => {
