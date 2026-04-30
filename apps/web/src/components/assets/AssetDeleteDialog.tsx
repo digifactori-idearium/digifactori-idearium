@@ -12,7 +12,7 @@ import {
 
 interface Props {
   trigger: React.ReactNode;
-  name: string;
+  name?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -33,8 +33,10 @@ export const AssetDeleteDialog: React.FC<Props> = ({
           </AlertDialogTitle>
 
           <AlertDialogDescription className="text-center text-lg break-all overflow-hidden">
-            Cela supprimera définitivement l'asset.{' '}
-            <span className="font-bold text-mauve">{name}</span>.
+            Cela supprimera définitivement les(l') asset(s){' '}
+            <span className="font-bold text-mauve">
+              {name ?? ' sélectionné(s)'}
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
 

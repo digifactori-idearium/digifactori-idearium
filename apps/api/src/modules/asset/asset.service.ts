@@ -113,6 +113,7 @@ export default class AssetService implements IAssetService {
         data: {
           name: input.name,
           category: input.category as any,
+          type: input.type as any,
           tags: input.tags ?? [],
           file: '__pending__',
         },
@@ -206,6 +207,7 @@ export default class AssetService implements IAssetService {
         const asset = await this.createAsset({
           name: desc.name,
           category: desc.category,
+          type: desc.type,
           tags: desc.tags,
           file,
           thumbnail,

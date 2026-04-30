@@ -2,15 +2,15 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { AssetDeleteDialog } from '../assets/AssetDeleteDialog';
 import { DataTable } from '../common/data-table/dataTable';
 
 import { columns } from './assetsColumns';
 
 import { AssetFilesUpload } from '@/components/assets-upload/AssetFilesUpload';
 import { SuperButton } from '@/components/common/button';
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { inferCategory } from '@/lib/asset';
+import { inferType } from '@/lib/asset';
 import {
   bulkCreateAssets,
   bulkDeleteAssets,
@@ -58,7 +58,7 @@ export default function AssetHandling() {
       const result = await bulkCreateAssets({
         assets: files.map(file => ({
           name: file.name.replace(/\.[^.]+$/, ''),
-          type: inferCategory(file),
+          type: inferType(file),
           file,
         })),
       });
@@ -145,13 +145,18 @@ export default function AssetHandling() {
               <span className="text-sm text-muted-foreground">
                 {selectedAssetIds.length} asset(s) sélectionné(s)
               </span>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleDeleteSelected}
-              >
-                Supprimer la sélection
-              </Button>
+              <AssetDeleteDialog
+                trigger={
+                  <button
+                    className="p-2 rounded-full hover:bg-red-500/30 bg-red-500/10 text-red-500 transition-colors"
+                    title="Supprimer"
+                  >
+                    Supprimer la sélection
+                  </button>
+                }
+                onConfirm={handleDeleteSelected}
+                onCancel={() => {}}
+              />
             </div>
           )}
         </div>

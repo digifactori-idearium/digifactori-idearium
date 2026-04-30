@@ -49,8 +49,8 @@ export function buildBulkFormData(input: BulkCreateAssetInput): FormData {
 
     const descriptor: BulkAssetDescriptor = {
       name: asset.name,
-      category: asset.category,
       type: asset.type,
+      category: asset.category,
       tags: asset.tags,
       fileIndex,
     };
@@ -125,14 +125,14 @@ export function is3DModel(file: File): boolean {
 }
 
 /**
- * Infer a default asset category from a browser File object.
+ * Infer a default asset type from a browser File object.
  *
  * Priority: SOUND → IMAGE → MODEL_3D → OTHER
  * Both MIME type and file extension are checked so formats like .glb, .flac,
  * or .aiff (which browsers often report with an empty MIME type) are handled
  * correctly.
  */
-export function inferCategory(file: File): IntegrationType {
+export function inferType(file: File): IntegrationType {
   if (isSound(file)) return 'SOUND';
   if (isImage(file)) return 'IMAGE';
   if (is3DModel(file)) return 'MODEL_3D';
