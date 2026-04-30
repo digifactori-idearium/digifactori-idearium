@@ -38,12 +38,12 @@ export default class AssetService implements IAssetService {
    * Paginated, filtered list with public URLs of assets.
    */
   async getAssets(filter: ListAssetsFilter) {
-    const { category, assetType, search, tags, page, limit } = filter;
+    const { category, type, search, tags, page, limit } = filter;
     const skip = (page - 1) * limit;
 
     const where = {
       ...(category ? { category } : {}),
-      ...(assetType ? { assetType } : {}),
+      ...(type ? { type } : {}),
       ...(search
         ? { name: { contains: search, mode: 'insensitive' as const } }
         : {}),
@@ -267,8 +267,8 @@ export default class AssetService implements IAssetService {
           ...(input.category !== undefined && {
             category: input.category as any,
           }),
-          ...(input.assetType !== undefined && {
-            assetType: input.assetType as any,
+          ...(input.type !== undefined && {
+            type: input.type as any,
           }),
           ...(input.tags !== undefined && { tags: input.tags }),
           ...(fileKey !== undefined && { file: fileKey }),

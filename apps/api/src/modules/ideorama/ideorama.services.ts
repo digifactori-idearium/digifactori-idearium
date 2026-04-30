@@ -21,7 +21,30 @@ export default class IdeoramaService implements IIdeoramaService {
   }
 
   /**
+   * Updates the model storage key in DB of the ideorama.
+   *
+   * @param ideoramaId - the ideorama id to update
+   * @param fileKey - the storage key returned from uploadFile (e.g., "scenes/abc123.json")
+   * @returns a Promise with the updated ideorama (Promise<Ideorama>)
+   * @throws error if the ideoramaId does not exist in DB
+   */
+  async updateIdeoramaModelFileKey(
+    ideoramaId: string,
+    fileKey: string
+  ): Promise<Ideorama> {
+    return ideoramaTable.update({
+      where: {
+        id: ideoramaId,
+      },
+      data: {
+        model: fileKey,
+      },
+    });
+  }
+
+  /**
    * Updates the model in BD of the ideorama.
+   * @deprecated Use updateIdeoramaModelFileKey instead - this kept for backward compatibility
    *
    * @param ideoramaId - the ideorama id to update
    * @param uploadPath - the new model to put in DB

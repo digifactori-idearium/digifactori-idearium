@@ -26,7 +26,30 @@ export default class VoxelService implements IVoxelService {
   }
 
   /**
+   * Updates the model storage key in DB of the voxel model.
+   *
+   * @param voxelModelId - the voxel model id to update
+   * @param fileKey - the storage key returned from uploadFile (e.g., "voxel-models/abc123.json")
+   * @returns a Promise with the updated voxel model (Promise<VoxelModel>)
+   * @throws error if the voxelModelId does not exist in DB
+   */
+  async updateVoxelModelFileKey(
+    voxelModelId: string,
+    fileKey: string
+  ): Promise<VoxelModel> {
+    return voxelModelTable.update({
+      where: {
+        id: voxelModelId,
+      },
+      data: {
+        model: fileKey,
+      },
+    });
+  }
+
+  /**
    * Updates the model in BD of the voxel model.
+   * @deprecated Use updateVoxelModelFileKey instead - this kept for backward compatibility
    *
    * @param voxelModelId - the voxel model id to update
    * @param uploadPath - the new model to put in DB

@@ -41,6 +41,10 @@ export interface IAuthService {
 
 export interface IIdeoramaService {
   createIdeorama(ideoramaData: Ideorama): Promise<Ideorama>;
+  updateIdeoramaModelFileKey(
+    ideoramaId: string,
+    fileKey: string
+  ): Promise<Ideorama>;
   updateIdeoramaModelPath(
     ideoramaId: string,
     uploadPath: string
@@ -76,6 +80,10 @@ export interface IVoxelService {
     name?: string;
     userId: string;
   }): Promise<VoxelModel>;
+  updateVoxelModelFileKey(
+    voxelModelId: string,
+    fileKey: string
+  ): Promise<VoxelModel>;
   updateVoxelModelPath(
     voxelModelId: string,
     uploadPath: string

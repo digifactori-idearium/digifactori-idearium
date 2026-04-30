@@ -117,7 +117,7 @@ interface UploadedFile {
 
 type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
-type AssetType =
+type AssetCategory =
   | 'FOOD_AND_DRINK'
   | 'CLUTTER'
   | 'WEAPONS'
@@ -134,8 +134,8 @@ type AssetType =
 interface AssetRecord {
   id: string;
   name: string;
-  category: IntegrationType;
-  assetType: AssetType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   tags: string[];
   file: string;
   thumbnail: string | null;
@@ -143,8 +143,8 @@ interface AssetRecord {
 
 interface CreateAssetInput {
   name: string;
-  category: IntegrationType;
-  assetType?: AssetType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   tags?: string[];
   file: UploadedFile;
   thumbnail?: UploadedFile;
@@ -152,8 +152,8 @@ interface CreateAssetInput {
 
 interface BulkCreateAssetInput {
   name: string;
-  category: IntegrationType;
-  assetType?: AssetType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   tags?: string[];
   fileIndex: number;
   thumbnailIndex?: number;
@@ -161,16 +161,16 @@ interface BulkCreateAssetInput {
 
 interface UpdateAssetInput {
   name?: string;
-  category?: IntegrationType;
-  assetType?: AssetType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   tags?: string[];
   file?: UploadedFile;
   thumbnail?: UploadedFile;
 }
 
 interface ListAssetsFilter {
-  category?: IntegrationType;
-  assetType?: AssetType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   search?: string;
   tags?: string[];
   page: number;

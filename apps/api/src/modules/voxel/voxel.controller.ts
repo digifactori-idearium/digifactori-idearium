@@ -6,27 +6,9 @@ import { Request, Response } from 'express';
 import { IVoxelService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
+import { uploadFile, deleteFile } from '@/utils/storage.service';
 
-/**
- * Helper function to get the file path for a voxel model
- *
- * @description Generates and validates the upload path for a voxel model file.
- * Ensures the ID is alphanumeric to prevent path traversal attacks
- *
- * @param {string} voxelModelId - The unique identifier for the voxel model
- * @returns {string} The absolute file path for the voxel model JSON file
- * @throws {Error} If voxelModelId contains invalid characters
- */
-const getUploadPath = (voxelModelId: string): string => {
-  const id = String(voxelModelId);
-
-  if (!/^[a-z0-9]+$/i.test(id)) {
-    throw new Error('Invalid voxelModelId');
-  }
-
-  const fileName = `model-${id}.json`;
-  return path.join(process.cwd(), 'uploads/voxel-models', fileName);
-};
+const UPLOAD_DIR = 'voxel-models';
 
 export default class VoxelController {
   constructor(private readonly voxelService: IVoxelService) {}
@@ -46,27 +28,31 @@ export default class VoxelController {
   saveVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
       const user = req.user!;
-      console.log("controller");
 
+      //  CREATE
       if (!req.body.voxelModelId) {
-        // Create new voxel model
         const newVoxelModel = await this.voxelService.createVoxelModel({
           name: req.body.voxelModel?.name,
           userId: user.userId,
         });
 
-        const uploadPath = getUploadPath(newVoxelModel.id);
-        await this.voxelService.updateVoxelModelPath(
-          newVoxelModel.id,
-          uploadPath
-        );
-
-        const emptyModel = fs.readFileSync(
+        const emptyModelBuffer = fs.readFileSync(
           path.join(process.cwd(), 'uploads/voxel-models', 'model-empty.json'),
           'utf-8'
         );
 
-        fs.writeFileSync(uploadPath, emptyModel);
+        const file = {
+          buffer: Buffer.from(emptyModelBuffer),
+          originalname: `model-${newVoxelModel.id}.json`,
+          size: emptyModelBuffer.length,
+          mimetype: 'application/json',
+        } as any;
+
+        const fileKey = await uploadFile(file, UPLOAD_DIR, newVoxelModel.id);
+        await this.voxelService.updateVoxelModelFileKey(
+          newVoxelModel.id,
+          fileKey
+        );
 
         return HttpResponse.created(
           newVoxelModel,
@@ -74,10 +60,62 @@ export default class VoxelController {
         ).send(res);
       }
 
-      // Update existing voxel model
-      const uploadPath = getUploadPath(req.body.voxelModelId);
-      console.log("model: ", req.body.model)
-      fs.writeFileSync(uploadPath, req.body.model);
+      // UPDATE
+      const voxelModel = await this.voxelService.getVoxelModelById(
+        req.body.voxelModelId,
+        user.userId
+      );
+
+      if (!voxelModel) {
+        return HttpResponse.notFound('Voxel model not found').send(res);
+      }
+
+      // Delete previous JSON voxel file
+      if (voxelModel.model) {
+        await deleteFile(voxelModel.model).catch(() => {});
+      }
+
+      // Save JSON voxel data
+      const modelJson =
+        typeof req.body.model === 'string'
+          ? req.body.model
+          : JSON.stringify(req.body.model ?? []);
+
+      const jsonFile = {
+        buffer: Buffer.from(modelJson),
+        originalname: `model-${req.body.voxelModelId}.json`,
+        size: modelJson.length,
+        mimetype: 'application/json',
+      } as any;
+
+      const jsonFileKey = await uploadFile(
+        jsonFile,
+        UPLOAD_DIR,
+        req.body.voxelModelId
+      );
+
+      // Save GLB file if provided
+      const glbFile = (req.files as any)?.glb?.[0] ?? req.files ?? null;
+      if (glbFile) {
+        // Delete previous GLB if it exists
+        const glbKey = `${UPLOAD_DIR}/${req.body.voxelModelId}.glb`;
+        await deleteFile(glbKey).catch(() => {});
+
+        await uploadFile(
+          {
+            ...glbFile,
+            originalname: `${req.body.voxelModelId}.glb`,
+            mimetype: 'model/gltf-binary',
+          },
+          UPLOAD_DIR,
+          `${req.body.voxelModelId}-glb`
+        );
+      }
+
+      await this.voxelService.updateVoxelModelFileKey(
+        req.body.voxelModelId,
+        jsonFileKey
+      );
 
       HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(
         res
@@ -108,15 +146,9 @@ export default class VoxelController {
         return HttpResponse.notFound('Voxel model introuvable').send(res);
       }
 
-      const fileContent = fs.readFileSync(voxelModel.model, 'utf-8');
-
-      HttpResponse.success(
-        {
-          ...voxelModel,
-          model: JSON.parse(fileContent),
-        },
-        'Voxel model récupéré avec succès'
-      ).send(res);
+      HttpResponse.success(voxelModel, 'Voxel model récupéré avec succès').send(
+        res
+      );
     }
   );
 
@@ -162,21 +194,29 @@ export default class VoxelController {
    */
   deleteVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
-
       const user = req.user!;
 
-      const uploadPath = getUploadPath(req.body.voxelModelId);
-
-      await this.voxelService.deleteVoxelModel(
+      const voxelModel = await this.voxelService.getVoxelModelById(
         req.body.voxelModelId,
         user.userId
       );
 
-      fs.unlink(uploadPath, err => {
-        if (err) {
-          console.log(err);
-        }
-      });
+      if (!voxelModel) {
+        return HttpResponse.notFound('Voxel model not found').send(res);
+      }
+
+      // Delete the file from storage
+      if (voxelModel.model) {
+        await deleteFile(voxelModel.model).catch(() => {
+          // Ignore error if file doesn't exist
+        });
+      }
+
+      // Delete from DB
+      await this.voxelService.deleteVoxelModel(
+        req.body.voxelModelId,
+        user.userId
+      );
 
       HttpResponse.deleted('Voxel model supprimé avec succès').send(res);
     }

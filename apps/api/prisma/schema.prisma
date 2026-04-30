@@ -132,7 +132,7 @@ enum IntegrationType {
   OTHER
 }
 
-enum AssetType {
+enum AssetCategory {
   FOOD_AND_DRINK
   CLUTTER
   WEAPONS
@@ -201,8 +201,8 @@ model Integration {
 model Asset {
   id        String          @id @default(cuid())
   name      String
-  category  IntegrationType
-  assetType AssetType       @default(OTHER)
+  type      IntegrationType @default(OTHER)
+  category  AssetCategory       @default(OTHER)
   tags      String[]
 
   file      String
