@@ -19,8 +19,8 @@ export function buildSingleFormData(
   const form = new FormData();
 
   if (input.name !== undefined) form.append('name', input.name);
+  if (input.type !== undefined) form.append('type', input.type);
   if (input.category !== undefined) form.append('category', input.category);
-  if (input.assetType !== undefined) form.append('assetType', input.assetType);
   if (input.tags !== undefined) form.append('tags', JSON.stringify(input.tags));
   if (input.file !== undefined) form.append('file', input.file);
   if (input.thumbnail !== undefined) form.append('thumbnail', input.thumbnail);
@@ -50,7 +50,7 @@ export function buildBulkFormData(input: BulkCreateAssetInput): FormData {
     const descriptor: BulkAssetDescriptor = {
       name: asset.name,
       category: asset.category,
-      assetType: asset.assetType,
+      type: asset.type,
       tags: asset.tags,
       fileIndex,
     };
@@ -132,9 +132,21 @@ export function is3DModel(file: File): boolean {
  * or .aiff (which browsers often report with an empty MIME type) are handled
  * correctly.
  */
-export function inferCategory(file: File): AssetCategory {
+export function inferCategory(file: File): IntegrationType {
   if (isSound(file)) return 'SOUND';
   if (isImage(file)) return 'IMAGE';
   if (is3DModel(file)) return 'MODEL_3D';
   return 'OTHER';
+}
+
+const STORAGE_PREFIX = '/api/storage/file/';
+
+export function isStorageKey(file: string): boolean {
+  return !file.startsWith('http') && !file.startsWith('blob:');
+}
+
+export function resolveFileUrl(file: string): string {
+  if (!file) return '';
+  if (isStorageKey(file)) return `${STORAGE_PREFIX}${file}`;
+  return file; // full URL (poly.pizza, freesound, etc.)
 }

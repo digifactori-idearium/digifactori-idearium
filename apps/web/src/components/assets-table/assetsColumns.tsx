@@ -58,12 +58,12 @@ export const columns = (refresh: () => void): ColumnDef<Asset>[] => [
     header: 'Nom',
   },
   {
-    accessorKey: 'category',
-    header: 'Catégorie',
+    accessorKey: 'type',
+    header: 'Type',
   },
   {
-    accessorKey: 'assetType',
-    header: 'Type',
+    accessorKey: 'category',
+    header: 'Catégorie',
   },
   {
     accessorKey: 'tags',

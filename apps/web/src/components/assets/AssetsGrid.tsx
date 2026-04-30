@@ -9,11 +9,11 @@ import { ASSET_TYPE_FR, matchAssetType } from '@/lib/asset-types';
 
 /**
  * Resolve a display label for an item's type.
- *   We map it to the closest AssetType via matchAssetType, then translate.
+ *   We map it to the closest AssetCategory via matchAssetType, then translate.
  */
 function resolveLabel(item: MediaItem): string {
-  // Internal assets expose assetType directly
-  const typed = (item as any).assetType as AssetType | undefined;
+  // Internal assets expose Category directly
+  const typed = (item as any).category as AssetCategory | undefined;
   if (typed && typed in ASSET_TYPE_FR) return ASSET_TYPE_FR[typed];
 
   // External assets: map the raw category string
@@ -105,8 +105,8 @@ export function AssetsGrid({ query }: Readonly<{ query?: string }>) {
 
       {/* Asset grid */}
       <div className="grid grid-cols-3 gap-2">
-        {visibleItems.map(asset => (
-          <AssetTile key={asset.id} asset={asset as AssetItem} />
+        {visibleItems.map((asset, id) => (
+          <AssetTile key={id} asset={asset as AssetItem} />
         ))}
       </div>
 

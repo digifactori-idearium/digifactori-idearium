@@ -58,7 +58,7 @@ export default function AssetHandling() {
       const result = await bulkCreateAssets({
         assets: files.map(file => ({
           name: file.name.replace(/\.[^.]+$/, ''),
-          category: inferCategory(file),
+          type: inferCategory(file),
           file,
         })),
       });
@@ -104,7 +104,7 @@ export default function AssetHandling() {
         data.length >= selectedAssetIds.length && page > 1 ? page - 1 : page;
       setPage(nextPage);
       await fetchPage(nextPage);
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la suppression');
     }
   }, [selectedAssetIds, data.length, page, fetchPage]);

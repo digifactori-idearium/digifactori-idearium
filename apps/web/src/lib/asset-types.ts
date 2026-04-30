@@ -1,14 +1,14 @@
 /**
  * @file asset-types.ts
- * Single source of truth for the AssetType enum used across the app.
+ * Single source of truth for the AssetCategory enum used across the app.
  *
- * Values match the Prisma AssetType enum exactly.
+ * Values match the Prisma AssetCategory enum exactly.
  * Labels are provided in both English (used by external APIs like Poly Pizza)
  * and French (displayed in the UI).
  */
 
 export interface AssetTypeEntry {
-  value: AssetType;
+  value: AssetCategory;
   en: string;
   fr: string;
 }
@@ -36,20 +36,20 @@ export const ASSET_TYPES: AssetTypeEntry[] = [
   { value: 'OTHER', en: 'Other', fr: 'Autre' },
 ] as const;
 
-export const ASSET_TYPE_FR: Record<AssetType, string> = Object.fromEntries(
+export const ASSET_TYPE_FR: Record<AssetCategory, string> = Object.fromEntries(
   ASSET_TYPES.map(t => [t.value, t.fr])
-) as Record<AssetType, string>;
+) as Record<AssetCategory, string>;
 
-export const ASSET_TYPE_EN: Record<AssetType, string> = Object.fromEntries(
+export const ASSET_TYPE_EN: Record<AssetCategory, string> = Object.fromEntries(
   ASSET_TYPES.map(t => [t.value, t.en])
-) as Record<AssetType, string>;
+) as Record<AssetCategory, string>;
 
 /**
  * Map an arbitrary string (e.g. from an external API like Poly Pizza)
- * to the closest AssetType enum value.
+ * to the closest AssetCategory enum value.
  * Falls back to 'OTHER' when no match is found.
  */
-export function matchAssetType(raw: string): AssetType {
+export function matchAssetType(raw: string): AssetCategory {
   const normalised = raw.trim().toLowerCase();
   const match = ASSET_TYPES.find(
     t =>
