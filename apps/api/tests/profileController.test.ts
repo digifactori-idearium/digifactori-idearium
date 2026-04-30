@@ -49,10 +49,13 @@ function createFakeProfile(overrides = {}): {profile: Profile, profileJSON: any}
   return { profile, profileJSON };
 }
 
+const authHeader = () => 'Bearer ' + token;
+
 class MockProfileService implements IProfileService {
   verifyPassword = jest.fn<Promise<boolean>, [string, string]>();
   getSingleProfile = jest.fn<Promise<Profile | null>, [string]>();
   getSingleUser = jest.fn<Promise<User | null>, [string]>();
+  getCorrectParentalCode = jest.fn<Promise<number | undefined>, []>();
   updateProfile = jest.fn<
     Promise<{ user?: User; profile: Profile }>,
     [string, SetProfileInput]
@@ -93,7 +96,7 @@ describe('Profile Handling', () => {
 
       const res = await request(app)
         .get('/api/profile/')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', authHeader());
 
       expect(mockService.getSingleProfile).toHaveBeenCalledWith(profile.userId);
       expect(res.body.data.profile).toEqual(profileJSON);
@@ -105,22 +108,53 @@ describe('Profile Handling', () => {
 
       const res = await request(app)
         .get('/api/profile/')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', authHeader());
 
       expect(mockService.getSingleProfile).toHaveBeenCalledWith(FAKE_USER_ID);
       expect(res.status).toBe(404);
     });
   });
 
-  describe('POST /profile/user', () => {
+  describe('GET /profile/user', () => {
     it('should get the user data of the authenticated user', async () => {
       const { user, userJSON } = createFakeUser();
       mockService.getSingleUser.mockResolvedValue(user);
+      mockService.getCorrectParentalCode.mockResolvedValue(1234);
 
       const res = await request(app)
-        .post('/api/profile/user')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ parental_code: '2026' });
+        .get('/api/profile/user')
+        .set('Authorization', authHeader())
+        .set('X-Parental-Code', '1234');
+
+      expect(mockService.getSingleUser).toHaveBeenCalledWith(user.id);
+      expect(res.body.data.user).toEqual(userJSON);
+      expect(res.status).toBe(200);
+    });
+
+    it('should return null if the parental code is invalid and the user is an intern', async () => {
+      const {user} = createFakeUser({ role: 'INTERN' });
+      mockService.getSingleUser.mockResolvedValue(user);
+      mockService.getCorrectParentalCode.mockResolvedValue(1234);
+
+      const res = await request(app)
+        .get('/api/profile/user')
+        .set('Authorization', authHeader())
+        .set('X-Parental-Code', '1111');
+
+      expect(mockService.getSingleUser).toHaveBeenCalledWith(user.id);
+      expect(res.body.data.user).toBeNull();
+      expect(res.status).toBe(200);
+    });
+
+    it('should return the user if the parental code is invalid but the user is not an intern', async () => {
+      const {user, userJSON} = createFakeUser({ role: 'EMPLOYEE' });
+      mockService.getSingleUser.mockResolvedValue(user);
+      mockService.getCorrectParentalCode.mockResolvedValue(1234);
+
+      const res = await request(app)
+        .get('/api/profile/user')
+        .set('Authorization', authHeader())
+        .set('X-Parental-Code', '1111');
 
       expect(mockService.getSingleUser).toHaveBeenCalledWith(user.id);
       expect(res.body.data.user).toEqual(userJSON);
@@ -132,43 +166,16 @@ describe('Profile Handling', () => {
       mockService.getSingleUser.mockResolvedValue(null);
 
       const res = await request(app)
-        .post('/api/profile/user')
-        .set('Authorization', `Bearer ${token}`);
+        .get('/api/profile/user')
+        .set('Authorization', authHeader())
+        .set('X-Parental-Code', '1234');
 
       expect(mockService.getSingleUser).toHaveBeenCalledWith(FAKE_USER_ID);
       expect(res.status).toBe(404);
     });
-
-    it('should return null user if the parental code is invalid and the user is an intern', async () => {
-      const {user} = createFakeUser({ role: 'INTERN' });
-      mockService.getSingleUser.mockResolvedValue(user);
-
-      const res = await request(app)
-        .post('/api/profile/user')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ parental_code: 'invalid_code' });
-
-      expect(mockService.getSingleUser).toHaveBeenCalledWith(user.id);
-      expect(res.body.data.user).toBeNull();
-      expect(res.status).toBe(200);
-    });
-
-    it('should return the user if the parental code is invalid but the user is not an intern', async () => {
-      const {user, userJSON} = createFakeUser({ role: 'EMPLOYEE' });
-      mockService.getSingleUser.mockResolvedValue(user);
-
-      const res = await request(app)
-        .post('/api/profile/user')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ parental_code: 'invalid_code' });
-
-      expect(mockService.getSingleUser).toHaveBeenCalledWith(user.id);
-      expect(res.body.data.user).toEqual(userJSON);
-      expect(res.status).toBe(200);
-    });
   });
 
-  describe('POST /profile/setting', () => {
+  describe('PATCH /profile/setting', () => {
     it('should update the profile and user data of the authenticated user', async () => {
       const {user: newUser, userJSON: newUserJSON} = createFakeUser({ first_name: 'NewFirstName' });
       const {profile: newProfile, profileJSON: newProfileJSON} = createFakeProfile({ pseudo: 'NewPseudo' });
@@ -176,8 +183,8 @@ describe('Profile Handling', () => {
       mockService.updateProfile.mockResolvedValue({ user: newUser, profile: newProfile});
 
       const res = await request(app)
-        .post('/api/profile/setting')
-        .set('Authorization', `Bearer ${token}`)
+        .patch('/api/profile/setting')
+        .set('Authorization', authHeader())
         .send({
           user: newUser,
           profile: newProfile,
@@ -198,8 +205,8 @@ describe('Profile Handling', () => {
       mockService.getSingleUser.mockResolvedValue(null);
 
       const res = await request(app)
-        .post('/api/profile/setting')
-        .set('Authorization', `Bearer ${token}`)
+        .patch('/api/profile/setting')
+        .set('Authorization', authHeader())
         .send({
           user: newUser,
           profile: newProfile,
@@ -213,8 +220,8 @@ describe('Profile Handling', () => {
       const {profile} = createFakeProfile();
 
       const res = await request(app)
-        .post('/api/profile/setting')
-        .set('Authorization', `Bearer ${token}`)
+        .patch('/api/profile/setting')
+        .set('Authorization', authHeader())
         .send({
           user: { ...user, email: 'e' },
           profile,
@@ -224,15 +231,14 @@ describe('Profile Handling', () => {
     });
   });
   
-  describe('POST /profile/find', () => {
+  describe('GET /profile/:userId', () => {
     it('should get the profile of the user with the given id', async () => {
       const { profile, profileJSON } = createFakeProfile();
       mockService.getSingleProfile.mockResolvedValue(profile);
 
       const res = await request(app)
-        .post('/api/profile/find')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ userId: profile.userId });
+        .get(`/api/profile/${profile.userId}`)
+        .set('Authorization', authHeader());
 
       expect(mockService.getSingleProfile).toHaveBeenCalledWith(profile.userId);
       expect(res.body.data.profile).toEqual(profileJSON);
@@ -243,9 +249,8 @@ describe('Profile Handling', () => {
       mockService.getSingleProfile.mockResolvedValue(null);
 
       const res = await request(app)
-        .post('/api/profile/find')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ userId: FAKE_USER_ID });
+        .get(`/api/profile/${FAKE_USER_ID}`)
+        .set('Authorization', authHeader());
 
       expect(mockService.getSingleProfile).toHaveBeenCalledWith(FAKE_USER_ID);
       expect(res.status).toBe(404);
@@ -260,7 +265,7 @@ describe('Profile Handling', () => {
 
       const res = await request(app)
         .post('/api/profile/follow')
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', authHeader())
         .send({ followedUserId: followedUser.id });
 
       expect(mockService.followUser).toHaveBeenCalledWith(FAKE_USER_ID, followedUser.id);
@@ -271,7 +276,7 @@ describe('Profile Handling', () => {
     it("should not allow a user to follow themselves", async () => {
       const res = await request(app)
         .post('/api/profile/follow')
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', authHeader())
         .send({ followedUserId: FAKE_USER_ID });
 
       expect(mockService.followUser).not.toHaveBeenCalled();
@@ -284,7 +289,7 @@ describe('Profile Handling', () => {
 
       const res = await request(app)
         .post('/api/profile/follow')
-        .set('Authorization', `Bearer ${token}`)
+        .set('Authorization', authHeader())
         .send({ followedUserId });
 
       expect(mockService.getSingleUser).toHaveBeenCalledWith(followedUserId);
@@ -292,41 +297,65 @@ describe('Profile Handling', () => {
     });
   });
 
-  describe("GET /profile/followers", () => {
+  describe("GET /profile/:userId/followers", () => {
     it("should get the followers of the authenticated user", async () => {
+      const {profile} = createFakeProfile();
       const followers = [
         { pseudo: "Follower1", avatar: null },
         { pseudo: "Follower2", avatar: null },
       ];
+      mockService.getSingleProfile.mockResolvedValue(profile);
       mockService.getFollowers.mockResolvedValue(followers);
 
       const res = await request(app)
-        .post('/api/profile/followers')
-        .set('Authorization', `Bearer ${token}`)
-        .send({userId: FAKE_USER_ID});
+        .get(`/api/profile/${profile.userId}/followers`)
+        .set('Authorization', authHeader());
 
       expect(mockService.getFollowers).toHaveBeenCalledWith(FAKE_USER_ID);
       expect(res.body.data.followers).toEqual(followers);
       expect(res.status).toBe(200);
     });
+
+    it("should return 404 if user is not found", async () => {
+      mockService.getSingleProfile.mockResolvedValue(null);
+
+      const res = await request(app)
+        .get(`/api/profile/${FAKE_USER_ID}/followers`)
+        .set('Authorization', authHeader());
+
+      expect(mockService.getFollowers).not.toHaveBeenCalledWith();
+      expect(res.status).toBe(404);
+    });
   });
 
-  describe("GET /profile/following", () => {
-    it("should get the following of the authenticated user", async () => {
+  describe("GET /profile/:userId/following", () => {
+    it("should get the following of the user", async () => {
+      const {profile} = createFakeProfile();
       const following = [
         { pseudo: "Following1", avatar: null },
         { pseudo: "Following2", avatar: null },
       ];
+      mockService.getSingleProfile.mockResolvedValue(profile);
       mockService.getFollowing.mockResolvedValue(following);
 
       const res = await request(app)
-        .post('/api/profile/following')
-        .set('Authorization', `Bearer ${token}`)
-        .send({userId: FAKE_USER_ID});
+        .get(`/api/profile/${profile.userId}/following`)
+        .set('Authorization', authHeader());
 
       expect(mockService.getFollowing).toHaveBeenCalledWith(FAKE_USER_ID);
       expect(res.body.data.following).toEqual(following);
       expect(res.status).toBe(200);
+    });
+
+    it("should return 404 if user is not found", async () => {
+      mockService.getSingleProfile.mockResolvedValue(null);
+
+      const res = await request(app)
+        .get(`/api/profile/${FAKE_USER_ID}/following`)
+        .set('Authorization', authHeader());
+
+      expect(mockService.getFollowing).not.toHaveBeenCalledWith();
+      expect(res.status).toBe(404);
     });
   });
 
@@ -339,7 +368,7 @@ describe('Profile Handling', () => {
 
       const res = await request(app)
         .delete('/api/profile/delete')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', authHeader());
         
       expect(mockService.deleteUser).toHaveBeenCalledWith(user.id);
       expect(res.body.data.user).toEqual(userJSON);
@@ -352,7 +381,7 @@ describe('Profile Handling', () => {
 
       const res = await request(app)
         .delete('/api/profile/delete')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', authHeader());
 
       expect(mockService.deleteUser).not.toHaveBeenCalled();
       expect(res.status).toBe(404);

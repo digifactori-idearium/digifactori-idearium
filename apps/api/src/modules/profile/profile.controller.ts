@@ -5,7 +5,6 @@ import {
   createUserProfileSchema,
 } from './profile.validation';
 
-import { prisma } from '@/config/client.config';
 import { IProfileService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
@@ -34,41 +33,39 @@ export default class ProfileController {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
 
-    HttpResponse.success({profile: profile}, 'Utilisateur trouvé').send(res);
+    HttpResponse.success({ profile: profile }, 'Utilisateur trouvé').send(res);
   });
 
   /**
    * Retrieves a user's data if the parental code is valid or if the user is not an intern.
    *
-   * @route  POST /profile/user
-   * @access Authenticated
-   * 
-   * @body   { parental_code?: string }
-   * 
+   * @route   GET /profile/user
+   * @access  Authenticated
+   *
+   * @header  { X-Parental-Code?: string }
+   *
    * @returns
    *   - 200 { data: { user: User | null } }
-   *  - 404 user not found
+   *   - 404 user not found
    */
   getUser = asyncHandler(async (req: Request, res: Response) => {
     const authUser = req.user!;
-    const user = await this.profileService.getSingleUser(
-      authUser.userId
-    );
+    const user = await this.profileService.getSingleUser(authUser.userId);
     if (!user) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
-    const setting = await prisma.setting.findUnique({
-      where: { id: 1 },
-      select: { orgParentalCode: true },
-    });
+    const parentalCode = req.headers['x-parental-code'] as string;
+    const correctparentalCode = await this.profileService.getCorrectParentalCode()
     const isParentalCodeValid =
-      req.body.parental_code && setting?.orgParentalCode
-        ? req.body.parental_code == setting.orgParentalCode
+      parentalCode && correctparentalCode
+        ? parentalCode == correctparentalCode.toString()
         : false;
-    if(!isParentalCodeValid && user.role == 'INTERN') {
-      return HttpResponse.success({user: null}, "Mauvais code parental").send(res);
+    if (!isParentalCodeValid && user.role == 'INTERN') {
+      return HttpResponse.success({ user: null }, 'Mauvais code parental').send(
+        res
+      );
     }
-    HttpResponse.success({user: user}, 'Utilisateur trouvé').send(res);
+    HttpResponse.success({ user: user }, 'Utilisateur trouvé').send(res);
   });
 
   /**
@@ -100,15 +97,12 @@ export default class ProfileController {
     }
 
     const user = await this.profileService.getSingleUser(authUser.userId);
-    
+
     if (!user) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
 
-    const data = await this.profileService.updateProfile(
-      user.id,
-      req.body
-    );
+    const data = await this.profileService.updateProfile(user.id, req.body);
 
     HttpResponse.success(data, 'Profil mis à jour avec succès').send(res);
   });
@@ -116,17 +110,17 @@ export default class ProfileController {
   /**
    * Retrieves a user's profile by its pseudo.
    *
-   * @route  PATCH /profile/find
+   * @route  GET /profile/find
    * @access No restriction
    *
-   * @body   { userId?: string }
+   * @params  { userId: string }
    *
    * @returns
    *   - 200 { data: Profile }
    *   - 404 profile not found
    */
   getProfile = asyncHandler(async (req: Request, res: Response) => {
-    const profile = await this.profileService.getSingleProfile(req.body.userId);
+    const profile = await this.profileService.getSingleProfile(req.params.userId as string);
     if (!profile) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
@@ -136,7 +130,7 @@ export default class ProfileController {
   /**
    * Follows or unfollows a user.
    *
-   * @route  PATCH /profile/follow
+   * @route  POST /profile/follow
    * @access Authenticated
    *
    * @body   { followedUserId: string }
@@ -154,30 +148,39 @@ export default class ProfileController {
       ).send(res);
     }
     const followedUser = await this.profileService.getSingleUser(followingId);
-    if(!followedUser) {
+    if (!followedUser) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
-    const followed = await this.profileService.followUser(user.userId, followingId);
+    const followed = await this.profileService.followUser(
+      user.userId,
+      followingId
+    );
     HttpResponse.success(followed, 'Utilisateur suivi avec succès').send(res);
-  })
+  });
 
-/**
- * Retrieves a user's followers by its userId.
- *
- * @route  PATCH /profile/followers
- * @access No restriction
- * 
- * @body   { userId?: string }
- * 
- * @returns
- *   - 200 { data: {pseudo: string, avatar: string}[] }
- *   - 404 profile not found
- */
+  /**
+   * Retrieves a user's followers by its userId.
+   *
+   * @route  PATCH /profile/followers
+   * @access No restriction
+   *
+   * @params   { userId: string }
+   *
+   * @returns
+   *   - 200 { data: {pseudo: string, avatar: string}[] }
+   *   - 404 profile not found
+   */
   getFollowers = asyncHandler(async (req: Request, res: Response) => {
-    const followers = await this.profileService.getFollowers(req.body.userId);
-    HttpResponse.success({followers}, 'Followers récupérés avec succès').send(res);
-  })
-  
+    const user = await this.profileService.getSingleProfile(req.params.userId as string)
+    if(!user) {
+      return HttpResponse.notFound("Cet 'utilisateur n'existe pas").send(res)
+    }
+    const followers = await this.profileService.getFollowers(req.params.userId as string);
+    return HttpResponse.success({ followers }, 'Followers récupérés avec succès').send(
+      res
+    );
+  });
+
   /**
    *
    * Retrieves the users followed by the user.
@@ -185,17 +188,24 @@ export default class ProfileController {
    * @route  PATCH /profile/following
    * @access No restriction
    *
-   * @body   { userId?: string }
+   * @params   { userId: string }
    *
    * @returns
    *   - 200 { data: {pseudo: string, avatar: string}[] }
    *   - 404 profile not found
    */
   getFollowing = asyncHandler(async (req: Request, res: Response) => {
-    const following = await this.profileService.getFollowing(req.body.userId);
-    HttpResponse.success({following}, 'Utilisateurs suivis récupérés avec succès').send(res);
+    const user = await this.profileService.getSingleProfile(req.params.userId as string)
+    if(!user) {
+      return HttpResponse.notFound("Cet 'utilisateur n'existe pas").send(res)
+    }
+    const following = await this.profileService.getFollowing(req.params.userId as string);
+    return HttpResponse.success(
+      { following },
+      'Utilisateurs suivis récupérés avec succès'
+    ).send(res);
   });
-  
+
   /**
    * Permanently deletes the authenticated user's account and profile.
    *
@@ -209,7 +219,7 @@ export default class ProfileController {
   deleteProfile = asyncHandler(async (req: Request, res: Response) => {
     const authUser = req.user!;
     const user = await this.profileService.getSingleUser(authUser.userId);
-    if(!user) {
+    if (!user) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
     const deleted = await this.profileService.deleteUser(user.id);

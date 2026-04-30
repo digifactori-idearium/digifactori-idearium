@@ -7,56 +7,18 @@ import { IProfileService } from '@/types';
 
 export default function createProfileRoutes(profileService: IProfileService) {
   const profileController = new ProfileController(profileService);
-
   const profileRoutes: ExpressRouter = Router();
-  profileRoutes.get(
-    '/',
-    authenticate,
-    requireAuth,
-    profileController.getMyProfile
-  );
-  profileRoutes.post(
-    '/user',
-    authenticate,
-    requireAuth,
-    profileController.getUser
-  );
-  profileRoutes.post(
-    '/setting',
-    authenticate,
-    requireAuth,
-    profileController.setProfile
-  );
-  profileRoutes.post(
-    '/find',
-    authenticate,
-    requireAuth,
-    profileController.getProfile
-  );
-  profileRoutes.post(
-    '/follow',
-    authenticate,
-    requireAuth,
-    profileController.followUser
-  );
-  profileRoutes.post(
-    '/followers',
-    authenticate,
-    requireAuth,
-    profileController.getFollowers
-  );
-  profileRoutes.post(
-    '/following',
-    authenticate,
-    requireAuth,
-    profileController.getFollowing
-  );
-  profileRoutes.delete(
-    '/delete',
-    authenticate,
-    requireAuth,
-    profileController.deleteProfile
-  );
+
+  profileRoutes.use(authenticate, requireAuth);
+
+  profileRoutes.get('/', profileController.getMyProfile);
+  profileRoutes.get('/user', profileController.getUser);
+  profileRoutes.patch('/setting', profileController.setProfile);
+  profileRoutes.get('/:userId', profileController.getProfile);
+  profileRoutes.post('/follow', profileController.followUser);
+  profileRoutes.get('/:userId/followers', profileController.getFollowers);
+  profileRoutes.get('/:userId/following', profileController.getFollowing);
+  profileRoutes.delete('/delete', profileController.deleteProfile);
 
   return profileRoutes;
 }

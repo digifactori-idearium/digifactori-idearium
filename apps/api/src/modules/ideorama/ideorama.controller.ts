@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { Request, RequestHandler, Response } from 'express';
+import { Request, Response } from 'express';
 
 import IdeoramaService from './ideorama.services';
 
@@ -12,19 +12,38 @@ export default class IdeoramaController {
   constructor(private readonly ideoramaService: IdeoramaService) {}
 
   /**
+   * Retrieves the empty ideorama template
+   *
+   * @description Returns the empty scene template used for new ideorama projects.
+   * This template serves as the baseline structure for creating new scenes
+   *
+   * @param {Request} req - Express request
+   * @param {Response} res - Express response object
+   * @returns {Response} JSON response
+   */
+  getEmptyIdeorama = asyncHandler(
+    async (req: Request, res: Response) => {
+      const emptyModel = JSON.parse(
+        fs.readFileSync(getIdeoramaUploadPath('empty'), 'utf-8')
+      );
+      HttpResponse.success(emptyModel, 'Empty ideorama template').send(res);
+    }
+  );
+
+  /**
    * Retrieves a specific ideorama with its scene data loaded from file
    *
    * @description Fetches a single ideorama by ID and loads the associated scene model data from the file system.
    * Ensures the authenticated user can only access their own ideoramas
    *
-   * @param {Request} req - Express request with authenticated user and ideoramaId in body
+   * @param {Request} req - Express request with authenticated user and ideoramaId in params
    * @param {Response} res - Express response object
    * @returns {Response} JSON response
    */
   getIdeoramaByIdController = asyncHandler(
     async (req: Request, res: Response) => {
       const ideorama = await this.ideoramaService.getIdeoramaById(
-        req.body.ideoramaId
+        req.params.ideoramaId as string
       );
 
       if (!ideorama) {
@@ -77,14 +96,12 @@ export default class IdeoramaController {
    *
    * @description Persists the scene data to the file system
    *
-   * @param {Request} req - Express request with authenticated user and body containing:
-   *   - ideoramaId: string
-   *   - ideorama: { model: string (JSON) }
+   * @param {Request} req - Express request with authenticated user, ideoramaId in params and ideorama data in body
    * @param {Response} res - Express response object
    * @returns {Response} JSON response
    */
   saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
-      const uploadPath = getIdeoramaUploadPath(req.body.ideoramaId)
+      const uploadPath = getIdeoramaUploadPath(req.params.ideoramaId as string)
       fs.writeFileSync(uploadPath, req.body.ideorama.model);
       HttpResponse.success(null, 'Ideorama updated successfully').send(res);
   });
@@ -134,39 +151,20 @@ export default class IdeoramaController {
    * @description Permanently removes an ideorama from the database and deletes its associated scene file from the file system.
    * Only allows deletion of ideoramas owned by the authenticated user
    *
-   * @param {Request} req - Express request with authenticated user and ideoramaId in body
+   * @param {Request} req - Express request with authenticated user and ideoramaId in params
    * @param {Response} res - Express response object
    * @returns {Response} JSON response
    */
   deleteIdeoramaController = asyncHandler(
     async (req: Request, res: Response) => {
-      await this.ideoramaService.deleteIdeorama(req.body.ideoramaId);
-      const uploadPath = getIdeoramaUploadPath(req.body.ideoramaId);
+      await this.ideoramaService.deleteIdeorama(req.params.ideoramaId as string);
+      const uploadPath = getIdeoramaUploadPath(req.params.ideoramaId as string);
 
       fs.unlink(uploadPath, err => {
         if (err) console.log(err);
       });
 
       return HttpResponse.deleted('Ideorama deleted successfully').send(res);
-    }
-  );
-
-  /**
-   * Retrieves the empty ideorama template
-   *
-   * @description Returns the empty scene template used for new ideorama projects.
-   * This template serves as the baseline structure for creating new scenes
-   *
-   * @param {Request} req - Express request
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response
-   */
-  getEmptyIdeorama: RequestHandler = asyncHandler(
-    async (req: Request, res: Response) => {
-      const emptyModel = JSON.parse(
-        fs.readFileSync(getIdeoramaUploadPath('empty'), 'utf-8')
-      );
-      HttpResponse.success(emptyModel, 'Empty ideorama template').send(res);
     }
   );
 }
