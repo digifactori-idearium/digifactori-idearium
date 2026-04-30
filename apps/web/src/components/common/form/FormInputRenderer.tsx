@@ -9,11 +9,13 @@ import {
 
 import { Slider } from '../../ui/slider';
 
+import { AssetUploadField } from './AssetUploadField';
 import { EmojiPickerField } from './EmojiField';
 import { FieldMappingField } from './FieldMappingField';
 import { HexColorField } from './HexColorField';
 import { FormInput, FormInputData } from './Input';
 import { InputSelect } from './InputSelect';
+import { TagInput } from './TagsInput';
 import { UploadField } from './UploadField';
 import { Vector3Field } from './Vector3Field';
 
@@ -53,6 +55,22 @@ export function FormInputRenderer({
   const commonLabel = (
     <label className="text-sm font-medium">{input.label}</label>
   );
+
+  // ASSETS
+  if (input.type === 'assets') {
+    return (
+      <div className="flex flex-col gap-2">
+        {commonLabel}
+        <AssetUploadField
+          name={input.name}
+          setValue={setValue}
+          placeholder={input.placeholder}
+          error={errors[input.name]?.message as string}
+          multiple={input.multiple !== false}
+        />
+      </div>
+    );
+  }
 
   // IMAGE / FILE
   if (input.type === 'file' || input.type === 'image') {
@@ -204,6 +222,29 @@ export function FormInputRenderer({
           control={control}
           input={input}
           fields={input.mappingFields ?? {}}
+        />
+        <FieldError errors={getFieldError(errors, input.name)} />
+      </div>
+    );
+  }
+
+  // Tags
+  if (input.type === 'tags') {
+    return (
+      <div className="flex flex-col gap-2">
+        {commonLabel}
+        <Controller
+          name={input.name}
+          control={control}
+          defaultValue={input.default ?? []}
+          render={({ field }) => (
+            <TagInput
+              value={field.value || []}
+              onChange={field.onChange}
+              placeholder={input.placeholder}
+              error={errors[input.name]?.message as string}
+            />
+          )}
         />
         <FieldError errors={getFieldError(errors, input.name)} />
       </div>
