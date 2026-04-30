@@ -233,14 +233,6 @@ interface Integration {
   createdAt?: string;
 }
 
-interface MediaItem {
-  id: string;
-  name: string;
-  category: string;
-  file: string;
-  thumbnail?: string;
-}
-
 interface FetchResult {
   items: MediaItem[];
   hasMore: boolean;
@@ -274,9 +266,9 @@ interface Settings {
 }
 
 // ===== Internal Assets Management
-type AssetCategory = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
+type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
-type AssetType =
+type AssetCategory =
   | 'FOOD_AND_DRINK'
   | 'CLUTTER'
   | 'WEAPONS'
@@ -290,11 +282,20 @@ type AssetType =
   | 'SCENES_AND_LEVELS'
   | 'OTHER';
 
+interface MediaItem {
+  id: string;
+  name: string;
+  type?: string;
+  category?: string;
+  file: string;
+  thumbnail?: string;
+}
+
 type Asset = {
   id: string;
   name: string;
+  type: IntegrationType;
   category: AssetCategory;
-  assetType: AssetType;
   tags: string[];
   file: string;
   fileUrl: string;
@@ -313,8 +314,8 @@ interface PaginatedAssets {
 }
 
 interface ListAssetsParams {
+  type?: IntegrationType;
   category?: AssetCategory;
-  assetType?: AssetType;
   search?: string;
   tags?: string;
   page?: number;
@@ -323,8 +324,8 @@ interface ListAssetsParams {
 
 interface CreateAssetInput {
   name: string;
-  category: AssetCategory;
-  assetType?: AssetType;
+  type: IntegrationType;
+  category?: AssetCategory;
   tags?: string[];
   file: File;
   thumbnail?: File;
@@ -332,8 +333,8 @@ interface CreateAssetInput {
 
 interface BulkAssetDescriptor {
   name: string;
-  category: AssetCategory;
-  assetType?: AssetType;
+  type: IntegrationType;
+  category?: AssetCategory;
   tags?: string[];
   fileIndex: number;
   thumbnailIndex?: number;
@@ -341,8 +342,8 @@ interface BulkAssetDescriptor {
 
 interface AssetUploadEntry {
   name: string;
-  category: AssetCategory;
-  assetType?: AssetType;
+  type: IntegrationType;
+  category?: AssetCategory;
   tags?: string[];
   file: File;
   thumbnail?: File;
@@ -364,8 +365,8 @@ interface BulkDeleteResult {
 
 interface UpdateAssetInput {
   name?: string;
+  type?: IntegrationType;
   category?: AssetCategory;
-  assetType?: AssetType;
   tags?: string[];
   file?: File;
   thumbnail?: File;
