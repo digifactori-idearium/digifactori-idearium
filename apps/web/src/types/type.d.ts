@@ -276,10 +276,25 @@ interface Settings {
 // ===== Internal Assets Management
 type AssetCategory = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
+type AssetType =
+  | 'FOOD_AND_DRINK'
+  | 'CLUTTER'
+  | 'WEAPONS'
+  | 'TRANSPORT'
+  | 'FURNITURE_AND_DECOR'
+  | 'OBJECTS'
+  | 'NATURE'
+  | 'ANIMALS'
+  | 'BUILDINGS'
+  | 'PEOPLE_AND_CHARACTERS'
+  | 'SCENES_AND_LEVELS'
+  | 'OTHER';
+
 type Asset = {
   id: string;
   name: string;
   category: AssetCategory;
+  assetType: AssetType;
   tags: string[];
   file: string;
   fileUrl: string;
@@ -299,6 +314,7 @@ interface PaginatedAssets {
 
 interface ListAssetsParams {
   category?: AssetCategory;
+  assetType?: AssetType;
   search?: string;
   tags?: string;
   page?: number;
@@ -308,6 +324,7 @@ interface ListAssetsParams {
 interface CreateAssetInput {
   name: string;
   category: AssetCategory;
+  assetType?: AssetType;
   tags?: string[];
   file: File;
   thumbnail?: File;
@@ -316,6 +333,7 @@ interface CreateAssetInput {
 interface BulkAssetDescriptor {
   name: string;
   category: AssetCategory;
+  assetType?: AssetType;
   tags?: string[];
   fileIndex: number;
   thumbnailIndex?: number;
@@ -324,6 +342,7 @@ interface BulkAssetDescriptor {
 interface AssetUploadEntry {
   name: string;
   category: AssetCategory;
+  assetType?: AssetType;
   tags?: string[];
   file: File;
   thumbnail?: File;
@@ -346,6 +365,7 @@ interface BulkDeleteResult {
 interface UpdateAssetInput {
   name?: string;
   category?: AssetCategory;
+  assetType?: AssetType;
   tags?: string[];
   file?: File;
   thumbnail?: File;

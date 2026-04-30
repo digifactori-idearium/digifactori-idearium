@@ -1,4 +1,4 @@
-import { IntegrationType } from '@prisma/client';
+import { AssetType, IntegrationType } from '@prisma/client';
 import * as z from 'zod';
 
 const nameField = z
@@ -11,6 +11,13 @@ const categoryField = z.enum(IntegrationType, {
     iss.input === undefined
       ? 'La catégorie est requise'
       : 'Catégorie invalide. Valeurs acceptées: MODEL_3D, SOUND, IMAGE, OTHER',
+});
+
+const assetTypeField = z.enum(AssetType, {
+  error: iss =>
+    iss.input === undefined
+      ? 'Le type est requis'
+      : `Type invalide. Valeurs acceptées: ${Object.values(AssetType).join(', ')}`,
 });
 
 const tagsField = z
@@ -47,6 +54,7 @@ const tagsField = z
  *
  * @property {string} name - Display name (min 2 chars)
  * @property {IntegrationType} category - MODEL_3D | SOUND | IMAGE | OTHER
+ * @property {AssetType} [assetType] - Thematic type (Animals, Nature, etc.) — defaults to OTHER
  * @property {string[]} [tags] - Optional array of tags (JSON string in multipart)
  *
  * Messages are in French (FR)
@@ -54,6 +62,7 @@ const tagsField = z
 export const createAssetSchema = z.object({
   name: nameField,
   category: categoryField,
+  assetType: assetTypeField.optional(),
   tags: tagsField,
 });
 
@@ -64,6 +73,7 @@ export const createAssetSchema = z.object({
 export const bulkAssetItemSchema = z.object({
   name: nameField,
   category: categoryField,
+  assetType: assetTypeField.optional(),
   tags: z
     .array(z.string(), {
       error: () => 'Les tags doivent être un tableau de chaînes',
@@ -133,6 +143,7 @@ export const createBulkAssetsSchema = z.object({
  *
  * @property {string} [name] - New display name
  * @property {IntegrationType} [category] - New category
+ * @property {AssetType} [assetType] - New thematic type
  * @property {string[]} [tags] - Replace the full tag list
  *
  * Messages are in French (FR)
@@ -141,16 +152,23 @@ export const updateAssetSchema = z
   .object({
     name: nameField.optional(),
     category: categoryField.optional(),
+    assetType: assetTypeField.optional(),
     tags: tagsField,
   })
-  .refine(data => Object.values(data).some(v => v !== undefined), {
-    message: 'Au moins un champ doit être fourni.',
-  });
+  .refine(
+    data =>
+      data.name !== undefined ||
+      data.category !== undefined ||
+      data.assetType !== undefined ||
+      data.tags !== undefined,
+    { message: 'Au moins un champ doit être fourni.' }
+  );
 
 /**
  * Schema for GET /assets query parameters.
  *
- * @property {IntegrationType} [category] - Filter by category
+ * @property {IntegrationType} [category] - Filter by file category
+ * @property {AssetType} [assetType] - Filter by thematic type
  * @property {string} [search] - Partial name search (case-insensitive)
  * @property {string} [tags] - Comma-separated list of tags to filter by (AND)
  * @property {number} [page] - Page number (default 1)
@@ -158,6 +176,7 @@ export const updateAssetSchema = z
  */
 export const listAssetsQuerySchema = z.object({
   category: categoryField.optional(),
+  assetType: assetTypeField.optional(),
   search: z.string().optional(),
   tags: z
     .string()

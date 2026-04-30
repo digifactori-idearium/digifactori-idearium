@@ -20,6 +20,7 @@ export function buildSingleFormData(
 
   if (input.name !== undefined) form.append('name', input.name);
   if (input.category !== undefined) form.append('category', input.category);
+  if (input.assetType !== undefined) form.append('assetType', input.assetType);
   if (input.tags !== undefined) form.append('tags', JSON.stringify(input.tags));
   if (input.file !== undefined) form.append('file', input.file);
   if (input.thumbnail !== undefined) form.append('thumbnail', input.thumbnail);
@@ -49,6 +50,7 @@ export function buildBulkFormData(input: BulkCreateAssetInput): FormData {
     const descriptor: BulkAssetDescriptor = {
       name: asset.name,
       category: asset.category,
+      assetType: asset.assetType,
       tags: asset.tags,
       fileIndex,
     };

@@ -69,6 +69,7 @@ export default class AssetController {
    *   thumbnail   {File}   optional
    *   name        {string} required
    *   category    {string} required — MODEL_3D | SOUND | IMAGE | OTHER
+   *   assetType   {string} optional — ANIMALS | NATURE | BUILDINGS | … (defaults to OTHER)
    *   tags        {string} optional — JSON array e.g. '["tag1","tag2"]'
    *
    * @returns 201 { data: Asset } | 400

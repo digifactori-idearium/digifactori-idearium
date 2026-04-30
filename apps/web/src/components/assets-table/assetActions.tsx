@@ -56,6 +56,7 @@ export const AssetActions = ({ asset, refresh }: AssetActionsProps) => {
         initialValues={{
           name: asset.name,
           category: asset.category,
+          assetType: asset.assetType,
           tags: asset.tags,
         }}
         loading={loading}

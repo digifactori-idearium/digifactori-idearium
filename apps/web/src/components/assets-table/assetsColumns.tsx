@@ -62,6 +62,10 @@ export const columns = (refresh: () => void): ColumnDef<Asset>[] => [
     header: 'Catégorie',
   },
   {
+    accessorKey: 'assetType',
+    header: 'Type',
+  },
+  {
     accessorKey: 'tags',
     header: 'Tags',
   },

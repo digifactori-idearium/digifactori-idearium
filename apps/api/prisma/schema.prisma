@@ -132,6 +132,21 @@ enum IntegrationType {
   OTHER
 }
 
+enum AssetType {
+  FOOD_AND_DRINK
+  CLUTTER
+  WEAPONS
+  TRANSPORT
+  FURNITURE_AND_DECOR
+  OBJECTS
+  NATURE
+  ANIMALS
+  BUILDINGS
+  PEOPLE_AND_CHARACTERS
+  SCENES_AND_LEVELS
+  OTHER
+}
+
 model Setting {
   id              Int           @id @default(1)
   orgCode         Int           @default(202026)
@@ -184,10 +199,11 @@ model Integration {
 }
 
 model Asset {
-  id       String          @id @default(cuid())
-  name     String
-  category IntegrationType
-  tags     String[]
+  id        String          @id @default(cuid())
+  name      String
+  category  IntegrationType
+  assetType AssetType       @default(OTHER)
+  tags      String[]
 
   file      String
   thumbnail String?
