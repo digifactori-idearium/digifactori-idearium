@@ -115,7 +115,7 @@ interface UploadedFile {
   buffer: Buffer;
 }
 
-type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
+type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
 interface AssetRecord {
   id: string;

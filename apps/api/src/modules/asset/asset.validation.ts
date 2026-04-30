@@ -10,7 +10,7 @@ const categoryField = z.enum(IntegrationType, {
   error: iss =>
     iss.input === undefined
       ? 'La catégorie est requise'
-      : 'Catégorie invalide. Valeurs acceptées: ASSET, MUSIC, OTHER',
+      : 'Catégorie invalide. Valeurs acceptées: MODEL_3D, SOUND, IMAGE, OTHER',
 });
 
 const tagsField = z
@@ -46,7 +46,7 @@ const tagsField = z
  * This schema validates the text fields from req.body.
  *
  * @property {string} name - Display name (min 2 chars)
- * @property {IntegrationType} category - ASSET | MUSIC | OTHER
+ * @property {IntegrationType} category - MODEL_3D | SOUND | IMAGE | OTHER
  * @property {string[]} [tags] - Optional array of tags (JSON string in multipart)
  *
  * Messages are in French (FR)

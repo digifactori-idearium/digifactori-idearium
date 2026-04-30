@@ -570,8 +570,9 @@ export const integrationInputs = [
     placeholder: "Entrez le type de l'intégration",
     required: true,
     options: [
-      { value: 'ASSET', text: 'Asset-3d' },
-      { value: 'MUSIC', text: 'Musique' },
+      { value: 'MODEL_3D', text: 'Modèle 3D' },
+      { value: 'SOUND', text: 'Son' },
+      { value: 'IMAGE', text: 'Image' },
       { value: 'OTHER', text: 'Autre' },
     ],
     icon: ChartBarStacked,

@@ -10,6 +10,19 @@ interface AssetPreviewProps {
   category?: string;
 }
 
+const SOUND_EXTENSIONS = new Set([
+  'mp3',
+  'wav',
+  'ogg',
+  'flac',
+  'aac',
+  'weba',
+  'aiff',
+  'aif',
+  'm4a',
+  'opus',
+]);
+
 const IMAGE_EXTENSIONS = new Set([
   'png',
   'jpg',
@@ -23,25 +36,35 @@ const IMAGE_EXTENSIONS = new Set([
   'tif',
 ]);
 
-const is3DAsset = (fileKey: string): boolean => {
-  const ext = fileKey.split('.').pop()?.toLowerCase();
-  return ext === 'glb' || ext === 'gltf';
-};
+const MODEL_3D_EXTENSIONS = new Set(['glb', 'gltf']);
 
-const isAudioAsset = (fileKey: string, category?: string): boolean => {
-  if (category === 'MUSIC') return true;
-  const ext = fileKey.split('.').pop()?.toLowerCase();
-  return ['mp3', 'wav', 'ogg', 'flac', 'aac', 'weba', 'aiff'].includes(
-    ext ?? ''
-  );
-};
+function getExt(fileKey: string): string {
+  return fileKey.split('.').pop()?.toLowerCase() ?? '';
+}
 
-const isImageAsset = (fileKey: string): boolean => {
-  const ext = fileKey.split('.').pop()?.toLowerCase();
-  return IMAGE_EXTENSIONS.has(ext ?? '');
-};
+type ExtensionType = '3d' | 'sound' | 'image' | 'unknown';
 
-const PreviewContainer = ({ children }: { children: React.ReactNode }) => (
+/**
+ * Decide what the type of the assets base on his category and extension..
+ */
+function resolveExtensionType(
+  fileKey: string,
+  category?: string
+): ExtensionType {
+  if (category === 'MODEL_3D') return '3d';
+  if (category === 'SOUND') return 'sound';
+  if (category === 'IMAGE') return 'image';
+
+  const ext = getExt(fileKey);
+  if (MODEL_3D_EXTENSIONS.has(ext)) return '3d';
+  if (SOUND_EXTENSIONS.has(ext)) return 'sound';
+  if (IMAGE_EXTENSIONS.has(ext)) return 'image';
+  return 'unknown';
+}
+
+const PreviewContainer = ({
+  children,
+}: Readonly<{ children: React.ReactNode }>) => (
   <span className="shrink-0 flex h-20 w-20 items-center justify-center rounded-md bg-sidebar overflow-hidden border border-border/50">
     {children}
   </span>
@@ -70,8 +93,9 @@ export const AssetPreview = memo(
         </PreviewContainer>
       );
 
-    // 3D Assets
-    if (is3DAsset(fileKey)) {
+    const kind = resolveExtensionType(fileKey, category);
+
+    if (kind === '3d') {
       return (
         <PreviewContainer>
           <AssetThumbnail file={url} />
@@ -79,16 +103,18 @@ export const AssetPreview = memo(
       );
     }
 
-    // Audio Assets
-    if (isAudioAsset(fileKey, category)) {
+    if (kind === 'sound') {
       return (
         <PreviewContainer>
-          <div
+          <button
+            type="button"
+            aria-label="Lecture / Pause"
             onClick={e => {
               e.stopPropagation();
               wavesurfer?.playPause();
             }}
-            className="cursor-pointer w-full h-full flex items-center justify-center"
+            onKeyDown={e => e.key === 'Enter' && wavesurfer?.playPause()}
+            className="cursor-pointer w-full h-full flex items-center justify-center bg-transparent border-0 p-0"
           >
             <WavesurferPlayer
               height={40}
@@ -99,13 +125,12 @@ export const AssetPreview = memo(
               interact={false}
               onReady={ws => setWavesurfer(ws)}
             />
-          </div>
+          </button>
         </PreviewContainer>
       );
     }
 
-    // Image files — decided by extension
-    if (isImageAsset(fileKey)) {
+    if (kind === 'image') {
       return (
         <PreviewContainer>
           <img
@@ -117,18 +142,17 @@ export const AssetPreview = memo(
       );
     }
 
-    // Fallback for other file types
+    // Unknown / unsupported
     return (
       <PreviewContainer>
         <div className="text-xs font-bold text-muted-foreground text-center px-1 break-all uppercase">
-          {fileKey.split('.').pop()}
+          {getExt(fileKey) || '?'}
         </div>
       </PreviewContainer>
     );
   },
-  (prev, next) => {
-    return prev.fileKey === next.fileKey && prev.category === next.category;
-  }
+  (prev, next) =>
+    prev.fileKey === next.fileKey && prev.category === next.category
 );
 
 AssetPreview.displayName = 'AssetPreview';

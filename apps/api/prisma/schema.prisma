@@ -126,19 +126,20 @@ model Document {
 
 // ASSETS
 enum IntegrationType {
-  ASSET
-  MUSIC
+  MODEL_3D
+  SOUND
+  IMAGE
   OTHER
 }
 
 model Setting {
-  id              Int            @id @default(1)
-  orgCode         Int            @default(202026)
-  orgParentalCode Int            @default(2026)
+  id              Int           @id @default(1)
+  orgCode         Int           @default(202026)
+  orgParentalCode Int           @default(2026)
   storage         CloudStorage?
   integrations    Integration[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 enum StorageProvider {
@@ -183,10 +184,10 @@ model Integration {
 }
 
 model Asset {
-  id        String          @id @default(cuid())
-  name      String
-  category  IntegrationType
-  tags      String[]
+  id       String          @id @default(cuid())
+  name     String
+  category IntegrationType
+  tags     String[]
 
   file      String
   thumbnail String?

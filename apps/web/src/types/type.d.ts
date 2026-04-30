@@ -212,7 +212,7 @@ interface CurrentStatusProps {
 }
 
 // ===== Settings and integrations
-type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
+type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
 interface FieldMapping {
   id: string;
@@ -274,7 +274,7 @@ interface Settings {
 }
 
 // ===== Internal Assets Management
-type AssetCategory = 'ASSET' | 'MUSIC' | 'OTHER';
+type AssetCategory = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
 type Asset = {
   id: string;

@@ -63,7 +63,7 @@ export const FileItem = ({
           </Button>
         </div>
         <CardContent className="flex items-center space-x-3 p-0">
-          <AssetUplaodPreview name={file.name} url={objectUrl} />
+          <AssetUplaodPreview name={file.name} url={objectUrl} file={file} />
           <div className="min-w-0 pr-24">
             <p
               className="rounded-sm border-2 border-transparent focus:border-mauve focus:outline-none transition-colors text-foreground hover:text-foreground/70 cursor-text text-pretty font-medium wrap-break-word"

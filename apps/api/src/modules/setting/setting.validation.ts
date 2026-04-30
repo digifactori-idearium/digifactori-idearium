@@ -99,7 +99,7 @@ export const updateOrgSettingsSchema = z
  * @property {string} url - Endpoint URL of the integration
  *   - Must be a valid URL format
  *   - Must be reachable
- * @property {IntegrationType} type - Integration protocol type (ASSET | NUSIC | OTHER)
+ * @property {IntegrationType} type - Integration protocol type (MODEL_3D | SOUND | IMAGE | OTHER)
  * @property {string} key - API key or secret used to authenticate with the integration
  *   - Min 8 characters
  *   - Combined with url: endpoint must accept the key (async check)
@@ -117,7 +117,7 @@ export const createIntegrationSchema = z.object({
     error: iss =>
       iss.input === undefined
         ? 'Le type est requis'
-        : 'Type invalide. Valeurs acceptées: ASSET, MUSIC, AUTRE',
+        : 'Type invalide. Valeurs acceptées: MODEL_3D, SOUND, IMAGE, OTHER',
   }),
   key: z
     .string()
@@ -150,7 +150,8 @@ export const updateIntegrationSchema = z
       .optional(),
     type: z
       .enum(IntegrationType, {
-        error: () => 'Type invalide. Valeurs acceptées: ASSET, MUSIC, AUTRE',
+        error: () =>
+          'Type invalide. Valeurs acceptées: MODEL_3D, SOUND, IMAGE, OTHER',
       })
       .optional(),
     key: z

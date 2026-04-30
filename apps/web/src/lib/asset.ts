@@ -10,7 +10,7 @@
  *   file        — required on create, optional on update (replaces existing)
  *   thumbnail   — optional
  *   name        — string
- *   category    — "ASSET" | "MUSIC" | "OTHER"
+ *   category    — "MODEL_3D" | "SOUND" | "IMAGE" | "OTHER"
  *   tags        — JSON-encoded string array, e.g. '["tag1","tag2"]'
  */
 export function buildSingleFormData(
@@ -65,16 +65,74 @@ export function buildBulkFormData(input: BulkCreateAssetInput): FormData {
   return form;
 }
 
+const SOUND_EXTENSIONS = new Set([
+  'mp3',
+  'wav',
+  'ogg',
+  'flac',
+  'aac',
+  'weba',
+  'aiff',
+  'aif',
+  'm4a',
+  'opus',
+]);
+
+const IMAGE_EXTENSIONS = new Set([
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'webp',
+  'svg',
+  'avif',
+  'bmp',
+  'tiff',
+  'tif',
+]);
+
+const MODEL_3D_EXTENSIONS = new Set(['glb', 'gltf', 'fbx', 'obj', 'usdz']);
+
+/** Extract the lowercase extension from a filename */
+function getExtension(filename: string): string {
+  const parts = filename.split('.');
+  return parts.length > 1 ? parts.pop()!.toLowerCase() : '';
+}
+
+/**
+ * Returns true when the file is an audio asset.
+ */
+export function isSound(file: File): boolean {
+  if (file.type.startsWith('audio/')) return true;
+  return SOUND_EXTENSIONS.has(getExtension(file.name));
+}
+
+/**
+ * Returns true when the file is an image asset.
+ */
+export function isImage(file: File): boolean {
+  if (file.type.startsWith('image/')) return true;
+  return IMAGE_EXTENSIONS.has(getExtension(file.name));
+}
+
+/**
+ * Returns true when the file is a 3-D model asset.
+ */
+export function is3DModel(file: File): boolean {
+  return MODEL_3D_EXTENSIONS.has(getExtension(file.name));
+}
+
 /**
  * Infer a default asset category from a browser File object.
- * Used when the user hasn't explicitly chosen a category.
  *
- * - audio/* → MUSIC
- * - image/* → OTHER
- * - everything else (3D models, etc.) → ASSET
+ * Priority: SOUND → IMAGE → MODEL_3D → OTHER
+ * Both MIME type and file extension are checked so formats like .glb, .flac,
+ * or .aiff (which browsers often report with an empty MIME type) are handled
+ * correctly.
  */
 export function inferCategory(file: File): AssetCategory {
-  if (file.type.startsWith('audio/')) return 'MUSIC';
-  if (file.type.startsWith('image/')) return 'OTHER';
-  return 'ASSET';
+  if (isSound(file)) return 'SOUND';
+  if (isImage(file)) return 'IMAGE';
+  if (is3DModel(file)) return 'MODEL_3D';
+  return 'OTHER';
 }
