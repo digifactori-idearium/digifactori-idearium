@@ -7,7 +7,6 @@ import { useStorageFile } from '@/hooks/useStorageFile';
 
 interface AssetPreviewProps {
   fileKey: string;
-  category?: string;
 }
 
 const SOUND_EXTENSIONS = new Set([
@@ -47,14 +46,7 @@ type ExtensionType = '3d' | 'sound' | 'image' | 'unknown';
 /**
  * Decide what the type of the assets base on his category and extension..
  */
-function resolveExtensionType(
-  fileKey: string,
-  category?: string
-): ExtensionType {
-  if (category === 'MODEL_3D') return '3d';
-  if (category === 'SOUND') return 'sound';
-  if (category === 'IMAGE') return 'image';
-
+function resolveExtensionType(fileKey: string): ExtensionType {
   const ext = getExt(fileKey);
   if (MODEL_3D_EXTENSIONS.has(ext)) return '3d';
   if (SOUND_EXTENSIONS.has(ext)) return 'sound';
@@ -71,7 +63,7 @@ const PreviewContainer = ({
 );
 
 export const AssetPreview = memo(
-  ({ fileKey, category }: AssetPreviewProps) => {
+  ({ fileKey }: AssetPreviewProps) => {
     const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
     const { url, loading, error } = useStorageFile(fileKey);
 
@@ -93,7 +85,7 @@ export const AssetPreview = memo(
         </PreviewContainer>
       );
 
-    const kind = resolveExtensionType(fileKey, category);
+    const kind = resolveExtensionType(fileKey);
 
     if (kind === '3d') {
       return (
@@ -151,8 +143,7 @@ export const AssetPreview = memo(
       </PreviewContainer>
     );
   },
-  (prev, next) =>
-    prev.fileKey === next.fileKey && prev.category === next.category
+  (prev, next) => prev.fileKey === next.fileKey
 );
 
 AssetPreview.displayName = 'AssetPreview';

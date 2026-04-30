@@ -72,7 +72,7 @@ export const columns = (refresh: () => void): ColumnDef<Asset>[] => [
       const asset = row.original as Asset;
       const fileKey = asset.thumbnail ? asset.thumbnail : asset.file;
 
-      return <AssetPreview fileKey={fileKey} category={asset.category} />;
+      return <AssetPreview fileKey={fileKey} />;
     },
   },
   {
