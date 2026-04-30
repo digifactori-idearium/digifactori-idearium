@@ -1,3 +1,4 @@
+// ===== Inputs
 interface Option {
   text: string;
   value: string;
@@ -8,6 +9,7 @@ interface SearchOption {
   label: string;
 }
 
+// ===== User and auth management
 type Role = 'INTERN' | 'SUPERVISOR' | 'ADMIN';
 
 interface ApiResponse<T> {
@@ -44,17 +46,10 @@ type Profile = {
   pseudo: string;
   avatar: string | null;
   bio: string | null;
-  // followers: { followingId: string }[];
-  // following: { followedById: string }[];
   followers: string[];
   following: string[];
-  ideoramaLiked: {
-    ideoramaId: string;
-  }[];
-  ideoramas: {
-    id: string;
-    name: string;
-  }[];
+  ideoramaLiked: { ideoramaId: string }[];
+  ideoramas: { id: string; name: string }[];
 };
 
 interface CreateUserInput {
@@ -71,6 +66,7 @@ interface UpdateUserInput {
   last_name?: string;
 }
 
+// ===== 3D space management
 type Ideorama = {
   id: string;
   name: string;
@@ -86,9 +82,7 @@ type Ideorama = {
   updatedAt: Date;
   userId: string;
   model: ModelsInfo;
-  _count: {
-    likers: number;
-  };
+  _count: { likers: number };
 };
 
 type ModelsInfo = {
@@ -99,27 +93,12 @@ type ModelsInfo = {
     theme: string;
   };
   background: { color: string; accent: string };
-  info: {
-    name: string;
-    description: string;
-    category?: string;
-  };
+  info: { name: string; description: string; category?: string };
   floor: PartSettings;
   objects: Record<string, ObjectState>;
 };
 
-type Asset = {
-  name: string;
-  category: string;
-  description: string;
-  type: IntegrationType;
-  source?: string;
-  preview?: source;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
-
-// My space
+// ===== My space
 interface CardDef {
   id: string;
   title: string;
@@ -180,7 +159,6 @@ interface Cloud {
 }
 
 // ===== Text editor
-
 interface Document {
   id: string;
   title: string;
@@ -229,16 +207,11 @@ interface EditorToolbarState {
   alignRight: boolean;
 }
 
-interface Integration {
-  id: string;
-  name: string;
-}
-
 interface CurrentStatusProps {
   status: Status;
 }
 
-// Settings and Integration
+// ===== Settings and integrations
 type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
 
 interface FieldMapping {
@@ -273,10 +246,107 @@ interface FetchResult {
   hasMore: boolean;
 }
 
+type StorageProvider = 'S3' | 'R2' | 'GCS' | 'AZURE' | 'MINIO' | 'LOCAL';
+
+interface CloudStorage {
+  id: number;
+  name?: string | null;
+  provider: StorageProvider;
+  region?: string | null;
+  endpoint?: string | null;
+  bucket?: string | null;
+  accessKey?: string | null;
+  secretKey?: string | null;
+  publicUrl?: string | null;
+  settingId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Settings {
-  orgCode?: string;
-  orgParentalCode?: string;
-  storeName?: string;
-  storeURL?: string;
-  integrations?: Integration[];
+  id: number;
+  orgCode: number;
+  orgParentalCode: number;
+  storage: CloudStorage | null;
+  integrations: Integration[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ===== Internal Assets Management
+type AssetCategory = 'ASSET' | 'MUSIC' | 'OTHER';
+
+type Asset = {
+  id: string;
+  name: string;
+  category: AssetCategory;
+  tags: string[];
+  file: string;
+  fileUrl: string;
+  thumbnail: string | null;
+  thumbnailUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+interface PaginatedAssets {
+  items: Asset[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface ListAssetsParams {
+  category?: AssetCategory;
+  search?: string;
+  tags?: string;
+  page?: number;
+  limit?: number;
+}
+
+interface CreateAssetInput {
+  name: string;
+  category: AssetCategory;
+  tags?: string[];
+  file: File;
+  thumbnail?: File;
+}
+
+interface BulkAssetDescriptor {
+  name: string;
+  category: AssetCategory;
+  tags?: string[];
+  fileIndex: number;
+  thumbnailIndex?: number;
+}
+
+interface AssetUploadEntry {
+  name: string;
+  category: AssetCategory;
+  tags?: string[];
+  file: File;
+  thumbnail?: File;
+}
+
+interface BulkCreateAssetInput {
+  assets: AssetUploadEntry[];
+}
+
+interface BulkCreateResult {
+  succeeded: Asset[];
+  failed: { index: number; name: string; reason: string }[];
+}
+
+interface BulkDeleteResult {
+  deleted: number;
+  failed: { id: string; reason: string }[];
+}
+
+interface UpdateAssetInput {
+  name?: string;
+  category?: AssetCategory;
+  tags?: string[];
+  file?: File;
+  thumbnail?: File;
 }
