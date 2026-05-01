@@ -4,12 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { SuperButton } from '@/components/common/button';
 import { IdeoramaCreator } from '@/components/ideorama/IdeoramaCreator';
 import IdeoramasGroup from '@/components/ideorama/IdeoramasGroup';
-import { useUser } from '@/providers/UserProvider';
 import { getAllIdeoramas } from '@/services/ideorama.service';
 import { getMyProfile } from '@/services/profile.service';
 
 const MyIdeoramas: React.FC = () => {
-  const user = useUser().user;
   const [ideoramas, setIdeoramas] = useState<Ideorama[]>([]);
   const [profile, setProfile] = useState<Profile>({
     id: '',
@@ -26,10 +24,10 @@ const MyIdeoramas: React.FC = () => {
   const [createsNew, setCreatesNew] = useState(false);
 
   useEffect(() => {
-    getAllIdeoramas(user?.id).then(res => {
+    getAllIdeoramas().then(res => {
       setIdeoramas(res.data);
     });
-    getMyProfile('').then(res => {
+    getMyProfile().then(res => {
       setProfile(res.data.profile);
     });
   }, []);
@@ -51,7 +49,6 @@ const MyIdeoramas: React.FC = () => {
         <IdeoramaCreator
           isOpen={createsNew}
           setIsOpen={setCreatesNew}
-          userId={user?.id}
         />
       )}
       <IdeoramasGroup

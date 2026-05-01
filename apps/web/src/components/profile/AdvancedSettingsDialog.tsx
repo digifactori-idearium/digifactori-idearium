@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useUser } from '@/providers/UserProvider';
-import { getMyProfile } from '@/services/profile.service';
+import { getUser } from '@/services/profile.service';
 
 interface AdvancedDialogProps {
   user?: any;
@@ -41,9 +41,9 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
 
   const handleUnlock = async () => {
     try {
-      const response = await getMyProfile(code);
-      if (response.data?.user) {
-        setUser(response.data?.user);
+      const response = await getUser(code);
+      if (response.data.user) {
+        setUser(response.data.user);
         setIsUnlocked(true);
         toast.success('Accès autorisé');
       } else {

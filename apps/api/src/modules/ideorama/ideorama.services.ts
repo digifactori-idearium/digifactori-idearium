@@ -8,15 +8,40 @@ const ideoramaTable = prisma.ideorama;
 const ideoramaLikeTable = prisma.ideoramaLikes;
 
 export default class IdeoramaService implements IIdeoramaService {
+  
+  /**
+   * Finds an ideorama in DB based on its ID.
+   *
+   * @param ideoramaId - the ideorama id we are searching for
+   * @returns
+   *  - if found, a Promise with the ideorama (Promise<Ideorama>)
+   *  - a Promise with null otherwise (Promise<null>)
+   */
+  async getIdeoramaById(ideoramaId: string): Promise<Ideorama | null> {
+    return ideoramaTable.findFirst({
+      where: {
+        id: ideoramaId,
+      },
+      include: {
+        _count: {
+          select: {
+            likers: true,
+          },
+        },
+      },
+    });
+  }
+
   /**
    * Creates a new ideorama in DB, with model = "".
    *
-   * @param ideoramaData - the ideorama data
+   * @param name - the name of the new ideorama
+   * @param userId - the id of the user creating the idorama
    * @returns a Promise with the new ideorama (Promise<Ideorama>)
    */
-  async createIdeorama(ideoramaData: Ideorama): Promise<Ideorama> {
+  async createIdeorama(name: string, userId: string): Promise<Ideorama> {
     return await ideoramaTable.create({
-      data: { ...ideoramaData, model: '' },
+      data: { name, userId, model: '' },
     });
   }
 
@@ -43,26 +68,18 @@ export default class IdeoramaService implements IIdeoramaService {
   }
 
   /**
-   * Finds an ideorama in DB based on its ID.
+   * Updates an ideorama from DB with the given ID.
    *
-   * @param ideoramaId - the ideorama id we are searching for
-   * @returns
-   *  - if found, a Promise with the ideorama (Promise<Ideorama>)
-   *  - a Promise with null otherwise (Promise<null>)
+   * @param ideoramaId - the unique id of the ideorama to update
+   * @returns a Promise with the updated ideorama (Promise<Ideorama>)
+   * @throws error if the ideoramaId does not exist in DB
    */
-  async getIdeoramaById(ideoramaId: string): Promise<Ideorama | null> {
-    // ideoramaTable.deleteMany()
-    return ideoramaTable.findFirst({
+  async updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama> {
+    return ideoramaTable.update({
       where: {
         id: ideoramaId,
       },
-      include: {
-        _count: {
-          select: {
-            likers: true,
-          },
-        },
-      },
+      data,
     });
   }
 
@@ -94,41 +111,6 @@ export default class IdeoramaService implements IIdeoramaService {
       },
     });
   }
-
-  /**
-   * Updates an ideorama from DB with the given ID.
-   *
-   * @param ideoramaId - the unique id of the ideorama to update
-   * @returns a Promise with the updated ideorama (Promise<Ideorama>)
-   * @throws error if the ideoramaId does not exist in DB
-   */
-  async updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama> {
-    return ideoramaTable.update({
-      where: {
-        id: ideoramaId,
-      },
-      data,
-    });
-  }
-
-  /**
-   * Checks if an ideorama is in DB, searching for ts ID
-   *
-   * @param ideoramaId - the unique id of the ideorama to find
-   * @returns Promise<true> if present, Promise<false> otherwise
-   */
-  async isIdeoramaInBD(ideoramaId: string): Promise<boolean> {
-    const ideorama = await ideoramaTable.findUnique({
-      where: {
-        id: ideoramaId,
-      },
-    });
-    if (ideorama) {
-      return true;
-    }
-    return false;
-  }
-
   /**
    * Likes an ideorama.
    * @param ideoramaId - the unique id of the ideorama to like

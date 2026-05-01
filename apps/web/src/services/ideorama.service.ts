@@ -14,25 +14,7 @@ export const searchIdeorama = async (
   ideoramaId: string
 ): Promise<ApiResponse<Ideorama>> => {
   try {
-    const response = await axios.post(`http://localhost:3001/api/ideorama/`, {
-      ideoramaId: ideoramaId,
-    });
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
-};
-
-export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
-  try {
-    const response = await axios.get(
-      `http://localhost:3001/api/ideorama/empty`
-    );
+    const response = await axios.get(`http://localhost:3001/api/ideorama/${ideoramaId}`);
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -46,15 +28,13 @@ export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
 
 export const createIdeorama = async (
   name: string,
-  userId: string | undefined
 ): Promise<ApiResponse<Ideorama>> => {
   try {
     const response = await axios.post(
-      `http://localhost:3001/api/ideorama/create`,
+      `http://localhost:3001/api/ideorama/`,
       {
         ideorama: {
           name: name,
-          userId: userId,
         },
       }
     );
@@ -86,9 +66,8 @@ export const autoSaveIdeorama = (
 
     axios
       .post(
-        `${baseURL}/api/ideorama/save`,
+        `${baseURL}/api/ideorama/${ideoramaId}/save`,
         {
-          ideoramaId,
           ideorama: { model, userId },
         },
         {
@@ -105,15 +84,9 @@ export const autoSaveIdeorama = (
 };
 
 export const getAllIdeoramas = async (
-  userId: string | undefined
 ): Promise<ApiResponse<Ideorama[]>> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/ideorama/all`,
-      {
-        userId: userId,
-      }
-    );
+    const response = await axios.get(`http://localhost:3001/api/ideorama/`);
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -151,18 +124,29 @@ export const deleteIdeorama = async (
   ideoramaId: string | undefined
 ): Promise<boolean> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/ideorama/delete`,
-      {
-        ideoramaId: ideoramaId,
-      }
-    );
+    const response = await axios.delete(`http://localhost:3001/api/ideorama/${ideoramaId}`);
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
       );
     }
     return true;
+  } catch (error: any) {
+    return handleApiError(error);
+  }
+};
+
+export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
+  try {
+    const response = await axios.get(
+      `http://localhost:3001/api/ideorama/empty`
+    );
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return response.data;
   } catch (error: any) {
     return handleApiError(error);
   }

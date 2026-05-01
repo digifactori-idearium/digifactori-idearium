@@ -48,7 +48,7 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (profile) {
-      getAllIdeoramas(profile?.userId).then(res => {
+      getAllIdeoramas().then(res => {
         setIdeoramas(res.data);
       });
     }
@@ -71,15 +71,15 @@ const ProfilePage: React.FC = () => {
       <SuperButton
         tooltip={`Voir les followers de ${profile?.pseudo}`}
         onClick={() => {
-          if (showFollowers) {
-            setShowFollowers(false);
-            setFollowers([]);
-            return;
-          }
-          setShowFollowers(true);
-          getFollowers(profile!.userId).then(res => {
-            setFollowers(res.data);
-          });
+            if(showFollowers) {
+                setShowFollowers(false);
+                setFollowers([]);
+                return;
+            }
+            setShowFollowers(true);
+            getFollowers(profile!.userId).then(res => {
+                setFollowers(res.data.followers);
+            })
         }}
       >
         Followers: {profile?.followers.length || 0}
@@ -87,15 +87,15 @@ const ProfilePage: React.FC = () => {
       <SuperButton
         tooltip={`Voir les utilisateurs suivis par ${profile?.pseudo}`}
         onClick={() => {
-          if (showFollowing) {
-            setShowFollowing(false);
-            setFollowing([]);
-            return;
-          }
-          setShowFollowing(true);
-          getFollowing(profile!.userId).then(res => {
-            setFollowing(res.data);
-          });
+            if(showFollowing) {
+                setShowFollowing(false);
+                setFollowing([]);
+                return;
+            }
+            setShowFollowing(true);
+            getFollowing(profile!.userId).then(res => {
+                setFollowing(res.data.following);
+            })
         }}
       >
         Following: {profile?.following.length || 0}

@@ -40,15 +40,17 @@ export interface IAuthService {
 }
 
 export interface IIdeoramaService {
-  createIdeorama(ideoramaData: Ideorama): Promise<Ideorama>;
+  getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
+  createIdeorama(
+    name: string,
+    userId: string
+  ): Promise<Ideorama>;
   updateIdeoramaModelPath(
     ideoramaId: string,
     uploadPath: string
   ): Promise<Ideorama>;
-  getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
   updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama>;
-  isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
   likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
 }
@@ -57,6 +59,7 @@ export interface IProfileService {
   verifyPassword(userId: string, password: string): Promise<boolean>;
   getSingleProfile(userId: string): Promise<Profile | null>;
   getSingleUser(userId: string): Promise<User | null>;
+  getCorrectParentalCode(): Promise<number | undefined>
   updateProfile(
     userId: string,
     body: SetProfileInput
@@ -72,20 +75,19 @@ export interface IProfileService {
 }
 
 export interface IVoxelService {
-  createVoxelModel(data: {
-    name?: string;
-    userId: string;
-  }): Promise<VoxelModel>;
+  createVoxelModel(
+    name: string,
+    userId: string
+  ): Promise<VoxelModel>;
   updateVoxelModelPath(
     voxelModelId: string,
     uploadPath: string
   ): Promise<VoxelModel>;
   getVoxelModelById(
     voxelModelId: string,
-    userId: string
   ): Promise<VoxelModel | null>;
   getUserVoxelModels(userId: string): Promise<VoxelModel[]>;
-  deleteVoxelModel(voxelModelId: string, userId: string): Promise<VoxelModel>;
+  deleteVoxelModel(voxelModelId: string): Promise<VoxelModel>;
 }
 
 export interface IEditorService {
