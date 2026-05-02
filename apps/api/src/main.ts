@@ -16,7 +16,7 @@ import AuthService from '@/modules/auth/auth.service';
 import createEditorRoutes from '@/modules/editor/editor.route';
 import EditorService from '@/modules/editor/editor.service';
 import createIdeoramaRoutes from '@/modules/ideorama/ideorama.route';
-import IdeoramaService from '@/modules/ideorama/ideorama.services';
+import IdeoramaService from '@/modules/ideorama/ideorama.service';
 import createProfileRoutes from '@/modules/profile/profile.route';
 import ProfileService from '@/modules/profile/profile.service';
 import createSettingsRoutes from '@/modules/setting/settings.route';
