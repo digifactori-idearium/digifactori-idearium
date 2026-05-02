@@ -17,7 +17,6 @@ import { SceneGradient } from './SceneGradient';
 
 import { AssetsDropHandler } from '@/components/assets/AssetsDropHandler';
 import { ActionTicker } from '@/lib/actions/runtime';
-import { resolveFileUrl } from '@/lib/asset';
 import { actions, sceneState } from '@/stores';
 
 const SceneBackground: React.FC<{ color: string }> = ({ color }) => {
@@ -113,10 +112,7 @@ export const Scene: React.FC = () => {
                 key={id}
                 id={id}
                 name={objectData.info.name || 'persone'}
-                file={
-                  resolveFileUrl(objectData.info.file || '') ||
-                  '/models/person.glb'
-                }
+                file={objectData.info.file || ''}
               />
             ))}
           </Suspense>

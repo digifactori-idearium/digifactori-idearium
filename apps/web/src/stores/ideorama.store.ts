@@ -20,7 +20,7 @@ export const sceneState = proxy<IdeoramaState>({
   mode: 'play' as IdeoramaMode,
   global: {
     brightness: 'bright' as 'bright' | 'dim' | 'dark',
-    visible: true,
+    isPublic: true,
     music: { currentTrack: '', volume: 0.5 },
     theme: INITIAL_THEME,
   },
@@ -30,7 +30,7 @@ export const sceneState = proxy<IdeoramaState>({
   },
 
   // Info State
-  info: { name: 'Template', description: 'New Ideorama', category: 'none' },
+  info: { name: 'New Ideorama', category: 'none' },
   floor: { color: initialThemeData.floor, hidden: false, texture: 'none' },
 
   //setting
@@ -209,7 +209,7 @@ export const actions = {
   },
 
   spawnAssetAtPosition(asset: AssetItem, position: THREE.Vector3) {
-    const id = crypto.randomUUID();
+    const id = asset.id ?? crypto.randomUUID();
     sceneState.objects[id] = {
       info: {
         name: asset.name,

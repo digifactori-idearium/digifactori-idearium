@@ -34,16 +34,18 @@ import { ObjectListPanel } from '@/components/panels/ObjectListPanel';
 import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
+import { resolveAssetUrl, resolveThumbnailUrl } from '@/lib/asset';
 import { useUser } from '@/providers/UserProvider';
 import {
   autoSaveIdeorama,
+  beaconSaveIdeorama,
   searchIdeorama,
-  fetchIdeoramaModelFromStorage,
 } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 import { createReplacer } from '@/utils/utils';
 
-const saveIdeoramaInLocalStorage = () => {
+/** Serializes the current sceneState to a JSON string. */
+const serializeScene = (): string | null => {
   try {
     const serializable = {
       global: sceneState.global,
@@ -52,12 +54,17 @@ const saveIdeoramaInLocalStorage = () => {
       floor: sceneState.floor,
       objects: sceneState.objects,
     };
-
-    const jsonString = JSON.stringify(serializable, createReplacer());
-    localStorage.setItem('sceneState', jsonString);
+    return JSON.stringify(serializable, createReplacer());
   } catch (err) {
-    console.error('Failed to save scene state:', err);
+    console.error('Failed to serialize scene state:', err);
+    return null;
   }
+};
+
+/** Writes the latest scene state to localStorage. */
+const saveSceneToLocalStorage = () => {
+  const json = serializeScene();
+  if (json) localStorage.setItem('sceneState', json);
 };
 
 export default function Ideorama() {
@@ -68,7 +75,13 @@ export default function Ideorama() {
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
-  const isFirstRender = useRef(true);
+
+  // Guards the save effects to execute during the initial data load.
+  const isLoadingData = useRef(true);
+
+  const isSaving = useRef(false);
+  const pendingSave = useRef(false);
+  const periodicSaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { setOpen } = useSidebar();
 
   useEffect(() => {
@@ -79,49 +92,114 @@ export default function Ideorama() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  const performAutoSave = useCallback(() => {
-    const sceneData = localStorage.getItem('sceneState');
-    if (sceneData && ideoramaid) {
-      autoSaveIdeorama(sceneData, ideoramaid, userId);
-    }
-  }, [ideoramaid, userId]);
+  const getLatestSceneJson = useCallback((): string | null => {
+    return serializeScene();
+  }, []);
 
-  // Handle browser tab closing/refresh
+  const performSave = useCallback(async () => {
+    if (!ideoramaid || !userId) {
+      console.warn('[AutoSave] Skipped — missing ideoramaid or userId', {
+        ideoramaid,
+        userId,
+      });
+      return;
+    }
+
+    if (isSaving.current) {
+      pendingSave.current = true;
+      return;
+    }
+
+    const json = getLatestSceneJson();
+    if (!json) return;
+
+    localStorage.setItem('sceneState', json);
+
+    isSaving.current = true;
+    try {
+      const success = await autoSaveIdeorama(json, ideoramaid, userId);
+      if (!success) {
+        toast.error('Échec de la sauvegarde automatique');
+      }
+    } catch {
+      toast.error('Erreur lors de la sauvegarde automatique');
+    } finally {
+      isSaving.current = false;
+      if (pendingSave.current) {
+        pendingSave.current = false;
+        performSave();
+      }
+    }
+  }, [ideoramaid, userId, getLatestSceneJson]);
+
+  const performBeaconSave = useCallback(() => {
+    if (!ideoramaid || !userId) return;
+    const json = getLatestSceneJson();
+    if (!json) return;
+    try {
+      localStorage.setItem('sceneState', json);
+    } catch (storageError) {
+      console.warn('localStorage quota exceeded on unload:', storageError);
+    }
+    beaconSaveIdeorama(json, ideoramaid, userId);
+  }, [ideoramaid, userId, getLatestSceneJson]);
+
+  //  auto-save every 30 seconds
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      performAutoSave();
+    if (!ideoramaid || !userId) return;
+    periodicSaveRef.current = setInterval(() => {
+      performSave();
+    }, 30_000);
+    return () => {
+      if (periodicSaveRef.current) clearInterval(periodicSaveRef.current);
+    };
+  }, [ideoramaid, userId, performSave]);
+
+  // Save on page unload / tab close / navigation away
+  useEffect(() => {
+    const handleBeforeUnload = () => performBeaconSave();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') performBeaconSave();
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      performAutoSave();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      performBeaconSave();
 
       sceneState.selectedObjectId = null;
       sceneState.history = [];
       sceneState.current = -1;
       sceneState.newest = 0;
     };
-  }, [performAutoSave]);
+  }, [performBeaconSave]);
 
+  // Load ideorama
   useEffect(() => {
     if (!ideoramaid) return;
 
+    isLoadingData.current = true;
+
     searchIdeorama(ideoramaid)
       .then(res => {
-        const fileKey = res.data.model;
+        const record = res.data as any;
+        const scene = record.scene as ModelsInfo | null;
 
-        if (fileKey && typeof fileKey === 'string') {
-          return fetchIdeoramaModelFromStorage(fileKey);
+        if (!scene) {
+          throw new Error(`No scene data in DB for ideorama "${ideoramaid}"`);
         }
-        if (fileKey && typeof fileKey === 'object') {
-          return Promise.resolve(fileKey as ModelsInfo);
+
+        if (record.name) scene.info = { ...scene.info, name: record.name };
+        if (typeof record.isPublic === 'boolean') {
+          scene.global = { ...scene.global, isPublic: record.isPublic };
         }
-        return Promise.reject(new Error('No model data available'));
+
+        return scene;
       })
       .then((model: ModelsInfo) => {
-        if (!model) return;
-
         localStorage.setItem('sceneState', JSON.stringify(model));
 
         if (model.global) Object.assign(sceneState.global, model.global);
@@ -130,27 +208,32 @@ export default function Ideorama() {
         if (model.info) Object.assign(sceneState.info, model.info);
         if (model.floor) Object.assign(sceneState.floor, model.floor);
         if (model.objects) sceneState.objects = model.objects;
+
+        actions.stackState();
+
+        // do saving only after all mutations are committed.
+        isLoadingData.current = false;
       })
-      .then(() => actions.stackState())
       .catch(err => {
-        console.error('Error loading ideorama:', err);
+        console.error('[LoadIdeorama] Failed:', err);
         toast.error('Erreur lors du chargement du idéorama');
+        isLoadingData.current = false;
       });
   }, [ideoramaid]);
 
+  // Save on every meaningful state change in the local storage
   useEffect(() => {
-    if (!isFirstRender.current && !snap.isDragging) {
-      saveIdeoramaInLocalStorage();
-    }
+    if (isLoadingData.current || snap.isDragging) return;
+    saveSceneToLocalStorage();
+    performSave();
   }, [snap.global, snap.background, snap.info, snap.floor, snap.objects]);
 
+  // After a drag-drop completes, save + push undo history.
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+    if (isLoadingData.current) return;
     if (!snap.isDragging) {
-      saveIdeoramaInLocalStorage();
+      saveSceneToLocalStorage();
+      performSave();
       actions.stackState();
     }
   }, [snap.isDragging]);
@@ -234,9 +317,7 @@ export default function Ideorama() {
               <SuperButton
                 tooltip="Réinitialiser"
                 voiceText="Réinitialiser"
-                onClick={() => {
-                  setResetDialogOpen(true);
-                }}
+                onClick={() => setResetDialogOpen(true)}
                 className="z-50 p-2 main-small-btn"
               >
                 <span className="flex items-center gap-1">
@@ -260,12 +341,10 @@ export default function Ideorama() {
                 });
                 setResetDialogOpen(false);
               }}
-              onCancel={() => {
-                setResetDialogOpen(false);
-              }}
+              onCancel={() => setResetDialogOpen(false)}
             />
           </div>
-          {/* Assets Button */}
+
           {isEditMode && (
             <SuperButton
               tooltip="Ajouter un objet"
@@ -280,7 +359,6 @@ export default function Ideorama() {
           )}
           {isEditMode && <AssetsPanel />}
 
-          {/* Tree Explorer */}
           {isEditMode && (
             <SuperButton
               tooltip="Explorez vos objets"
@@ -295,13 +373,10 @@ export default function Ideorama() {
           )}
           {isEditMode && <ObjectListPanel />}
 
-          {/* Right Panel */}
           {isEditMode && (
             <SuperButton
               tooltip="Personnalise ton ideorama"
-              onClick={() => {
-                actions.toggleSettingPanel();
-              }}
+              onClick={() => actions.toggleSettingPanel()}
               className="absolute md:bottom-6 bottom-15 right-5 -translate-x-1/2 z-50 main-small-btn size-12!"
             >
               <Settings2 className="size-8! text-white!" />
@@ -318,14 +393,22 @@ export default function Ideorama() {
         >
           {activeAsset && (
             <div className="w-24 h-24 cursor-grabbing rounded-xl overflow-hidden opacity-90 flex items-center justify-center">
-              {activeAsset.thumbnail ? (
+              {resolveThumbnailUrl(
+                activeAsset.thumbnail,
+                activeAsset.thumbnailUrl
+              ) ? (
                 <img
-                  src={activeAsset.thumbnail}
+                  src={resolveThumbnailUrl(
+                    activeAsset.thumbnail,
+                    activeAsset.thumbnailUrl
+                  )}
                   alt="Dragging Asset"
                   className="w-full h-full object-contain"
                 />
               ) : (
-                <AssetThumbnail file={activeAsset.file} />
+                <AssetThumbnail
+                  file={resolveAssetUrl(activeAsset.file, activeAsset.fileUrl)}
+                />
               )}
             </div>
           )}

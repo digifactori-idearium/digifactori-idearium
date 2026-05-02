@@ -347,10 +347,10 @@ const ideoramaTags = [
 
 const globalConfigInputs = [
   {
-    label: 'Visibilité(Public)',
+    label: 'Rendre public',
     type: 'switch',
-    name: 'visible',
-    placeholder: 'Public ou pas',
+    name: 'isPublic',
+    placeholder: 'Visible par tous',
     required: false,
   },
   {
@@ -365,6 +365,7 @@ const globalConfigInputs = [
     ],
     required: false,
   },
+
   {
     label: 'Choisir la musique de fond',
     type: 'dialog',
@@ -398,7 +399,12 @@ const partConfigInput = [
   },
 ];
 const infoConfig = [
-  { name: 'description', label: 'Description', type: 'textarea' },
+  {
+    name: 'name',
+    label: "Nom de l'idéorama",
+    type: 'text',
+    placeholder: 'Mon idéorama',
+  },
   {
     name: 'category',
     label: 'Catégorie',
