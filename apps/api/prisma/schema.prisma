@@ -60,12 +60,11 @@ model Follow {
 
 // use metadata
 model Ideorama {
-  id          String  @id @default(cuid())
-  name        String  @default("New Ideorama")
-  description String?
-  isPublic    Boolean @default(true)
+  id       String  @id @default(cuid())
+  name     String  @default("New Ideorama")
+  isPublic Boolean @default(true)
 
-  model String
+  scene Json?
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -199,11 +198,11 @@ model Integration {
 }
 
 model Asset {
-  id        String          @id @default(cuid())
-  name      String
-  type      IntegrationType @default(OTHER)
-  category  AssetCategory       @default(OTHER)
-  tags      String[]
+  id       String          @id @default(cuid())
+  name     String
+  type     IntegrationType @default(OTHER)
+  category AssetCategory   @default(OTHER)
+  tags     String[]
 
   file      String
   thumbnail String?
