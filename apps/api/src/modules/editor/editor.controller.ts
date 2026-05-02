@@ -2,18 +2,21 @@ import { IEditorService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
 
-/**
- * Create a new document
- *
- * @description Creates a new document for the authenticated user
- * @param {Request} req - Express request with userId from auth middleware
- * @param {Response} res - Express response object
- * @returns {Response} JSON response with created document
- */
-
 export default class EditorController {
   constructor(private readonly editorService: IEditorService) {}
 
+  /**
+   * Creates a new document for the authenticated user.
+   *
+   * @route  POST /editor
+   * @access Authenticated
+   *
+   * @body   { title: string, content: string, json?: object, wordCount?: number, emoji?: string, color?: string }
+   *
+   * @returns
+   *   - 201 { data: Document }
+   *   - 400 validation error
+   */
   createDocument = asyncHandler(async (req, res) => {
     const { title, content, json, wordCount, emoji, color } = req.body;
     const userId = req.user!.userId;
@@ -32,12 +35,13 @@ export default class EditorController {
   });
 
   /**
-   * Get all documents for the authenticated user
+   * Retrieves all documents belonging to the authenticated user.
    *
-   * @description Retrieves all documents belonging to the authenticated user
-   * @param {Request} req - Express request with userId from auth middleware
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response with array of documents
+   * @route  GET /editor
+   * @access Authenticated
+   *
+   * @returns
+   *   - 200 { data: Document[] }
    */
   getUserDocuments = asyncHandler(async (req, res) => {
     const userId = req.user!.userId;
@@ -50,12 +54,14 @@ export default class EditorController {
   });
 
   /**
-   * Get a single document by ID
+   * Retrieves a single document by ID.
    *
-   * @description Retrieves a specific document by its ID
-   * @param {Request} req - Express request with documentId in params
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response with document data
+   * @route  GET /editor/:documentId
+   * @access Authenticated
+   *
+   * @returns
+   *   - 200 { data: Document }
+   *   - 404 document not found
    */
   getDocumentById = asyncHandler(async (req, res) => {
     const documentId = Array.isArray(req.params.documentId)
@@ -68,12 +74,16 @@ export default class EditorController {
   });
 
   /**
-   * Update a document
+   * Updates an existing document with new data.
    *
-   * @description Updates an existing document with new data
-   * @param {Request} req - Express request with documentId in params and update data in body
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response with updated document
+   * @route  PATCH /editor/:documentId
+   * @access Authenticated
+   *
+   * @body   { title?: string, content?: string, json?: object, wordCount?: number, emoji?: string, color?: string }
+   *
+   * @returns
+   *   - 200 { data: Document }
+   *   - 404 document not found
    */
   updateDocument = asyncHandler(async (req, res) => {
     const documentId = Array.isArray(req.params.documentId)
@@ -94,12 +104,14 @@ export default class EditorController {
   });
 
   /**
-   * Delete a document
+   * Deletes a document by its ID.
    *
-   * @description Deletes a document by its ID
-   * @param {Request} req - Express request with documentId in params
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response confirming deletion
+   * @route  DELETE /editor/:documentId
+   * @access Authenticated
+   *
+   * @returns
+   *   - 200 { data: { id: string } }
+   *   - 404 document not found
    */
   deleteDocument = asyncHandler(async (req, res) => {
     const documentId = Array.isArray(req.params.documentId)
@@ -115,12 +127,16 @@ export default class EditorController {
   });
 
   /**
-   * Save document with full content and metadata
+   * Saves a document with full content and metadata (both HTML and TipTap JSON).
    *
-   * @description Saves a document with both HTML content and TipTap JSON format
-   * @param {Request} req - Express request with documentId in params and full document data in body
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response with saved document
+   * @route  POST /editor/:documentId/save
+   * @access Authenticated
+   *
+   * @body   { title?: string, content?: string, json?: object, wordCount?: number, emoji?: string, color?: string }
+   *
+   * @returns
+   *   - 200 { data: Document }
+   *   - 404 document not found
    */
   saveDocument = asyncHandler(async (req, res) => {
     const documentId = Array.isArray(req.params.documentId)

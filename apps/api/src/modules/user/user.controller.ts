@@ -108,6 +108,14 @@ export default class UserController {
    *
    * @route  PATCH /user/:id
    * @access ADMIN | SUPERVISOR
+   *
+   * @body   { email?: string, first_name?: string, last_name?: string, role?: Role }
+   *
+   * @returns
+   *   - 200 { data: User }
+   *   - 400 validation error
+   *   - 403 permission denied
+   *   - 404 user not found
    */
   updateUser = asyncHandler(async (req: Request, res: Response) => {
     const requester = req.user!;

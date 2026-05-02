@@ -14,16 +14,17 @@ export default class VoxelController {
   constructor(private readonly voxelService: IVoxelService) {}
 
   /**
-   * Creates a new voxel model or updates an existing one
+   * Creates a new voxel model or updates an existing one with model data.
    *
-   * @description Creates a new voxel model with an empty template if voxelModelId is not provided.
-   * If updating (voxelModelId provided), persists the model data to the file system
+   * @route  POST /voxel/save
+   * @access Authenticated
    *
-   * @param {Request} req - Express request with authenticated user and body containing:
-   *   - voxelModelId?: string (if updating)
-   *   - voxelModel: { name?: string, model?: object }
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response
+   * @body   { voxelModelId?: string, voxelModel: { name?: string, model?: object } }
+   *
+   * @returns
+   *   - 201 { data: VoxelModel } (on creation)
+   *   - 200 { data: null } (on update)
+   *   - 404 voxel model not found (on update)
    */
   saveVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
@@ -124,14 +125,16 @@ export default class VoxelController {
   );
 
   /**
-   * Retrieves a voxel model by ID with its model data loaded from file
+   * Retrieves a voxel model by ID with its associated 3D model data.
    *
-   * @description Fetches a voxel model by ID and loads the associated 3D model data from the file system.
-   * Ensures the authenticated user can only access their own models
+   * @route  POST /voxel
+   * @access Authenticated
    *
-   * @param {Request} req - Express request with authenticated user and voxelModelId in body
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response
+   * @body   { voxelModelId: string }
+   *
+   * @returns
+   *   - 200 { data: VoxelModel }
+   *   - 404 voxel model not found
    */
   getVoxelModelByIdController = asyncHandler(
     async (req: Request, res: Response) => {
@@ -153,13 +156,13 @@ export default class VoxelController {
   );
 
   /**
-   * Retrieves all voxel models belonging to the authenticated user
+   * Retrieves all voxel models belonging to the authenticated user.
    *
-   * @description Fetches all voxel models created by the authenticated user
+   * @route  POST /voxel/all
+   * @access Authenticated
    *
-   * @param {Request} req - Express request with authenticated user
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response
+   * @returns
+   *   - 200 { data: VoxelModel[] }
    */
   getUserVoxelModelsController = asyncHandler(
     async (req: Request, res: Response) => {
@@ -183,14 +186,16 @@ export default class VoxelController {
   );
 
   /**
-   * Deletes a voxel model and its associated file
+   * Deletes a voxel model and its associated file from storage.
    *
-   * @description Permanently removes a voxel model from the database and deletes its associated file from the file system.
-   * Only allows deletion of models owned by the authenticated user
+   * @route  POST /voxel/delete
+   * @access Authenticated
    *
-   * @param {Request} req - Express request with authenticated user and voxelModelId in body
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response
+   * @body   { voxelModelId: string }
+   *
+   * @returns
+   *   - 200 { data: null }
+   *   - 404 voxel model not found
    */
   deleteVoxelModelController = asyncHandler(
     async (req: Request, res: Response) => {
