@@ -3,7 +3,7 @@ import React, { useState, memo } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
-import { useStorageFile } from '@/hooks/useStorageFile';
+import { useStorageUrl } from '@/hooks/useStorageFile';
 
 interface AssetPreviewProps {
   fileKey: string;
@@ -65,7 +65,7 @@ const PreviewContainer = ({
 export const AssetPreview = memo(
   ({ fileKey }: AssetPreviewProps) => {
     const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
-    const { url, loading, error } = useStorageFile(fileKey);
+    const { url, loading, error } = useStorageUrl(fileKey);
 
     if (loading)
       return (
