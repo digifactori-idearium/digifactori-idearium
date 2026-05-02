@@ -40,18 +40,18 @@ export interface IAuthService {
 }
 
 export interface IIdeoramaService {
-  createIdeorama(ideoramaData: Ideorama): Promise<Ideorama>;
-  updateIdeoramaModelFileKey(
+  createIdeorama(ideoramaData: Partial<Ideorama>): Promise<Ideorama>;
+  saveScene(
     ideoramaId: string,
-    fileKey: string
-  ): Promise<Ideorama>;
-  updateIdeoramaModelPath(
-    ideoramaId: string,
-    uploadPath: string
+    scene: import('@prisma/client').Prisma.InputJsonValue,
+    meta?: { name?: string; isPublic?: boolean }
   ): Promise<Ideorama>;
   getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
-  updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama>;
+  updateIdeorama(
+    ideoramaId: string,
+    data: import('@prisma/client').Prisma.IdeoramaUpdateInput
+  ): Promise<Ideorama>;
   isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
   likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
