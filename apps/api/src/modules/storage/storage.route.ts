@@ -10,6 +10,8 @@ export default function createStorageRoutes(): ExpressRouter {
   const storageController = new StorageController(storageService);
   const router: ExpressRouter = Router();
 
+  router.get('/signed-url', authenticate, storageController.getSignedUrl);
+
   router.get('/file/{*splat}', authenticate, storageController.getStorageFile);
 
   router.get(

@@ -11,8 +11,45 @@ import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
 import { failOnValidation } from '@/utils/validation-errors';
 
+const SIGNED_URL_TTL = 3600;
+
 export default class StorageController {
   constructor(private readonly storageService: StorageService) {}
+
+  /**
+   * Returns a short-lived signed URL so the frontend can fetch the asset
+   * directly from the storage provider without backend proxying.
+   *
+   * @route  GET /storage/signed-url
+   * @access Authenticated
+   * @query  key {string} — storage key, e.g. "assets/models/abc123.glb"
+   *
+   * @returns 200 { data: { url: string; expiresAt: string } }
+   *          400 if key is missing
+   */
+  getSignedUrl = asyncHandler(async (req: Request, res: Response) => {
+    const key = req.query.key as string | undefined;
+    if (!key?.trim()) {
+      return HttpResponse.badRequest('Paramètre "key" manquant').send(res);
+    }
+
+    const adapter = await resolveStorageAdapter();
+
+    let url: string;
+    const expiresAt = new Date(
+      Date.now() + SIGNED_URL_TTL * 1000
+    ).toISOString();
+
+    if (adapter.getSignedUrl) {
+      // Remote provider — return a presigned URL the browser hits directly.
+      url = await adapter.getSignedUrl(key, SIGNED_URL_TTL);
+    } else {
+      // LOCAL — route through the proxy endpoint (dev only).
+      url = `/api/storage/file/${key}`;
+    }
+
+    HttpResponse.success({ url, expiresAt }, 'URL signée générée').send(res);
+  });
 
   /**
    * Streams an asset file from the storage provider (R2 / S3 / Azure)

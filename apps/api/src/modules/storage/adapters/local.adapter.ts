@@ -59,3 +59,7 @@ export function buildKey(
   const safeDir = uploadDir?.replace(/[^a-zA-Z0-9/_-]/g, '');
   return safeDir ? `${safeDir}/${filename}` : filename;
 }
+
+export function resolveLocalPath(key: string): string {
+  return path.join(LOCAL_UPLOADS_DIR, key);
+}

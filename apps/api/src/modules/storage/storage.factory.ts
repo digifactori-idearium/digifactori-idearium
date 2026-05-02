@@ -6,32 +6,6 @@ import { type StorageAdapter } from './adapters/storage.adapter';
 import { prisma } from '@/config/client.config';
 
 /**
- * Derive a public URL base when the user hasn't set a custom CDN domain.
- *
- * For R2 / MinIO / GCS: path-style → endpoint/bucket
- * For real AWS S3:       virtual-hosted-style → https://bucket.s3.region.amazonaws.com
- */
-function derivePublicUrl(
-  provider: string,
-  endpoint: string | null,
-  bucket: string,
-  region: string | null
-): string {
-  // AWS S3 virtual-hosted style URL
-  if (provider === 'S3' && !endpoint) {
-    const r = region ?? 'us-east-1';
-    return `https://${bucket}.s3.${r}.amazonaws.com`;
-  }
-
-  // R2 / GCS / MinIO path style: endpoint/bucket
-  if (endpoint) {
-    return `${endpoint.replace(/\/$/, '')}/${bucket}`;
-  }
-
-  return '';
-}
-
-/**
  * Reads the CloudStorage row (id = 1) and returns the correct adapter.
  * Called on every upload/delete so config changes take effect immediately.
  *
@@ -40,7 +14,7 @@ function derivePublicUrl(
  *   - Provider is LOCAL.
  *   - Required credentials (accessKey, secretKey, bucket) are missing.
  *
- * publicUrl is optional — if absent it is derived from endpoint + bucket.
+ * publicUrl is optional
  */
 export async function resolveStorageAdapter(): Promise<StorageAdapter> {
   const storage = await prisma.cloudStorage
@@ -69,8 +43,7 @@ export async function resolveStorageAdapter(): Promise<StorageAdapter> {
     return new LocalAdapter();
   }
 
-  const resolvedPublicUrl =
-    publicUrl?.trim() || derivePublicUrl(provider, endpoint, bucket, region);
+  const resolvedPublicUrl = publicUrl?.trim() || '';
 
   if (!resolvedPublicUrl) {
     console.warn(
