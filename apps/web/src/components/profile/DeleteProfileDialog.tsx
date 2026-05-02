@@ -29,7 +29,7 @@ const DeleteProfileDialog: React.FC<Props> = ({ pseudo, onConfirm }) => {
         </div>
       </AlertDialogTrigger>
 
-      <AlertDialogContent className="rounded-4xl border-mauve bg-sidebar shadow-2xl p-8">
+      <AlertDialogContent className="rounded-4xl border-mauve bg-sidebar shadow-2xl p-8  z-120">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl font-black text-mauve text-center">
             Êtes-vous sûr ?

@@ -12,11 +12,16 @@ import {
   ChartBarStacked,
   TextAlignStart,
   FileBox,
+  LockKeyhole,
 } from 'lucide-react';
 
 import { themeOptions } from './theme';
 
-import { MusicSelector, ObjectSelector } from '@/components/common/form';
+import {
+  FormInputData,
+  MusicSelector,
+  ObjectSelector,
+} from '@/components/common/form';
 
 /* =========================
    LOGIN INPUTS
@@ -51,7 +56,7 @@ export const loginInputs = [
 /* =========================
    REGISTER INPUTS
 ========================= */
-export const registerInputs = [
+export const registerBaseInputs: FormInputData[] = [
   {
     label: 'Prénom',
     type: 'text',
@@ -76,18 +81,7 @@ export const registerInputs = [
     required: true,
     icon: Mail,
   },
-  {
-    label: 'Rôle',
-    type: 'select',
-    name: 'user.role',
-    placeholder: 'Sélectionnez un rôle',
-    required: true,
-    icon: Briefcase,
-    options: [
-      { value: 'CHILD', text: 'Enfant' },
-      { value: 'SUPERVISOR', text: 'Superviseur' },
-    ],
-  },
+
   {
     label: 'Mot de passe',
     type: 'password',
@@ -97,20 +91,84 @@ export const registerInputs = [
     icon: Lock,
   },
   {
-    label: 'Code parental',
-    type: 'number',
-    name: 'user.parental_code',
-    placeholder: 'Entrez votre code parental',
-    required: false,
-    icon: ShieldCheck,
-  },
-  {
     label: 'Pseudo',
     type: 'text',
     name: 'profile.pseudo',
     placeholder: 'Choisissez un pseudo',
     required: true,
     icon: Users,
+  },
+  {
+    label: 'Rôle',
+    type: 'select',
+    name: 'user.role',
+    placeholder: 'Sélectionnez un rôle',
+    required: true,
+    icon: Briefcase,
+    options: [
+      { value: 'ADMIN', text: 'Administrateur' },
+      { value: 'SUPERVISOR', text: 'Superviseur' },
+      { value: 'INTERN', text: 'Stagiaire' },
+    ],
+  },
+];
+
+export const adminCodeInput: FormInputData = {
+  label: 'Code administrateur',
+  type: 'password',
+  name: 'user.admin_code',
+  placeholder: 'Entrez le code administrateur',
+  required: true,
+  icon: ShieldCheck,
+};
+
+export const orgCodeInput: FormInputData = {
+  label: 'Code organisation',
+  type: 'password',
+  name: 'user.orgCode',
+  placeholder: "Entrez le code de l'organisation",
+  max: 6,
+  required: true,
+  icon: KeyRound,
+};
+
+export const parentalCodeInput: FormInputData = {
+  label: 'Code parental',
+  type: 'password',
+  name: 'user.parental_code',
+  placeholder: 'Entrez le code parental (min. 4 chiffres)',
+  required: true,
+  max: 6,
+  icon: ShieldCheck,
+};
+
+/* =========================
+   Change password INPUTS
+========================= */
+export const changePasswordInputs = [
+  {
+    label: 'Ancien Mot de passe',
+    type: 'password',
+    name: 'currentPassword',
+    placeholder: 'Saisissez votre mot de passe actuel',
+    required: true,
+    icon: LockKeyhole,
+  },
+  {
+    label: 'Nouveau Mot de passe',
+    type: 'password',
+    name: 'newPassword',
+    placeholder: 'Saisissez votre nouveau mot de passe',
+    required: true,
+    icon: Lock,
+  },
+  {
+    label: 'Confirmation Mot de passe',
+    type: 'password',
+    name: 'confirmPassword',
+    placeholder: 'Confirmez votre nouveau mot de passe',
+    required: true,
+    icon: Lock,
   },
 ];
 
@@ -126,16 +184,68 @@ export const resetInputs = [
     required: true,
     icon: Mail,
   },
+];
+/* =========================
+   ADMIN CREATE USER IMPUTS
+========================= */
+
+export const manageUserInputs = [
   {
-    label: 'Code de vérification',
+    label: 'Prénom',
     type: 'text',
-    name: 'code',
-    placeholder: 'Entrez le code à 6 chiffres',
-    required: false,
-    icon: KeyRound,
+    name: 'first_name',
+    placeholder: 'Entrez votre prénom',
+    required: true,
+    icon: User,
+  },
+  {
+    label: 'Nom de famille',
+    type: 'text',
+    name: 'last_name',
+    placeholder: 'Entrez votre nom de famille',
+    required: true,
+    icon: User,
+  },
+  {
+    label: 'Email',
+    type: 'email',
+    name: 'email',
+    placeholder: 'Entrez votre adresse mail',
+    required: true,
+    icon: Mail,
+  },
+  {
+    label: 'Pseudo',
+    type: 'text',
+    name: 'pseudo',
+    placeholder: 'Choisissez un pseudo',
+    required: true,
+    icon: Users,
   },
 ];
 
+export const adminUserRole = {
+  label: 'Rôle',
+  type: 'select',
+  name: 'role',
+  placeholder: 'Sélectionnez un rôle',
+  required: true,
+  icon: Briefcase,
+  options: [
+    { value: 'INTERN', text: 'Stagiaire' },
+    { value: 'SUPERVISOR', text: 'Superviseur' },
+  ],
+};
+
+export const supervisorUserRole = {
+  label: 'Rôle',
+  type: 'select',
+  name: 'role',
+  placeholder: 'Sélectionnez un rôle',
+  required: true,
+  icon: Briefcase,
+  options: [{ value: 'INTERN', text: 'Stagiaire' }],
+};
 /* =========================
    IDEORAMA CREATION FORM INPUTS
 ========================= */
@@ -380,7 +490,7 @@ export const assetInputs = [
     type: 'text',
     name: 'name',
     placeholder: "Entrez le nom de l'asset",
-    required: true,
+    required: false,
     icon: Box,
   },
   {
@@ -388,7 +498,7 @@ export const assetInputs = [
     type: 'text',
     name: 'category',
     placeholder: "Entrez le type de catégorie de l'asset",
-    required: true,
+    required: false,
     icon: ChartBarStacked,
   },
   {
@@ -396,16 +506,8 @@ export const assetInputs = [
     type: 'text',
     name: 'description',
     placeholder: "Entrez la description de l'asset",
-    required: true,
+    required: false,
     icon: TextAlignStart,
-  },
-  {
-    label: 'Source',
-    type: 'text',
-    name: 'source',
-    placeholder: "Entrez la source de l'asset",
-    required: true,
-    icon: FileBox,
   },
 ];
 
@@ -418,7 +520,8 @@ export const integrationInputs = [
     type: 'switch',
     name: 'isActive',
     placeholder: "Entrez le nom de l'intégration",
-    required: true,
+    required: false,
+    default: true,
     icon: Box,
   },
   {
@@ -511,8 +614,29 @@ export const storeInputs = [
     label: 'Clef',
     type: 'password',
     name: 'storeKey',
-    placeholder: 'Entrez la source du store',
+    placeholder: 'Entrez la clef du store',
     required: false,
     icon: KeyRound,
+  },
+];
+
+export const orgInputs = [
+  {
+    label: "Code de l'organisation",
+    type: 'password',
+    name: 'orgCode',
+    placeholder: "Code d'accès de l'organisation",
+    max: 6,
+    required: true,
+    icon: Box,
+  },
+  {
+    label: 'Code parental Stagiaires',
+    type: 'password',
+    name: 'orgParentalCode',
+    placeholder: "Code d'accès pour les stagiaires",
+    max: 4,
+    required: true,
+    icon: FileBox,
   },
 ];

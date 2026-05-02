@@ -1,40 +1,47 @@
-import { Music, Play, Pause, Check } from 'lucide-react';
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { Check, Music, Pause, Play } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { Search } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useSound, searchSounds } from '@/hooks/useSound';
+import { useSound } from '@/hooks/useSound';
 import { cn } from '@/lib/utils';
 import { sceneState } from '@/stores';
 
 interface MusicSelectorProps {
   type?: 'global' | 'action';
+  actionId?: string;
 }
 
 function setGlobalTrack(url: string, current: string) {
-  sceneState.global.music.currentTrack = current === url ? '' : url;
+  sceneState.global.music = {
+    ...sceneState.global.music,
+    currentTrack: current === url ? '' : url,
+  };
 }
 
-function setActionTrack(objId: string, trigger: string, url: string) {
-  const actions = sceneState.objects[objId].actions;
-  const targetAction = (actions || []).find(
-    a => a.subType === 'playSound' && a.trigger === trigger
-  );
-  if (targetAction) {
-    targetAction.config.music = targetAction.config.music === url ? '' : url;
-  }
+function setActionTrack(objId: string, actionId: string, url: string) {
+  const obj = sceneState.objects[objId];
+  if (!obj?.actions) return;
+
+  const action = obj.actions.find(a => a.id === actionId);
+  if (!action) return;
+
+  action.config.music = action.config.music === url ? '' : url;
 }
 
-export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
+export function MusicSelector({
+  type = 'global',
+  actionId,
+}: MusicSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const { sounds, loading, fetchNextPage, hasMore } = useSound(searchQuery);
 
   const snap = useSnapshot(sceneState);
+
   const globalTrack = snap.global.music.currentTrack;
   const selectedObjectId = snap.selectedObjectId;
-  const trigger = snap.pendingTrigger;
   const selectedObject = selectedObjectId
     ? snap.objects[selectedObjectId]
     : null;
@@ -43,45 +50,57 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const actionTrack = useMemo(() => {
-    if (type !== 'action' || !selectedObject?.actions) return '';
-    const action = selectedObject.actions.find(
-      a => a.subType === 'playSound' && a.trigger === trigger
-    );
-    return action?.config?.music ?? '';
-  }, [type, selectedObject, trigger]);
+    if (type !== 'action' || !actionId || !selectedObject?.actions) return '';
+    const action = selectedObject.actions.find(a => a.id === actionId);
+    return action?.config?.music || '';
+  }, [type, actionId, selectedObject]);
 
   const selectedUrl = type === 'global' ? globalTrack : actionTrack;
 
-  const togglePreview = (sound: MusicItem) => {
-    if (previewId === String(sound.id)) {
-      audioRef.current?.pause();
-      setPreviewId(null);
-    } else {
-      if (audioRef.current) {
+  const togglePreview = useCallback(
+    (sound: MusicItem) => {
+      if (!audioRef.current) return;
+      if (previewId === String(sound.id)) {
+        audioRef.current.pause();
+        setPreviewId(null);
+      } else {
         audioRef.current.pause();
         audioRef.current.src = sound.file;
         audioRef.current.play();
+        setPreviewId(String(sound.id));
       }
-      setPreviewId(String(sound.id));
-    }
+    },
+    [previewId]
+  );
+
+  const selectTrack = useCallback(
+    (url: string) => {
+      if (type === 'global') {
+        setGlobalTrack(url, globalTrack);
+        return;
+      }
+      if (!selectedObjectId || !actionId) return;
+      setActionTrack(selectedObjectId, actionId, url);
+    },
+    [type, globalTrack, selectedObjectId, actionId]
+  );
+
+  const handleAsyncSearch = useCallback(
+    async (query: string): Promise<SearchOption[]> => {
+      setSearchQuery(query);
+      return sounds.map(sound => ({
+        label: sound.frName || sound.name,
+        value: sound.file,
+      }));
+    },
+    [sounds]
+  );
+
+  const getSoundName = (sound: MusicItem) => {
+    return ((sound.frName || sound.name) ?? 'Unknown')
+      .replace(/\.[^/.]+$/, '')
+      .slice(0, 20);
   };
-
-  const selectTrack = useCallback((url: string) => {
-    if (type === 'global') {
-      setGlobalTrack(url, globalTrack);
-      return;
-    }
-    const objId = sceneState.selectedObjectId;
-    const currentTrigger = sceneState.pendingTrigger;
-    if (!objId || !currentTrigger) return;
-    setActionTrack(objId, currentTrigger, url);
-  }, []);
-
-  const handleAsyncSearch = useCallback(async (query: string) => {
-    const results = await searchSounds(query);
-    setSearchQuery(query);
-    return results;
-  }, []);
 
   return (
     <div className="flex flex-col gap-3">
@@ -102,12 +121,11 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
         }}
       >
         <div className="flex flex-col gap-2">
-          {sounds.map(sound => {
+          {sounds.map((sound, id) => {
             const isSelected = selectedUrl === sound.file;
-
             return (
               <div
-                key={sound.id}
+                key={id}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-lg border transition-all duration-200',
                   isSelected
@@ -132,7 +150,7 @@ export function MusicSelector({ type = 'global' }: MusicSelectorProps) {
                       isSelected ? 'text-foreground' : 'text-muted-foreground'
                     )}
                   >
-                    {sound.frName || sound.name}
+                    {getSoundName(sound)}
                   </span>
                 </div>
 

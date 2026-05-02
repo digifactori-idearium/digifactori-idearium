@@ -1,87 +1,61 @@
-import { SquarePlus } from 'lucide-react';
-import { useState } from 'react';
+import { Plus } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 import { DataTable } from '../common/data-table/dataTable';
 
 import { columns } from './assetsColumns';
 
-import { Form } from '@/components/common/form';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { assetInputs } from '@/lib/input';
-
-function getData(): Asset[] {
-  return [
-    {
-      name: 'pizza',
-      category: 'nourriture',
-      description: 'pizza kebab',
-      preview:
-        'https://media.sketchfab.com/models/638719eba7234613b869550dcdefa597/thumbnails/982febf106a0414da2d35995bd26c396/31775e4da53a46c3937ef6ee1fcbfd12.jpeg',
-    },
-    {
-      name: 'burger',
-      category: 'nourriture',
-      description: 'burger sans sauce',
-      preview:
-        'https://preview.free3d.com/img/2010/10/1688650028991645249/a7b0bqps.jpg',
-    },
-    {
-      name: 'voiture',
-      category: 'vehicules',
-      description: 'vieille voiture verte',
-      preview: 'https://s3.envato.com/files/509493379/Cycles%201.png',
-    },
-  ];
-}
+import { AssetFilesUpload } from '@/components/assets-upload/AssetFilesUpload';
+import { SuperButton } from '@/components/common/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 export default function AssetHandling() {
-  const data = getData();
-  const [loading, _setLoading] = useState(false);
+  const [data, setData] = useState<Asset[]>([]);
+  const [open, setOpen] = useState(false);
+
+  const onUpload = (files: File[]) => {
+    const newAssets: Asset[] = files.map(file => ({
+      name: file.name,
+      category: '',
+      description: '',
+      type: file.type.startsWith('audio/')
+        ? 'MUSIC'
+        : ('ASSET' as IntegrationType),
+      preview: URL.createObjectURL(file),
+    }));
+    setData(prev => [...prev, ...newAssets]);
+    setOpen(false);
+  };
+
+  const refresh = useCallback(() => {}, []);
 
   return (
-    <div className="w-full min-h-screen p-6">
-      <div className="magic-text text-center md:text-5xl text-3xl justify-center flex items-center gap-2 font-bold mb-6">
-        Gérez les assets
+    <div className="container mx-auto h-full">
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="magic-text md:text-5xl text-3xl font-bold">
+          Gérez les assets
+        </h1>
       </div>
 
-      <div className="container mx-auto py-10">
-        <div className="w-full max-w-6xl mx-auto sm:px-6 lg:px-8">
-          <Dialog>
+      <div className="fcontainer mx-auto">
+        <div>
+          <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! !border-mauve">
-                Ajouter un asset <SquarePlus />
-              </Button>
+              <SuperButton
+                voiceText={"Le paramètre avancé, c'est pour les grands."}
+                className="flex items-center gap-2 form-button"
+              >
+                <Plus className="w-4 h-4" />
+                Ajouter des assets
+              </SuperButton>
             </DialogTrigger>
-            <DialogContent className="bg-sidebar ">
-              <DialogHeader>
-                <DialogTitle>Ajouter un asset</DialogTitle>
-                <DialogDescription>
-                  Complétez les informations du nouvel asset et cliquer sur
-                  envoyer pour le sauvegarder.
-                </DialogDescription>
-              </DialogHeader>
-              <Form
-                inputs={assetInputs}
-                handleOnSubmit={() => {}}
-                loading={loading}
-              />
+            <DialogContent className="bg-sidebar !max-w-3xl w-full">
+              <AssetFilesUpload onUpload={onUpload} />
             </DialogContent>
           </Dialog>
         </div>
-        <DataTable
-          columns={columns}
-          data={data}
-          filterColumn="name"
-          filterColumnText="assets"
-        />
+        <DataTable columns={columns(refresh)} data={data} />
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 import { Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
-import DeleteModelDialog from './deleteModelDialog';
+import AlertDialog from '../dialog/AlertDialog';
+
 
 import { SuperButton } from '@/components/common/button/SuperButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -70,19 +72,30 @@ const VoxelModelsGroup: React.FC<{
           </div>
         </Card>
       ))}
-      {modelToDelete != null && (
-        <DeleteModelDialog
-          modelName={modelToDelete.name}
-          onConfirm={async () => {
-            await deleteVoxelModel(modelToDelete.id);
-            setModels(prev =>
-              prev.filter(model => model.id !== modelToDelete.id)
-            );
-            setModelToDelete(null);
-          }}
-          onCancel={() => setModelToDelete(null)}
-        />
-      )}
+      <AlertDialog
+        open={modelToDelete != null}
+        description={
+          <>
+            Cela supprimera définitivement le modèle{' '}
+            <span className="font-bold text-mauve">{modelToDelete?.name}</span>
+          </>
+        }
+        confirmationMessage="Oui, supprimer"
+        onConfirm={() => {
+          deleteVoxelModel(modelToDelete?.id).then(res => {
+            if (res) {
+              setModels(prev =>
+                prev.filter(model => model.id !== modelToDelete?.id)
+              );
+              toast.success('modèle supprimé avec succès');
+            } else {
+              toast.error("Échec lors de la suppression du modèle");
+            }
+          });
+          setModelToDelete(null);
+        }}
+        onCancel={() => setModelToDelete(null)}
+      />
     </div>
   );
 };

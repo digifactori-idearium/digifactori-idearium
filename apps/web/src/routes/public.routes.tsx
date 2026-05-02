@@ -1,16 +1,13 @@
 import Home from '@/pages/Home';
 import Ideoramas from '@/pages/Ideoramas';
-import IdeoramasPlayground from '@/pages/IdeoramasPlayground';
+import Profile from '@/pages/Profile';
 import VoxelLayout from '@/pages/VoxelLayout';
 
 const publicRoutes = [
   { path: '', element: <Home />, exact: true },
   {
     path: 'ideoramas',
-    children: [
-      { index: true, element: <Ideoramas /> },
-      { path: 'playground', element: <IdeoramasPlayground /> },
-    ],
+    children: [{ index: true, element: <Ideoramas /> }],
   },
   {
     path: 'voxel',
@@ -18,6 +15,10 @@ const publicRoutes = [
       { index: true, element: <VoxelLayout /> },
       { path: 'playground', element: <VoxelLayout /> },
     ],
+  },
+  {
+    path: 'profile/:userId',
+    element: <Profile />,
   },
 ];
 

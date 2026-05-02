@@ -6,22 +6,35 @@ import { IVoxelService } from '@/types';
 const voxelModelTable = prisma.voxelModel;
 
 export default class VoxelService implements IVoxelService {
+
+    /**
+   * Finds a voxel model in DB based on its ID.
+   *
+   * @param voxelModelId - the voxel model id we are searching for
+   * @returns
+   *  - if found, a Promise with the voxel model (Promise<VoxelModel>)
+   *  - a Promise with null otherwise (Promise<null>)
+   */
+  async getVoxelModelById(
+    voxelModelId: string,
+  ): Promise<VoxelModel | null> {
+    return voxelModelTable.findFirst({
+      where: {
+        id: voxelModelId,
+      },
+    });
+  }
+
   /**
    * Creates a new voxel model in DB.
    *
-   * @param data - contains the voxel model name and the id of its creator ({name?: string, user: string})
+   * @param name - the name of the new model
+   * @param userId - the id of the user creating the model
    * @returns a Promise with the new voxel model (Promise<VoxelModel>)
    */
-  async createVoxelModel(data: {
-    name?: string;
-    userId: string;
-  }): Promise<VoxelModel> {
+  async createVoxelModel(name: string, userId: string): Promise<VoxelModel> {
     return voxelModelTable.create({
-      data: {
-        name: data.name ?? 'New Voxel Model',
-        userId: data.userId,
-        model: '',
-      },
+      data: {name, userId, model: ''},
     });
   }
 
@@ -43,26 +56,6 @@ export default class VoxelService implements IVoxelService {
       },
       data: {
         model: uploadPath,
-      },
-    });
-  }
-
-  /**
-   * Finds a voxel model in DB based on its ID.
-   *
-   * @param ideoramaId - the voxel model id we are searching for
-   * @returns
-   *  - if found, a Promise with the voxel model (Promise<VoxelModel>)
-   *  - a Promise with null otherwise (Promise<null>)
-   */
-  async getVoxelModelById(
-    voxelModelId: string,
-    userId: string
-  ): Promise<VoxelModel | null> {
-    return voxelModelTable.findFirst({
-      where: {
-        id: voxelModelId,
-        userId: userId,
       },
     });
   }
@@ -93,12 +86,10 @@ export default class VoxelService implements IVoxelService {
    */
   async deleteVoxelModel(
     voxelModelId: string,
-    userId: string
   ): Promise<VoxelModel> {
     return voxelModelTable.delete({
       where: {
         id: voxelModelId,
-        userId: userId,
       },
     });
   }

@@ -28,36 +28,18 @@ import { useSnapshot } from 'valtio';
 import Scene from '@/components/3d-scene';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
 import { SuperButton } from '@/components/common/button';
-import ResetIdeoramaDialog from '@/components/ideorama/resetIdeoramaDialog';
+import AlertDialog from '@/components/dialog/AlertDialog';
 import { AssetsPanel } from '@/components/panels/AssetsPanel';
 import { ObjectListPanel } from '@/components/panels/ObjectListPanel';
 import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useUser } from '@/providers/UserProvider';
-import { searchIdeorama, autoSaveIdeorama } from '@/services/ideorama.service';
+import { autoSaveIdeorama, searchIdeorama } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
+import { createReplacer } from '@/utils/utils';
 
-/**
- * Safely serializes a value, filtering out circular references, Promises, and functions
- */
-const createReplacer = () => {
-  const visited = new WeakSet();
-  return (_key: string, value: any) => {
-    if (typeof value === 'object' && value !== null) {
-      if (visited.has(value)) {
-        return undefined;
-      }
-      visited.add(value);
-    }
-    if (value instanceof Promise || typeof value === 'function') {
-      return undefined;
-    }
-    return value;
-  };
-};
-
-const downloadAndSaveIdeorama = () => {
+const saveIdeoramaInLocalStorage = () => {
   try {
     const serializable = {
       global: sceneState.global,
@@ -120,8 +102,6 @@ export default function Ideorama() {
         const model = res.data.model;
         if (!model) return;
 
-        // model.info.name = res.data.name;
-
         localStorage.setItem('sceneState', JSON.stringify(model));
 
         if (model.global) Object.assign(sceneState.global, model.global);
@@ -136,7 +116,7 @@ export default function Ideorama() {
 
   useEffect(() => {
     if (!isFirstRender.current && !snap.isDragging) {
-      downloadAndSaveIdeorama();
+      saveIdeoramaInLocalStorage();
     }
   }, [snap.global, snap.background, snap.info, snap.floor, snap.objects]);
 
@@ -146,7 +126,7 @@ export default function Ideorama() {
       return;
     }
     if (!snap.isDragging) {
-      downloadAndSaveIdeorama();
+      saveIdeoramaInLocalStorage();
       actions.stackState();
     }
   }, [snap.isDragging]);
@@ -240,8 +220,10 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             ) : null}
-            <ResetIdeoramaDialog
+            <AlertDialog
               open={resetDialogOpen}
+              description="Cela réinitialisera votre ideorama"
+              confirmationMessage="Oui, réinitialiser"
               onConfirm={() => {
                 actions.resetIdeorama().then(res => {
                   if (res) {

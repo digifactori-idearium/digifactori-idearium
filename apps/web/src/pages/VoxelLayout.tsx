@@ -1,14 +1,52 @@
-import { RotateCcw, Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { RotateCcw } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import * as THREE from 'three';
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 
-import { SuperButton } from '@/components/common/button';
+import { Loading } from '@/components/common';
+import { SuperButton } from '@/components/common/button/SuperButton';
+import AlertDialog from '@/components/dialog/AlertDialog';
 import EditPanel from '@/components/voxel/panel';
 import Voxel, { VoxelPoint } from '@/pages/Voxel';
-import {
-  getVoxelModelById,
-  saveVoxelModel,
-} from '@/services/voxel.service';
+import { autoSaveVoxelModel, getVoxelModelById } from '@/services/voxel.service';
+
+const handleReset = (setVoxels: (VoxelPoints: VoxelPoint[]) => void) => {
+    setVoxels([]);
+};
+
+const exportGLB = (scene: THREE.Scene): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const exporter = new GLTFExporter();
+
+      const exportScene = scene.clone(true);
+      exportScene.traverse(obj => {
+        if (obj.name == 'cubeToSave') {
+          const scale = 0.005;
+          obj.scale.set(scale, scale, scale);
+          obj.position.multiplyScalar(scale);
+        } else {
+          obj.visible = false;
+        }
+      });
+
+      exporter.parse(
+        exportScene,
+        result => {
+          const blob = new Blob([result as BlobPart], {
+            type: 'model/gltf-binary',
+          });
+
+          console.log('GLB size:', blob.size);
+
+          resolve(blob);
+        },
+        error => reject(error),
+        { binary: true }
+      );
+    });
+  };
 
 export default function VoxelLayout() {
   const { modelId } = useParams<{ modelId: string }>();
@@ -19,21 +57,41 @@ export default function VoxelLayout() {
   const [rotationV, setRotationV] = useState(0);
 
   const [voxels, setVoxels] = useState<VoxelPoint[]>([]);
+  const voxelsRef = useRef(voxels)
+
   const [modelName, setModelName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [longueur, setLongueur] = useState(1)
   const [largeur, setLargeur] = useState(1)
   const [hauteur, setHauteur] = useState(1)
 
   // 🔹 Charger le modèle
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+
+  const [scene, setScene] = useState<THREE.Scene | null>(null);
+  const sceneRef = useRef(scene)
+
+  // Auto-save voxels in ref whenever they change
+  useEffect(() => {
+    try {
+      voxelsRef.current = voxels
+    } catch (err) {
+      console.error('Failed to save model:', err);
+    }
+  }, [voxels]);
+
+  // Auto-save scene in ref whenever it changes
+  useEffect(() => {
+      sceneRef.current = scene
+  }, [scene])
+
+  // Loads the model from the backend
   useEffect(() => {
     if (!modelId) {
       setIsLoading(false);
       return;
     }
-
     const loadModel = async () => {
       try {
         const response = await getVoxelModelById(modelId);
@@ -49,60 +107,70 @@ export default function VoxelLayout() {
         setIsLoading(false);
       }
     };
-
     loadModel();
   }, [modelId]);
-
-  // 🔹 Sauvegarde
-  const handleSave = async () => {
-    if (!modelId) {
-      setMessage('Aucun modèle à sauvegarder');
-      return;
+  
+  // Saves the voxel model when the component is unmounted or on refresh
+  const saveModel = () => {
+    if(sceneRef.current) {
+        exportGLB(sceneRef.current).then(blob => {
+          const hasBeenSaved = autoSaveVoxelModel(modelId, JSON.stringify(voxelsRef.current), blob)
+          if(!hasBeenSaved) {
+            toast.error("error")
+          };
+        })
+      } else {
+        console.log("scene is not initialized")
+      }
+  }
+  useEffect(() => {
+    return () => {
+      saveModel()
     }
-
-    try {
-      setIsSaving(true);
-      setMessage('');
-
-      await saveVoxelModel(modelId, voxels);
-
-      setMessage('Modèle sauvegardé ✅');
-    } catch (error) {
-      console.error('Erreur sauvegarde', error);
-      setMessage('Erreur lors de la sauvegarde');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // 🔹 Reset
-  const handleReset = () => {
-    setVoxels([]);
-  };
+  }, []);
+  useEffect(() => {
+      const handleBeforeUnload = () => {
+        saveModel()
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [modelId]);
 
   if (isLoading) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center">
-        Chargement du modèle...
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
-    <div className="w-full h-screen relative">
-      {/* 🔹 Boutons */}
+    <div className="w-full h-full  overflow-hidden relative">
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex gap-3">
-        <SuperButton onClick={handleSave} className="main-btn">
-          <Save /> {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+      <SuperButton
+          tooltip="Réinitialiser"
+          voiceText="Réinitialiser"
+          onClick={() => {
+            setResetDialogOpen(true);
+          }}
+          className="z-50 p-2 main-small-btn"
+        >
+          <span className="flex items-center gap-1">
+            <RotateCcw className="w-4 h-4 text-white!" />
+          </span>
         </SuperButton>
-
-        <SuperButton onClick={handleReset} className="main-btn">
-          <RotateCcw /> Réinitialiser
-        </SuperButton>
+        <AlertDialog
+          open={resetDialogOpen}
+          description="Cela réinitialisera votre modèle"
+          confirmationMessage="Oui, réinitialiser"
+          onConfirm={() => {
+            handleReset(setVoxels)
+            toast.success('Idéorama réinitialisé')
+            setResetDialogOpen(false);
+          }}
+          onCancel={() => {
+            setResetDialogOpen(false);
+          }}
+        />
       </div>
 
-      {/* 🔹 Panel */}
-      <div className="absolute top-6 left-6 z-50 w-[280px]">
+      <div className="absolute top-6 left-6 z-50 w-70">
         <EditPanel
           mode={mode}
           setMode={setMode}
@@ -135,6 +203,7 @@ export default function VoxelLayout() {
 
       {/* 🔹 Viewer */}
       <Voxel
+        setScene={setScene}
         mode={mode}
         shape={shape}
         rotationH={rotationH}

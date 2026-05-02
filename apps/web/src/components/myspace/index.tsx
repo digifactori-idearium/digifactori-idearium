@@ -1,17 +1,12 @@
-import { Loader2 } from 'lucide-react';
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
+import { Loading } from '@/components/common';
 import { IdeoramaCreator } from '@/components/ideorama/IdeoramaCreator';
 import BackgroundPicker from '@/components/myspace/Backgroundpicker';
 import { DayNightField } from '@/components/myspace/DayNightField';
 import OrbitalCard from '@/components/myspace/Orbitalcard';
 import ProfileHub from '@/components/myspace/Profilehub';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProfile } from '@/hooks/useProfile';
 import { DARK_THEME, LIGHT_THEME } from '@/lib/constants';
@@ -36,20 +31,19 @@ const MySpace: React.FC = () => {
   const { fetchProfile, loading } = useProfile();
   const { theme: siteTheme } = useTheme();
   const isMobile = useIsMobile();
+  const { open: isSidebarOpen } = useSidebar();
 
   const isDark = siteTheme === 'dark';
   const theme = isDark ? DARK_THEME : LIGHT_THEME;
 
-  /*  account  */
+  /* account */
   const [acc, setAcc] = useState<{ profile: any; user: any } | null>(null);
   const [createsNew, setCreatesNew] = useState(false);
 
   useEffect(() => {
     fetchProfile()
       .then(setAcc)
-      .catch(() => {
-        /* handled in hook */
-      });
+      .catch(() => {});
   }, [fetchProfile]);
 
   /* background */
@@ -58,48 +52,28 @@ const MySpace: React.FC = () => {
     setBgValue(theme.defaultBg);
   }, [isDark, theme.defaultBg]);
 
-  const sceneRef = useRef<HTMLDivElement>(null);
-  const [sceneDims, setSceneDims] = useState<MySpaceSceneDims>(() => ({
-    w: isMobile ? window.innerWidth : window.innerWidth - 192,
+  /* dimensions */
+  const sidebarWidth = !isMobile && isSidebarOpen ? 192 : 0;
+
+  const [sceneDims, setSceneDims] = useState<MySpaceSceneDims>({
+    w: window.innerWidth - sidebarWidth,
     h: Math.max(window.innerHeight, 560),
-  }));
+  });
 
-  const updateDims = useCallback(() => {
-    const el = sceneRef.current;
-    if (!el) return;
-
-    const rect = el.getBoundingClientRect();
-
-    if (rect.width && rect.height) {
-      setSceneDims({
-        w: rect.width,
-        h: Math.max(rect.height, 560),
-      });
-    }
-  }, []);
-
-  //update the scene dimensions(dim)
   useEffect(() => {
-    updateDims();
-
-    const el = sceneRef.current;
-    if (!el) return;
-
-    const observer = new ResizeObserver(() => {
-      updateDims();
-    });
-
-    observer.observe(el);
-
-    window.addEventListener('resize', updateDims);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', updateDims);
+    const update = () => {
+      setSceneDims({
+        w: window.innerWidth - sidebarWidth,
+        h: Math.max(window.innerHeight, 560),
+      });
     };
-  }, [updateDims]);
 
-  /*  card definitions */
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [sidebarWidth]);
+
+  /* card definitions */
   const cards: CardDef[] = useMemo(() => {
     if (!acc) return [];
     return [
@@ -167,31 +141,20 @@ const MySpace: React.FC = () => {
     [cards, sceneDims]
   );
 
-  /*  loading  */
+  /* loading */
   if (!acc || loading) {
-    return (
-      <div
-        className="w-full h-full flex items-center justify-center"
-        style={{ background: theme.loadingBg }}
-      >
-        <Loader2 className={`animate-spin mr-2 ${theme.loadingSpinner}`} />
-        <span style={{ color: theme.loadingText, fontWeight: 600 }}>
-          Chargement…
-        </span>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
     <div
-      ref={sceneRef}
       className="w-full h-full relative overflow-hidden"
       style={{ background: bgValue, transition: 'background 0.9s ease' }}
     >
       {/* Background layer */}
       <DayNightField width={sceneDims.w} height={sceneDims.h} isDark={isDark} />
 
-      {/* Greeting badge  */}
+      {/* Greeting badge */}
       <div
         className="absolute top-5 left-5 z-30 px-4 py-2 rounded-full text-sm font-bold"
         style={{
@@ -224,7 +187,7 @@ const MySpace: React.FC = () => {
         ))}
       </div>
 
-      {/*  orbit ring  */}
+      {/* Orbit ring */}
       {(() => {
         const r = Math.min(sceneDims.w, sceneDims.h) * 0.38;
         return (
@@ -260,7 +223,7 @@ const MySpace: React.FC = () => {
         />
       ))}
 
-      {/*  Profile hub */}
+      {/* Profile hub */}
       <div
         className="absolute z-20"
         style={{
@@ -277,7 +240,7 @@ const MySpace: React.FC = () => {
         />
       </div>
 
-      {/*  orbital cards */}
+      {/* Orbital cards */}
       {cards.map((card, i) => {
         const pos = cardPositions[i];
         if (!pos) return null;
@@ -296,7 +259,7 @@ const MySpace: React.FC = () => {
         );
       })}
 
-      {/*  Background picker */}
+      {/* Background picker */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
         <BackgroundPicker
           backgrounds={theme.backgrounds}
@@ -317,7 +280,6 @@ const MySpace: React.FC = () => {
         <IdeoramaCreator
           isOpen={createsNew}
           setIsOpen={setCreatesNew}
-          userId={acc.user?.id}
         />
       )}
     </div>

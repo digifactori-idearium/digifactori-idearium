@@ -2,6 +2,7 @@ import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 import { prisma, User } from '@/config/client.config';
+import { EmailService } from '@/modules/auth/email.service';
 import { IUserService } from '@/types';
 
 const userTable = prisma.user;
@@ -18,7 +19,7 @@ export default class UserService implements IUserService {
   async getUsers(requesterRole: Role): Promise<User[]> {
     if (requesterRole === Role.ADMIN) {
       return userTable.findMany({
-        include: { profil: true },
+        include: { profile: true },
         orderBy: { createdAt: 'desc' },
       });
     }
@@ -26,7 +27,7 @@ export default class UserService implements IUserService {
     // SUPERVISOR sees all children
     return userTable.findMany({
       where: { role: Role.INTERN },
-      include: { profil: true },
+      include: { profile: true },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -48,7 +49,7 @@ export default class UserService implements IUserService {
 
     return userTable.findUnique({
       where,
-      include: { profil: true },
+      include: { profile: true },
     });
   }
 
@@ -59,23 +60,34 @@ export default class UserService implements IUserService {
    * @param data - Validated creation payload (email, names, pseudo, password, role)
    * @returns Promise<{ user: User }>
    */
+  /**
+   * Creates a new user account and matching profile in a single transaction.
+   * Auto-generates a temporary password using the pattern: ROLE@pseudo{year}
+   * Sends a welcome email with the temporary password after creation.
+   *
+   * @param data - Validated creation payload (email, names, pseudo, role)
+   * @returns Promise<{ user: User; temporaryPassword: string }>
+   */
   async createUser(data: {
     email: string;
     first_name: string;
     last_name: string;
     pseudo: string;
-    password: string;
     role: Role;
-  }): Promise<{ user: User }> {
+  }): Promise<{ user: User; temporaryPassword: string }> {
     const { pseudo, ...userData } = data;
 
     const year = new Date().getFullYear();
-    const temporaryPassword = `${data.role}@${pseudo.toLowerCase().replace(/\s+/g, '')}${year}`;
+    const sanitizedPseudo = pseudo.toLowerCase().replace(/\s+/g, '');
+    const temporaryPassword = `${data.role}@${sanitizedPseudo}${year}`;
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
 
-    return prisma.$transaction(async tx => {
+    const { user } = await prisma.$transaction(async tx => {
       const user = await tx.user.create({
-        data: { ...userData, password: hashedPassword },
+        data: {
+          ...userData,
+          password: hashedPassword,
+        },
       });
 
       await tx.profile.create({
@@ -84,6 +96,12 @@ export default class UserService implements IUserService {
 
       return { user };
     });
+
+    EmailService.sendWelcome(data.email, pseudo, temporaryPassword).catch(
+      console.error
+    );
+
+    return { user, temporaryPassword };
   }
 
   /**
@@ -96,7 +114,7 @@ export default class UserService implements IUserService {
    */
   async updateUser(
     id: string,
-    data: Partial<Pick<User, 'email' | 'first_name' | 'last_name'>>
+    data: Partial<Pick<User, 'email' | 'first_name' | 'last_name' | 'role'>>
   ): Promise<User> {
     return userTable.update({ where: { id }, data });
   }

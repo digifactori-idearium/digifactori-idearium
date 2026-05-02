@@ -1,5 +1,7 @@
 import axios from './axios.service';
 
+import { handleApiError } from '@/lib/api';
+
 interface ApiResponse<T> {
     status: string;
     message?: string;
@@ -22,10 +24,18 @@ export interface VoxelModel {
     updatedAt: string;
 }
 
+export const getVoxelModelById = async (
+    voxelModelId: string
+): Promise<ApiResponse<VoxelModel>> => {
+    const response = await axios.get(`http://localhost:3001/api/voxel/${voxelModelId}`);
+
+    return response.data;
+};
+
 export const createVoxelModel = async (
     name: string
 ): Promise<ApiResponse<VoxelModel>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/save', {
+    const response = await axios.post('http://localhost:3001/api/voxel/', {
         voxelModel: {
             name,
         },
@@ -34,41 +44,62 @@ export const createVoxelModel = async (
     return response.data;
 };
 
+export const autoSaveVoxelModel = async (
+  voxelModelId: string | undefined,
+  voxels: string,
+  blob: Blob,
+): Promise<boolean> => {
+  try {
+    if (!voxelModelId) {
+      console.warn('Cannot save: missing ideoramaid or userid');
+      return false;
+    }
+
+    const baseURL =
+      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
+    const formData = new FormData()
+    formData.append('file', blob, `${voxelModelId}.glb`)
+    formData.append('model', voxels)
+    const response = await axios
+      .patch(
+        `${baseURL}/api/voxel/${voxelModelId}/save`,
+        formData,
+        {
+          fetchOptions: { keepalive: true },
+        }
+      )
+      if (response.data.status === 'error') {
+            throw new Error(
+              response.data.errors[0]?.message || response.data.error?.message
+            );
+          }
+          return response.data;
+        } catch (error: any) {
+          console.log("handleapierror")
+          return handleApiError(error);
+        }
+};
+
 export const getAllVoxelModels = async (): Promise<ApiResponse<VoxelModel[]>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/all', {});
-    return response.data;
-};
-
-export const getVoxelModelById = async (
-    voxelModelId: string
-): Promise<ApiResponse<VoxelModel>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/', {
-        voxelModelId,
-    });
-
-    return response.data;
-};
-
-export const saveVoxelModel = async (
-    voxelModelId: string,
-    voxels: VoxelPoint[]
-): Promise<ApiResponse<null>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/save', {
-        voxelModelId,
-        voxelModel: {
-            model: JSON.stringify(voxels),
-        },
-    });
-
+    const response = await axios.get('http://localhost:3001/api/voxel/');
     return response.data;
 };
 
 export const deleteVoxelModel = async (
-    voxelModelId: string
-): Promise<ApiResponse<null>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/delete', {
-        voxelModelId,
-    });
-
-    return response.data;
+    voxelModelId: string | undefined
+): Promise<boolean> => {
+    try {
+    const response = await axios.delete(
+      `http://localhost:3001/api/voxel/${voxelModelId}`
+    );
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return true;
+  } catch (error: any) {
+    return false;
+  }
 };

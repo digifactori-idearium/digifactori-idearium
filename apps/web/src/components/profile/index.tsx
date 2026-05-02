@@ -2,6 +2,8 @@ import { Loader2, Lock } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { ChangePasswordDialog } from '../auth/Change';
+
 import AdvancedSettingsDialog from './AdvancedSettingsDialog';
 import AvatarSelector from './AvatarSelector';
 import ProfileForm from './ProfileForm';
@@ -19,7 +21,7 @@ const AVATAR_OPTIONS = [
   { id: 6, url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Emery' },
 ];
 
-const Profile: React.FC = () => {
+const MyProfile: React.FC = () => {
   const navigate = useNavigate();
   const { fetchProfile, updateUserProfile, removeProfile, loading } =
     useProfile();
@@ -92,20 +94,23 @@ const Profile: React.FC = () => {
   return (
     <div className="w-full">
       <ProfileHeader>
-        <AdvancedSettingsDialog
-          user={acc.user}
-          profile={acc.profile}
-          onUpdate={handleUpdate}
-          onDelete={handleDelete}
-        >
-          <VoiceButton
-            voiceText={"Le paramètre avancé, c'est pour les grands."}
-            className="flex items-center gap-2 form-button"
+        <div className="flex flex-wrap gap-2 justify-center items-center">
+          <AdvancedSettingsDialog
+            user={acc.user}
+            profile={acc.profile}
+            onUpdate={handleUpdate}
+            onDelete={handleDelete}
           >
-            <Lock className="w-4 h-4" />
-            Paramètres avancés
-          </VoiceButton>
-        </AdvancedSettingsDialog>
+            <VoiceButton
+              voiceText={"Le paramètre avancé, c'est pour les grands."}
+              className="flex items-center gap-2 form-button"
+            >
+              <Lock className="w-4 h-4" />
+              Paramètres avancés
+            </VoiceButton>
+          </AdvancedSettingsDialog>
+          <ChangePasswordDialog />
+        </div>
       </ProfileHeader>
 
       <div className="h-full w-full flex md:flex-row flex-col justify-center items-center md:gap-8 gap-4 mt-8">
@@ -138,4 +143,4 @@ const Profile: React.FC = () => {
   );
 };
 
-export default Profile;
+export default MyProfile;

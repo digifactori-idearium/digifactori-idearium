@@ -2,11 +2,8 @@ import { type User, Role } from '@prisma/client';
 import * as z from 'zod';
 
 import { prisma } from '@/config/client.config';
+import { createProfileSchema } from '@/modules/profile/profile.validation';
 
-/**
- * Regex pattern for password validation
- * Requirements: at least 1 lowercase letter, 1 uppercase letter, and 1 digit
- */
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/;
 
 const getUserByEmail = async (email: string): Promise<User | null> => {
@@ -17,24 +14,7 @@ const getUserByEmail = async (email: string): Promise<User | null> => {
   }
 };
 
-const checkHasParentalCode = async (email: string): Promise<boolean> => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { parental_code: true },
-    });
-    return user?.parental_code !== null && user?.parental_code !== undefined;
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-};
-
-/**
- * Fetches the current org code from the Setting table.
- * Returns null if no setting row exists yet.
- */
-const getOrgCode = async (): Promise<string | null> => {
+const getOrgCode = async (): Promise<number | null> => {
   try {
     const setting = await prisma.setting.findUnique({
       where: { id: 1 },
@@ -52,16 +32,15 @@ const getOrgCode = async (): Promise<string | null> => {
  * Role-based code requirements:
  * - ADMIN      → must provide `admin_code` matching ADMIN_CODE env variable
  * - SUPERVISOR → must provide `org_code` matching the orgCode in Setting table
- * - INTERN     → must provide `parental_code` (minimum 4 digits)
+ * - INTERN     → no code required at registration — parental code is set by admin via settings
  *
- * @property {string} email         - Valid email format
- * @property {string} first_name    - Minimum 2 characters
- * @property {string} last_name     - Minimum 2 characters
- * @property {Role}   role          - ADMIN | SUPERVISOR | INTERN
- * @property {string} password      - Min 6 chars, 1 uppercase, 1 lowercase, 1 digit
- * @property {string} [admin_code]  - Required if role is ADMIN
- * @property {string} [org_code]    - Required if role is SUPERVISOR
- * @property {number} [parental_code] - Required if role is INTERN (min 4 digits)
+ * @property {string} email        - Valid email format
+ * @property {string} first_name   - Minimum 2 characters
+ * @property {string} last_name    - Minimum 2 characters
+ * @property {Role}   role         - ADMIN | SUPERVISOR | INTERN
+ * @property {string} password     - Min 6 chars, 1 uppercase, 1 lowercase, 1 digit
+ * @property {string} [admin_code] - Required if role is ADMIN
+ * @property {number} [org_code]   - Required if role is SUPERVISOR
  *
  * Messages are in French (FR)
  */
@@ -91,10 +70,10 @@ export const userSchema = z
         'Il faut au moins 1 majuscule, 1 minuscule et 1 chiffre.'
       ),
     admin_code: z.string().optional(),
-    org_code: z.string().optional(),
-    parental_code: z.coerce.number().optional(),
+    orgCode: z.coerce.number().optional(),
   })
   .superRefine(async (data, ctx) => {
+    // ADMIN: verify against ADMIN_CODE env variable
     if (data.role === Role.ADMIN) {
       const adminCode = process.env.ADMIN_CODE;
 
@@ -118,11 +97,12 @@ export const userSchema = z
       return;
     }
 
+    // SUPERVISOR: verify against orgCode in Setting table
     if (data.role === Role.SUPERVISOR) {
-      if (!data.org_code) {
+      if (!data.orgCode) {
         ctx.addIssue({
           code: 'custom',
-          path: ['org_code'],
+          path: ['orgCode'],
           message:
             'Le code organisation est requis pour créer un compte superviseur.',
         });
@@ -134,104 +114,65 @@ export const userSchema = z
       if (!orgCode) {
         ctx.addIssue({
           code: 'custom',
-          path: ['org_code'],
+          path: ['orgCode'],
           message:
             "Aucun code organisation configuré. Contactez l'administrateur.",
         });
         return;
       }
 
-      if (data.org_code !== orgCode) {
+      if (data.orgCode !== orgCode) {
         ctx.addIssue({
           code: 'custom',
-          path: ['org_code'],
+          path: ['orgCode'],
           message: 'Code organisation invalide.',
         });
       }
-      return;
     }
-
-    if (data.role === Role.INTERN) {
-      if (!data.parental_code || data.parental_code.toString().length < 4) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['parental_code'],
-          message:
-            'Un code parental est requis pour les comptes stagiaires (minimum 4 chiffres).',
-        });
-      }
-    }
-  });
+  })
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  .transform(({ admin_code, orgCode, ...rest }) => rest);
 
 /**
  * User profile update validation schema
+ * Parental code is not editable by the user — it is managed by the admin.
  *
- * @property {string} email           - Valid email format
- * @property {string} first_name      - Minimum 2 characters
- * @property {string} last_name       - Minimum 2 characters
- * @property {Role}   role            - ADMIN | SUPERVISOR | INTERN
- * @property {string} [parental_code] - Required for INTERN if not already set in DB
- *
- * Messages are in French (FR)
- */
-export const userProfileSchema = z
-  .object({
-    email: z.email({
-      error: iss =>
-        iss.input === undefined
-          ? "L'adresse mail est requise"
-          : 'Adresse mail invalide',
-    }),
-    first_name: z
-      .string('Le prénom est requis')
-      .min(2, "Le prénom doit être composé d'au moins 2 caractères"),
-    last_name: z
-      .string('Le nom de famille est requis')
-      .min(2, 'Le nom de famille doit comporter au moins 2 caractères'),
-    role: z.enum(Role, {
-      error: iss =>
-        iss.input === undefined ? 'Le rôle est requis' : 'Rôle inconnu',
-    }),
-    parental_code: z.string().optional().or(z.literal('')),
-  })
-  .superRefine(async (data, ctx) => {
-    if (data.role !== Role.INTERN) return;
-
-    const hasCodeInDb = await checkHasParentalCode(data.email);
-
-    if (
-      !hasCodeInDb &&
-      (!data.parental_code || data.parental_code.length < 4)
-    ) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['parental_code'],
-        message: 'Un code parental est requis pour les comptes stagiaires.',
-      });
-    }
-  });
-
-/**
- * @property {string} pseudo - Minimum 2 characters, must be unique
+ * @property {string} email      - Valid email format
+ * @property {string} first_name - Minimum 2 characters
+ * @property {string} last_name  - Minimum 2 characters
+ * @property {Role}   role       - ADMIN | SUPERVISOR | INTERN
  *
  * Messages are in French (FR)
  */
-export const profileSchema = z.object({
-  pseudo: z
-    .string('Le pseudo est requis')
-    .min(2, 'Le pseudo doit comporter au moins 2 caractères.'),
+export const userProfileSchema = z.object({
+  email: z.email({
+    error: iss =>
+      iss.input === undefined
+        ? "L'adresse mail est requise"
+        : 'Adresse mail invalide',
+  }),
+  first_name: z
+    .string('Le prénom est requis')
+    .min(2, "Le prénom doit être composé d'au moins 2 caractères"),
+  last_name: z
+    .string('Le nom de famille est requis')
+    .min(2, 'Le nom de famille doit comporter au moins 2 caractères'),
+  role: z.enum(Role, {
+    error: iss =>
+      iss.input === undefined ? 'Le rôle est requis' : 'Rôle inconnu',
+  }),
 });
 
 /**
  * Composite registration schema.
- * Combines userSchema + profileSchema and checks email uniqueness.
+ * Combines userSchema + createProfileSchema() and checks both email and pseudo uniqueness.
  *
  * Messages are in French (FR)
  */
 export const registrationSchema = z
   .object({
     user: userSchema,
-    profile: profileSchema,
+    profile: createProfileSchema(),
   })
   .superRefine(async (data, ctx) => {
     const exists = await getUserByEmail(data.user.email);

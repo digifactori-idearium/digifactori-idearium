@@ -262,7 +262,7 @@ text-editor-content .ProseMirror {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #ddd6fe;
+  background: #6f51b0;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {

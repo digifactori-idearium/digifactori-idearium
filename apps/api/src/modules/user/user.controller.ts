@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import {
   createUserSchema,
   updateRoleSchema,
-  updateUserSchema,
+  CreateUpdateUserSchema,
 } from './user.validation';
 
 import { IUserService } from '@/types';
@@ -101,25 +101,23 @@ export default class UserController {
   });
 
   /**
-   * Updates a user's info (email, first_name, last_name).
+   * Updates a user's info (email, first_name, last_name, role).
    *
    * - ADMIN      → any user
-   * - SUPERVISOR → any INTERN account
+   * - SUPERVISOR → any INTERN account + can only assign INTERN role
    *
    * @route  PATCH /user/:id
    * @access ADMIN | SUPERVISOR
-   *
-   * @returns
-   *   - 200 { data: User }
-   *   - 400 validation errors
-   *   - 404 user not found or out of scope
    */
   updateUser = asyncHandler(async (req: Request, res: Response) => {
     const requester = req.user!;
     const id = req.params.id as string;
 
+    const updateUserSchema = CreateUpdateUserSchema(id);
     const result = await updateUserSchema.safeParseAsync(req.body);
     if (failOnValidation(result, res)) return;
+
+    const { role, ...rest } = result.data!;
 
     const target = await this.userService.getUserById(
       id,
@@ -129,7 +127,25 @@ export default class UserController {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
 
-    const updated = await this.userService.updateUser(id, result.data!);
+    if (role) {
+      if (requester.role === Role.SUPERVISOR && role !== Role.INTERN) {
+        return HttpResponse.forbidden(
+          'Les superviseurs ne peuvent attribuer que le rôle stagiaire.'
+        ).send(res);
+      }
+
+      if (target.role === Role.ADMIN && requester.userId !== id) {
+        return HttpResponse.forbidden(
+          "Vous ne pouvez pas modifier le rôle d'un autre administrateur."
+        ).send(res);
+      }
+    }
+
+    const updated = await this.userService.updateUser(id, {
+      ...rest,
+      ...(role && { role }),
+    });
+
     return HttpResponse.success(updated, 'Utilisateur mis à jour').send(res);
   });
 

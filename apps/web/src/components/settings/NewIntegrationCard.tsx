@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { FormDialog } from '@/components/settings/FormDialog';
+import { FormDialog } from '@/components/common/form/FormDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { integrationInputs } from '@/lib/input';
@@ -22,7 +22,7 @@ export const NewIntegrationCard: React.FC<Props> = ({ onCreated }) => {
       onCreated?.();
     } catch (error: any) {
       toast.error(error?.message || "Échec de la création de l'intégration");
-      throw error;
+      return false;
     } finally {
       setLoading(false);
     }

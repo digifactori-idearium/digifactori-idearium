@@ -26,17 +26,30 @@ export const fieldMappingSchema = z.object({
 /**
  * Schema for updating store settings.
  *
- * @property {string} [storeName] - The store display name
- * @property {string} [storeURL]  - Valid URL, checked for reachability in the controller
- * @property {string} [storeKey]  - Optional API key for the store
+ * @property {string} [name] - The store display name
+ * @property {string} [provider]  - Valid URL, checked for reachability in the controller
+ * @property {string} [endpoint]  - Optional API key for the store
+ *  * @property {string} [region]  - Optional API key for the store
+
+ * @property {string} [endpoint]  - Optional API key for the store
+
+ * @property {string} [endpoint]  - Optional API key for the store
+
+ * @property {string} [endpoint]  - Optional API key for the store
+
  *
  * Messages are in French (FR)
  */
 export const updateStoreSettingsSchema = z
   .object({
-    storeName: z.string().min(1, 'Le nom du store est requis').optional(),
-    storeURL: z.url('URL invalide').optional(),
-    storeKey: z.string().optional(),
+    name: z.string().min(1, 'Le nom du storage est requis').optional(),
+    provider: z.url('URL invalide').optional(),
+    endpoint: z.string().optional(),
+    region: z.string().optional(),
+    bucket: z.string().optional(),
+    accessKey: z.string().optional(),
+    secretKey: z.string().optional(),
+    publicUrl: z.string().optional(),
   })
   .refine(data => Object.values(data).some(v => v !== undefined), {
     message: 'Au moins un champ doit être fourni.',
@@ -48,14 +61,31 @@ export const updateStoreSettingsSchema = z
  *
  * @property {string} orgCode - The registration code supervisors must provide at sign-up.
  *                              Minimum 4 characters.
- *
+ * @property {string} orgParentalCode - The parental code for child intern
+ *                              Minimum 4 characters.
  * Messages are in French (FR)
  */
-export const updateOrgSettingsSchema = z.object({
-  orgCode: z
-    .string()
-    .min(4, 'Le code organisation doit comporter au moins 4 caractères'),
-});
+export const updateOrgSettingsSchema = z
+  .object({
+    orgCode: z
+      .number({
+        error: () => 'Le code organisation doit être un nombre',
+      })
+      .min(6, 'Le code organisation doit comporter au moins 6 chiffres')
+      .optional(),
+    orgParentalCode: z
+      .number({
+        error: () => 'Le code parental doit être un nombre',
+      })
+      .min(4, 'Le code parental doit comporter au moins 4 chiffres')
+      .optional(),
+  })
+  .refine(
+    data => data.orgCode !== undefined || data.orgParentalCode !== undefined,
+    {
+      message: 'Au moins un champ doit être fourni.',
+    }
+  );
 
 // ---------------------------------------------------------------------------
 // Integrations

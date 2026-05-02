@@ -17,16 +17,14 @@ export default class AuthService implements IAuthService {
    * @returns a Promise with the new user (Promise<User>)
    */
   async createUser(input: UserInput): Promise<User> {
-    const { password, parental_code, ...user } = input;
+    const { password, ...user } = input;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const hashedParentalCode = await bcrypt.hash(parental_code, 10);
 
     const newUser = await userTable.create({
       data: {
         ...user,
         password: hashedPassword,
-        parental_code: hashedParentalCode,
       },
     });
     return newUser;
@@ -58,20 +56,15 @@ export default class AuthService implements IAuthService {
   async createAccount(
     data: RegisterInput
   ): Promise<{ user: User; profile: Profile }> {
-    const { password, parental_code, ...userData } = data.user;
+    const { password, ...userData } = data.user;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    let hashedParentalCode: string | null = null;
-    if (parental_code !== undefined && parental_code !== null) {
-      hashedParentalCode = await bcrypt.hash(parental_code.toString(), 10);
-    }
 
     const result = await prisma.$transaction(async tx => {
       const newUser = await tx.user.create({
         data: {
           ...userData,
           password: hashedPassword,
-          parental_code: hashedParentalCode,
         },
       });
 
@@ -178,7 +171,7 @@ export default class AuthService implements IAuthService {
   async requestPasswordReset(email: string): Promise<void> {
     const user = await userTable.findUnique({
       where: { email },
-      include: { profil: true },
+      include: { profile: true },
     });
 
     if (!user || !user.isActive) return;

@@ -14,8 +14,14 @@ interface UserInput {
   first_name: string;
   last_name: string;
   password: string;
-  parental_code?: number;
-  role: 'INTERN' | 'SUPERVISOR';
+  role: 'INTERN' | 'SUPERVISOR' | 'ADMIN';
+}
+
+interface UserProfileInput {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: 'INTERN' | 'SUPERVISOR' | 'ADMIN';
 }
 
 interface ProfileInput {
@@ -30,7 +36,7 @@ type RegisterInput = {
 };
 
 type SetProfileInput = {
-  user?: Partial<UserInput>;
+  user?: Partial<UserProfileInput>;
   profile: Partial<ProfileInput>;
 };
 
@@ -99,4 +105,73 @@ interface ActionConfig {
   subType: string;
   trigger: TriggerType;
   config: Record<string, any>;
+}
+
+// ASSETS MANAGEMENT TYPE
+
+interface UploadedFile {
+  originalname: string;
+  mimetype: string;
+  buffer: Buffer;
+}
+
+type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
+
+interface AssetRecord {
+  id: string;
+  name: string;
+  category: IntegrationType;
+  tags: string[];
+  file: string;
+  thumbnail: string | null;
+}
+
+interface CreateAssetInput {
+  name: string;
+  category: IntegrationType;
+  tags?: string[];
+  file: UploadedFile;
+  thumbnail?: UploadedFile;
+}
+
+interface BulkCreateAssetInput {
+  name: string;
+  category: IntegrationType;
+  tags?: string[];
+  fileIndex: number;
+  thumbnailIndex?: number;
+}
+
+interface UpdateAssetInput {
+  name?: string;
+  category?: IntegrationType;
+  tags?: string[];
+  file?: UploadedFile;
+  thumbnail?: UploadedFile;
+}
+
+interface ListAssetsFilter {
+  category?: IntegrationType;
+  search?: string;
+  tags?: string[];
+  page: number;
+  limit: number;
+}
+
+interface PaginatedAssets {
+  items: AssetRecord[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface BulkCreateResult {
+  succeeded: AssetRecord[];
+  failed: { index: number; name: string; reason: string }[];
+}
+
+interface BulkDeleteResult {
+  deleted: number;
+  failed: { id: string; reason: string }[];
 }

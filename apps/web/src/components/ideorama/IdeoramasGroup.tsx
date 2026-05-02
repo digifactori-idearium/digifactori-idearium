@@ -1,23 +1,28 @@
 import { Heart, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
-import DeleteIdeoramaDialog from './deleteIdeoramaDialog';
+import AlertDialog from '../dialog/AlertDialog';
+
 
 import { SuperButton } from '@/components/common/button/SuperButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { deleteIdeorama } from '@/services/ideorama.service';
+import { useUser } from '@/providers/UserProvider';
+import { deleteIdeorama, likeIdeorama } from '@/services/ideorama.service';
 
 const IdeoramasGroup: React.FC<{
   ideoramas: Ideorama[];
   profile: Partial<Profile>;
   setIdeoramas: React.Dispatch<React.SetStateAction<Ideorama[]>>;
-}> = ({ ideoramas, profile, setIdeoramas }) => {
+  setProfile: React.Dispatch<React.SetStateAction<Profile>>;
+}> = ({ ideoramas, profile, setIdeoramas, setProfile }) => {
   const navigate = useNavigate();
   const [ideoramaToDelete, setIdeoramaToDelete] = useState<Ideorama | null>(
     null
   );
+  const user = useUser().user;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       {ideoramas.map((ideorama, index) => (
@@ -44,58 +49,153 @@ const IdeoramasGroup: React.FC<{
                 {ideorama.name}
               </p>
               <p className="text-xl font-bold tracking-tight text-foreground/90">
-                {profile.pseudo}
-              </p>
-              <div className="flex items-center gap-3 text-muted-foreground/80">
-                <div className="flex items-center gap-1">
-                  <span className="text-lg font-semibold text-mauve">
-                    {/* {ideorama.likes} */}
-                    {50}
-                  </span>
-                  <Heart className="w-5 h-5 fill-mauve stroke-mauve" />
-                </div>{' '}
-              </div>
               <SuperButton
-                tooltip="Supprime ton idéorama"
-                voiceText="Supprime ton idéorama"
+                className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+                tooltip={`Voir le profil de ${profile.pseudo}`}
                 onClick={e => {
                   e.stopPropagation();
-                  setIdeoramaToDelete(ideorama);
+                  if(ideorama.userId == user?.id) {
+                    navigate(`/app/profile`);
+                  } else {
+                    navigate(`/app/profile/${ideorama.userId}`);
+                  }
                 }}
-                className="main-btn"
               >
-                <Trash2 /> Supprimer
+                {profile.pseudo}
               </SuperButton>
+              </p>
+              <div className="flex items-center gap-3 text-muted-foreground/80">
+                <SuperButton
+                  className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+                  tooltip="Montre que tu aimes cet idéorama"
+                  onClick={async e => {
+                    e.stopPropagation();
+                    console.log('like ideorama: ', ideorama.id);
+                    await likeIdeorama(ideorama.id);
+                    if (
+                      profile.ideoramaLiked?.some(
+                        liked => liked.ideoramaId == ideorama.id
+                      )
+                    ) {
+                      setProfile(pro => {
+                        return {
+                          ...pro,
+                          ideoramaLiked:
+                            pro.ideoramaLiked?.filter(
+                              liked => liked.ideoramaId !== ideorama.id
+                            ) || [],
+                        };
+                      });
+
+                      setIdeoramas(ideoramas =>
+                        ideoramas.map(ideoram => {
+                          if (ideoram.id == ideorama.id) {
+                            return {
+                              ...ideoram,
+                              _count: { likers: ideoram._count.likers - 1 },
+                            };
+                          }
+                          return ideoram;
+                        })
+                      );
+                    } else {
+                      setProfile(pro => {
+                        return {
+                          ...pro,
+                          ideoramaLiked: pro.ideoramaLiked
+                            ? [
+                                ...pro.ideoramaLiked,
+                                { ideoramaId: ideorama.id },
+                              ]
+                            : [{ ideoramaId: ideorama.id }],
+                        };
+                      });
+                      setIdeoramas(ideoramas =>
+                        ideoramas.map(ideoram => {
+                          if (ideoram.id == ideorama.id) {
+                            return {
+                              ...ideoram,
+                              _count: { likers: ideoram._count.likers + 1 },
+                            };
+                          }
+                          return ideoram;
+                        })
+                      );
+                    }
+                  }}
+                >
+                  {ideorama._count.likers}
+                  {profile.ideoramaLiked?.some(
+                    liked => liked.ideoramaId == ideorama.id
+                  ) ? (
+                    <Heart className="w-5 h-5 fill-mauve stroke-mauve" />
+                  ) : (
+                    <Heart className="w-5 h-5 stroke-mauve" />
+                  )}
+                </SuperButton>
+              </div>
+              {profile.userId == user?.id && (
+                <SuperButton
+                  tooltip="Supprime ton idéorama"
+                  voiceText="Supprime ton idéorama"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setIdeoramaToDelete(ideorama);
+                  }}
+                  className="main-btn"
+                >
+                  <Trash2 /> Supprimer
+                </SuperButton>
+              )}
             </div>
-            <Avatar className="h-14 w-14 border-2 border-white/20 shadow-sm shrink-0">
-              <AvatarImage
-                src={
-                  profile.avatar ||
-                  'https://api.dicebear.com/7.x/bottts/svg?seed=Emma'
+            <SuperButton
+              className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+              tooltip={`Voir le profil de ${profile.pseudo}`}
+              onClick={e => {
+                e.stopPropagation();
+                if (ideorama.userId == profile.userId) {
+                  navigate(`/app/profile/${ideorama.userId}`);
+                } else {
+                  navigate(`/app/profile`);
                 }
-                alt="Profile"
-              />
-              <AvatarFallback>{profile.pseudo}</AvatarFallback>
-            </Avatar>
+              }}
+            >
+              <Avatar className="h-14 w-14 border-2 border-white/20 shadow-sm shrink-0">
+                <AvatarImage
+                  src={
+                    profile.avatar ||
+                    'https://api.dicebear.com/7.x/bottts/svg?seed=Emma'
+                  }
+                  alt="Profile"
+                />
+                <AvatarFallback>{profile.pseudo}</AvatarFallback>
+              </Avatar>
+            </SuperButton>
           </div>
         </Card>
       ))}
-      {ideoramaToDelete != null && (
-        <DeleteIdeoramaDialog
-          ideoramaName={ideoramaToDelete.name}
-          onConfirm={() => {
-            deleteIdeorama(ideoramaToDelete.id).then(res => {
+      <AlertDialog
+        open={ideoramaToDelete != null}
+        description={<>
+            Cela supprimera définitivement l'idéorama{" "}
+            <span className="font-bold text-mauve">{ideoramaToDelete?.name}</span>
+          </>}
+        confirmationMessage="Oui, supprimer"
+        onConfirm={() => {
+            deleteIdeorama(ideoramaToDelete?.id).then(res => {
               if (res) {
                 setIdeoramas(
-                  ideoramas.filter(ideoram => ideoram.id != ideoramaToDelete.id)
+                  ideoramas.filter(ideoram => ideoram.id != ideoramaToDelete?.id)
                 );
+                toast.success("Idéorama supprimé avec succès")
+              } else {
+                toast.error("Échec lors de la suppression de l'idéorama")
               }
             });
             setIdeoramaToDelete(null);
           }}
-          onCancel={() => setIdeoramaToDelete(null)}
-        />
-      )}
+        onCancel={() => setIdeoramaToDelete(null)}
+      />
     </div>
   );
 };

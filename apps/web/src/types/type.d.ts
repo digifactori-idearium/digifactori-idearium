@@ -3,6 +3,13 @@ interface Option {
   value: string;
 }
 
+interface SearchOption {
+  value: string;
+  label: string;
+}
+
+type Role = 'INTERN' | 'SUPERVISOR' | 'ADMIN';
+
 interface ApiResponse<T> {
   status: string;
   message: string;
@@ -17,15 +24,17 @@ type User = {
   email: string;
   first_name: string;
   last_name: string;
+  isActive: boolean;
   password: string;
   parental_code: string | null;
-  role: 'CHILD' | 'SUPERVISOR';
+  role: Role;
+  profile?: Profile;
 };
 
 type UserSession = {
   id: string;
   email: string;
-  role: 'CHILD' | 'SUPERVISOR';
+  role: Role;
   token: string;
 };
 
@@ -35,11 +44,32 @@ type Profile = {
   pseudo: string;
   avatar: string | null;
   bio: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  // followers: { followingId: string }[];
+  // following: { followedById: string }[];
+  followers: string[];
+  following: string[];
+  ideoramaLiked: {
+    ideoramaId: string;
+  }[];
+  ideoramas: {
+    id: string;
+    name: string;
+  }[];
 };
 
-type Role = 'CHILD' | 'SUPERVISOR';
+interface CreateUserInput {
+  email: string;
+  first_name: string;
+  last_name: string;
+  pseudo: string;
+  role: Role;
+}
+
+interface UpdateUserInput {
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+}
 
 type Ideorama = {
   id: string;
@@ -56,6 +86,9 @@ type Ideorama = {
   updatedAt: Date;
   userId: string;
   model: ModelsInfo;
+  _count: {
+    likers: number;
+  };
 };
 
 type ModelsInfo = {
@@ -79,6 +112,7 @@ type Asset = {
   name: string;
   category: string;
   description: string;
+  type: IntegrationType;
   source?: string;
   preview?: source;
   createdAt?: Date;
@@ -220,13 +254,28 @@ interface Integration {
   name: string;
   url: string;
   type: IntegrationType;
-  key: string;
+  key?: string;
   isActive: boolean;
-  fieldMapping?: FieldMapping;
+  fieldMapping: Record<string, string>;
   createdAt?: string;
 }
 
+interface MediaItem {
+  id: string;
+  name: string;
+  category: string;
+  file: string;
+  thumbnail?: string;
+}
+
+interface FetchResult {
+  items: MediaItem[];
+  hasMore: boolean;
+}
+
 interface Settings {
+  orgCode?: string;
+  orgParentalCode?: string;
   storeName?: string;
   storeURL?: string;
   integrations?: Integration[];

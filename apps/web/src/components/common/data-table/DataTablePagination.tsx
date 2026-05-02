@@ -16,21 +16,23 @@ export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="flex-1 text-sm text-muted-foreground">
+    <div className="flex flex-col items-center gap-2 px-2 sm:flex-row sm:justify-between">
+      <div className="text-sm text-muted-foreground text-center sm:text-left">
         {table.getFilteredSelectedRowModel().rows.length} ligne(s)
         sélectionnée(s) sur {table.getFilteredRowModel().rows.length}.
       </div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+
+      <div className="flex items-center gap-2">
+        <div className="text-sm font-medium whitespace-nowrap">
           Page {table.getState().pagination.pageIndex + 1} sur{' '}
           {table.getPageCount()}
         </div>
-        <div className="flex items-center space-x-2">
+
+        <div className="flex items-center gap-1">
           <Button
             variant="outline"
             size="icon"
-            className="hidden size-8 lg:flex flex justify-center items-center py-6 text-xl text-white! bg-mauve! hover:bg-mauve/80! rounded-4xl! !border-mauve"
+            className="hidden size-8 lg:flex justify-center items-center py-6 text-white! bg-mauve! hover:bg-mauve/80! rounded-4xl! border-mauve!"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
@@ -40,7 +42,7 @@ export function DataTablePagination<TData>({
           <Button
             variant="outline"
             size="icon"
-            className="size-8 lg:flex flex justify-center items-center py-6 text-xl text-white! bg-mauve! hover:bg-mauve/80! rounded-4xl! !border-mauve"
+            className="size-8 flex justify-center items-center py-6 text-white! bg-mauve! hover:bg-mauve/80! rounded-4xl! border-mauve!"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -50,7 +52,7 @@ export function DataTablePagination<TData>({
           <Button
             variant="outline"
             size="icon"
-            className="size-8 lg:flex flex justify-center items-center py-6 text-xl text-white! bg-mauve! hover:bg-mauve/80! rounded-4xl! !border-mauve"
+            className="size-8 flex justify-center items-center py-6 text-white! bg-mauve! hover:bg-mauve/80! rounded-4xl! border-mauve!"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
@@ -60,7 +62,7 @@ export function DataTablePagination<TData>({
           <Button
             variant="outline"
             size="icon"
-            className="hidden size-8 lg:flex flex justify-center items-center py-6 text-xl text-white! bg-mauve! hover:bg-mauve/80! rounded-4xl! !border-mauve"
+            className="hidden size-8 lg:flex justify-center items-center py-6 text-white! bg-mauve! hover:bg-mauve/80! rounded-4xl! border-mauve!"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >

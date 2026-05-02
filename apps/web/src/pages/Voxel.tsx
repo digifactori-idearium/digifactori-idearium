@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei';
-import { Canvas, ThreeEvent } from '@react-three/fiber';
-import { useMemo, useRef, useState } from 'react';
+import { Canvas, ThreeEvent, useThree } from '@react-three/fiber';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 export interface VoxelPoint {
@@ -22,7 +22,9 @@ interface BaseVoxelProps {
   onVoxelsChange: React.Dispatch<React.SetStateAction<VoxelPoint[]>>
 }
 
-interface VoxelProps extends BaseVoxelProps {}
+interface VoxelProps extends BaseVoxelProps {
+  setScene: React.Dispatch<React.SetStateAction<THREE.Scene | null>>;
+}
 
 interface VoxelMotorProps extends BaseVoxelProps {
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
@@ -96,7 +98,11 @@ function VoxelMotor({
     }
 
     snapPosition(pos);
-    if (mode === 'paint' && isPainting.current && event.object !== planeRef.current) {
+    if (
+      mode === 'paint' &&
+      isPainting.current &&
+      event.object !== planeRef.current
+    ) {
       const basePosition = event.object.position.clone();
       const positionsToPaint: VoxelPoint[] = [];
 
@@ -114,8 +120,6 @@ function VoxelMotor({
         )
       );
     }
-
-
   };
 
   const onPointerDown = (event: ThreeEvent<PointerEvent>) => {
@@ -138,8 +142,12 @@ function VoxelMotor({
     const position = new THREE.Vector3();
 
     if (event.face) {
-      if (mode === 'add') position.copy(event.point).add(event.face.normal);
-      else position.copy(event.object.position);
+      console.log('here');
+      if (mode === 'add') {
+        position.copy(event.point).add(event.face.normal);
+      } else {
+        position.copy(event.object.position);
+      }
     } else {
       position.copy(rollOverRef.current.position);
     }
@@ -316,7 +324,11 @@ function VoxelMotor({
         {getShapeOffsets().map((o, i) => (
           <mesh key={i} position={o as [number, number, number]}>
             <boxGeometry args={[50, 50, 50]} />
-            <meshBasicMaterial color={selectedColor} transparent opacity={0.4} />
+            <meshBasicMaterial
+              color={selectedColor}
+              transparent
+              opacity={0.4}
+            />
           </mesh>
         ))}
       </group>
@@ -336,6 +348,7 @@ function VoxelMotor({
 
       {voxels.map((voxel, i) => (
         <mesh
+          name="cubeToSave"
           key={`${voxel.x}-${voxel.y}-${voxel.z}-${i}`}
           position={voxelPointToVector3(voxel)}
           onPointerMove={onPointerMove}
@@ -350,18 +363,50 @@ function VoxelMotor({
   );
 }
 
-export default function Voxel({mode, shape, rotationH, rotationV, longueur, largeur, hauteur, voxels, onVoxelsChange,}: VoxelProps) {
   
+function SceneBridge({
+  setScene,
+}: {
+  setScene: React.Dispatch<React.SetStateAction<THREE.Scene | null>>;
+}) {
+  const { scene } = useThree();
+
+  useEffect(() => {
+    setScene(scene);
+  }, [scene]);
+
+  return null;
+}
+
+// SceneRef.displayName = 'SceneRef'
+
+export default function Voxel({setScene, mode, shape, rotationH, rotationV, longueur, largeur, hauteur, voxels, onVoxelsChange,}: VoxelProps) {
+
   const [isDragging, setIsDragging] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#f97316');
   const COLORS = [
-    '#f97316', '#fb923c', '#fdba74',
-    '#3b82f6', '#60a5fa', '#93c5fd',
-    '#10b981', '#34d399', '#6ee7b7',
-    '#ef4444', '#f87171', '#fca5a5',
-    '#eab308', '#fde047', '#fef08a',
-    '#8b5cf6', '#a78bfa', '#c4b5fd',
-    '#000000', '#374151', '#9ca3af', '#ffffff'
+    '#f97316',
+    '#fb923c',
+    '#fdba74',
+    '#3b82f6',
+    '#60a5fa',
+    '#93c5fd',
+    '#10b981',
+    '#34d399',
+    '#6ee7b7',
+    '#ef4444',
+    '#f87171',
+    '#fca5a5',
+    '#eab308',
+    '#fde047',
+    '#fef08a',
+    '#8b5cf6',
+    '#a78bfa',
+    '#c4b5fd',
+    '#000000',
+    '#374151',
+    '#9ca3af',
+    '#ffffff',
   ];
   
 
@@ -371,6 +416,7 @@ export default function Voxel({mode, shape, rotationH, rotationV, longueur, larg
       style={{ width: '100%', height: '100%' }}
       camera={{ position: [500, 800, 1300], fov: 45, near: 1, far: 10000 }}
     >
+      <SceneBridge setScene={setScene} />
       <VoxelMotor
         mode={mode}
         shape={shape}

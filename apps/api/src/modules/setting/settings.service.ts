@@ -15,11 +15,9 @@ export default class SettingsService implements ISettingsService {
         where: { id: 1 },
         create: {
           id: 1,
-          storeName: '',
-          storeURL: '',
         },
         update: {},
-        include: { integrations: true },
+        include: { integrations: true, storage: true },
       });
 
       return settings;
@@ -34,29 +32,22 @@ export default class SettingsService implements ISettingsService {
    * Update application-level settings (storeName, storeURL).
    * Creates the singleton row if it doesn't exist yet.
    */
-  async updateSettings(data: {
-    storeName?: string;
-    storeURL?: string;
-    storeKey?: string;
-    orgCode?: string;
-  }) {
+  async updateSettings(data: { orgCode?: number; orgParentalCode?: number }) {
     try {
       const settings = await settingTable.upsert({
         where: { id: 1 },
         create: {
           id: 1,
-          storeName: data.storeName ?? '',
-          storeURL: data.storeURL ?? '',
-          storeKey: data.storeKey ?? '',
-          orgCode: data.orgCode ?? '',
+          orgCode: data.orgCode ?? undefined,
+          orgParentalCode: data.orgParentalCode ?? undefined,
         },
         update: {
-          ...(data.storeName !== undefined && { storeName: data.storeName }),
-          ...(data.storeURL !== undefined && { storeURL: data.storeURL }),
-          ...(data.storeKey !== undefined && { storeKey: data.storeKey }),
           ...(data.orgCode !== undefined && { orgCode: data.orgCode }),
+          ...(data.orgParentalCode !== undefined && {
+            orgParentalCode: data.orgParentalCode,
+          }),
         },
-        include: { integrations: true },
+        include: { integrations: true, storage: true },
       });
 
       return settings;
@@ -72,12 +63,15 @@ export default class SettingsService implements ISettingsService {
   // ---------------------------------------------------------------------------
 
   /**
-   * List all integrations attached to the singleton settings row.
+   * List all integrations by type if any
    */
-  async getIntegrations() {
+  async getIntegrations(type?: string) {
     try {
       const integrations = await integrationTable.findMany({
-        where: { settingId: 1 },
+        where: {
+          settingId: 1,
+          ...(type ? { type: type as any } : {}),
+        },
         orderBy: { createdAt: 'desc' },
       });
 

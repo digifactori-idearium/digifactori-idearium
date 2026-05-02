@@ -11,13 +11,6 @@ import { toast } from 'sonner';
 
 import useLocalStorage from '@/hooks/useLocaleStorage';
 
-interface UserSession {
-  id: string;
-  email: string;
-  role: string;
-  token: string;
-}
-
 interface UserContextType {
   user: UserSession | null;
   removeToken: () => void;

@@ -17,7 +17,7 @@ interface FormDialogProps {
   description: string;
   inputs: FormInputData[];
   initialValues?: FieldValues;
-  onsubmit: (data: any) => Promise<void>;
+  onsubmit: (data: any) => Promise<boolean | void>;
   loading: boolean;
 }
 
@@ -32,13 +32,10 @@ export const FormDialog: React.FC<FormDialogProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
 
-  const handleSubmit = async (data: any) => {
-    try {
-      await onsubmit(data);
-      setOpen(false);
-    } catch {
-      // error already handled by the caller (toast err)
-    }
+  const handleSubmit = async (data: FieldValues): Promise<boolean | void> => {
+    const result = await onsubmit(data);
+    if (result !== false) setOpen(false);
+    return result;
   };
 
   return (
