@@ -48,7 +48,7 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (profile) {
-      getAllIdeoramas(profile?.userId).then(res => {
+      getAllIdeoramas().then(res => {
         setIdeoramas(res.data);
       });
     }
@@ -78,7 +78,7 @@ const ProfilePage: React.FC = () => {
           }
           setShowFollowers(true);
           getFollowers(profile!.userId).then(res => {
-            setFollowers(res.data);
+            setFollowers(res.data.followers);
           });
         }}
       >
@@ -94,7 +94,7 @@ const ProfilePage: React.FC = () => {
           }
           setShowFollowing(true);
           getFollowing(profile!.userId).then(res => {
-            setFollowing(res.data);
+            setFollowing(res.data.following);
           });
         }}
       >

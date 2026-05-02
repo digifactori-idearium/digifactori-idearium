@@ -7,120 +7,81 @@ interface ApiResponse<T> {
   status_code: number;
 }
 
-export interface VoxelPoint {
-  x: number;
-  y: number;
-  z: number;
-}
-
 export interface VoxelModel {
   id: string;
   name: string;
-  model: string | VoxelPoint[];
+  model: string | null; // storage key ex "voxel-models/blablabla.glb"
   userId: string;
   createdAt: string;
   updatedAt: string;
 }
 
+const BASE = '/api/voxel';
+
 /**
- * Fetch the actual model content from storage using the fileKey
- * @param fileKey - The storage key returned by the backend (e.g., "voxel-models/abc123.json")
+ * Create a new empty voxel model.
  */
-export const fetchVoxelModelFromStorage = async (
-  fileKey: string
-): Promise<VoxelPoint[]> => {
-  try {
-    const baseURL =
-      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
-    const response = await axios.get(`${baseURL}/api/storage/file/${fileKey}`);
-    // Parse if it's a string, otherwise return as-is
-    return typeof response.data === 'string'
-      ? JSON.parse(response.data)
-      : response.data;
-  } catch (error: any) {
-    console.error('Error fetching voxel model from storage:', error);
-    return [];
-  }
-};
-
 export const createVoxelModel = async (
-  name: string
+  name?: string
 ): Promise<ApiResponse<VoxelModel>> => {
-  const response = await axios.post('http://localhost:3001/api/voxel/save', {
-    voxelModel: {
-      name,
-    },
-  });
-
+  const response = await axios.post(BASE, { name });
   return response.data;
 };
 
+/**
+ * Fetch all voxel models for the authenticated user.
+ */
 export const getAllVoxelModels = async (): Promise<
   ApiResponse<VoxelModel[]>
 > => {
-  const response = await axios.post('http://localhost:3001/api/voxel/all', {});
+  const response = await axios.get(BASE);
   return response.data;
 };
 
+/**
+ * Fetch a single voxel model by ID.
+ */
 export const getVoxelModelById = async (
   voxelModelId: string
 ): Promise<ApiResponse<VoxelModel>> => {
-  const response = await axios.post('http://localhost:3001/api/voxel/', {
-    voxelModelId,
-  });
-
+  const response = await axios.get(`${BASE}/${voxelModelId}`);
   return response.data;
 };
 
-export const autoSaveVoxelModel = (
-  voxelModelId: string | undefined,
-  voxels: string,
+/**
+ * Save (overwrite) the GLB file for a voxel model.
+ *
+ * Uses keepalive so the request survives page unload (auto-save on close).
+ */
+export const saveVoxelModel = async (
+  voxelModelId: string,
   blob: Blob
-): boolean => {
+): Promise<boolean> => {
   try {
-    console.log('save');
-    if (!voxelModelId) {
-      console.warn('Cannot save: missing ideoramaid or userid');
-      return false;
-    }
-
-    const baseURL =
-      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
-
     const formData = new FormData();
     formData.append('file', blob, `${voxelModelId}.glb`);
-    formData.append('voxelModelId', voxelModelId);
-    formData.append('model', voxels);
-    axios
-      .post(`${baseURL}/api/voxel/save`, formData, {
-        fetchOptions: { keepalive: true },
-      })
-      .catch(err => console.error('Keepalive save failed:', err));
+
+    await axios.patch(`${BASE}/${voxelModelId}/save`, formData, {
+      fetchOptions: { keepalive: true },
+    });
 
     return true;
   } catch (error) {
-    console.error('Error queuing keepalive save:', error);
+    console.error('Error saving voxel model:', error);
     return false;
   }
 };
 
+/**
+ * Delete a voxel model and its GLB file from storage.
+ */
 export const deleteVoxelModel = async (
-  voxelModelId: string | undefined
+  voxelModelId: string
 ): Promise<boolean> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/voxel/delete`,
-      {
-        voxelModelId: voxelModelId,
-      }
-    );
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
+    await axios.delete(`${BASE}/${voxelModelId}`);
     return true;
-  } catch (error: any) {
+  } catch {
     return false;
   }
 };

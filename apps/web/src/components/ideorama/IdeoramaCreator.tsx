@@ -16,15 +16,14 @@ import { createIdeorama } from '@/services/ideorama.service';
 const IdeoramaCreator: React.FC<{
   isOpen: boolean;
   setIsOpen: any;
-  userId: string | undefined;
-}> = ({ isOpen, setIsOpen, userId }) => {
+}> = ({ isOpen, setIsOpen }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const onSubmit = async (data: FieldValues): Promise<boolean | void> => {
     try {
       setLoading(true);
-      const response = await createIdeorama(data.name, userId);
+      const response = await createIdeorama(data.name);
       navigate(`/app/ideorama/${response.data.id}`);
       setIsOpen(false);
       toast.success("Création de l'idéorama réussie");

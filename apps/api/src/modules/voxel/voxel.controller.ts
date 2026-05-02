@@ -1,6 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-
 import { Request, Response } from 'express';
 
 import { IVoxelService } from '@/types';
@@ -14,216 +11,141 @@ export default class VoxelController {
   constructor(private readonly voxelService: IVoxelService) {}
 
   /**
-   * Creates a new voxel model or updates an existing one with model data.
-   *
-   * @route  POST /voxel/save
-   * @access Authenticated
-   *
-   * @body   { voxelModelId?: string, voxelModel: { name?: string, model?: object } }
-   *
-   * @returns
-   *   - 201 { data: VoxelModel } (on creation)
-   *   - 200 { data: null } (on update)
-   *   - 404 voxel model not found (on update)
-   */
-  saveVoxelModelController = asyncHandler(
-    async (req: Request, res: Response) => {
-      const user = req.user!;
-
-      //  CREATE
-      if (!req.body.voxelModelId) {
-        const newVoxelModel = await this.voxelService.createVoxelModel({
-          name: req.body.voxelModel?.name,
-          userId: user.userId,
-        });
-
-        const emptyModelBuffer = fs.readFileSync(
-          path.join(process.cwd(), 'uploads/voxel-models', 'model-empty.json'),
-          'utf-8'
-        );
-
-        const file = {
-          buffer: Buffer.from(emptyModelBuffer),
-          originalname: `model-${newVoxelModel.id}.json`,
-          size: emptyModelBuffer.length,
-          mimetype: 'application/json',
-        } as any;
-
-        const fileKey = await uploadFile(file, UPLOAD_DIR, newVoxelModel.id);
-        await this.voxelService.updateVoxelModelFileKey(
-          newVoxelModel.id,
-          fileKey
-        );
-
-        return HttpResponse.created(
-          newVoxelModel,
-          'Voxel model créé avec succès'
-        ).send(res);
-      }
-
-      // UPDATE
-      const voxelModel = await this.voxelService.getVoxelModelById(
-        req.body.voxelModelId,
-        user.userId
-      );
-
-      if (!voxelModel) {
-        return HttpResponse.notFound('Voxel model not found').send(res);
-      }
-
-      // Delete previous JSON voxel file
-      if (voxelModel.model) {
-        await deleteFile(voxelModel.model).catch(() => {});
-      }
-
-      // Save JSON voxel data
-      const modelJson =
-        typeof req.body.model === 'string'
-          ? req.body.model
-          : JSON.stringify(req.body.model ?? []);
-
-      const jsonFile = {
-        buffer: Buffer.from(modelJson),
-        originalname: `model-${req.body.voxelModelId}.json`,
-        size: modelJson.length,
-        mimetype: 'application/json',
-      } as any;
-
-      const jsonFileKey = await uploadFile(
-        jsonFile,
-        UPLOAD_DIR,
-        req.body.voxelModelId
-      );
-
-      // Save GLB file if provided
-      const glbFile = (req.files as any)?.glb?.[0] ?? req.files ?? null;
-      if (glbFile) {
-        // Delete previous GLB if it exists
-        const glbKey = `${UPLOAD_DIR}/${req.body.voxelModelId}.glb`;
-        await deleteFile(glbKey).catch(() => {});
-
-        await uploadFile(
-          {
-            ...glbFile,
-            originalname: `${req.body.voxelModelId}.glb`,
-            mimetype: 'model/gltf-binary',
-          },
-          UPLOAD_DIR,
-          `${req.body.voxelModelId}-glb`
-        );
-      }
-
-      await this.voxelService.updateVoxelModelFileKey(
-        req.body.voxelModelId,
-        jsonFileKey
-      );
-
-      HttpResponse.success(null, 'Voxel model mis à jour avec succès').send(
-        res
-      );
-    }
-  );
-
-  /**
-   * Retrieves a voxel model by ID with its associated 3D model data.
+   * Creates a new empty voxel model (no file yet).
    *
    * @route  POST /voxel
    * @access Authenticated
    *
-   * @body   { voxelModelId: string }
+   * @body   { name?: string }
+   *
+   * @returns 201 { data: VoxelModel }
+   */
+  createVoxelModel = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user!;
+
+    const newVoxelModel = await this.voxelService.createVoxelModel({
+      name: req.body.name,
+      userId: user.userId,
+    });
+
+    return HttpResponse.created(
+      newVoxelModel,
+      'Voxel model créé avec succès'
+    ).send(res);
+  });
+
+  /**
+   * Saves (overwrites) the GLB file for an existing voxel model.
+   * The previous GLB is deleted before the new one is uploaded.
+   * Existence is pre-checked by the checkVoxelModelExistence middleware.
+   *
+   * @route  PATCH /voxel/:voxelModelId/save
+   * @access Authenticated
+   *
+   * @params voxelModelId
+   * @files  { file: GLB }
    *
    * @returns
-   *   - 200 { data: VoxelModel }
-   *   - 404 voxel model not found
+   *   200 { data: null }
+   *   400 no GLB file provided
    */
-  getVoxelModelByIdController = asyncHandler(
-    async (req: Request, res: Response) => {
-      const user = req.user!;
+  saveVoxelModel = asyncHandler(async (req: Request, res: Response) => {
+    const voxelModelId = req.params.voxelModelId as string;
+    const glbFile = req.file ?? null;
 
-      const voxelModel = await this.voxelService.getVoxelModelById(
-        req.body.voxelModelId,
-        user.userId
-      );
-
-      if (!voxelModel) {
-        return HttpResponse.notFound('Voxel model introuvable').send(res);
-      }
-
-      HttpResponse.success(voxelModel, 'Voxel model récupéré avec succès').send(
-        res
-      );
+    if (!glbFile) {
+      return HttpResponse.badRequest('Fichier GLB manquant').send(res);
     }
-  );
+
+    // Existence already guaranteed by middleware — fetch only for the old key.
+    const voxelModel = await this.voxelService.getVoxelModelById(voxelModelId);
+
+    if (voxelModel?.model) {
+      await deleteFile(voxelModel.model).catch(() => {});
+    }
+
+    const fileKey = await uploadFile(
+      {
+        ...glbFile,
+        originalname: `${voxelModelId}.glb`,
+        mimetype: 'model/gltf-binary',
+      },
+      UPLOAD_DIR,
+      voxelModelId
+    );
+
+    await this.voxelService.updateVoxelModelFileKey(voxelModelId, fileKey);
+
+    HttpResponse.success(null, 'Voxel model sauvegardé avec succès').send(res);
+  });
+
+  /**
+   * Retrieves a voxel model by ID.
+   *
+   * @route  GET /voxel/:voxelModelId
+   * @access Authenticated
+   *
+   * @params voxelModelId
+   *
+   * @returns
+   *   200 { data: VoxelModel }
+   *   404 voxel model not found
+   */
+  getVoxelModelById = asyncHandler(async (req: Request, res: Response) => {
+    const voxelModelId = req.params.voxelModelId as string;
+
+    const voxelModel = await this.voxelService.getVoxelModelById(voxelModelId);
+
+    if (!voxelModel) {
+      return HttpResponse.notFound('Voxel model introuvable').send(res);
+    }
+
+    HttpResponse.success(voxelModel, 'Voxel model récupéré avec succès').send(
+      res
+    );
+  });
 
   /**
    * Retrieves all voxel models belonging to the authenticated user.
    *
-   * @route  POST /voxel/all
+   * @route  GET /voxel
    * @access Authenticated
    *
-   * @returns
-   *   - 200 { data: VoxelModel[] }
+   * @returns 200 { data: VoxelModel[] }
    */
-  getUserVoxelModelsController = asyncHandler(
-    async (req: Request, res: Response) => {
-      const user = req.user;
+  getUserVoxelModels = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user!;
 
-      if (!user) {
-        return HttpResponse.unAuthorized(
-          "Vous n'avez pas les droits d'accès"
-        ).send(res);
-      }
+    const voxelModels = await this.voxelService.getUserVoxelModels(user.userId);
 
-      const voxelModels = await this.voxelService.getUserVoxelModels(
-        user.userId
-      );
-
-      HttpResponse.success(
-        voxelModels,
-        'Voxel models récupérés avec succès'
-      ).send(res);
-    }
-  );
+    HttpResponse.success(
+      voxelModels,
+      'Voxel models récupérés avec succès'
+    ).send(res);
+  });
 
   /**
-   * Deletes a voxel model and its associated file from storage.
+   * Deletes a voxel model and its GLB file from storage.
+   * Existence is pre-checked by the checkVoxelModelExistence middleware.
    *
-   * @route  POST /voxel/delete
+   * @route  DELETE /voxel/:voxelModelId
    * @access Authenticated
    *
-   * @body   { voxelModelId: string }
+   * @params voxelModelId
    *
-   * @returns
-   *   - 200 { data: null }
-   *   - 404 voxel model not found
+   * @returns 200 { data: null }
    */
-  deleteVoxelModelController = asyncHandler(
-    async (req: Request, res: Response) => {
-      const user = req.user!;
+  deleteVoxelModel = asyncHandler(async (req: Request, res: Response) => {
+    const voxelModelId = req.params.voxelModelId as string;
 
-      const voxelModel = await this.voxelService.getVoxelModelById(
-        req.body.voxelModelId,
-        user.userId
-      );
+    const voxelModel = await this.voxelService.getVoxelModelById(voxelModelId);
 
-      if (!voxelModel) {
-        return HttpResponse.notFound('Voxel model not found').send(res);
-      }
-
-      // Delete the file from storage
-      if (voxelModel.model) {
-        await deleteFile(voxelModel.model).catch(() => {
-          // Ignore error if file doesn't exist
-        });
-      }
-
-      // Delete from DB
-      await this.voxelService.deleteVoxelModel(
-        req.body.voxelModelId,
-        user.userId
-      );
-
-      HttpResponse.deleted('Voxel model supprimé avec succès').send(res);
+    if (voxelModel?.model) {
+      await deleteFile(voxelModel.model).catch(() => {});
     }
-  );
+
+    await this.voxelService.deleteVoxelModel(voxelModelId);
+
+    HttpResponse.deleted('Voxel model supprimé avec succès').send(res);
+  });
 }

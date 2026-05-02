@@ -41,12 +41,12 @@ export interface IAuthService {
 
 export interface IIdeoramaService {
   createIdeorama(ideoramaData: Partial<Ideorama>): Promise<Ideorama>;
+  getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   saveScene(
     ideoramaId: string,
     scene: import('@prisma/client').Prisma.InputJsonValue,
     meta?: { name?: string; isPublic?: boolean }
   ): Promise<Ideorama>;
-  getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
   updateIdeorama(
     ideoramaId: string,
@@ -61,6 +61,7 @@ export interface IProfileService {
   verifyPassword(userId: string, password: string): Promise<boolean>;
   getSingleProfile(userId: string): Promise<Profile | null>;
   getSingleUser(userId: string): Promise<User | null>;
+  getCorrectParentalCode(): Promise<number | undefined>;
   updateProfile(
     userId: string,
     body: SetProfileInput
@@ -80,20 +81,15 @@ export interface IVoxelService {
     name?: string;
     userId: string;
   }): Promise<VoxelModel>;
+
   updateVoxelModelFileKey(
     voxelModelId: string,
     fileKey: string
   ): Promise<VoxelModel>;
-  updateVoxelModelPath(
-    voxelModelId: string,
-    uploadPath: string
-  ): Promise<VoxelModel>;
-  getVoxelModelById(
-    voxelModelId: string,
-    userId: string
-  ): Promise<VoxelModel | null>;
+
+  getVoxelModelById(voxelModelId: string): Promise<VoxelModel | null>;
   getUserVoxelModels(userId: string): Promise<VoxelModel[]>;
-  deleteVoxelModel(voxelModelId: string, userId: string): Promise<VoxelModel>;
+  deleteVoxelModel(voxelModelId: string): Promise<VoxelModel>;
 }
 
 export interface IEditorService {

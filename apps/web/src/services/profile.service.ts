@@ -18,13 +18,52 @@ interface ApiResponse<T> {
 }
 
 // Services
-export const getMyProfile = async (
-  parentalCode: string = ''
-): Promise<ApiResponse<getProfileResponse>> => {
+export const getMyProfile = async (): Promise<
+  ApiResponse<getProfileResponse>
+> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/profile/`,
-      parentalCode == '' ? {} : { parental_code: parseInt(parentalCode) ?? 0 }
+    const response = await axios.get(`http://localhost:3001/api/profile/`);
+
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return response.data;
+  } catch (error: any) {
+    return handleApiError(error);
+  }
+};
+
+export const getUser = async (
+  parentalCode: string | undefined
+): Promise<ApiResponse<{ user: User | null }>> => {
+  try {
+    const response = await axios.get(`http://localhost:3001/api/profile/user`, {
+      headers: { 'X-Parental-Code': parentalCode },
+    });
+    if (response.data.status === 'error') {
+      throw new Error(
+        response.data.errors[0]?.message || response.data.error?.message
+      );
+    }
+    return response.data;
+  } catch (error: any) {
+    return handleApiError(error);
+  }
+};
+
+export const updateProfile = async (
+  newUserInfo: Partial<User>,
+  newProfileInfo: Partial<Profile>
+) => {
+  try {
+    const response = await axios.patch(
+      `http://localhost:3001/api/profile/setting`,
+      {
+        user: newUserInfo,
+        profile: newProfileInfo,
+      }
     );
 
     if (response.data.status === 'error') {
@@ -42,9 +81,8 @@ export const getProfile = async (
   userId: string
 ): Promise<ApiResponse<{ profile: Profile }>> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/profile/find`,
-      { userId: userId }
+    const response = await axios.get(
+      `http://localhost:3001/api/profile/${userId}`
     );
     if (response.data.status === 'error') {
       throw new Error(
@@ -60,30 +98,6 @@ export const getProfile = async (
     return handleApiError(
       error.response?.data?.error?.message || 'Échec du profil'
     );
-  }
-};
-
-export const updateProfile = async (
-  newUserInfo: Partial<User>,
-  newProfileInfo: Partial<Profile>
-) => {
-  try {
-    const response = await axios.post(
-      `http://localhost:3001/api/profile/setting`,
-      {
-        user: newUserInfo,
-        profile: newProfileInfo,
-      }
-    );
-
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
   }
 };
 
@@ -108,11 +122,12 @@ export const followUser = async (followedUserId: string) => {
 
 export const getFollowers = async (
   userId: string
-): Promise<ApiResponse<{ pseudo: string; avatar: string }[]>> => {
+): Promise<
+  ApiResponse<{ followers: { pseudo: string; avatar: string }[] }>
+> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/profile/followers`,
-      { userId: userId }
+    const response = await axios.get(
+      `http://localhost:3001/api/profile/${userId}/followers`
     );
     if (response.data.status === 'error') {
       throw new Error(
@@ -131,11 +146,12 @@ export const getFollowers = async (
 
 export const getFollowing = async (
   userId: string
-): Promise<ApiResponse<{ pseudo: string; avatar: string }[]>> => {
+): Promise<
+  ApiResponse<{ following: { pseudo: string; avatar: string }[] }>
+> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/profile/following`,
-      { userId: userId }
+    const response = await axios.get(
+      `http://localhost:3001/api/profile/${userId}/following`
     );
     if (response.data.status === 'error') {
       throw new Error(

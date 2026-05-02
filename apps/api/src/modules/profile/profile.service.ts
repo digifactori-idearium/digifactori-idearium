@@ -7,6 +7,7 @@ import { IProfileService } from '@/types';
 const profileTable = prisma.profile;
 const userTable = prisma.user;
 const followTable = prisma.follow;
+const setting = prisma.setting;
 
 export default class ProfileService implements IProfileService {
   /**
@@ -61,6 +62,19 @@ export default class ProfileService implements IProfileService {
       },
     });
     return profile;
+  }
+
+  /**
+   * Finds the correct parental code in DB.
+   *
+   * @returns the correct parental
+   */
+  async getCorrectParentalCode(): Promise<number | undefined> {
+    const set = await setting.findUnique({
+      where: { id: 1 },
+      select: { orgParentalCode: true },
+    });
+    return set?.orgParentalCode;
   }
 
   /**
@@ -151,7 +165,6 @@ export default class ProfileService implements IProfileService {
    *
    * @param userId the id of the user (string)
    * @returns an array of followers with their pseudo and avatar ({pseudo: string, avatar: string | null}[])
-   * @throws error if the user is not found
    */
   async getFollowers(
     userId: string
@@ -177,7 +190,6 @@ export default class ProfileService implements IProfileService {
    *
    * @param userId the id of the user (string)
    * @returns an array of following with their pseudo and avatar ({pseudo: string, avatar: string | null}[])
-   * @throws error if the user is not found
    */
   async getFollowing(
     userId: string

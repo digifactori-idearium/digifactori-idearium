@@ -12,7 +12,7 @@ import ProfilePage from '@/pages/MyProfile';
 import MySpace from '@/pages/MySpace';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
-import { TextEditor, EditorPage } from '@/pages/TextEditor';
+import { EditorPage, TextEditor } from '@/pages/TextEditor';
 import VoxelLayout from '@/pages/VoxelLayout';
 
 const appRoutes = [
