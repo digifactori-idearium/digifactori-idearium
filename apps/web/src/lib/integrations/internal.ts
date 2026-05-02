@@ -4,18 +4,18 @@ const PAGE_SIZE = 32;
 
 /**
  * Map an internal Asset record to the shared MediaItem shape.
- * fileUrl is the resolved public URL; file is the raw storage key.
- * We expose fileUrl as `file` so consumers don't need to know the difference.
+ *.
  */
 function assetToMediaItem(asset: Asset): MediaItem {
   return {
     id: asset.id,
     name: asset.name,
     type: asset.type,
-    // Expose category so AssetsGrid can group it
     ...(asset.category ? { category: asset.category } : {}),
-    file: asset.fileUrl,
-    thumbnail: asset.thumbnailUrl ?? undefined,
+    file: asset.file,
+    fileUrl: asset.fileUrl ?? undefined,
+    thumbnail: asset.thumbnail ?? undefined,
+    thumbnailUrl: asset.thumbnailUrl ?? undefined,
   };
 }
 
