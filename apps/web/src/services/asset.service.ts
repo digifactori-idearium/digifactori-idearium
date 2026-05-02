@@ -7,10 +7,14 @@ import axios from '@/services/axios.service';
  * Get api file url
  */
 export const fetchStorageFile = async (fileKey: string) => {
-  const response = await axios.get(`/api/storage/file/${fileKey}`, {
-    responseType: 'blob',
-  });
-  return response.data;
+  try {
+    const response = await axios.get(`/api/storage/file/${fileKey}`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  } catch (error: any) {
+    return handleApiError(error);
+  }
 };
 /**
  * GET /assets
