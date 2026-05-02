@@ -210,8 +210,8 @@ function VoxelMotor({
   };
 
   const rotateOffset = (x: number, y: number, z: number) => {
-    let rx = ((rotationV % 4) + 4) % 4; // X
-    let ry = ((rotationH % 4) + 4) % 4; // Y
+    const rx = ((rotationV % 4) + 4) % 4; // X
+    const ry = ((rotationH % 4) + 4) % 4; // Y
   
     let px = x;
     let py = y;
