@@ -70,30 +70,24 @@ interface UpdateUserInput {
 type Ideorama = {
   id: string;
   name: string;
-  description: string | null;
-  theme: string;
-  brightness: string;
   isPublic: boolean;
-  backgroundColor: string;
-  leftWallColor: string;
-  rightWallColor: string;
-  floorColor: string;
+  scene: ModelsInfo | null;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
-  model: ModelsInfo;
-  _count: { likers: number };
+  _count?: { likers: number };
 };
 
 type ModelsInfo = {
   global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
+    isPublic: boolean;
     music: { currentTrack: string; volume: number };
     theme: string;
   };
   background: { color: string; accent: string };
-  info: { name: string; description: string; category?: string };
+  info: { name: string; category?: string };
   floor: PartSettings;
   objects: Record<string, ObjectState>;
 };
@@ -288,7 +282,9 @@ interface MediaItem {
   type?: string;
   category?: string;
   file: string;
+  fileUrl?: string;
   thumbnail?: string;
+  thumbnailUrl?: string;
 }
 
 type Asset = {
