@@ -49,19 +49,24 @@ const exportGLB = (scene: THREE.Scene): Promise<Blob> => {
   };
 
 export default function VoxelLayout() {
-  const { modelId } = useParams();
+  const { modelId } = useParams<{ modelId: string }>();
 
   const [mode, setMode] = useState<'add' | 'remove' | 'paint'>('add');
-  const [shape, setShape] = useState<
-    'cube' | 'mur' | 'plateforme' | 'escalier'
-  >('cube');
-  const [rotation, setRotation] = useState(0);
+  const [shape, setShape] = useState<'cube' | 'mur' | 'plateforme' | 'escalier' | 'cadre' | 'anneau' | 'cercle' | 'sphere'>('cube');
+  const [rotationH, setRotationH] = useState(0);
+  const [rotationV, setRotationV] = useState(0);
 
   const [voxels, setVoxels] = useState<VoxelPoint[]>([]);
   const voxelsRef = useRef(voxels)
 
   const [modelName, setModelName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [message, setMessage] = useState('');
+  const [longueur, setLongueur] = useState(1)
+  const [largeur, setLargeur] = useState(1)
+  const [hauteur, setHauteur] = useState(1)
+
+  // 🔹 Charger le modèle
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   const [scene, setScene] = useState<THREE.Scene | null>(null);
@@ -93,10 +98,11 @@ export default function VoxelLayout() {
 
         if (Array.isArray(response.data.model)) {
           setVoxels(response.data.model);
-          setModelName(response.data.name);
+          setModelName(response.data.name || 'Sans nom');
         }
       } catch (error) {
         console.error('Erreur chargement modèle', error);
+        setMessage('Erreur lors du chargement');
       } finally {
         setIsLoading(false);
       }
@@ -170,27 +176,44 @@ export default function VoxelLayout() {
           setMode={setMode}
           shape={shape}
           setShape={setShape}
-          rotation={rotation}
-          setRotation={setRotation}
+          rotationH={rotationH}
+          setRotationH={setRotationH}
+          rotationV={rotationV}
+          setRotationV={setRotationV}
+          longueur={longueur}
+          setLongueur={setLongueur}
+          largeur={largeur}
+          setLargeur={setLargeur}
+          hauteur={hauteur}
+          setHauteur={setHauteur}
         />
 
         <div className="mt-4 p-3 rounded-xl bg-white/80 text-black text-sm">
-          <strong>Modèle :</strong> {modelName || 'Sans nom'}
+          <strong>Modèle :</strong> {modelName}
           <br />
           <strong>Voxels :</strong> {voxels.length}
+          {message && (
+            <>
+              <br />
+              <span className="text-xs">{message}</span>
+            </>
+          )}
         </div>
       </div>
 
-      <div className="absolute inset-0 z-0">
-        <Voxel
-          setScene={setScene}
-          mode={mode}
-          shape={shape}
-          rotation={rotation}
-          voxels={voxels}
-          onVoxelsChange={setVoxels}
-        />
-      </div>
+      {/* 🔹 Viewer */}
+      <Voxel
+        setScene={setScene}
+        mode={mode}
+        shape={shape}
+        rotationH={rotationH}
+        rotationV={rotationV}
+        longueur={longueur}
+        largeur={largeur}
+        hauteur={hauteur}
+        voxels={voxels}
+        onVoxelsChange={setVoxels}
+      />
     </div>
   );
 }
