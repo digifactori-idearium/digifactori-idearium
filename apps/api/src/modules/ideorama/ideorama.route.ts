@@ -1,54 +1,56 @@
 import { Router, type Router as ExpressRouter } from 'express';
 
-import { authenticate, requireAuth } from '../../middlewares/authentication';
-
 import IdeoramaController from './ideorama.controller';
 
+import { authenticate, requireAuth } from '@/middlewares/authentication';
 import { checkIdeoramaExistence } from '@/middlewares/checkExistence';
 import { IIdeoramaService } from '@/types';
 
 export default function createIdeoramaRoutes(
   ideoramaService: IIdeoramaService
-) {
+): ExpressRouter {
   const ideoramaController = new IdeoramaController(ideoramaService);
-  const ideoramasRoutes: ExpressRouter = Router();
+  const router: ExpressRouter = Router();
 
-  ideoramasRoutes.use(authenticate, requireAuth);
+  router.use(authenticate, requireAuth);
 
-  ideoramasRoutes.get('/empty', ideoramaController.getEmptyIdeorama);
-  ideoramasRoutes.get(
-    '/:ideoramaId',
-    ideoramaController.getIdeoramaByIdController
-  );
-  ideoramasRoutes.post('/', ideoramaController.createIdeoramaController);
-  ideoramasRoutes.patch<{ ideoramaId: string }>(
+  router.get('/empty', ideoramaController.getEmptyIdeorama);
+
+  router.get('/', ideoramaController.getUserIdeoramasController);
+
+  router.get('/:ideoramaId', ideoramaController.getIdeoramaByIdController);
+
+  router.post('/', ideoramaController.createIdeoramaController);
+
+  router.patch(
     '/:ideoramaId/save',
     (req, res, next) =>
       checkIdeoramaExistence(
-        req.params.ideoramaId,
+        req.params.ideoramaId as string,
         res,
         next,
         ideoramaService.getIdeoramaById
       ),
     ideoramaController.saveIdeoramaController
   );
-  ideoramasRoutes.get('/', ideoramaController.getUserIdeoramasController);
-  ideoramasRoutes.post(
-    '/like',
+
+  router.post(
+    '/:ideoramaId/like',
     (req, res, next) =>
       checkIdeoramaExistence(
-        req.body.ideoramaId,
+        req.params.ideoramaId as string,
         res,
         next,
         ideoramaService.getIdeoramaById
       ),
     ideoramaController.likeIdeoramaController
   );
-  ideoramasRoutes.delete<{ ideoramaId: string }>(
+
+  router.delete(
     '/:ideoramaId',
     (req, res, next) =>
       checkIdeoramaExistence(
-        req.params.ideoramaId,
+        req.params.ideoramaId as string,
         res,
         next,
         ideoramaService.getIdeoramaById
@@ -56,5 +58,5 @@ export default function createIdeoramaRoutes(
     ideoramaController.deleteIdeoramaController
   );
 
-  return ideoramasRoutes;
+  return router;
 }

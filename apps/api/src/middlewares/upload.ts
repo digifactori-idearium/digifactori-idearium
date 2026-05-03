@@ -85,3 +85,22 @@ export const uploadBulk = multer(baseOptions).fields([
   { name: 'files', maxCount: MAX_FILES_BULK },
   { name: 'thumbnails', maxCount: MAX_FILES_BULK },
 ]);
+
+export const uploadGlb = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB
+  fileFilter: (_req, file, cb) => {
+    const ext = file.originalname
+      .slice(file.originalname.lastIndexOf('.'))
+      .toLowerCase();
+    const allowed =
+      file.mimetype === 'model/gltf-binary' ||
+      file.mimetype === 'application/octet-stream' ||
+      ext === '.glb';
+    if (allowed) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Only GLB files are allowed (got ${file.mimetype})`));
+    }
+  },
+}).single('file');

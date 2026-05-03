@@ -51,13 +51,13 @@ export default class VoxelController {
    */
   saveVoxelModel = asyncHandler(async (req: Request, res: Response) => {
     const voxelModelId = req.params.voxelModelId as string;
+
     const glbFile = req.file ?? null;
 
     if (!glbFile) {
       return HttpResponse.badRequest('Fichier GLB manquant').send(res);
     }
 
-    // Existence already guaranteed by middleware — fetch only for the old key.
     const voxelModel = await this.voxelService.getVoxelModelById(voxelModelId);
 
     if (voxelModel?.model) {

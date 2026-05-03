@@ -23,32 +23,27 @@ export default class IdeoramaController {
   constructor(private readonly ideoramaService: IdeoramaService) {}
 
   /**
-   * Creates a new ideorama with an empty scene stored directly in the DB.
+   * Returns the empty scene template.
    *
-   * @route  POST /ideorama/create
+   * @route  GET /ideorama/empty
    * @access Authenticated
-   * @body   { ideorama: { name?: string, userId: string } }
    */
-  createIdeoramaController = asyncHandler(
-    async (req: Request, res: Response) => {
-      const newIdeorama = await this.ideoramaService.createIdeorama(
-        req.body.ideorama
-      );
-      HttpResponse.created(newIdeorama, 'Idéorama créé avec succès').send(res);
+  getEmptyIdeorama: RequestHandler = asyncHandler(
+    async (_req: Request, res: Response) => {
+      HttpResponse.success(EMPTY_SCENE, 'Empty ideorama template').send(res);
     }
   );
 
   /**
-   * Returns all ideoramas for a user.
+   * Returns all ideoramas for the authenticated user.
    *
-   * @route  POST /ideorama/all
+   * @route  GET /ideorama
    * @access Authenticated
-   * @body   { userId: string }
    */
   getUserIdeoramasController = asyncHandler(
     async (req: Request, res: Response) => {
       const ideoramas = await this.ideoramaService.getUserIdeoramas(
-        req.body.userId
+        req.user!.userId
       );
       HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
         res
@@ -57,53 +52,64 @@ export default class IdeoramaController {
   );
 
   /**
-   * Returns a single ideorama with its scene data embedded.
-   * The `scene` field is the full scene JSON — no second request needed.
+   * Returns a single ideorama with its scene data.
    *
-   * @route  POST /ideorama
+   * @route  GET /ideorama/:ideoramaId
    * @access Authenticated
-   * @body   { ideoramaId: string }
+   *
+   * @params ideoramaId
    */
   getIdeoramaByIdController = asyncHandler(
     async (req: Request, res: Response) => {
-      const ideorama = await this.ideoramaService.getIdeoramaById(
-        req.body.ideoramaId
-      );
+      const ideoramaId = req.params.ideoramaId as string;
+
+      const ideorama = await this.ideoramaService.getIdeoramaById(ideoramaId);
 
       if (!ideorama) {
-        return HttpResponse.notFound('Ideorama not found').send(res);
+        return HttpResponse.notFound('Idéorama introuvable').send(res);
       }
 
-      return HttpResponse.success(
-        ideorama,
-        'Ideorama retrieved successfully'
-      ).send(res);
+      HttpResponse.success(ideorama, 'Idéorama récupéré avec succès').send(res);
     }
   );
 
   /**
-   * Saves the scene JSON into the DB and syncs `name` + `isPublic`
-   * from the scene metadata to the DB row so both stay in sync.
+   * Creates a new ideorama with an empty scene.
    *
-   * @route  POST /ideorama/save
+   * @route  POST /ideorama
    * @access Authenticated
-   * @body   { ideoramaId: string, ideorama: { scene: object | string } }
+   *
+   * @body   { name?: string }
+   */
+  createIdeoramaController = asyncHandler(
+    async (req: Request, res: Response) => {
+      const newIdeorama = await this.ideoramaService.createIdeorama({
+        name: req.body.name,
+        userId: req.user!.userId,
+      });
+      HttpResponse.created(newIdeorama, 'Idéorama créé avec succès').send(res);
+    }
+  );
+
+  /**
+   * Saves the scene JSON into the DB.
+   * Syncs name and isPublic from scene metadata to the DB row.
+   * Existence is pre-checked by the checkIdeoramaExistence middleware.
+   *
+   * @route  PATCH /ideorama/:ideoramaId/save
+   * @access Authenticated
+   *
+   * @params ideoramaId
+   * @body   { scene: object | string }
    */
   saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
-    const { ideoramaId, ideorama } = req.body;
+    const ideoramaId = req.params.ideoramaId as string;
 
-    const existing = await this.ideoramaService.getIdeoramaById(ideoramaId);
-    if (!existing) {
-      return HttpResponse.notFound('Ideorama not found').send(res);
-    }
-
-    // Accept either a pre-parsed object or a JSON string
     const scene =
-      typeof ideorama.scene === 'string'
-        ? JSON.parse(ideorama.scene)
-        : (ideorama.scene as import('@prisma/client').Prisma.InputJsonValue);
+      typeof req.body.scene === 'string'
+        ? JSON.parse(req.body.scene)
+        : (req.body.scene as import('@prisma/client').Prisma.InputJsonValue);
 
-    // Sync name and isPublic from scene.info / scene.global to the DB row
     const sceneName = (scene as any)?.info?.name;
     const sceneIsPublic = (scene as any)?.global?.isPublic;
 
@@ -116,56 +122,40 @@ export default class IdeoramaController {
         : {}),
     });
 
-    HttpResponse.success(null, 'Ideorama saved successfully').send(res);
+    HttpResponse.success(null, 'Idéorama sauvegardé avec succès').send(res);
   });
 
   /**
    * Toggles the like on an ideorama for the authenticated user.
+   * Existence is pre-checked by the checkIdeoramaExistence middleware.
    *
-   * @route  POST /ideorama/like
+   * @route  POST /ideorama/:ideoramaId/like
    * @access Authenticated
-   * @body   { ideoramaId: string }
+   *
+   * @params ideoramaId
    */
   likeIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
-    await this.ideoramaService.likeIdeorama(
-      req.body.ideoramaId,
-      req.user!.userId
-    );
-    return HttpResponse.success(null, 'Ideorama liked successfully').send(res);
+    const ideoramaId = req.params.ideoramaId as string;
+
+    await this.ideoramaService.likeIdeorama(ideoramaId, req.user!.userId);
+    HttpResponse.success(null, 'Idéorama liké avec succès').send(res);
   });
 
   /**
    * Permanently deletes an ideorama.
+   * Existence is pre-checked by the checkIdeoramaExistence middleware.
    *
-   * @route  POST /ideorama/delete
+   * @route  DELETE /ideorama/:ideoramaId
    * @access Authenticated
-   * @body   { ideoramaId: string }
+   *
+   * @params ideoramaId
    */
   deleteIdeoramaController = asyncHandler(
     async (req: Request, res: Response) => {
-      const ideorama = await this.ideoramaService.getIdeoramaById(
-        req.body.ideoramaId
-      );
+      const ideoramaId = req.params.ideoramaId as string;
 
-      if (!ideorama) {
-        return HttpResponse.notFound('Ideorama not found').send(res);
-      }
-
-      await this.ideoramaService.deleteIdeorama(req.body.ideoramaId);
-
-      return HttpResponse.deleted('Ideorama deleted successfully').send(res);
-    }
-  );
-
-  /**
-   * Returns the empty scene template.
-   *
-   * @route  GET /ideorama/empty
-   * @access Public
-   */
-  getEmptyIdeorama: RequestHandler = asyncHandler(
-    async (_req: Request, res: Response) => {
-      HttpResponse.success(EMPTY_SCENE, 'Empty ideorama template').send(res);
+      await this.ideoramaService.deleteIdeorama(ideoramaId);
+      HttpResponse.deleted('Idéorama supprimé avec succès').send(res);
     }
   );
 }
