@@ -12,17 +12,17 @@ export const columns = (refresh: () => void): ColumnDef<Asset>[] => [
     header: ({ table }: { table: any }) => (
       <Checkbox
         className="
-          !h-5 !w-5
+          h-5! w-5!
           flex justify-center items-center
-          !border-1 !border-mauve
-          !bg-transparent 
-          data-[state=checked]:!bg-mauve
-          data-[state=indeterminate]:!bg-mauve
-          data-[state=checked]:!border-mauve
-          data-[state=indeterminate]:!border-mauve
-          data-[state=checked]:!text-white
-          data-[state=indeterminate]:!text-white
-          [&>svg]:!text-white
+          border! border-mauve!
+          bg-transparent! 
+          data-[state=checked]:bg-mauve!
+          data-[state=indeterminate]:bg-mauve!
+          data-[state=checked]:border-mauve!
+          data-[state=indeterminate]:border-mauve!
+          data-[state=checked]:text-white!
+          data-[state=indeterminate]:text-white!
+          [&>svg]:text-white!
         "
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -35,15 +35,15 @@ export const columns = (refresh: () => void): ColumnDef<Asset>[] => [
     cell: ({ row }: { row: any }) => (
       <Checkbox
         className="
-          !h-5 !w-5
+          h-5! w-5!
           flex justify-center items-center
-          !border-1 !border-mauve
-          data-[state=checked]:!bg-mauve
-          data-[state=checked]:!border-mauve
-          data-[state=checked]:!text-white
-          data-[state=unchecked]:!bg-transparent
-          data-[state=unchecked]:!border-mauve
-          [&>svg]:!text-white
+          border! border-mauve!
+          data-[state=checked]:bg-mauve!
+          data-[state=checked]:border-mauve!
+          data-[state=checked]:text-white!
+          data-[state=unchecked]:bg-transparent!
+          data-[state=unchecked]:border-mauve!
+          [&>svg]:text-white!
         "
         checked={row.getIsSelected()}
         onCheckedChange={value => row.toggleSelected(!!value)}
@@ -66,17 +66,17 @@ export const columns = (refresh: () => void): ColumnDef<Asset>[] => [
     header: 'Catégorie',
   },
   {
-    accessorKey: 'description',
-    header: 'Description',
+    accessorKey: 'tags',
+    header: 'Tags',
   },
   {
-    accessorKey: 'preview',
+    accessorKey: 'thumbnail',
     header: 'Aperçu',
     cell: ({ row }: { row: any }) => {
-      const asset = row.original;
-      return (
-        <AssetPreview name={asset.name} url={asset.preview}></AssetPreview>
-      );
+      const asset = row.original as Asset;
+      const fileKey = asset.thumbnail ? asset.thumbnail : asset.file;
+
+      return <AssetPreview fileKey={fileKey} />;
     },
   },
   {

@@ -40,17 +40,19 @@ export interface IAuthService {
 }
 
 export interface IIdeoramaService {
+  createIdeorama(ideoramaData: Partial<Ideorama>): Promise<Ideorama>;
   getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
-  createIdeorama(
-    name: string,
-    userId: string
-  ): Promise<Ideorama>;
-  updateIdeoramaModelPath(
+  saveScene(
     ideoramaId: string,
-    uploadPath: string
+    scene: import('@prisma/client').Prisma.InputJsonValue,
+    meta?: { name?: string; isPublic?: boolean }
   ): Promise<Ideorama>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
-  updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama>;
+  updateIdeorama(
+    ideoramaId: string,
+    data: import('@prisma/client').Prisma.IdeoramaUpdateInput
+  ): Promise<Ideorama>;
+  isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
   likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
 }
@@ -59,7 +61,7 @@ export interface IProfileService {
   verifyPassword(userId: string, password: string): Promise<boolean>;
   getSingleProfile(userId: string): Promise<Profile | null>;
   getSingleUser(userId: string): Promise<User | null>;
-  getCorrectParentalCode(): Promise<number | undefined>
+  getCorrectParentalCode(): Promise<number | undefined>;
   updateProfile(
     userId: string,
     body: SetProfileInput
@@ -75,17 +77,17 @@ export interface IProfileService {
 }
 
 export interface IVoxelService {
-  createVoxelModel(
-    name: string,
-    userId: string
-  ): Promise<VoxelModel>;
-  updateVoxelModelPath(
+  createVoxelModel(data: {
+    name?: string;
+    userId: string;
+  }): Promise<VoxelModel>;
+
+  updateVoxelModelFileKey(
     voxelModelId: string,
-    uploadPath: string
+    fileKey: string
   ): Promise<VoxelModel>;
-  getVoxelModelById(
-    voxelModelId: string,
-  ): Promise<VoxelModel | null>;
+
+  getVoxelModelById(voxelModelId: string): Promise<VoxelModel | null>;
   getUserVoxelModels(userId: string): Promise<VoxelModel[]>;
   deleteVoxelModel(voxelModelId: string): Promise<VoxelModel>;
 }

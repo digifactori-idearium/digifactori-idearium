@@ -2,9 +2,12 @@ import { useDraggable } from '@dnd-kit/core';
 
 import { AssetThumbnail } from './AssetThumbnail';
 
-type Props = {
+import { useStorageUrl } from '@/hooks/useStorageFile';
+import { isStorageKey } from '@/lib/asset';
+
+type Props = Readonly<{
   asset: AssetItem;
-};
+}>;
 
 export function AssetTile({ asset }: Props) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -12,10 +15,37 @@ export function AssetTile({ asset }: Props) {
     data: asset,
   });
 
+  const thumbnailKey =
+    !asset.thumbnailUrl && asset.thumbnail && isStorageKey(asset.thumbnail)
+      ? asset.thumbnail
+      : null;
+
+  const needsFileUrl = !asset.thumbnailUrl && !asset.thumbnail;
+  const fileKey =
+    needsFileUrl && asset.file && isStorageKey(asset.file) ? asset.file : null;
+
+  const { url: resolvedThumbnailUrl, loading: thumbnailLoading } =
+    useStorageUrl(thumbnailKey);
+
+  const { url: resolvedFileUrl, loading: fileLoading } = useStorageUrl(fileKey);
+
+  const thumbnailSrc =
+    asset.thumbnailUrl ??
+    (asset.thumbnail && !isStorageKey(asset.thumbnail)
+      ? asset.thumbnail
+      : null) ??
+    resolvedThumbnailUrl;
+
+  const fileSrc =
+    asset.fileUrl ??
+    (asset.file && !isStorageKey(asset.file) ? asset.file : null) ??
+    resolvedFileUrl;
+
+  const isLoading =
+    (!thumbnailSrc && thumbnailLoading) || (!fileSrc && fileLoading);
+
   return (
-    <div
-      className={`group flex flex-col gap-1 p-0.5 rounded-xl select-none transition-all`}
-    >
+    <div className="group flex flex-col gap-1 p-0.5 rounded-xl select-none transition-all">
       <div
         ref={setNodeRef}
         {...listeners}
@@ -30,22 +60,24 @@ export function AssetTile({ asset }: Props) {
           ${isDragging ? 'opacity-30' : ''}`}
       >
         <div className="w-full h-full pointer-events-none">
-          {asset.thumbnail ? (
+          {isLoading ? (
+            <div className="w-full h-full bg-white/5 animate-pulse rounded-lg" />
+          ) : thumbnailSrc ? (
             <img
-              src={asset.thumbnail}
+              src={thumbnailSrc}
+              alt={asset.name}
               loading="lazy"
               className="w-full h-full object-contain mix-blend-multiply bg-transparent contrast-125"
             />
+          ) : fileSrc ? (
+            <AssetThumbnail file={fileSrc} />
           ) : (
-            <AssetThumbnail file={asset.file} />
+            <div className="w-full h-full bg-white/5 rounded-lg" />
           )}
         </div>
       </div>
 
-      <span
-        className="text-[10px] font-medium truncate text-center text-white/50 
-                       group-hover:text-white/90"
-      >
+      <span className="text-[10px] font-medium truncate text-center text-white/50 group-hover:text-white/90">
         {asset.name}
       </span>
     </div>

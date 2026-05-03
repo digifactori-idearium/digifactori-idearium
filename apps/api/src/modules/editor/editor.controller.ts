@@ -6,30 +6,16 @@ export default class EditorController {
   constructor(private readonly editorService: IEditorService) {}
 
   /**
-   * Get a single document by ID
+   * Creates a new document for the authenticated user.
    *
-   * @description Retrieves a specific document by its ID
-   * @param {Request} req - Express request with documentId in params
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response with document data
-   */
-  getDocumentById = asyncHandler(async (req, res) => {
-    const documentId = Array.isArray(req.params.documentId)
-      ? req.params.documentId[0]
-      : req.params.documentId;
-
-    const document = await this.editorService.getDocumentById(documentId);
-
-    HttpResponse.success(document, 'Document retrieved successfully').send(res);
-  });
-
-  /**
-   * Create a new document
+   * @route  POST /editor
+   * @access Authenticated
    *
-   * @description Creates a new document for the authenticated user
-   * @param {Request} req - Express request with userId from auth middleware and document data in body
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response with created document
+   * @body   { title: string, content: string, json?: object, wordCount?: number, emoji?: string, color?: string }
+   *
+   * @returns
+   *   - 201 { data: Document }
+   *   - 400 validation error
    */
   createDocument = asyncHandler(async (req, res) => {
     const { title, content, json, wordCount, emoji, color } = req.body;
@@ -49,12 +35,55 @@ export default class EditorController {
   });
 
   /**
-   * Update a document
+   * Retrieves all documents belonging to the authenticated user.
    *
-   * @description Updates an existing document with new data
-   * @param {Request} req - Express request with documentId in params and update data in body
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response with updated document
+   * @route  GET /editor
+   * @access Authenticated
+   *
+   * @returns
+   *   - 200 { data: Document[] }
+   */
+  getUserDocuments = asyncHandler(async (req, res) => {
+    const userId = req.user!.userId;
+
+    const documents = await this.editorService.getUserDocuments(userId);
+
+    HttpResponse.success(documents, 'Documents retrieved successfully').send(
+      res
+    );
+  });
+
+  /**
+   * Retrieves a single document by ID.
+   *
+   * @route  GET /editor/:documentId
+   * @access Authenticated
+   *
+   * @returns
+   *   - 200 { data: Document }
+   *   - 404 document not found
+   */
+  getDocumentById = asyncHandler(async (req, res) => {
+    const documentId = Array.isArray(req.params.documentId)
+      ? req.params.documentId[0]
+      : req.params.documentId;
+
+    const document = await this.editorService.getDocumentById(documentId);
+
+    HttpResponse.success(document, 'Document retrieved successfully').send(res);
+  });
+
+  /**
+   * Updates an existing document with new data.
+   *
+   * @route  PATCH /editor/:documentId
+   * @access Authenticated
+   *
+   * @body   { title?: string, content?: string, json?: object, wordCount?: number, emoji?: string, color?: string }
+   *
+   * @returns
+   *   - 200 { data: Document }
+   *   - 404 document not found
    */
   updateDocument = asyncHandler(async (req, res) => {
     const documentId = Array.isArray(req.params.documentId)
@@ -75,12 +104,39 @@ export default class EditorController {
   });
 
   /**
-   * Save document with full content and metadata
+   * Deletes a document by its ID.
    *
-   * @description Saves a document with both HTML content and TipTap JSON format
-   * @param {Request} req - Express request with documentId in params and full document data in body
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response with saved document
+   * @route  DELETE /editor/:documentId
+   * @access Authenticated
+   *
+   * @returns
+   *   - 200 { data: { id: string } }
+   *   - 404 document not found
+   */
+  deleteDocument = asyncHandler(async (req, res) => {
+    const documentId = Array.isArray(req.params.documentId)
+      ? req.params.documentId[0]
+      : req.params.documentId;
+
+    await this.editorService.deleteDocument(documentId);
+
+    HttpResponse.success(
+      { id: documentId },
+      'Document supprimé avec succès'
+    ).send(res);
+  });
+
+  /**
+   * Saves a document with full content and metadata (both HTML and TipTap JSON).
+   *
+   * @route  POST /editor/:documentId/save
+   * @access Authenticated
+   *
+   * @body   { title?: string, content?: string, json?: object, wordCount?: number, emoji?: string, color?: string }
+   *
+   * @returns
+   *   - 200 { data: Document }
+   *   - 404 document not found
    */
   saveDocument = asyncHandler(async (req, res) => {
     const documentId = Array.isArray(req.params.documentId)
@@ -98,44 +154,5 @@ export default class EditorController {
     });
 
     HttpResponse.success(document, 'Document enregistré avec succès').send(res);
-  });
-
-  /**
-   * Get all documents for the authenticated user
-   *
-   * @description Retrieves all documents belonging to the authenticated user
-   * @param {Request} req - Express request with userId from auth middleware
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response with array of documents
-   */
-  getUserDocuments = asyncHandler(async (req, res) => {
-    const userId = req.user!.userId;
-
-    const documents = await this.editorService.getUserDocuments(userId);
-
-    HttpResponse.success(documents, 'Documents retrieved successfully').send(
-      res
-    );
-  });
-
-  /**
-   * Delete a document
-   *
-   * @description Deletes a document by its ID
-   * @param {Request} req - Express request with documentId in params
-   * @param {Response} res - Express response object
-   * @returns {Response} JSON response confirming deletion
-   */
-  deleteDocument = asyncHandler(async (req, res) => {
-    const documentId = Array.isArray(req.params.documentId)
-      ? req.params.documentId[0]
-      : req.params.documentId;
-
-    await this.editorService.deleteDocument(documentId);
-
-    HttpResponse.success(
-      { id: documentId },
-      'Document supprimé avec succès'
-    ).send(res);
   });
 }

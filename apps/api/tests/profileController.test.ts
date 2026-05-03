@@ -9,7 +9,7 @@ import { generateToken } from '@/utils/generate-token';
 const FAKE_USER_ID = 'cmnup6jyf0000p0utn33xhdpq';
 const FAKE_PROFILE_ID = 'id';
 
-function createFakeUser(overrides = {}): {user: User, userJSON: any} {
+function createFakeUser(overrides = {}): { user: User; userJSON: any } {
   const user: User = {
     id: 'cmnup6jyf0000p0utn33xhdpq',
     email: 'pseudo@gmail.com',
@@ -30,7 +30,10 @@ function createFakeUser(overrides = {}): {user: User, userJSON: any} {
   return { user, userJSON };
 }
 
-function createFakeProfile(overrides = {}): {profile: Profile, profileJSON: any} {
+function createFakeProfile(overrides = {}): {
+  profile: Profile;
+  profileJSON: any;
+} {
   const profile: Profile = {
     id: 'profileId',
     userId: 'cmnup6jyf0000p0utn33xhdpq',
@@ -132,7 +135,7 @@ describe('Profile Handling', () => {
     });
 
     it('should return null if the parental code is invalid and the user is an intern', async () => {
-      const {user} = createFakeUser({ role: 'INTERN' });
+      const { user } = createFakeUser({ role: 'INTERN' });
       mockService.getSingleUser.mockResolvedValue(user);
       mockService.getCorrectParentalCode.mockResolvedValue(1234);
 
@@ -147,7 +150,7 @@ describe('Profile Handling', () => {
     });
 
     it('should return the user if the parental code is invalid but the user is not an intern', async () => {
-      const {user, userJSON} = createFakeUser({ role: 'EMPLOYEE' });
+      const { user, userJSON } = createFakeUser({ role: 'EMPLOYEE' });
       mockService.getSingleUser.mockResolvedValue(user);
       mockService.getCorrectParentalCode.mockResolvedValue(1234);
 
@@ -177,10 +180,16 @@ describe('Profile Handling', () => {
 
   describe('PATCH /profile/setting', () => {
     it('should update the profile and user data of the authenticated user', async () => {
-      const {user: newUser, userJSON: newUserJSON} = createFakeUser({ first_name: 'NewFirstName' });
-      const {profile: newProfile, profileJSON: newProfileJSON} = createFakeProfile({ pseudo: 'NewPseudo' });
+      const { user: newUser, userJSON: newUserJSON } = createFakeUser({
+        first_name: 'NewFirstName',
+      });
+      const { profile: newProfile, profileJSON: newProfileJSON } =
+        createFakeProfile({ pseudo: 'NewPseudo' });
       mockService.getSingleUser.mockResolvedValue(newUser);
-      mockService.updateProfile.mockResolvedValue({ user: newUser, profile: newProfile});
+      mockService.updateProfile.mockResolvedValue({
+        user: newUser,
+        profile: newProfile,
+      });
 
       const res = await request(app)
         .patch('/api/profile/setting')
@@ -189,7 +198,7 @@ describe('Profile Handling', () => {
           user: newUser,
           profile: newProfile,
         });
-      
+
       expect(mockService.updateProfile).toHaveBeenCalledWith(newUser.id, {
         user: newUserJSON,
         profile: newProfileJSON,
@@ -200,8 +209,10 @@ describe('Profile Handling', () => {
     });
 
     it('should return 404 if the profile to update is not found', async () => {
-      const {user: newUser} = createFakeUser({ first_name: 'NewFirstName' });
-      const {profile: newProfile} = createFakeProfile({ pseudo: 'NewPseudo' });
+      const { user: newUser } = createFakeUser({ first_name: 'NewFirstName' });
+      const { profile: newProfile } = createFakeProfile({
+        pseudo: 'NewPseudo',
+      });
       mockService.getSingleUser.mockResolvedValue(null);
 
       const res = await request(app)
@@ -216,8 +227,8 @@ describe('Profile Handling', () => {
     });
 
     it('should return 400 if the data provided is invalid', async () => {
-      const {user} = createFakeUser();
-      const {profile} = createFakeProfile();
+      const { user } = createFakeUser();
+      const { profile } = createFakeProfile();
 
       const res = await request(app)
         .patch('/api/profile/setting')
@@ -230,7 +241,7 @@ describe('Profile Handling', () => {
       expect(res.status).toBe(400);
     });
   });
-  
+
   describe('GET /profile/:userId', () => {
     it('should get the profile of the user with the given id', async () => {
       const { profile, profileJSON } = createFakeProfile();
@@ -257,9 +268,9 @@ describe('Profile Handling', () => {
     });
   });
 
-  describe("POST /profile/follow", () => {
-    it("should follow a user", async () => {
-      const {user: followedUser} = createFakeUser({id: "followedUserId"});
+  describe('POST /profile/follow', () => {
+    it('should follow a user', async () => {
+      const { user: followedUser } = createFakeUser({ id: 'followedUserId' });
       mockService.getSingleUser.mockResolvedValue(followedUser);
       mockService.followUser.mockResolvedValue(true);
 
@@ -268,12 +279,15 @@ describe('Profile Handling', () => {
         .set('Authorization', authHeader())
         .send({ followedUserId: followedUser.id });
 
-      expect(mockService.followUser).toHaveBeenCalledWith(FAKE_USER_ID, followedUser.id);
+      expect(mockService.followUser).toHaveBeenCalledWith(
+        FAKE_USER_ID,
+        followedUser.id
+      );
       expect(res.body.data).toBe(true);
       expect(res.status).toBe(200);
     });
 
-    it("should not allow a user to follow themselves", async () => {
+    it('should not allow a user to follow themselves', async () => {
       const res = await request(app)
         .post('/api/profile/follow')
         .set('Authorization', authHeader())
@@ -283,8 +297,8 @@ describe('Profile Handling', () => {
       expect(res.status).toBe(400);
     });
 
-     it("should return 404 if the user to follow is not found", async () => {
-      const followedUserId = "nonExistentUserId";
+    it('should return 404 if the user to follow is not found', async () => {
+      const followedUserId = 'nonExistentUserId';
       mockService.getSingleUser.mockResolvedValue(null);
 
       const res = await request(app)
@@ -297,12 +311,12 @@ describe('Profile Handling', () => {
     });
   });
 
-  describe("GET /profile/:userId/followers", () => {
-    it("should get the followers of the authenticated user", async () => {
-      const {profile} = createFakeProfile();
+  describe('GET /profile/:userId/followers', () => {
+    it('should get the followers of the authenticated user', async () => {
+      const { profile } = createFakeProfile();
       const followers = [
-        { pseudo: "Follower1", avatar: null },
-        { pseudo: "Follower2", avatar: null },
+        { pseudo: 'Follower1', avatar: null },
+        { pseudo: 'Follower2', avatar: null },
       ];
       mockService.getSingleProfile.mockResolvedValue(profile);
       mockService.getFollowers.mockResolvedValue(followers);
@@ -316,7 +330,7 @@ describe('Profile Handling', () => {
       expect(res.status).toBe(200);
     });
 
-    it("should return 404 if user is not found", async () => {
+    it('should return 404 if user is not found', async () => {
       mockService.getSingleProfile.mockResolvedValue(null);
 
       const res = await request(app)
@@ -328,12 +342,12 @@ describe('Profile Handling', () => {
     });
   });
 
-  describe("GET /profile/:userId/following", () => {
-    it("should get the following of the user", async () => {
-      const {profile} = createFakeProfile();
+  describe('GET /profile/:userId/following', () => {
+    it('should get the following of the user', async () => {
+      const { profile } = createFakeProfile();
       const following = [
-        { pseudo: "Following1", avatar: null },
-        { pseudo: "Following2", avatar: null },
+        { pseudo: 'Following1', avatar: null },
+        { pseudo: 'Following2', avatar: null },
       ];
       mockService.getSingleProfile.mockResolvedValue(profile);
       mockService.getFollowing.mockResolvedValue(following);
@@ -347,7 +361,7 @@ describe('Profile Handling', () => {
       expect(res.status).toBe(200);
     });
 
-    it("should return 404 if user is not found", async () => {
+    it('should return 404 if user is not found', async () => {
       mockService.getSingleProfile.mockResolvedValue(null);
 
       const res = await request(app)
@@ -359,24 +373,24 @@ describe('Profile Handling', () => {
     });
   });
 
-  describe("DELETE /profile", () => {
+  describe('DELETE /profile', () => {
     it("should delete the authenticated user's account and profile", async () => {
-      const {user, userJSON} = createFakeUser();
-      const {profile, profileJSON} = createFakeProfile();
+      const { user, userJSON } = createFakeUser();
+      const { profile, profileJSON } = createFakeProfile();
       mockService.getSingleUser.mockResolvedValue(user);
       mockService.deleteUser.mockResolvedValue({ user, profile });
 
       const res = await request(app)
         .delete('/api/profile/delete')
         .set('Authorization', authHeader());
-        
+
       expect(mockService.deleteUser).toHaveBeenCalledWith(user.id);
       expect(res.body.data.user).toEqual(userJSON);
       expect(res.body.data.profile).toEqual(profileJSON);
       expect(res.status).toBe(200);
     });
 
-    it("should return 404 if the user to delete is not found", async () => {
+    it('should return 404 if the user to delete is not found', async () => {
       mockService.getSingleUser.mockResolvedValue(null);
 
       const res = await request(app)

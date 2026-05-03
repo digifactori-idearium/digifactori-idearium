@@ -1,28 +1,16 @@
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  VisibilityState,
-  SortingState,
-  FilterFn,
+  type ColumnDef,
+  type OnChangeFn,
+  type PaginationState,
+  type RowSelectionState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   useReactTable,
-  getPaginationRowModel,
-  getSortedRowModel,
 } from '@tanstack/react-table';
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 
 import { DataTablePagination } from './DataTablePagination';
 
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -32,100 +20,87 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-const globalFilterFn: FilterFn<any> = (row, _columnId, filterValue) => {
-  const search = String(filterValue).toLowerCase().trim();
-  if (!search) return true;
-
-  return row.getAllCells().some(cell => {
-    if (
-      cell.column.id === 'id' ||
-      cell.column.id === 'select' ||
-      cell.column.id === 'actions'
-    )
-      return false;
-    const value = cell.getValue();
-    if (value == null) return false;
-    return String(value).toLowerCase().includes(search);
-  });
-};
-
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  loading?: boolean;
+  pageCount?: number;
+  pageIndex?: number;
+  onPageChange?: (pageIndex: number) => void;
+  onSelectedRowsChange?: (rows: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  loading = false,
+  pageCount,
+  pageIndex,
+  onPageChange,
+  onSelectedRowsChange,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [globalFilter, setGlobalFilter] = React.useState('');
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+  const serverPagination =
+    pageCount !== undefined && onPageChange !== undefined;
+
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: pageIndex ?? 0,
+    pageSize: 20,
+  });
+
+  const controlledPagination: PaginationState = serverPagination
+    ? { pageIndex: pageIndex!, pageSize: pagination.pageSize }
+    : pagination;
+
+  const handlePaginationChange: OnChangeFn<PaginationState> = updater => {
+    const next =
+      typeof updater === 'function' ? updater(controlledPagination) : updater;
+
+    if (serverPagination) {
+      if (next.pageIndex !== pageIndex) {
+        onPageChange!(next.pageIndex);
+      }
+    } else {
+      setPagination(next);
+    }
+  };
 
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    globalFilterFn,
-    onGlobalFilterChange: setGlobalFilter,
     state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
       rowSelection,
-      globalFilter,
+      pagination: controlledPagination,
     },
+    // api pagination
+    manualPagination: serverPagination,
+    pageCount: serverPagination ? pageCount : undefined,
+    // Handlers
+    getRowId: (row: any) => row.id,
+    onRowSelectionChange: updater => {
+      const newSelection =
+        typeof updater === 'function' ? updater(rowSelection) : updater;
+      setRowSelection(newSelection);
+      if (onSelectedRowsChange) {
+        const selectedIds = new Set(
+          Object.keys(newSelection).filter(k => newSelection[k])
+        );
+        const selectedRows = data.filter((row: any) => selectedIds.has(row.id));
+        onSelectedRowsChange(selectedRows);
+      }
+    },
+    onPaginationChange: handlePaginationChange,
+    getCoreRowModel: getCoreRowModel(),
   });
 
-  return (
-    <div className="w-full py-8">
-      <DataTablePagination table={table} />
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Rechercher..."
-          value={globalFilter}
-          onChange={e => setGlobalFilter(e.target.value)}
-          className="w-full sm:max-w-sm border-mauve/80!"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! border-mauve!">
-              Colonnes
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter(column => column.getCanHide())
-              .map(column => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={value => column.toggleVisibility(!!value)}
-                >
-                  {typeof column.columnDef.header === 'string'
-                    ? column.columnDef.header
-                    : ((column.columnDef.meta as any)?.label ?? column.id)}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+  useEffect(() => {
+    setRowSelection({});
+  }, [data]);
 
-      <div className="w-full overflow-x-auto rounded-md border">
+  return (
+    <div className="space-y-4">
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -143,8 +118,18 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  Chargement…
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
@@ -173,6 +158,8 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+
+      {serverPagination && <DataTablePagination table={table} />}
     </div>
   );
 }

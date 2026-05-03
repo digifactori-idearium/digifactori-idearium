@@ -69,12 +69,12 @@ export default class ProfileService implements IProfileService {
    *
    * @returns the correct parental
    */
-  async getCorrectParentalCode(): Promise<number|undefined> {
+  async getCorrectParentalCode(): Promise<number | undefined> {
     const set = await setting.findUnique({
       where: { id: 1 },
       select: { orgParentalCode: true },
     });
-    return set?.orgParentalCode
+    return set?.orgParentalCode;
   }
 
   /**

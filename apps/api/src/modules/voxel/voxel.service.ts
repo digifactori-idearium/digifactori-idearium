@@ -6,91 +6,61 @@ import { IVoxelService } from '@/types';
 const voxelModelTable = prisma.voxelModel;
 
 export default class VoxelService implements IVoxelService {
-
-    /**
-   * Finds a voxel model in DB based on its ID.
-   *
-   * @param voxelModelId - the voxel model id we are searching for
-   * @returns
-   *  - if found, a Promise with the voxel model (Promise<VoxelModel>)
-   *  - a Promise with null otherwise (Promise<null>)
-   */
-  async getVoxelModelById(
-    voxelModelId: string,
-  ): Promise<VoxelModel | null> {
-    return voxelModelTable.findFirst({
-      where: {
-        id: voxelModelId,
-      },
-    });
-  }
-
   /**
    * Creates a new voxel model in DB.
-   *
-   * @param name - the name of the new model
-   * @param userId - the id of the user creating the model
-   * @returns a Promise with the new voxel model (Promise<VoxelModel>)
+   * model is null until the first GLB is saved via saveVoxelModel.
    */
-  async createVoxelModel(name: string, userId: string): Promise<VoxelModel> {
+  async createVoxelModel(data: {
+    name?: string;
+    userId: string;
+  }): Promise<VoxelModel> {
     return voxelModelTable.create({
-      data: {name, userId, model: ''},
+      data: {
+        name: data.name ?? 'New Voxel Model',
+        userId: data.userId,
+        model: '',
+      },
     });
   }
 
   /**
-   * Updates the model in BD of the voxel model.
-   *
-   * @param voxelModelId - the voxel model id to update
-   * @param uploadPath - the new model to put in DB
-   * @returns a Promise with the updated voxel model (Promise<VoxelModel>)
-   * @throws error if the voxelModelId does not exist in DB
+   * Updates the GLB storage key for a voxel model.
    */
-  async updateVoxelModelPath(
+  async updateVoxelModelFileKey(
     voxelModelId: string,
-    uploadPath: string
+    fileKey: string
   ): Promise<VoxelModel> {
     return voxelModelTable.update({
-      where: {
-        id: voxelModelId,
-      },
-      data: {
-        model: uploadPath,
-      },
+      where: { id: voxelModelId },
+      data: { model: fileKey },
     });
   }
 
   /**
-   * Finds all voxel models of a user in DB.
-   *
-   * @param userId - the user id for which we search for its voxel models
-   * @returns a Promise with the voxel models (Promise<VoxelModel[]>)
+   * Finds a voxel model by ID.
+   */
+  async getVoxelModelById(voxelModelId: string): Promise<VoxelModel | null> {
+    return voxelModelTable.findFirst({
+      where: { id: voxelModelId },
+    });
+  }
+
+  /**
+   * Finds all voxel models for a user, ordered by creation date.
    */
   async getUserVoxelModels(userId: string): Promise<VoxelModel[]> {
     return voxelModelTable.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   /**
-   * Deletes a voxel model from DB based on its ID.
-   *
-   * @param ideoramaId - the unique id of the voxel model to delete
-   * @returns a Promise with the deleted voxel model (Promise<VoxelModel>)
-   * @throws error if the voxelModelId does not exist in DB
+   * Deletes a voxel model from DB.
    */
-  async deleteVoxelModel(
-    voxelModelId: string,
-  ): Promise<VoxelModel> {
+  async deleteVoxelModel(voxelModelId: string): Promise<VoxelModel> {
     return voxelModelTable.delete({
-      where: {
-        id: voxelModelId,
-      },
+      where: { id: voxelModelId },
     });
   }
 }

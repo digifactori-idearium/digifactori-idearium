@@ -16,7 +16,7 @@ import AuthService from '@/modules/auth/auth.service';
 import createEditorRoutes from '@/modules/editor/editor.route';
 import EditorService from '@/modules/editor/editor.service';
 import createIdeoramaRoutes from '@/modules/ideorama/ideorama.route';
-import IdeoramaService from '@/modules/ideorama/ideorama.services';
+import IdeoramaService from '@/modules/ideorama/ideorama.service';
 import createProfileRoutes from '@/modules/profile/profile.route';
 import ProfileService from '@/modules/profile/profile.service';
 import createSettingsRoutes from '@/modules/setting/settings.route';
@@ -54,6 +54,9 @@ if (process.env.NODE_ENV !== 'production') {
   app.use('/uploads', express.static(LOCAL_UPLOADS_DIR));
 }
 // Routes
+
+app.use('/api/storage', createStorageRoutes());
+
 const authService = new AuthService();
 app.use('/api/auth', createAuthRoutes(authService));
 
@@ -77,8 +80,6 @@ app.use('/api/asset', createAssetRoutes(assetService));
 
 const settingsService = new SettingsService();
 app.use('/api/settings', createSettingsRoutes(settingsService));
-
-app.use('/api/storage', createStorageRoutes());
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

@@ -277,10 +277,7 @@ const MySpace: React.FC = () => {
       `}</style>
 
       {createsNew && (
-        <IdeoramaCreator
-          isOpen={createsNew}
-          setIsOpen={setCreatesNew}
-        />
+        <IdeoramaCreator isOpen={createsNew} setIsOpen={setCreatesNew} />
       )}
     </div>
   );

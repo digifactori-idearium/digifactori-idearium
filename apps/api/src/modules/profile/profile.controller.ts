@@ -55,7 +55,8 @@ export default class ProfileController {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
     const parentalCode = req.headers['x-parental-code'] as string;
-    const correctparentalCode = await this.profileService.getCorrectParentalCode()
+    const correctparentalCode =
+      await this.profileService.getCorrectParentalCode();
     const isParentalCodeValid =
       parentalCode && correctparentalCode
         ? parentalCode == correctparentalCode.toString()
@@ -120,7 +121,9 @@ export default class ProfileController {
    *   - 404 profile not found
    */
   getProfile = asyncHandler(async (req: Request, res: Response) => {
-    const profile = await this.profileService.getSingleProfile(req.params.userId as string);
+    const profile = await this.profileService.getSingleProfile(
+      req.params.userId as string
+    );
     if (!profile) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
@@ -171,14 +174,19 @@ export default class ProfileController {
    *   - 404 profile not found
    */
   getFollowers = asyncHandler(async (req: Request, res: Response) => {
-    const user = await this.profileService.getSingleProfile(req.params.userId as string)
-    if(!user) {
-      return HttpResponse.notFound("Cet 'utilisateur n'existe pas").send(res)
-    }
-    const followers = await this.profileService.getFollowers(req.params.userId as string);
-    return HttpResponse.success({ followers }, 'Followers récupérés avec succès').send(
-      res
+    const user = await this.profileService.getSingleProfile(
+      req.params.userId as string
     );
+    if (!user) {
+      return HttpResponse.notFound("Cet 'utilisateur n'existe pas").send(res);
+    }
+    const followers = await this.profileService.getFollowers(
+      req.params.userId as string
+    );
+    return HttpResponse.success(
+      { followers },
+      'Followers récupérés avec succès'
+    ).send(res);
   });
 
   /**
@@ -195,11 +203,15 @@ export default class ProfileController {
    *   - 404 profile not found
    */
   getFollowing = asyncHandler(async (req: Request, res: Response) => {
-    const user = await this.profileService.getSingleProfile(req.params.userId as string)
-    if(!user) {
-      return HttpResponse.notFound("Cet 'utilisateur n'existe pas").send(res)
+    const user = await this.profileService.getSingleProfile(
+      req.params.userId as string
+    );
+    if (!user) {
+      return HttpResponse.notFound("Cet 'utilisateur n'existe pas").send(res);
     }
-    const following = await this.profileService.getFollowing(req.params.userId as string);
+    const following = await this.profileService.getFollowing(
+      req.params.userId as string
+    );
     return HttpResponse.success(
       { following },
       'Utilisateurs suivis récupérés avec succès'

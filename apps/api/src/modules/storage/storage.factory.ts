@@ -6,14 +6,15 @@ import { type StorageAdapter } from './adapters/storage.adapter';
 import { prisma } from '@/config/client.config';
 
 /**
- * Reads the CloudStorage returns the correct adapter.
- * Called on every upload/delete — config changes via the API take effect
- * immediately without a server restart.
+ * Reads the CloudStorage row (id = 1) and returns the correct adapter.
+ * Called on every upload/delete so config changes take effect immediately.
  *
  * Falls back to LocalAdapter when:
  *   - No CloudStorage row exists.
  *   - Provider is LOCAL.
- *   - Required credentials for the configured provider are missing.
+ *   - Required credentials (accessKey, secretKey, bucket) are missing.
+ *
+ * publicUrl is optional
  */
 export async function resolveStorageAdapter(): Promise<StorageAdapter> {
   const storage = await prisma.cloudStorage
@@ -34,39 +35,43 @@ export async function resolveStorageAdapter(): Promise<StorageAdapter> {
     publicUrl,
   } = storage;
 
-  if (!accessKey || !secretKey || !bucket || !publicUrl) {
+  if (!accessKey || !secretKey || !bucket) {
     console.warn(
-      `[storage] Provider "${provider}" is configured but credentials are incomplete. Falling back to LOCAL.`
+      `[storage] Provider "${provider}" is configured but credentials are incomplete ` +
+        `(need accessKey, secretKey, bucket). Falling back to LOCAL.`
     );
     return new LocalAdapter();
   }
 
-  // Azure SDK.
+  const resolvedPublicUrl = publicUrl?.trim() || '';
+
+  if (!resolvedPublicUrl) {
+    console.warn(
+      `[storage] Could not derive a publicUrl for provider "${provider}". ` +
+        `Set publicUrl explicitly or provide an endpoint. Falling back to LOCAL.`
+    );
+    return new LocalAdapter();
+  }
+
+  // Azure has its own SDK.
   if (provider === 'AZURE') {
     return new AzureAdapter({
       accountName: accessKey,
       accountKey: secretKey,
       container: bucket,
       endpoint: endpoint ?? `https://${accessKey}.blob.core.windows.net`,
-      publicUrl,
+      publicUrl: resolvedPublicUrl,
     });
   }
 
   // S3, R2, GCS (interop), MinIO — all S3-compatible.
-  const endpointMap: Partial<Record<typeof provider, string | null>> = {
-    S3: null, // Real AWS — no custom endpoint.
-    R2: endpoint, // Required: https://<account>.r2.cloudflarestorage.com
-    GCS: endpoint ?? 'https://storage.googleapis.com',
-    MINIO: endpoint, // Required: http(s)://your-minio-host
-  };
-
   return new S3Adapter({
     region: region ?? 'auto',
-    endpoint: endpointMap[provider] ?? undefined,
+    endpoint: endpoint ?? undefined,
     accessKey,
     secretKey,
     bucket,
-    publicUrl,
+    publicUrl: resolvedPublicUrl,
     forcePathStyle: provider === 'MINIO',
   });
 }

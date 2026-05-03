@@ -1,5 +1,6 @@
 import { type Request, type Response } from 'express';
 
+import { resolveStorageAdapter } from './storage.factory';
 import StorageService from './storage.service';
 import { updateStorageSchema, testStorageSchema } from './storage.validation';
 import { validateStorageCredentials } from './storage.validator';
@@ -8,8 +9,105 @@ import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
 import { failOnValidation } from '@/utils/validation-errors';
 
+const SIGNED_URL_TTL = 3600;
+const SAFE_KEY_RE = new RegExp('^[a-zA-Z0-9_./-]+$');
+
+function isSafeKey(key: string): boolean {
+  return SAFE_KEY_RE.test(key) && !key.includes('..');
+}
+
+function normalizeKey(raw: string | string[]): string {
+  if (Array.isArray(raw)) return raw.join('/');
+  if (raw.includes(',')) return raw.replace(/,/g, '/');
+  return raw;
+}
+
 export default class StorageController {
   constructor(private readonly storageService: StorageService) {}
+
+  /**
+   * Returns a short-lived signed URL so the frontend can fetch the asset
+   * directly from the storage provider without backend proxying.
+   *
+   * @route  GET /storage/signed-url
+   * @access Authenticated
+   * @query  key {string} — storage key, e.g. "assets/models/abc123.glb"
+   *
+   * @returns 200 { data: { url: string; expiresAt: string } }
+   *          400 if key is missing
+   */
+  getSignedUrl = asyncHandler(async (req: Request, res: Response) => {
+    const key = req.query.key as string | undefined;
+    if (!key?.trim()) {
+      return HttpResponse.badRequest('Paramètre "key" manquant').send(res);
+    }
+
+    const adapter = await resolveStorageAdapter();
+
+    let url: string;
+    const expiresAt = new Date(
+      Date.now() + SIGNED_URL_TTL * 1000
+    ).toISOString();
+
+    if (adapter.getSignedUrl) {
+      // Remote provider — return a presigned URL the browser hits directly.
+      url = await adapter.getSignedUrl(key, SIGNED_URL_TTL);
+    } else {
+      // LOCAL — route through the proxy endpoint (dev only).
+      url = `/api/storage/file/${key}`;
+    }
+
+    HttpResponse.success({ url, expiresAt }, 'URL signée générée').send(res);
+  });
+
+  /**
+   * Streams an asset file from the storage provider (R2 / S3 / Azure)
+   * through the backend to avoid CORS issues on the frontend.
+   *
+   * @route  GET /assets/file/:key
+   * @access Authenticated
+   *
+   * @param  key {string} required — storage key (e.g. "assets/abc123.glb")
+   *
+   * @returns
+   *   200 {file stream}
+   *   400 {message: "Clé de fichier manquante"}
+   *   404 {message: "Fichier introuvable"}
+   */
+  getStorageFile = asyncHandler(async (req: Request, res: Response) => {
+    const key = normalizeKey(req.params.splat);
+
+    if (!key)
+      return HttpResponse.badRequest('Clé de fichier manquante').send(res);
+    if (!isSafeKey(key))
+      return HttpResponse.badRequest('Clé de fichier invalide').send(res);
+
+    const storage = await this.storageService.getStorage();
+
+    let allowedOrigin: string;
+    try {
+      allowedOrigin = new URL(storage.publicUrl ? storage.publicUrl : '')
+        .origin;
+    } catch {
+      throw new Error(`STORAGE publicUrl is invalid: "${storage.publicUrl}"`);
+    }
+
+    const adapter = await resolveStorageAdapter();
+    const fileUrl = adapter.getPublicUrl(key);
+
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(fileUrl);
+    } catch {
+      return HttpResponse.serverError('URL de fichier invalide').send(res);
+    }
+
+    if (parsedUrl.origin !== allowedOrigin) {
+      return HttpResponse.badRequest('URL de fichier non autorisée').send(res);
+    }
+
+    return res.redirect(302, parsedUrl.toString());
+  });
 
   /**
    * Returns the storage configuration (credentials are included — ADMIN only).

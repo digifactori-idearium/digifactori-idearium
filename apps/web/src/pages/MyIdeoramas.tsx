@@ -46,10 +46,7 @@ const MyIdeoramas: React.FC = () => {
         <Wand /> Créer un nouveau idéorama
       </SuperButton>
       {createsNew && (
-        <IdeoramaCreator
-          isOpen={createsNew}
-          setIsOpen={setCreatesNew}
-        />
+        <IdeoramaCreator isOpen={createsNew} setIsOpen={setCreatesNew} />
       )}
       <IdeoramasGroup
         ideoramas={ideoramas}
