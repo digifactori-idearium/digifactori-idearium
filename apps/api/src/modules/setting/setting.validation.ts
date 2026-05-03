@@ -67,24 +67,24 @@ export const updateStoreSettingsSchema = z
  */
 export const updateOrgSettingsSchema = z
   .object({
-    orgCode: z
-      .number({
-        error: () => 'Le code organisation doit être un nombre',
-      })
-      .min(6, 'Le code organisation doit comporter au moins 6 chiffres')
+    orgCode: z.coerce
+      .number({ error: () => 'Le code organisation doit être un nombre' })
+      .refine(
+        val => val.toString().length === 6,
+        'Le code organisation doit comporter exactement 6 chiffres'
+      )
       .optional(),
-    orgParentalCode: z
-      .number({
-        error: () => 'Le code parental doit être un nombre',
-      })
-      .min(4, 'Le code parental doit comporter au moins 4 chiffres')
+    orgParentalCode: z.coerce
+      .number({ error: () => 'Le code parental doit être un nombre' })
+      .refine(
+        val => val.toString().length === 4,
+        'Le code parental doit comporter exactement 4 chiffres'
+      )
       .optional(),
   })
   .refine(
     data => data.orgCode !== undefined || data.orgParentalCode !== undefined,
-    {
-      message: 'Au moins un champ doit être fourni.',
-    }
+    { message: 'Au moins un champ doit être fourni.' }
   );
 
 // ---------------------------------------------------------------------------
