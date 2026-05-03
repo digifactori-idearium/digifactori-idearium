@@ -7,7 +7,6 @@ import request from 'supertest';
 import createIdeoramaRoutes from '@/modules/ideorama/ideorama.route';
 import { IIdeoramaService } from '@/types';
 import { generateToken } from '@/utils/generate-token';
-import { getIdeoramaUploadPath } from '@/utils/getUploadPath';
 
 jest.mock('fs', () => ({
   readFileSync: jest.fn(),
@@ -53,9 +52,8 @@ function createFakeIdeorama(overrides: Partial<Ideorama> = {}): {
   const ideorama: Ideorama = {
     id: 'id',
     name: 'test',
-    description: null,
     isPublic: true,
-    model: 'path',
+    scene: 'path',
     userId: 'user',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -74,11 +72,12 @@ function createFakeIdeorama(overrides: Partial<Ideorama> = {}): {
 const authHeader = () => 'Bearer ' + token;
 
 class MockIdeoramaService implements IIdeoramaService {
-  createIdeorama = jest.fn<Promise<Ideorama>, [string, string]>();
-  updateIdeoramaModelPath = jest.fn<Promise<Ideorama>, [string, string]>();
+  createIdeorama = jest.fn<Promise<Ideorama>, [Partial<Ideorama>]>();
   getIdeoramaById = jest.fn<Promise<Ideorama | null>, [string]>();
+  saveScene = jest.fn<Promise<Ideorama>, [string, any, any]>();
   getUserIdeoramas = jest.fn<Promise<Ideorama[]>, [string]>();
-  updateIdeorama = jest.fn<Promise<Ideorama>, [string, Ideorama]>();
+  updateIdeorama = jest.fn<Promise<Ideorama>, [string, any]>();
+  isIdeoramaInBD = jest.fn<Promise<boolean>, [string]>();
   likeIdeorama = jest.fn<Promise<boolean>, [string, string]>();
   deleteIdeorama = jest.fn<Promise<Ideorama>, [string]>();
 }
@@ -104,7 +103,7 @@ beforeEach(() => {
 describe('Ideorama handling', () => {
   describe('GET /ideorama/:ideoramaId', () => {
     it('should return the ideorama found with its id', async () => {
-      const { ideorama, ideoramaJSON } = createFakeIdeorama({ model: {} });
+      const { ideorama, ideoramaJSON } = createFakeIdeorama({ scene: {} });
       mockService.getIdeoramaById.mockResolvedValue(ideorama);
       const readFileSyncMock = fs.readFileSync as jest.Mock;
       readFileSyncMock.mockReturnValue('{}');
@@ -135,21 +134,19 @@ describe('Ideorama handling', () => {
   describe('POST /ideorama/', () => {
     it('should create an ideorama correctly', async () => {
       const { ideorama, ideoramaJSON } = createFakeIdeorama();
-      const user = createFakeUser();
+      // const user = createFakeUser();
       mockService.createIdeorama.mockResolvedValue(ideorama);
 
       const res = await request(app)
         .post('/api/ideorama/')
         .set('Authorization', authHeader())
-        .send({ ideorama: ideorama });
+        .send({ name: ideorama.name });
 
       expect(mockService.createIdeorama).toHaveBeenCalledWith(
-        ideorama.name,
-        user.id
-      );
-      expect(mockService.updateIdeoramaModelPath).toHaveBeenCalledWith(
-        ideorama.id,
-        getIdeoramaUploadPath(ideorama.id)
+        expect.objectContaining({
+          name: ideorama.name,
+          userId: FAKE_USER_ID,
+        })
       );
       expect(res.body.data).toEqual(ideoramaJSON);
       expect(res.status).toBe(201);
@@ -158,35 +155,34 @@ describe('Ideorama handling', () => {
   });
 
   describe('PATCH /:ideoramaId/save', () => {
-    it('should update the ideorama in the filesystem', async () => {
+    it('should save the scene to the database', async () => {
       const { ideorama } = createFakeIdeorama();
       mockService.getIdeoramaById.mockResolvedValue(ideorama);
+      mockService.saveScene.mockResolvedValue(ideorama);
 
+      const scene = EMPTY_SCENE;
       const res = await request(app)
         .patch(`/api/ideorama/${FAKE_IDEORAMA_ID}/save`)
         .set('Authorization', authHeader())
-        .send({ ideorama: ideorama });
+        .send({ scene });
 
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        getIdeoramaUploadPath(ideorama.id),
-        ideorama.model
+      expect(mockService.saveScene).toHaveBeenCalledWith(
+        FAKE_IDEORAMA_ID,
+        scene,
+        expect.any(Object)
       );
-      expect(res.body.data).toBeUndefined();
       expect(res.status).toBe(200);
-      expect(res.body.data.scene).toBeDefined();
     });
 
-    it('should return 404 if the file does not already exist in the filesystem', async () => {
-      const { ideorama } = createFakeIdeorama();
+    it('should return 404 if the ideorama does not exist', async () => {
       mockService.getIdeoramaById.mockResolvedValue(null);
 
       const res = await request(app)
         .patch(`/api/ideorama/${FAKE_IDEORAMA_ID}/save`)
         .set('Authorization', authHeader())
-        .send({ ideorama: ideorama });
+        .send({ scene: EMPTY_SCENE });
 
-      expect(mockService.getIdeoramaById).toHaveBeenCalledWith(ideorama.id);
-      expect(fs.writeFileSync).not.toHaveBeenCalled();
+      expect(mockService.saveScene).not.toHaveBeenCalled();
       expect(res.status).toBe(404);
     });
   });
@@ -206,19 +202,18 @@ describe('Ideorama handling', () => {
     });
   });
 
-  describe('POST /ideorama/like', () => {
+  describe('POST /ideorama/:ideoramaId/like', () => {
     it('should like the ideorama', async () => {
       const { ideorama } = createFakeIdeorama();
       mockService.getIdeoramaById.mockResolvedValue(ideorama);
       mockService.likeIdeorama.mockResolvedValue(true);
 
       const res = await request(app)
-        .post('/api/ideorama/like')
-        .set('Authorization', authHeader())
-        .send({ ideoramaId: ideorama.id });
+        .post(`/api/ideorama/${FAKE_IDEORAMA_ID}/like`)
+        .set('Authorization', authHeader());
 
       expect(mockService.likeIdeorama).toHaveBeenCalledWith(
-        ideorama.id,
+        FAKE_IDEORAMA_ID,
         FAKE_USER_ID
       );
       expect(res.status).toBe(200);
@@ -228,9 +223,8 @@ describe('Ideorama handling', () => {
       mockService.getIdeoramaById.mockResolvedValue(null);
 
       const res = await request(app)
-        .post('/api/ideorama/like')
-        .set('Authorization', authHeader())
-        .send({ ideoramaId: FAKE_IDEORAMA_ID });
+        .post(`/api/ideorama/${FAKE_IDEORAMA_ID}/like`)
+        .set('Authorization', authHeader());
 
       expect(mockService.likeIdeorama).not.toHaveBeenCalled();
       expect(res.status).toBe(404);
@@ -241,16 +235,13 @@ describe('Ideorama handling', () => {
     it('should delete the ideorama', async () => {
       const { ideorama } = createFakeIdeorama();
       mockService.getIdeoramaById.mockResolvedValue(ideorama);
+      mockService.deleteIdeorama.mockResolvedValue(ideorama);
 
       const res = await request(app)
         .delete(`/api/ideorama/${FAKE_IDEORAMA_ID}`)
         .set('Authorization', authHeader());
 
-      expect(mockService.deleteIdeorama).toHaveBeenCalledWith(ideorama.id);
-      expect(fs.unlink).toHaveBeenCalledWith(
-        getIdeoramaUploadPath(ideorama.id),
-        expect.anything()
-      );
+      expect(mockService.deleteIdeorama).toHaveBeenCalledWith(FAKE_IDEORAMA_ID);
       expect(res.status).toBe(204);
     });
 
@@ -262,7 +253,6 @@ describe('Ideorama handling', () => {
         .set('Authorization', authHeader());
 
       expect(mockService.deleteIdeorama).not.toHaveBeenCalled();
-      expect(fs.unlink).not.toHaveBeenCalled();
       expect(res.status).toBe(404);
     });
   });

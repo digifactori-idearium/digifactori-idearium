@@ -7,12 +7,16 @@ import request from 'supertest';
 import createVoxelRoutes from '@/modules/voxel/voxel.route';
 import { IVoxelService } from '@/types';
 import { generateToken } from '@/utils/generate-token';
-import { getVoxelModelUploadPath } from '@/utils/getUploadPath';
 
 jest.mock('fs', () => ({
   readFileSync: jest.fn(),
   unlink: jest.fn(),
   writeFileSync: jest.fn(),
+}));
+
+jest.mock('@/utils/storage.service', () => ({
+  uploadFile: jest.fn().mockResolvedValue('file-key'),
+  deleteFile: jest.fn().mockResolvedValue(true),
 }));
 
 const FAKE_USER_ID = 'cmnup6jyf0000p0utn33xhdpq';
@@ -59,8 +63,11 @@ function createFakeModel(overrides = {}): {
 const authHeader = () => 'Bearer ' + token;
 
 class MockVoxelService implements IVoxelService {
-  createVoxelModel = jest.fn<Promise<VoxelModel>, [string, string]>();
-  updateVoxelModelPath = jest.fn<Promise<VoxelModel>, [string, string]>();
+  createVoxelModel = jest.fn<
+    Promise<VoxelModel>,
+    [{ name?: string; userId: string }]
+  >();
+  updateVoxelModelFileKey = jest.fn<Promise<VoxelModel>, [string, string]>();
   getVoxelModelById = jest.fn<Promise<VoxelModel | null>, [string]>();
   getUserVoxelModels = jest.fn<Promise<VoxelModel[]>, [string]>();
   deleteVoxelModel = jest.fn<Promise<VoxelModel>, [string]>();
@@ -117,11 +124,13 @@ describe('Voxel model handling', () => {
       const res = await request(app)
         .post('/api/voxel/')
         .set('Authorization', authHeader())
-        .send({ voxelModel: { name: model.name } });
+        .send({ name: model.name });
 
       expect(mockService.createVoxelModel).toHaveBeenCalledWith(
-        model.name,
-        FAKE_USER_ID
+        expect.objectContaining({
+          name: model.name,
+          userId: FAKE_USER_ID,
+        })
       );
       expect(res.body.data).toEqual(modelJSON);
       expect(res.status).toBe(201);
@@ -129,34 +138,43 @@ describe('Voxel model handling', () => {
   });
 
   describe('PATCH /voxel/:voxelModelId/save', () => {
-    it('should update the model in the filesystem', async () => {
+    it('should save the voxel model with GLB file', async () => {
+      const { model } = createFakeModel();
+      mockService.getVoxelModelById.mockResolvedValue(model);
+      mockService.updateVoxelModelFileKey.mockResolvedValue(model);
+
+      const res = await request(app)
+        .patch(`/api/voxel/${model.id}/save`)
+        .set('Authorization', authHeader())
+        .attach('file', Buffer.from('fake glb'), 'model.glb');
+
+      expect(mockService.updateVoxelModelFileKey).toHaveBeenCalledWith(
+        model.id,
+        expect.any(String)
+      );
+      expect(res.status).toBe(200);
+    });
+
+    it('should return 400 if no GLB file is provided', async () => {
       const { model } = createFakeModel();
       mockService.getVoxelModelById.mockResolvedValue(model);
 
       const res = await request(app)
         .patch(`/api/voxel/${model.id}/save`)
-        .set('Authorization', authHeader())
-        .send({ model: model.model });
+        .set('Authorization', authHeader());
 
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        getVoxelModelUploadPath(model.id),
-        model.model
-      );
-      expect(res.body.data).toBeUndefined();
-      expect(res.status).toBe(200);
+      expect(mockService.updateVoxelModelFileKey).not.toHaveBeenCalled();
+      expect(res.status).toBe(400);
     });
 
-    it('should return 404 if the file does not already exist in the filesystem', async () => {
-      const { model } = createFakeModel();
+    it('should return 404 if the model does not exist', async () => {
       mockService.getVoxelModelById.mockResolvedValue(null);
 
       const res = await request(app)
-        .patch(`/api/voxel/${model.id}/save`)
+        .patch(`/api/voxel/${FAKE_MODEL_ID}/save`)
         .set('Authorization', authHeader())
-        .send({ model: model.model });
+        .attach('file', Buffer.from('fake glb'), 'model.glb');
 
-      expect(mockService.getVoxelModelById).toHaveBeenCalledWith(model.id);
-      expect(fs.writeFileSync).not.toHaveBeenCalled();
       expect(res.status).toBe(404);
     });
   });
@@ -176,20 +194,17 @@ describe('Voxel model handling', () => {
     });
   });
 
-  describe('DELETE /voxel/:voxelModelId ', () => {
+  describe('DELETE /voxel/:voxelModelId', () => {
     it('should delete the model', async () => {
       const { model } = createFakeModel();
       mockService.getVoxelModelById.mockResolvedValue(model);
+      mockService.deleteVoxelModel.mockResolvedValue(model);
 
       const res = await request(app)
         .delete(`/api/voxel/${model.id}`)
         .set('Authorization', authHeader());
 
       expect(mockService.deleteVoxelModel).toHaveBeenCalledWith(model.id);
-      expect(fs.unlink).toHaveBeenCalledWith(
-        getVoxelModelUploadPath(FAKE_MODEL_ID),
-        expect.anything()
-      );
       expect(res.status).toBe(204);
     });
 
