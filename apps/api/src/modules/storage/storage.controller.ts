@@ -1,5 +1,3 @@
-import { Readable } from 'stream';
-
 import { type Request, type Response } from 'express';
 
 import { resolveStorageAdapter } from './storage.factory';
@@ -12,6 +10,17 @@ import HttpResponse from '@/utils/http-response';
 import { failOnValidation } from '@/utils/validation-errors';
 
 const SIGNED_URL_TTL = 3600;
+const SAFE_KEY_RE = new RegExp('^[a-zA-Z0-9_./-]+$');
+
+function isSafeKey(key: string): boolean {
+  return SAFE_KEY_RE.test(key) && !key.includes('..');
+}
+
+function normalizeKey(raw: string | string[]): string {
+  if (Array.isArray(raw)) return raw.join('/');
+  if (raw.includes(',')) return raw.replace(/,/g, '/');
+  return raw;
+}
 
 export default class StorageController {
   constructor(private readonly storageService: StorageService) {}
@@ -66,49 +75,38 @@ export default class StorageController {
    *   404 {message: "Fichier introuvable"}
    */
   getStorageFile = asyncHandler(async (req: Request, res: Response) => {
-    let key = req.params.splat;
+    const key = normalizeKey(req.params.splat);
 
-    if (Array.isArray(key)) {
-      key = key.join('/');
-    }
-
-    if (typeof key === 'string' && key.includes(',')) {
-      key = key.replace(/,/g, '/');
-    }
-
-    if (!key) {
+    if (!key)
       return HttpResponse.badRequest('Clé de fichier manquante').send(res);
+    if (!isSafeKey(key))
+      return HttpResponse.badRequest('Clé de fichier invalide').send(res);
+
+    const storage = await this.storageService.getStorage();
+
+    let allowedOrigin: string;
+    try {
+      allowedOrigin = new URL(storage.publicUrl ? storage.publicUrl : '')
+        .origin;
+    } catch {
+      throw new Error(`STORAGE publicUrl is invalid: "${storage.publicUrl}"`);
     }
 
     const adapter = await resolveStorageAdapter();
     const fileUrl = adapter.getPublicUrl(key);
 
+    let parsedUrl: URL;
     try {
-      const response = await fetch(fileUrl);
-
-      if (!response.ok) {
-        return HttpResponse.notFound('Fichier introuvable').send(res);
-      }
-
-      if (!response.body) {
-        return HttpResponse.serverError(
-          'Le flux du fichier est indisponible'
-        ).send(res);
-      }
-
-      const contentType = response.headers.get('content-type');
-      if (contentType) {
-        res.setHeader('Content-Type', contentType);
-      }
-
-      res.setHeader('Cache-Control', 'public, max-age=31536000');
-
-      const stream = Readable.fromWeb(response.body as any);
-
-      stream.pipe(res);
-    } catch (error: any) {
-      throw new Error(`Erreur lors du proxy du fichier: ${error.message}`);
+      parsedUrl = new URL(fileUrl);
+    } catch {
+      return HttpResponse.serverError('URL de fichier invalide').send(res);
     }
+
+    if (parsedUrl.origin !== allowedOrigin) {
+      return HttpResponse.badRequest('URL de fichier non autorisée').send(res);
+    }
+
+    return res.redirect(302, parsedUrl.toString());
   });
 
   /**
