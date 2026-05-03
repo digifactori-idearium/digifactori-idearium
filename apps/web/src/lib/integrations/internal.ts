@@ -1,4 +1,5 @@
 import { getAssets } from '@/services/asset.service';
+import { getAllVoxelModels } from '@/services/voxel.service';
 
 const PAGE_SIZE = 32;
 
@@ -77,5 +78,38 @@ export async function fetchInternalImages(
   return {
     items: data.items.map(assetToMediaItem),
     hasMore: page + 1 < data.totalPages,
+  };
+}
+
+/**
+ * Internal voxel models (type = MODEL_3D, sourced from the VoxelModel table).
+ */
+export async function fetchInternalVoxelModels(
+  searchTerm: string,
+  page: number
+): Promise<FetchResult> {
+  const response = await getAllVoxelModels();
+  const allModels = response.data ?? [];
+
+  const term = searchTerm.trim().toLowerCase();
+  const filtered = term
+    ? allModels.filter(m => m.name.toLowerCase().includes(term))
+    : allModels;
+
+  const start = page * PAGE_SIZE;
+  const slice = filtered.slice(start, start + PAGE_SIZE);
+
+  const items: MediaItem[] = slice
+    .filter(m => m.model)
+    .map(m => ({
+      id: m.id,
+      name: m.name,
+      type: 'MODEL_3D',
+      file: m.model!,
+    }));
+
+  return {
+    items,
+    hasMore: start + PAGE_SIZE < filtered.length,
   };
 }

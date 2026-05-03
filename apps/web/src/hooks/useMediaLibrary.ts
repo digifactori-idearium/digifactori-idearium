@@ -5,6 +5,7 @@ import {
   fetchInternalAssets,
   fetchInternalImages,
   fetchInternalSounds,
+  fetchInternalVoxelModels,
 } from '@/lib/integrations/internal';
 import { getIntegrations } from '@/services/settings.service';
 
@@ -24,7 +25,7 @@ const INTERNAL_SOURCES: Record<
   IntegrationType,
   Array<InternalSource['fetch']>
 > = {
-  MODEL_3D: [fetchInternalAssets],
+  MODEL_3D: [fetchInternalAssets, fetchInternalVoxelModels],
   SOUND: [fetchInternalSounds],
   IMAGE: [fetchInternalImages],
   OTHER: [],

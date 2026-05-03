@@ -9,9 +9,6 @@ type Props = Readonly<{
   asset: AssetItem;
 }>;
 
-/**
- * AssetTile renders a draggable asset card.
- */
 export function AssetTile({ asset }: Props) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: asset.id,
@@ -23,18 +20,14 @@ export function AssetTile({ asset }: Props) {
       ? asset.thumbnail
       : null;
 
+  const needsFileUrl = !asset.thumbnailUrl && !asset.thumbnail;
   const fileKey =
-    !asset.fileUrl && asset.file && isStorageKey(asset.file)
-      ? asset.file
-      : null;
+    needsFileUrl && asset.file && isStorageKey(asset.file) ? asset.file : null;
 
-  const { url: resolvedThumbnailUrl } = useStorageUrl(thumbnailKey, {
-    autoFetch: !!thumbnailKey,
-  });
+  const { url: resolvedThumbnailUrl, loading: thumbnailLoading } =
+    useStorageUrl(thumbnailKey);
 
-  const { url: resolvedFileUrl } = useStorageUrl(fileKey, {
-    autoFetch: !!fileKey && !asset.thumbnail && !asset.thumbnailUrl,
-  });
+  const { url: resolvedFileUrl, loading: fileLoading } = useStorageUrl(fileKey);
 
   const thumbnailSrc =
     asset.thumbnailUrl ??
@@ -47,6 +40,9 @@ export function AssetTile({ asset }: Props) {
     asset.fileUrl ??
     (asset.file && !isStorageKey(asset.file) ? asset.file : null) ??
     resolvedFileUrl;
+
+  const isLoading =
+    (!thumbnailSrc && thumbnailLoading) || (!fileSrc && fileLoading);
 
   return (
     <div className="group flex flex-col gap-1 p-0.5 rounded-xl select-none transition-all">
@@ -64,15 +60,19 @@ export function AssetTile({ asset }: Props) {
           ${isDragging ? 'opacity-30' : ''}`}
       >
         <div className="w-full h-full pointer-events-none">
-          {thumbnailSrc ? (
+          {isLoading ? (
+            <div className="w-full h-full bg-white/5 animate-pulse rounded-lg" />
+          ) : thumbnailSrc ? (
             <img
               src={thumbnailSrc}
               alt={asset.name}
               loading="lazy"
               className="w-full h-full object-contain mix-blend-multiply bg-transparent contrast-125"
             />
+          ) : fileSrc ? (
+            <AssetThumbnail file={fileSrc} />
           ) : (
-            <AssetThumbnail file={fileSrc || ''} />
+            <div className="w-full h-full bg-white/5 rounded-lg" />
           )}
         </div>
       </div>
