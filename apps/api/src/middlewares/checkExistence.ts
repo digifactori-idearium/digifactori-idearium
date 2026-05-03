@@ -9,6 +9,9 @@ export const checkIdeoramaExistence = async (
   next: NextFunction,
   getIdeoramaById: (ideoramaId: string) => Promise<Ideorama | null>
 ): Promise<void> => {
+  if (!/^[a-zA-Z0-9_-]+$/.test(ideoramaId)) {
+    return HttpResponse.badRequest('Identifiant invalide').send(res);
+  }
   try {
     const ideorama = await getIdeoramaById(ideoramaId);
     if (ideorama) {
@@ -29,6 +32,9 @@ export const checkVoxelModelExistence = async (
   next: NextFunction,
   getvoxelModelById: (voxelModelId: string) => Promise<VoxelModel | null>
 ): Promise<void> => {
+  if (!/^[a-zA-Z0-9_-]+$/.test(voxelModelId)) {
+    return HttpResponse.badRequest('Identifiant invalide').send(res);
+  }
   try {
     const model = await getvoxelModelById(voxelModelId);
     if (model) {
