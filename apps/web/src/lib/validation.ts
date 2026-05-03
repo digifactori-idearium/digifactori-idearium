@@ -30,18 +30,16 @@ export const validation = (input: FormInputData): z.ZodTypeAny => {
       break;
 
     case 'password': {
-      const minLen = (input as any).min ?? 6;
+      const maxLen = (input as any).max;
+      const minLen = (input as any).min ?? (maxLen !== undefined ? maxLen : 6);
       let s = z
         .string()
         .min(
           minLen,
           `Doit contenir au moins ${minLen} caractère${minLen > 1 ? 's' : ''}`
         );
-      if ((input as any).max) {
-        s = s.max(
-          (input as any).max,
-          `Maximum ${(input as any).max} caractères`
-        );
+      if (maxLen) {
+        s = s.max(maxLen, `Maximum ${maxLen} caractères`);
       }
       schema = s;
       break;
