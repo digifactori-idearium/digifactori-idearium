@@ -1,7 +1,5 @@
 import axios from '../services/axios.service';
 
-import { handleApiError } from '@/lib/api';
-
 interface ApiResponse<T> {
   status: string;
   message: string;
@@ -9,117 +7,72 @@ interface ApiResponse<T> {
   status_code: number;
 }
 
-export const searchIdeorama = async (
-  ideoramaId: string
-): Promise<ApiResponse<Ideorama>> => {
-  try {
-    const response = await axios.post('/api/ideorama/', { ideoramaId });
-    if (response.data.status === 'error') {
-      throw new Error(response.data.error?.message);
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
-};
+const BASE = '/api/ideorama';
 
 export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
-  try {
-    const response = await axios.get('/api/ideorama/empty');
-    if (response.data.status === 'error') {
-      throw new Error(response.data.error?.message);
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
+  const response = await axios.get(`${BASE}/empty`);
+  return response.data;
+};
+
+export const getIdeoramaById = async (
+  ideoramaId: string
+): Promise<ApiResponse<Ideorama>> => {
+  const response = await axios.get(`${BASE}/${ideoramaId}`);
+  return response.data;
+};
+
+export const getAllIdeoramas = async (): Promise<ApiResponse<Ideorama[]>> => {
+  const response = await axios.get(BASE);
+  return response.data;
 };
 
 export const createIdeorama = async (
   name: string
 ): Promise<ApiResponse<Ideorama>> => {
-  try {
-    const response = await axios.post('/api/ideorama/create', {
-      ideorama: { name, userId },
-    });
-    if (response.data.status === 'error') {
-      throw new Error(response.data.error?.message);
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
+  const response = await axios.post(BASE, { name });
+  return response.data;
 };
 
-/**
- * Saves the scene JSON to the database.
- * Accepts either a parsed object or a JSON string.
- */
-export const autoSaveIdeorama = async (
-  scene: string | Record<string, unknown> | null,
-  ideoramaId: string | undefined,
-  userId: string | undefined
+export const saveIdeorama = async (
+  ideoramaId: string,
+  scene: Record<string, unknown> | string | null
 ): Promise<boolean> => {
   try {
-    if (!ideoramaId || !userId) {
-      console.warn('autoSaveIdeorama: missing ideoramaId or userId');
-      return false;
-    }
-
-    // Always send a parsed object — the API accepts both but an object is cleaner
     const sceneObj: Record<string, unknown> =
       typeof scene === 'string' ? JSON.parse(scene) : (scene ?? {});
 
-    await axios.post('/api/ideorama/save', {
-      ideoramaId,
-      ideorama: { scene: sceneObj, userId },
-    });
-
+    await axios.patch(`${BASE}/${ideoramaId}/save`, { scene: sceneObj });
     return true;
   } catch (error) {
-    console.error('autoSaveIdeorama error:', error);
+    console.error('saveIdeorama error:', error);
     return false;
   }
 };
 
-/**
- * Fire-and-forget save using keepalive fetch.
- * Safe to call from beforeunload / visibilitychange.
- */
 export const beaconSaveIdeorama = (
-  scene: string | Record<string, unknown> | null,
   ideoramaId: string | undefined,
-  userId: string | undefined
+  scene: Record<string, unknown> | string | null
 ): boolean => {
   try {
-    if (!ideoramaId || !userId || !scene) {
+    if (!ideoramaId || !scene) {
       console.warn('beaconSaveIdeorama: missing required fields');
       return false;
     }
 
-    const baseURL =
-      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
-    const url = `${baseURL}/api/ideorama/save`;
-
     const sceneObj: Record<string, unknown> =
       typeof scene === 'string' ? JSON.parse(scene) : scene;
 
-    const payload = JSON.stringify({
-      ideoramaId,
-      ideorama: { scene: sceneObj, userId },
-    });
-
     const token = localStorage.getItem('token');
 
-    fetch(url, {
-      method: 'POST',
+    fetch(`${BASE}/${ideoramaId}/save`, {
+      method: 'PATCH',
       keepalive: true,
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: payload,
-    }).catch(err => console.error('beaconSaveIdeorama fetch failed:', err));
+      body: JSON.stringify({ scene: sceneObj }),
+    }).catch(err => console.error('beaconSaveIdeorama failed:', err));
 
     return true;
   } catch (error) {
@@ -128,42 +81,18 @@ export const beaconSaveIdeorama = (
   }
 };
 
-export const getAllIdeoramas = async (): Promise<ApiResponse<Ideorama[]>> => {
-  try {
-    const response = await axios.post('/api/ideorama/all', { userId });
-    if (response.data.status === 'error') {
-      throw new Error(response.data.error?.message);
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
-};
-
 export const likeIdeorama = async (
-  ideoramaId: string | undefined
+  ideoramaId: string
 ): Promise<ApiResponse<Ideorama>> => {
-  try {
-    const response = await axios.post('/api/ideorama/like', { ideoramaId });
-    if (response.data.status === 'error') {
-      throw new Error(response.data.error?.message);
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
+  const response = await axios.post(`${BASE}/${ideoramaId}/like`);
+  return response.data;
 };
 
-export const deleteIdeorama = async (
-  ideoramaId: string | undefined
-): Promise<boolean> => {
+export const deleteIdeorama = async (ideoramaId: string): Promise<boolean> => {
   try {
-    const response = await axios.post('/api/ideorama/delete', { ideoramaId });
-    if (response.data.status === 'error') {
-      throw new Error(response.data.error?.message);
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
+    await axios.delete(`${BASE}/${ideoramaId}`);
+    return true;
+  } catch {
+    return false;
   }
 };

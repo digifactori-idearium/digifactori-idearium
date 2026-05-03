@@ -7,10 +7,17 @@ interface ApiResponse<T> {
   status_code: number;
 }
 
+export interface VoxelPoint {
+  x: number;
+  y: number;
+  z: number;
+  color?: string;
+}
+
 export interface VoxelModel {
   id: string;
   name: string;
-  model: string | null; // storage key ex "voxel-models/blablabla.glb"
+  model: string | null; // GLB storage key
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -18,9 +25,6 @@ export interface VoxelModel {
 
 const BASE = '/api/voxel';
 
-/**
- * Create a new empty voxel model.
- */
 export const createVoxelModel = async (
   name?: string
 ): Promise<ApiResponse<VoxelModel>> => {
@@ -28,9 +32,6 @@ export const createVoxelModel = async (
   return response.data;
 };
 
-/**
- * Fetch all voxel models for the authenticated user.
- */
 export const getAllVoxelModels = async (): Promise<
   ApiResponse<VoxelModel[]>
 > => {
@@ -38,9 +39,6 @@ export const getAllVoxelModels = async (): Promise<
   return response.data;
 };
 
-/**
- * Fetch a single voxel model by ID.
- */
 export const getVoxelModelById = async (
   voxelModelId: string
 ): Promise<ApiResponse<VoxelModel>> => {
@@ -49,9 +47,20 @@ export const getVoxelModelById = async (
 };
 
 /**
- * Save (overwrite) the GLB file for a voxel model.
- *
- * Uses keepalive so the request survives page unload (auto-save on close).
+ * Get a short-lived signed URL for a storage key.
+ */
+export const getSignedUrl = async (
+  key: string
+): Promise<{ url: string; expiresAt: string }> => {
+  const response = await axios.get('/api/storage/signed-url', {
+    params: { key },
+  });
+  return response.data.data;
+};
+
+/**
+ * Save the GLB blob.
+ * Voxel state is embedded inside the GLB extras
  */
 export const saveVoxelModel = async (
   voxelModelId: string,
@@ -61,20 +70,26 @@ export const saveVoxelModel = async (
     const formData = new FormData();
     formData.append('file', blob, `${voxelModelId}.glb`);
 
-    await axios.patch(`${BASE}/${voxelModelId}/save`, formData, {
-      fetchOptions: { keepalive: true },
+    const token = localStorage.getItem('token');
+    const baseUrl =
+      (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
+      'http://localhost:3001';
+
+    // Do NOT set Content-Type manually; the browser must set it so it
+    const response = await fetch(`${baseUrl}${BASE}/${voxelModelId}/save`, {
+      method: 'PATCH',
+      body: formData,
+      keepalive: true,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
 
-    return true;
+    return response.ok;
   } catch (error) {
     console.error('Error saving voxel model:', error);
     return false;
   }
 };
 
-/**
- * Delete a voxel model and its GLB file from storage.
- */
 export const deleteVoxelModel = async (
   voxelModelId: string
 ): Promise<boolean> => {

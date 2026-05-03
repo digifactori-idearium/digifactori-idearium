@@ -35,53 +35,47 @@ import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { resolveAssetUrl, resolveThumbnailUrl } from '@/lib/asset';
-import { useUser } from '@/providers/UserProvider';
 import {
-  autoSaveIdeorama,
+  getIdeoramaById,
+  saveIdeorama,
   beaconSaveIdeorama,
-  searchIdeorama,
 } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 import { createReplacer } from '@/utils/utils';
 
-/** Serializes the current sceneState to a JSON string. */
-const serializeScene = (): string | null => {
+const serializeScene = (): Record<string, unknown> | null => {
   try {
-    const serializable = {
-      global: sceneState.global,
-      background: sceneState.background,
-      info: sceneState.info,
-      floor: sceneState.floor,
-      objects: sceneState.objects,
-    };
-    return JSON.stringify(serializable, createReplacer());
+    return JSON.parse(
+      JSON.stringify(
+        {
+          global: sceneState.global,
+          background: sceneState.background,
+          info: sceneState.info,
+          floor: sceneState.floor,
+          objects: sceneState.objects,
+        },
+        createReplacer()
+      )
+    );
   } catch (err) {
     console.error('Failed to serialize scene state:', err);
     return null;
   }
 };
 
-/** Writes the latest scene state to localStorage. */
-const saveSceneToLocalStorage = () => {
-  const json = serializeScene();
-  if (json) localStorage.setItem('sceneState', json);
-};
-
 export default function Ideorama() {
   const snap = useSnapshot(sceneState);
-  const { ideoramaid } = useParams();
+  const { ideoramaid } = useParams<{ ideoramaid: string }>();
   const isEditMode = snap.mode === 'edit';
-  const userId = useUser().user?.id;
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
-  // Guards the save effects to execute during the initial data load.
   const isLoadingData = useRef(true);
-
   const isSaving = useRef(false);
   const pendingSave = useRef(false);
   const periodicSaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const { setOpen } = useSidebar();
 
   useEffect(() => {
@@ -92,35 +86,23 @@ export default function Ideorama() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  const getLatestSceneJson = useCallback((): string | null => {
-    return serializeScene();
-  }, []);
-
+  //Save
   const performSave = useCallback(async () => {
-    if (!ideoramaid || !userId) {
-      console.warn('[AutoSave] Skipped — missing ideoramaid or userId', {
-        ideoramaid,
-        userId,
-      });
-      return;
-    }
-
+    if (!ideoramaid) return;
     if (isSaving.current) {
       pendingSave.current = true;
       return;
     }
 
-    const json = getLatestSceneJson();
-    if (!json) return;
+    const scene = serializeScene();
+    if (!scene) return;
 
-    localStorage.setItem('sceneState', json);
+    localStorage.setItem('sceneState', JSON.stringify(scene));
 
     isSaving.current = true;
     try {
-      const success = await autoSaveIdeorama(json, ideoramaid, userId);
-      if (!success) {
-        toast.error('Échec de la sauvegarde automatique');
-      }
+      const success = await saveIdeorama(ideoramaid, scene);
+      if (!success) toast.error('Échec de la sauvegarde automatique');
     } catch {
       toast.error('Erreur lors de la sauvegarde automatique');
     } finally {
@@ -130,32 +112,33 @@ export default function Ideorama() {
         performSave();
       }
     }
-  }, [ideoramaid, userId, getLatestSceneJson]);
+  }, [ideoramaid]);
 
+  // save on tab close or refresh
   const performBeaconSave = useCallback(() => {
-    if (!ideoramaid || !userId) return;
-    const json = getLatestSceneJson();
-    if (!json) return;
-    try {
-      localStorage.setItem('sceneState', json);
-    } catch (storageError) {
-      console.warn('localStorage quota exceeded on unload:', storageError);
-    }
-    beaconSaveIdeorama(json, ideoramaid, userId);
-  }, [ideoramaid, userId, getLatestSceneJson]);
+    if (!ideoramaid) return;
+    const scene = serializeScene();
+    if (!scene) return;
 
-  //  auto-save every 30 seconds
+    try {
+      localStorage.setItem('sceneState', JSON.stringify(scene));
+    } catch (err) {
+      console.warn('localStorage quota exceeded on unload:', err);
+    }
+
+    beaconSaveIdeorama(ideoramaid, scene);
+  }, [ideoramaid]);
+
+  // Periodic save (every 30 s)
   useEffect(() => {
-    if (!ideoramaid || !userId) return;
-    periodicSaveRef.current = setInterval(() => {
-      performSave();
-    }, 30_000);
+    if (!ideoramaid) return;
+    periodicSaveRef.current = setInterval(performSave, 30_000);
     return () => {
       if (periodicSaveRef.current) clearInterval(periodicSaveRef.current);
     };
-  }, [ideoramaid, userId, performSave]);
+  }, [ideoramaid, performSave]);
 
-  // Save on page unload / tab close / navigation away
+  // Save on unload / tab hide
   useEffect(() => {
     const handleBeforeUnload = () => performBeaconSave();
     const handleVisibilityChange = () => {
@@ -177,19 +160,19 @@ export default function Ideorama() {
     };
   }, [performBeaconSave]);
 
-  // Load ideorama
+  // Load
   useEffect(() => {
     if (!ideoramaid) return;
 
     isLoadingData.current = true;
 
-    searchIdeorama(ideoramaid)
+    getIdeoramaById(ideoramaid)
       .then(res => {
         const record = res.data as any;
         const scene = record.scene as ModelsInfo | null;
 
         if (!scene) {
-          throw new Error(`No scene data in DB for ideorama "${ideoramaid}"`);
+          throw new Error(`No scene data for ideorama "${ideoramaid}"`);
         }
 
         if (record.name) scene.info = { ...scene.info, name: record.name };
@@ -210,8 +193,6 @@ export default function Ideorama() {
         if (model.objects) sceneState.objects = model.objects;
 
         actions.stackState();
-
-        // do saving only after all mutations are committed.
         isLoadingData.current = false;
       })
       .catch(err => {
@@ -221,23 +202,23 @@ export default function Ideorama() {
       });
   }, [ideoramaid]);
 
-  // Save on every meaningful state change in the local storage
+  // Auto-save on state change
   useEffect(() => {
     if (isLoadingData.current || snap.isDragging) return;
-    saveSceneToLocalStorage();
+    localStorage.setItem('sceneState', JSON.stringify(serializeScene()));
     performSave();
   }, [snap.global, snap.background, snap.info, snap.floor, snap.objects]);
 
-  // After a drag-drop completes, save + push undo history.
   useEffect(() => {
     if (isLoadingData.current) return;
     if (!snap.isDragging) {
-      saveSceneToLocalStorage();
+      localStorage.setItem('sceneState', JSON.stringify(serializeScene()));
       performSave();
       actions.stackState();
     }
   }, [snap.isDragging]);
 
+  // DnD handlers
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveAsset(event.active.data.current);
   }, []);
@@ -289,6 +270,7 @@ export default function Ideorama() {
                 </span>
               )}
             </Button>
+
             {snap.current != 0 && isEditMode && (
               <SuperButton
                 tooltip="Revenir en arrière"
@@ -301,6 +283,7 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
+
             {snap.current != snap.newest && isEditMode && (
               <SuperButton
                 tooltip="Rétablir"
@@ -313,7 +296,8 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
-            {isEditMode ? (
+
+            {isEditMode && (
               <SuperButton
                 tooltip="Réinitialiser"
                 voiceText="Réinitialiser"
@@ -324,7 +308,8 @@ export default function Ideorama() {
                   <RotateCcw className="w-4 h-4 text-white!" />
                 </span>
               </SuperButton>
-            ) : null}
+            )}
+
             <AlertDialog
               open={resetDialogOpen}
               description="Cela réinitialisera votre ideorama"

@@ -35,7 +35,6 @@ interface VoxelProps extends BaseVoxelProps {
 }
 
 interface VoxelMotorProps extends BaseVoxelProps {
-  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
   selectedColor: string;
 }
 
@@ -66,7 +65,6 @@ function VoxelMotor({
   hauteur,
   selectedColor,
   onVoxelsChange,
-  setIsDragging,
 }: VoxelMotorProps) {
   const planeRef = useRef<THREE.Mesh>(null!);
   const rollOverRef = useRef<THREE.Group>(null!);
@@ -89,9 +87,6 @@ function VoxelMotor({
   const onPointerMove = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
     if (!event.face) return;
-
-    const clickDuration = performance.now() - clickStartTime.current;
-    if (clickDuration > 400) setIsDragging(true);
 
     const pos = rollOverRef.current.position;
     pos.copy(event.point).add(event.face.normal);
@@ -140,11 +135,10 @@ function VoxelMotor({
 
   const onPointerUp = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
-    setIsDragging(false);
     isPainting.current = false;
 
     const clickDuration = performance.now() - clickStartTime.current;
-    if (clickDuration > 150) return;
+    if (clickDuration > 200) return;
 
     const position = new THREE.Vector3();
 
@@ -394,7 +388,6 @@ export default function Voxel({
   voxels,
   onVoxelsChange,
 }: VoxelProps) {
-  const [isDragging, setIsDragging] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#f97316');
   const COLORS = [
     '#f97316',
@@ -438,10 +431,9 @@ export default function Voxel({
           hauteur={hauteur}
           voxels={voxels}
           onVoxelsChange={onVoxelsChange}
-          setIsDragging={setIsDragging}
           selectedColor={selectedColor}
         />
-        <OrbitControls enabled={isDragging} target={[0, 25, 0]} />
+        <OrbitControls makeDefault target={[0, 25, 0]} />
       </Canvas>
 
       {/* 🎨 PALETTE */}
