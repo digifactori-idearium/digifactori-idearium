@@ -1,3 +1,7 @@
+const PROXY_BASE =
+  (import.meta.env.VITE_API_PROXY_URL as string | undefined) ||
+  'http://localhost:3001/api/proxy';
+
 //  Generic field mapper
 // Supports dot and bracket notation paths, e.g. "previews.preview-hq-mp3" or "tags.0" , tags[0].name"
 function resolve(obj: any, expr: string): any {
@@ -46,8 +50,7 @@ function mapItem(raw: any, fm: Record<string, string>): MediaItem {
 }
 
 // corsproxy: to avoid proxy errors
-const proxy = (url: string) =>
-  `https://corsproxy.io/?${encodeURIComponent(url)}`;
+const proxy = (url: string) => `${PROXY_BASE}?url=${encodeURIComponent(url)}`;
 
 //  Poly.pizza
 async function polyPizzaFetch(
