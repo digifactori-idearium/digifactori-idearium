@@ -12,6 +12,7 @@ const ProfileForm: React.FC<Props> = ({ initialValues, onSubmit }) => {
         inputs={[
           { label: 'Pseudo', type: 'text', name: 'pseudo', required: true },
           { label: 'Bio', type: 'textarea', name: 'bio' },
+          { label: 'VoiceButtons', type: 'switch', name: 'voiceButtons' },
         ]}
         initialValues={initialValues}
         handleOnSubmit={onSubmit}

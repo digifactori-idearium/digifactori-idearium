@@ -37,6 +37,7 @@ type UserSession = {
   id: string;
   email: string;
   role: Role;
+  voiceButtons: boolean;
   token: string;
 };
 
@@ -46,6 +47,7 @@ type Profile = {
   pseudo: string;
   avatar: string | null;
   bio: string | null;
+  voiceButtons: boolean;
   followers: string[];
   following: string[];
   ideoramaLiked: { ideoramaId: string }[];
