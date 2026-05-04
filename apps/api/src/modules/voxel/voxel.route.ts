@@ -16,6 +16,7 @@ export default function createVoxelRoutes(
   router.use(authenticate, requireAuth);
 
   router.get('/', voxelController.getUserVoxelModels);
+  router.get('/all', voxelController.getVoxelModels);
   router.get('/:voxelModelId', voxelController.getVoxelModelById);
   router.post('/', voxelController.createVoxelModel);
 
