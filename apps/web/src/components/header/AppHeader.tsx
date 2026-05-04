@@ -14,7 +14,7 @@ import { useUser } from '@/providers/UserProvider';
 
 export function AppHeader() {
   const { theme, setTheme } = useTheme();
-  const { removeToken, user } = useUser();
+  const { removeToken } = useUser();
   const navigate = useNavigate();
 
   const handleTheme = () => {
