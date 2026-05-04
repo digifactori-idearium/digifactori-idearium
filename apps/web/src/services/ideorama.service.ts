@@ -22,7 +22,19 @@ export const getIdeoramaById = async (
 };
 
 export const getAllIdeoramas = async (): Promise<ApiResponse<Ideorama[]>> => {
+  const response = await axios.get(`${BASE}/all`);
+  return response.data;
+};
+
+export const getUserIdeoramas = async (): Promise<ApiResponse<Ideorama[]>> => {
   const response = await axios.get(BASE);
+  return response.data;
+};
+
+export const getParticularUserIdeoramas = async (
+  userId: string
+): Promise<ApiResponse<Ideorama[]>> => {
+  const response = await axios.get(`${BASE}/${userId}`);
   return response.data;
 };
 

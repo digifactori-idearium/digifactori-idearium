@@ -5,7 +5,7 @@ import { SuperButton } from '@/components/common/button';
 import IdeoramasGroup from '@/components/ideorama/IdeoramasGroup';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/providers/UserProvider';
-import { getAllIdeoramas } from '@/services/ideorama.service';
+import { getParticularUserIdeoramas } from '@/services/ideorama.service';
 import {
   followUser,
   getFollowers,
@@ -48,7 +48,7 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (profile) {
-      getAllIdeoramas().then(res => {
+      getParticularUserIdeoramas(profile.userId).then(res => {
         setIdeoramas(res.data);
       });
     }
@@ -169,12 +169,7 @@ const ProfilePage: React.FC = () => {
           ))}
       </div>
       Idéoramas de {profile?.pseudo}:
-      <IdeoramasGroup
-        ideoramas={ideoramas}
-        setIdeoramas={setIdeoramas}
-        profile={profile}
-        setProfile={setProfile}
-      />
+      <IdeoramasGroup ideoramas={ideoramas} setIdeoramas={setIdeoramas} />
     </div>
   );
 };

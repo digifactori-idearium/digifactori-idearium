@@ -75,7 +75,9 @@ type Ideorama = {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
+  user?: User;
   _count?: { likers: number };
+  likers?: { userId: string }[];
 };
 
 type ModelsInfo = {
