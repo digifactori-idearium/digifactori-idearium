@@ -73,6 +73,19 @@ export default class IdeoramaService implements IIdeoramaService {
       include: {
         _count: { select: { likers: true } },
         likers: { select: { userId: true } },
+
+        user: {
+          include: {
+            profile: {
+              select: {
+                id: true,
+                pseudo: true,
+                avatar: true,
+                ideoramaLiked: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -86,7 +99,25 @@ export default class IdeoramaService implements IIdeoramaService {
       where: { userId },
       include: {
         _count: { select: { likers: true } },
-        likers: { select: { userId: true } },
+
+        likers: userId
+          ? {
+              where: { userId },
+              select: { userId: true },
+            }
+          : false,
+        user: {
+          include: {
+            profile: {
+              select: {
+                id: true,
+                pseudo: true,
+                avatar: true,
+                ideoramaLiked: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -118,14 +149,18 @@ export default class IdeoramaService implements IIdeoramaService {
   /**
    * Toggles the like on an ideorama for a user.
    */
-  async likeIdeorama(ideoramaId: string, userId: string): Promise<boolean> {
-    const existing = await ideoramaLikeTable.findFirst({
-      where: { ideoramaId, userId },
+  async likeIdeorama(ideoramaId: string, userId: string) {
+    const existing = await ideoramaLikeTable.findUnique({
+      where: {
+        ideoramaId_userId: { ideoramaId, userId },
+      },
     });
 
     if (existing) {
       await ideoramaLikeTable.delete({
-        where: { ideoramaId_userId: { ideoramaId, userId } },
+        where: {
+          ideoramaId_userId: { ideoramaId, userId },
+        },
       });
     } else {
       await ideoramaLikeTable.create({
@@ -133,7 +168,14 @@ export default class IdeoramaService implements IIdeoramaService {
       });
     }
 
-    return true;
+    const count = await ideoramaLikeTable.count({
+      where: { ideoramaId },
+    });
+
+    return {
+      isLiked: !existing,
+      likersCount: count,
+    };
   }
 
   /**

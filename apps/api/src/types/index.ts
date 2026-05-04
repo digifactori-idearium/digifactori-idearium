@@ -54,7 +54,10 @@ export interface IIdeoramaService {
     data: import('@prisma/client').Prisma.IdeoramaUpdateInput
   ): Promise<Ideorama>;
   isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
-  likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;
+  likeIdeorama(
+    ideoramaId: string,
+    userId: string
+  ): Promise<{ isLiked: boolean; likersCount: number }>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
 }
 

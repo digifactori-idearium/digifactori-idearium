@@ -20,6 +20,11 @@ export default function createIdeoramaRoutes(
 
   router.get('/', ideoramaController.getUserIdeoramasController);
 
+  router.get(
+    '/:userId',
+    ideoramaController.getParticularUserIdeoramasController
+  );
+
   router.get('/:ideoramaId', ideoramaController.getIdeoramaByIdController);
 
   router.post('/', ideoramaController.createIdeoramaController);
