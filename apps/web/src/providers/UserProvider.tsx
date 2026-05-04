@@ -1,10 +1,10 @@
 import { jwtDecode } from 'jwt-decode';
 import React, {
   createContext,
-  useContext,
   ReactNode,
-  useEffect,
   useCallback,
+  useContext,
+  useEffect,
   useMemo,
 } from 'react';
 import { toast } from 'sonner';
@@ -103,6 +103,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       id: decoded.userId,
       email: decoded.email,
       role: decoded.role,
+      voiceButtons: decoded.voiceButtons,
       token: token as string,
     };
   }, [getDecodedToken, token]);

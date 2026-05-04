@@ -41,7 +41,13 @@ const IdeoramasGroup: React.FC<{
                 className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               {/* Like badge — floated over the image */}
-              <button
+              <SuperButton
+                tooltip={
+                  isLiked
+                    ? `Ne plus aimer ${ideorama.name}`
+                    : `Aimer ${ideorama.name}`
+                }
+                voiceText={`like ${ideorama.name}`}
                 onClick={async e => {
                   e.stopPropagation();
                   await likeIdeorama(ideorama.id);
@@ -93,7 +99,7 @@ const IdeoramasGroup: React.FC<{
                   }`}
                 />
                 {ideorama._count?.likers ?? 0}
-              </button>
+              </SuperButton>
             </CardContent>
 
             {/* Info bar */}

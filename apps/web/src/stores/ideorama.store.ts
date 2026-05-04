@@ -209,7 +209,7 @@ export const actions = {
   },
 
   spawnAssetAtPosition(asset: AssetItem, position: THREE.Vector3) {
-    const id = asset.id ?? crypto.randomUUID();
+    const id = crypto.randomUUID();
     sceneState.objects[id] = {
       info: {
         name: asset.name,

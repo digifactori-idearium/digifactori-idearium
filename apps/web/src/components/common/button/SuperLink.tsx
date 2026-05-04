@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { speak } from '@/lib/speak';
+import { useUser } from '@/providers/UserProvider';
 
 interface SuperLinkProps extends LinkProps {
   children: ReactNode;
@@ -22,10 +23,18 @@ export function SuperLink({
   ...props
 }: SuperLinkProps) {
   const link = <Link {...props}>{children}</Link>;
+  const { user } = useUser();
 
   const linkWithVoice =
     voiceText && window.speechSynthesis ? (
-      <Link onMouseEnter={() => speak(voiceText)} {...props}>
+      <Link
+        onMouseEnter={() => {
+          if (user?.voiceButtons) {
+            speak(voiceText);
+          }
+        }}
+        {...props}
+      >
         {children}
       </Link>
     ) : (
