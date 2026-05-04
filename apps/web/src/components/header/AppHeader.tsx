@@ -1,4 +1,4 @@
-import { House, LogOutIcon, Moon, Sun } from 'lucide-react';
+import { House, LogOutIcon, Moon, Rocket, Sun } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -47,11 +47,23 @@ export function AppHeader() {
               className="mx-2 data-[orientation=vertical]:h-4"
             />
             <VoiceLink
-              to="my-space"
+              to=""
               voiceText="Mon Espace"
               className="text-base text-foreground! hover:text-foreground/80! font-medium flex items-center gap-1.5"
             >
               <House className="h-5" />{' '}
+              <span className="text-base">Acceuil</span>
+            </VoiceLink>
+            <Separator
+              orientation="vertical"
+              className="mx-2 data-[orientation=vertical]:h-4"
+            />
+            <VoiceLink
+              to="my-space"
+              voiceText="Mon Espace"
+              className="text-base text-foreground! hover:text-foreground/80! font-medium flex items-center gap-1.5"
+            >
+              <Rocket className="h-5" />{' '}
               <span className="text-base">Mon Espace</span>
             </VoiceLink>
           </div>
