@@ -116,12 +116,12 @@ export default class ProfileService implements IProfileService {
         },
       });
     }
-    const { pseudo, bio, avatar } = { ...body.profile };
+    const { pseudo, bio, avatar, voiceButtons } = { ...body.profile };
     response.profile = await profileTable.update({
       where: {
         userId: userId,
       },
-      data: { pseudo, bio, avatar },
+      data: { pseudo, bio, avatar, voiceButtons },
     });
     return response;
   }

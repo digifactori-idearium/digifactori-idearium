@@ -28,8 +28,14 @@ export interface IAuthService {
   createAccount: (
     data: RegisterInput
   ) => Promise<{ profile: Profile; user: User }>;
-  loginEmail: (email: string, password: string) => Promise<User | null>;
-  loginPseudo: (email: string, password: string) => Promise<User | null>;
+  loginEmail: (
+    email: string,
+    password: string
+  ) => Promise<{ profile: Profile; user: User } | null>;
+  loginPseudo: (
+    email: string,
+    password: string
+  ) => Promise<{ profile: Profile; user: User } | null>;
   changePassword: (
     userId: string,
     currentPassword: string,

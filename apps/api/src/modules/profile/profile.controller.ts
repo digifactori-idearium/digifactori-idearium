@@ -7,6 +7,7 @@ import {
 
 import { IProfileService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
+import { generateToken } from '@/utils/generate-token';
 import HttpResponse from '@/utils/http-response';
 import { failOnValidation } from '@/utils/validation-errors';
 
@@ -84,7 +85,7 @@ export default class ProfileController {
    */
   setProfile = asyncHandler(async (req: Request, res: Response) => {
     const authUser = req.user!;
-
+    console.log(req.body.profile);
     if (req.body.profile) {
       const profileSchema = createProfileSchema(authUser.userId);
       const result = await profileSchema.safeParseAsync(req.body.profile);
@@ -105,7 +106,15 @@ export default class ProfileController {
 
     const data = await this.profileService.updateProfile(user.id, req.body);
 
-    HttpResponse.success(data, 'Profil mis à jour avec succès').send(res);
+    const newToken = generateToken(data.user ? data.user : user, data.profile);
+
+    HttpResponse.success(
+      {
+        ...data,
+        accessToken: newToken,
+      },
+      'Profil mis à jour avec succès'
+    ).send(res);
   });
 
   /**
@@ -127,6 +136,7 @@ export default class ProfileController {
     if (!profile) {
       return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
+    console.log(profile);
     HttpResponse.success({ profile: profile }, 'Utilisateur trouvé').send(res);
   });
 

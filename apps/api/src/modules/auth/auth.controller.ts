@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 
 import {
+  changePasswordSchema,
   loginSchema,
   registrationSchema,
-  changePasswordSchema,
   requestResetSchema,
   resetPasswordSchema,
 } from './auth.validation';
@@ -35,7 +35,7 @@ export default class AuthController {
     const account = await this.authService.createAccount(
       result.data as RegisterInput
     );
-    const token = generateToken(account.user);
+    const token = generateToken(account.user, account.profile);
 
     HttpResponse.created(
       { accessToken: token, user: account.user },
@@ -62,21 +62,22 @@ export default class AuthController {
 
     const { pseudo, email, password } = result.data!;
 
-    let user;
+    let data;
     if (pseudo) {
-      user = await this.authService.loginPseudo(pseudo, password);
+      data = await this.authService.loginPseudo(pseudo, password);
     } else if (email) {
-      user = await this.authService.loginEmail(email, password);
+      data = await this.authService.loginEmail(email, password);
     }
 
-    if (!user) {
+    if (!data.user) {
       return HttpResponse.unAuthorized('Invalid credentials').send(res);
     }
 
-    const token = generateToken(user);
-    HttpResponse.success({ accessToken: token, user }, 'Login successful').send(
-      res
-    );
+    const token = generateToken(data.user, data.profile);
+    HttpResponse.success(
+      { accessToken: token, user: data.user },
+      'Login successful'
+    ).send(res);
   });
 
   /**
