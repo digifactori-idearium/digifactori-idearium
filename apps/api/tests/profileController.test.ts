@@ -40,6 +40,7 @@ function createFakeProfile(overrides = {}): {
     pseudo: 'TestUser',
     avatar: null,
     bio: null,
+    voiceButtons: true,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -80,7 +81,10 @@ let mockService!: MockProfileService;
 let app!: express.Express;
 
 beforeAll(async () => {
-  token = generateToken(createFakeUser().user) as string;
+  token = generateToken(
+    createFakeUser().user,
+    createFakeProfile().profile
+  ) as string;
 });
 
 beforeEach(() => {
