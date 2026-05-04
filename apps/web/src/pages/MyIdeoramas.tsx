@@ -15,6 +15,7 @@ const MyIdeoramas: React.FC = () => {
     pseudo: 'Unknown',
     avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix',
     bio: '',
+    voiceButtons: true,
     followers: [],
     following: [],
     ideoramaLiked: [],

@@ -13,16 +13,17 @@ const MyModels: React.FC = () => {
 
   const [models, setModels] = useState<VoxelModel[]>([]);
   const [profile, setProfile] = useState<Profile>({
-      id: '',
-      userId: '',
-      pseudo: 'Unknown',
-      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Emma',
-      bio: '',
-      followers: [],
-      following: [],
-      ideoramaLiked: [],
-      ideoramas: []
-    });
+    id: '',
+    userId: '',
+    pseudo: 'Unknown',
+    avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Emma',
+    bio: '',
+    voiceButtons: true,
+    followers: [],
+    following: [],
+    ideoramaLiked: [],
+    ideoramas: [],
+  });
 
   const [createsNew, setCreatesNew] = useState(false);
 

@@ -112,7 +112,6 @@ export default function VoxelLayout() {
   const [voxels, setVoxels] = useState<VoxelPoint[]>([]);
   const [modelName, setModelName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [scene, setScene] = useState<THREE.Scene | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
