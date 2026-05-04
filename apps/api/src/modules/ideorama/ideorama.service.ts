@@ -66,6 +66,19 @@ export default class IdeoramaService implements IIdeoramaService {
   }
 
   /**
+   * Finds all ideoramas.
+   */
+  async getIdeoramas(): Promise<Ideorama[]> {
+    return ideoramaTable.findMany({
+      include: {
+        _count: { select: { likers: true } },
+        likers: { select: { userId: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
    * Finds all ideoramas belonging to a user.
    */
   async getUserIdeoramas(userId: string): Promise<Ideorama[]> {

@@ -35,6 +35,19 @@ export default class IdeoramaController {
   );
 
   /**
+   * Returns all ideoramas .
+   *
+   * @route  GET /ideorama
+   * @access Authenticated
+   */
+  getIdeoramasController = asyncHandler(async (req: Request, res: Response) => {
+    const ideoramas = await this.ideoramaService.getIdeoramas();
+    HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
+      res
+    );
+  });
+
+  /**
    * Returns all ideoramas for the authenticated user.
    *
    * @route  GET /ideorama

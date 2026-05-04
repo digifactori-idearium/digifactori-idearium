@@ -12,6 +12,8 @@ export default function createIdeoramaRoutes(
   const ideoramaController = new IdeoramaController(ideoramaService);
   const router: ExpressRouter = Router();
 
+  router.get('/all', ideoramaController.getIdeoramasController); //public
+
   router.use(authenticate, requireAuth);
 
   router.get('/empty', ideoramaController.getEmptyIdeorama);
