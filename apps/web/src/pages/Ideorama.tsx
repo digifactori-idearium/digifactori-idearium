@@ -69,7 +69,6 @@ export default function Ideorama() {
   const isEditMode = snap.mode === 'edit';
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   const isLoadingData = useRef(true);
   const isSaving = useRef(false);
@@ -302,9 +301,6 @@ export default function Ideorama() {
                   <SuperButton
                     tooltip="Réinitialiser"
                     voiceText="Réinitialiser"
-                    onClick={() => {
-                      setResetDialogOpen(true);
-                    }}
                     className="z-50 p-2 main-small-btn"
                   >
                     <span className="flex items-center gap-1">
@@ -324,11 +320,8 @@ export default function Ideorama() {
                       );
                     }
                   });
-                  setResetDialogOpen(false);
                 }}
-                onCancel={() => {
-                  setResetDialogOpen(false);
-                }}
+                onCancel={() => {}}
               />
             )}
           </div>
