@@ -88,6 +88,7 @@ export interface IVoxelService {
   ): Promise<VoxelModel>;
 
   getVoxelModelById(voxelModelId: string): Promise<VoxelModel | null>;
+  getVoxelModels(): Promise<VoxelModel[]>;
   getUserVoxelModels(userId: string): Promise<VoxelModel[]>;
   deleteVoxelModel(voxelModelId: string): Promise<VoxelModel>;
 }
