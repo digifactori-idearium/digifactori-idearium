@@ -11,15 +11,23 @@ export default function createSettingsRoutes(
   const settingsController = new SettingsController(settingsService);
   const settingsRoutes: ExpressRouter = Router();
 
-  settingsRoutes.use(authenticate, requireRole('ADMIN'));
+  settingsRoutes.use(authenticate);
 
   // Singleton settings
-  settingsRoutes.get('/', settingsController.getSettings);
-  settingsRoutes.patch('/org', settingsController.updateOrgSettings);
+  settingsRoutes.get('/', requireRole('ADMIN'), settingsController.getSettings);
+  settingsRoutes.patch(
+    '/org',
+    requireRole('ADMIN'),
+    settingsController.updateOrgSettings
+  );
 
   // Integrations
   settingsRoutes.get('/integrations', settingsController.getIntegrations);
-  settingsRoutes.post('/integrations', settingsController.createIntegration);
+  settingsRoutes.post(
+    '/integrations',
+    requireRole('ADMIN'),
+    settingsController.createIntegration
+  );
   settingsRoutes.get(
     '/integrations/:integrationId',
     settingsController.getIntegrationById
@@ -30,10 +38,12 @@ export default function createSettingsRoutes(
   );
   settingsRoutes.patch(
     '/integrations/:integrationId/toggle',
+    requireRole('ADMIN'),
     settingsController.toggleIntegration
   );
   settingsRoutes.delete(
     '/integrations/:integrationId',
+    requireRole('ADMIN'),
     settingsController.deleteIntegration
   );
 
