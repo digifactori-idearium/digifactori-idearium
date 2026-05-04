@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 
 import AlertDialog from '../dialog/AlertDialog';
 
-
 import { SuperButton } from '@/components/common/button/SuperButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,7 +28,7 @@ const IdeoramasGroup: React.FC<{
         <Card
           key={index}
           id={`card-${index}`}
-          className="overflow-hidden pt-0 bg-sidebar dark:bg-sidebar shadow-[0_0_20px_rgba(0,0,0,0.2)] border-2 border-white/5 dark:border-white/20 group-hover:border-white/20 relative group cursor-pointer transition-transform duration-300 hover:z-50 hover:scale-107"
+          className="overflow-hidden pt-0 bg-sidebar dark:bg-sidebar shadow-[0_0_20px_rgba(0,0,0,0.08)] border-2 border-white/5 dark:border-white/20 group-hover:border-white/20 relative group cursor-pointer transition-transform duration-300 hover:z-50 hover:scale-107"
           onClick={() => {
             navigate(`/app/ideorama/${ideorama.id}`);
           }}
@@ -49,20 +48,20 @@ const IdeoramasGroup: React.FC<{
                 {ideorama.name}
               </p>
               <p className="text-xl font-bold tracking-tight text-foreground/90">
-              <SuperButton
-                className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
-                tooltip={`Voir le profil de ${profile.pseudo}`}
-                onClick={e => {
-                  e.stopPropagation();
-                  if(ideorama.userId == user?.id) {
-                    navigate(`/app/profile`);
-                  } else {
-                    navigate(`/app/profile/${ideorama.userId}`);
-                  }
-                }}
-              >
-                {profile.pseudo}
-              </SuperButton>
+                <SuperButton
+                  className="bg-transparent p-0 text-lg font-semibold text-mauve hover:bg-transparent"
+                  tooltip={`Voir le profil de ${profile.pseudo}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (ideorama.userId == user?.id) {
+                      navigate(`/app/profile`);
+                    } else {
+                      navigate(`/app/profile/${ideorama.userId}`);
+                    }
+                  }}
+                >
+                  {profile.pseudo}
+                </SuperButton>
               </p>
               <div className="flex items-center gap-3 text-muted-foreground/80">
                 <SuperButton
@@ -176,24 +175,28 @@ const IdeoramasGroup: React.FC<{
       ))}
       <AlertDialog
         open={ideoramaToDelete != null}
-        description={<>
-            Cela supprimera définitivement l'idéorama{" "}
-            <span className="font-bold text-mauve">{ideoramaToDelete?.name}</span>
-          </>}
+        description={
+          <>
+            Cela supprimera définitivement l'idéorama{' '}
+            <span className="font-bold text-mauve">
+              {ideoramaToDelete?.name}
+            </span>
+          </>
+        }
         confirmationMessage="Oui, supprimer"
         onConfirm={() => {
-            deleteIdeorama(ideoramaToDelete?.id).then(res => {
-              if (res) {
-                setIdeoramas(
-                  ideoramas.filter(ideoram => ideoram.id != ideoramaToDelete?.id)
-                );
-                toast.success("Idéorama supprimé avec succès")
-              } else {
-                toast.error("Échec lors de la suppression de l'idéorama")
-              }
-            });
-            setIdeoramaToDelete(null);
-          }}
+          deleteIdeorama(ideoramaToDelete?.id).then(res => {
+            if (res) {
+              setIdeoramas(
+                ideoramas.filter(ideoram => ideoram.id != ideoramaToDelete?.id)
+              );
+              toast.success('Idéorama supprimé avec succès');
+            } else {
+              toast.error("Échec lors de la suppression de l'idéorama");
+            }
+          });
+          setIdeoramaToDelete(null);
+        }}
         onCancel={() => setIdeoramaToDelete(null)}
       />
     </div>

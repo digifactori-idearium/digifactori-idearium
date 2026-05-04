@@ -161,15 +161,16 @@ export default class ProfileService implements IProfileService {
         followedId: userId,
       },
       include: {
-        following: {
+        follower: {
           select: {
             pseudo: true,
             avatar: true,
+            userId: true,
           },
         },
       },
     });
-    return followers.map(follow => follow.following);
+    return followers.map(follow => follow.follower);
   }
 
   /**
@@ -187,15 +188,16 @@ export default class ProfileService implements IProfileService {
         followerId: userId,
       },
       include: {
-        follower: {
+        following: {
           select: {
             pseudo: true,
             avatar: true,
+            userId: true,
           },
         },
       },
     });
-    return following.map(follow => follow.follower);
+    return following.map(follow => follow.following);
   }
 
   /**
