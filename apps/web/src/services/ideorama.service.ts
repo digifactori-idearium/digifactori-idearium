@@ -1,7 +1,4 @@
-
 import axios from '../services/axios.service';
-
-import { handleApiError } from '@/lib/api';
 
 interface ApiResponse<T> {
   status: string;
@@ -10,160 +7,92 @@ interface ApiResponse<T> {
   status_code: number;
 }
 
-export const searchIdeorama = async (
-  ideoramaId: string
-): Promise<ApiResponse<Ideorama>> => {
-  try {
-    const response = await axios.post(`http://localhost:3001/api/ideorama/`, {
-      ideoramaId: ideoramaId,
-    });
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
-};
+const BASE = '/api/ideorama';
 
 export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
-  try {
-    const response = await axios.get(
-      `http://localhost:3001/api/ideorama/empty`
-    );
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
+  const response = await axios.get(`${BASE}/empty`);
+  return response.data;
+};
+
+export const getIdeoramaById = async (
+  ideoramaId: string
+): Promise<ApiResponse<Ideorama>> => {
+  const response = await axios.get(`${BASE}/${ideoramaId}`);
+  return response.data;
+};
+
+export const getAllIdeoramas = async (): Promise<ApiResponse<Ideorama[]>> => {
+  const response = await axios.get(BASE);
+  return response.data;
 };
 
 export const createIdeorama = async (
-  name: string,
-  userId: string | undefined
+  name: string
 ): Promise<ApiResponse<Ideorama>> => {
-  try {
-    const response = await axios.post(
-      `http://localhost:3001/api/ideorama/create`,
-      {
-        ideorama: {
-          name: name,
-          userId: userId,
-        },
-      }
-    );
-
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
+  const response = await axios.post(BASE, { name });
+  return response.data;
 };
 
-export const autoSaveIdeorama = (
-  model: string | null,
-  ideoramaId: string | undefined,
-  userId: string | undefined
-): boolean => {
+export const saveIdeorama = async (
+  ideoramaId: string,
+  scene: Record<string, unknown> | string | null
+): Promise<boolean> => {
   try {
-    if (!ideoramaId || !userId) {
-      console.warn('Cannot save: missing ideoramaid or userid');
-      return false;
-    }
+    const sceneObj: Record<string, unknown> =
+      typeof scene === 'string' ? JSON.parse(scene) : (scene ?? {});
 
-    const baseURL =
-      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
-
-    axios
-      .post(
-        `${baseURL}/api/ideorama/save`,
-        {
-          ideoramaId,
-          ideorama: { model, userId },
-        },
-        {
-          fetchOptions: { keepalive: true },
-        }
-      )
-      .catch(err => console.error('Keepalive save failed:', err));
-
+    await axios.patch(`${BASE}/${ideoramaId}/save`, { scene: sceneObj });
     return true;
   } catch (error) {
-    console.error('Error queuing keepalive save:', error);
+    console.error('saveIdeorama error:', error);
     return false;
   }
 };
 
-export const getAllIdeoramas = async (
-  userId: string | undefined
-): Promise<ApiResponse<Ideorama[]>> => {
+export const beaconSaveIdeorama = (
+  ideoramaId: string | undefined,
+  scene: Record<string, unknown> | string | null
+): boolean => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/ideorama/all`,
-      {
-        userId: userId,
-      }
-    );
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
+    if (!ideoramaId || !scene) {
+      console.warn('beaconSaveIdeorama: missing required fields');
+      return false;
     }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
+
+    const sceneObj: Record<string, unknown> =
+      typeof scene === 'string' ? JSON.parse(scene) : scene;
+
+    const token = localStorage.getItem('token');
+
+    fetch(`${BASE}/${ideoramaId}/save`, {
+      method: 'PATCH',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ scene: sceneObj }),
+    }).catch(err => console.error('beaconSaveIdeorama failed:', err));
+
+    return true;
+  } catch (error) {
+    console.error('beaconSaveIdeorama error:', error);
+    return false;
   }
 };
 
 export const likeIdeorama = async (
-  ideoramaId: string | undefined,
+  ideoramaId: string
 ): Promise<ApiResponse<Ideorama>> => {
-  try {
-    const response = await axios.post(
-      `http://localhost:3001/api/ideorama/like`,
-      {
-        ideoramaId: ideoramaId,
-      }
-    );
-
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
-    return response.data;
-  } catch (error: any) {
-    return handleApiError(error);
-  }
+  const response = await axios.post(`${BASE}/${ideoramaId}/like`);
+  return response.data;
 };
 
-export const deleteIdeorama = async (
-  ideoramaId: string | undefined
-): Promise<boolean> => {
+export const deleteIdeorama = async (ideoramaId: string): Promise<boolean> => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/ideorama/delete`,
-      {
-        ideoramaId: ideoramaId,
-      }
-    );
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
+    await axios.delete(`${BASE}/${ideoramaId}`);
     return true;
-  } catch (error: any) {
-    return handleApiError(error);
+  } catch {
+    return false;
   }
 };

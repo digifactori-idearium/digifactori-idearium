@@ -1,107 +1,102 @@
 import axios from './axios.service';
 
 interface ApiResponse<T> {
-    status: string;
-    message?: string;
-    data: T;
-    status_code: number;
+  status: string;
+  message?: string;
+  data: T;
+  status_code: number;
 }
 
 export interface VoxelPoint {
-    x: number;
-    y: number;
-    z: number;
+  x: number;
+  y: number;
+  z: number;
+  color?: string;
 }
 
 export interface VoxelModel {
-    id: string;
-    name: string;
-    model: string | VoxelPoint[];
-    userId: string;
-    createdAt: string;
-    updatedAt: string;
+  id: string;
+  name: string;
+  model: string | null; // GLB storage key
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const createVoxelModel = async (
-    name: string
-): Promise<ApiResponse<VoxelModel>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/save', {
-        voxelModel: {
-            name,
-        },
-    });
+const BASE = '/api/voxel';
 
-    return response.data;
+export const createVoxelModel = async (
+  name?: string
+): Promise<ApiResponse<VoxelModel>> => {
+  const response = await axios.post(BASE, { name });
+  return response.data;
 };
 
-export const getAllVoxelModels = async (): Promise<ApiResponse<VoxelModel[]>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/all', {});
-    return response.data;
+export const getAllVoxelModels = async (): Promise<
+  ApiResponse<VoxelModel[]>
+> => {
+  const response = await axios.get(BASE);
+  return response.data;
 };
 
 export const getVoxelModelById = async (
-    voxelModelId: string
+  voxelModelId: string
 ): Promise<ApiResponse<VoxelModel>> => {
-    const response = await axios.post('http://localhost:3001/api/voxel/', {
-        voxelModelId,
-    });
-
-    return response.data;
+  const response = await axios.get(`${BASE}/${voxelModelId}`);
+  return response.data;
 };
 
-export const autoSaveVoxelModel = (
-  voxelModelId: string | undefined,
-  voxels: string,
-  blob: Blob,
-): boolean => {
+/**
+ * Get a short-lived signed URL for a storage key.
+ */
+export const getSignedUrl = async (
+  key: string
+): Promise<{ url: string; expiresAt: string }> => {
+  const response = await axios.get('/api/storage/signed-url', {
+    params: { key },
+  });
+  return response.data.data;
+};
+
+/**
+ * Save the GLB blob.
+ * Voxel state is embedded inside the GLB extras
+ */
+export const saveVoxelModel = async (
+  voxelModelId: string,
+  blob: Blob
+): Promise<boolean> => {
   try {
-    console.log("save")
-    if (!voxelModelId) {
-      console.warn('Cannot save: missing ideoramaid or userid');
-      return false;
-    }
+    const formData = new FormData();
+    formData.append('file', blob, `${voxelModelId}.glb`);
 
-    const baseURL =
-      import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+    const token = localStorage.getItem('token');
+    const baseUrl =
+      (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
+      'http://localhost:3001';
 
-    const formData = new FormData()
-    formData.append('file', blob, `${voxelModelId}.glb`)
-    formData.append('voxelModelId', voxelModelId)
-    formData.append('model', voxels)
-    axios
-      .post(
-        `${baseURL}/api/voxel/save`,
-        formData,
-        {
-          fetchOptions: { keepalive: true },
-        }
-      )
-      .catch(err => console.error('Keepalive save failed:', err));
+    // Do NOT set Content-Type manually; the browser must set it so it
+    const response = await fetch(`${baseUrl}${BASE}/${voxelModelId}/save`, {
+      method: 'PATCH',
+      body: formData,
+      keepalive: true,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
 
-    return true;
+    return response.ok;
   } catch (error) {
-    console.error('Error queuing keepalive save:', error);
+    console.error('Error saving voxel model:', error);
     return false;
   }
 };
 
 export const deleteVoxelModel = async (
-    voxelModelId: string | undefined
+  voxelModelId: string
 ): Promise<boolean> => {
-    try {
-    const response = await axios.post(
-      `http://localhost:3001/api/voxel/delete`,
-      {
-        voxelModelId: voxelModelId,
-      }
-    );
-    if (response.data.status === 'error') {
-      throw new Error(
-        response.data.errors[0]?.message || response.data.error?.message
-      );
-    }
+  try {
+    await axios.delete(`${BASE}/${voxelModelId}`);
     return true;
-  } catch (error: any) {
+  } catch {
     return false;
   }
 };

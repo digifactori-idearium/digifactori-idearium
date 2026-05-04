@@ -10,18 +10,37 @@ export default function createStorageRoutes(): ExpressRouter {
   const storageController = new StorageController(storageService);
   const router: ExpressRouter = Router();
 
-  router.use(authenticate, requireRole('ADMIN'));
+  router.get('/signed-url', authenticate, storageController.getSignedUrl);
 
-  /**
-   * GET  api/storage          — get current config
-   * POST api/storage/test     — test credentials without saving
-   * PATCH api/storage         — update config (validates credentials first)
-   * DELETE api/storage        — reset to LOCAL
-   */
-  router.get('/', storageController.getStorage);
-  router.post('/test', storageController.testStorage);
-  router.patch('/', storageController.updateStorage);
-  router.delete('/', storageController.resetStorage);
+  router.get('/file/{*splat}', authenticate, storageController.getStorageFile);
+
+  router.get(
+    '/',
+    authenticate,
+    requireRole('ADMIN'),
+    storageController.getStorage
+  );
+
+  router.post(
+    '/test',
+    authenticate,
+    requireRole('ADMIN'),
+    storageController.testStorage
+  );
+
+  router.patch(
+    '/',
+    authenticate,
+    requireRole('ADMIN'),
+    storageController.updateStorage
+  );
+
+  router.delete(
+    '/',
+    authenticate,
+    requireRole('ADMIN'),
+    storageController.resetStorage
+  );
 
   return router;
 }

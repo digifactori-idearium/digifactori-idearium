@@ -115,12 +115,27 @@ interface UploadedFile {
   buffer: Buffer;
 }
 
-type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
+type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
+
+type AssetCategory =
+  | 'FOOD_AND_DRINK'
+  | 'CLUTTER'
+  | 'WEAPONS'
+  | 'TRANSPORT'
+  | 'FURNITURE_AND_DECOR'
+  | 'OBJECTS'
+  | 'NATURE'
+  | 'ANIMALS'
+  | 'BUILDINGS'
+  | 'PEOPLE_AND_CHARACTERS'
+  | 'SCENES_AND_LEVELS'
+  | 'OTHER';
 
 interface AssetRecord {
   id: string;
   name: string;
-  category: IntegrationType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   tags: string[];
   file: string;
   thumbnail: string | null;
@@ -128,7 +143,8 @@ interface AssetRecord {
 
 interface CreateAssetInput {
   name: string;
-  category: IntegrationType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   tags?: string[];
   file: UploadedFile;
   thumbnail?: UploadedFile;
@@ -136,7 +152,8 @@ interface CreateAssetInput {
 
 interface BulkCreateAssetInput {
   name: string;
-  category: IntegrationType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   tags?: string[];
   fileIndex: number;
   thumbnailIndex?: number;
@@ -144,14 +161,16 @@ interface BulkCreateAssetInput {
 
 interface UpdateAssetInput {
   name?: string;
-  category?: IntegrationType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   tags?: string[];
   file?: UploadedFile;
   thumbnail?: UploadedFile;
 }
 
 interface ListAssetsFilter {
-  category?: IntegrationType;
+  type?: IntegrationType;
+  category?: AssetCategory;
   search?: string;
   tags?: string[];
   page: number;

@@ -6,6 +6,16 @@ import { type StorageAdapter, type UploadedFile } from './storage.adapter';
 const LOCAL_UPLOADS_DIR = path.resolve(process.cwd(), 'uploads');
 const DEV_BASE_URL = process.env.API_BASE_URL ?? 'http://localhost:3001';
 
+function safeResolvePath(key: string): string {
+  const resolved = path.resolve(LOCAL_UPLOADS_DIR, key);
+
+  if (!resolved.startsWith(LOCAL_UPLOADS_DIR + path.sep)) {
+    throw new Error('Path traversal detected');
+  }
+
+  return resolved;
+}
+
 export class LocalAdapter implements StorageAdapter {
   async upload(
     file: UploadedFile,
@@ -19,7 +29,7 @@ export class LocalAdapter implements StorageAdapter {
     }
 
     const key = buildKey(file.originalname, uploadDir, fileId);
-    const dest = path.join(LOCAL_UPLOADS_DIR, key);
+    const dest = safeResolvePath(key);
 
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.writeFileSync(dest, file.buffer);
@@ -29,16 +39,20 @@ export class LocalAdapter implements StorageAdapter {
 
   async delete(key: string): Promise<void> {
     try {
-      const abs = path.join(LOCAL_UPLOADS_DIR, key);
+      const abs = safeResolvePath(key);
       if (fs.existsSync(abs)) fs.unlinkSync(abs);
     } catch {
-      //ignored
+      // ignored
     }
   }
 
   getPublicUrl(key: string): string {
     return `${DEV_BASE_URL}/uploads/${key}`;
   }
+}
+
+export function resolveLocalPath(key: string): string {
+  return safeResolvePath(key);
 }
 
 export function sanitizeFilename(name: string): string {

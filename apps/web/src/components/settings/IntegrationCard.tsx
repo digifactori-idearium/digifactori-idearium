@@ -2,7 +2,6 @@ import { Box, Music, SquarePen, Trash2, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-
 import AlertDialog from '../dialog/AlertDialog';
 
 import { FormDialog } from '@/components/common/form/FormDialog';
@@ -13,9 +12,6 @@ import {
   deleteIntegration,
   updateIntegration,
 } from '@/services/settings.service';
-
-
-type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
 
 const TYPE_CONFIG: Record<
   IntegrationType,
@@ -28,24 +24,32 @@ const TYPE_CONFIG: Record<
     badgeText: string;
   }
 > = {
-  ASSET: {
-    label: '3D Model',
+  MODEL_3D: {
+    label: 'Modèle 3D',
     icon: <Box size={18} strokeWidth={1.8} className="text-white" />,
     accent: 'bg-[#1D9E75]',
     iconBg: 'bg-[#E1F5EE] dark:bg-[#085041]',
     badgeBg: 'bg-[#E1F5EE] dark:bg-[#085041]',
     badgeText: 'text-[#0F6E56] dark:text-[#9FE1CB]',
   },
-  MUSIC: {
-    label: 'Music',
+  SOUND: {
+    label: 'Son',
     icon: <Music size={18} strokeWidth={1.8} className="text-white" />,
     accent: 'bg-[#7F77DD]',
     iconBg: 'bg-[#EEEDFE] dark:bg-[#26215C]',
     badgeBg: 'bg-[#EEEDFE] dark:bg-[#26215C]',
     badgeText: 'text-[#3C3489] dark:text-[#CECBF6]',
   },
+  IMAGE: {
+    label: 'Image',
+    icon: <Box size={18} strokeWidth={1.8} className="text-white" />,
+    accent: 'bg-[#E07B39]',
+    iconBg: 'bg-[#FEF0E7] dark:bg-[#5C2E0E]',
+    badgeBg: 'bg-[#FEF0E7] dark:bg-[#5C2E0E]',
+    badgeText: 'text-[#9C4A1A] dark:text-[#F5C4A0]',
+  },
   OTHER: {
-    label: 'Other',
+    label: 'Autre',
     icon: <Zap size={18} strokeWidth={1.8} className="text-white" />,
     accent: 'bg-[#888780]',
     iconBg: 'bg-[#F1EFE8] dark:bg-[#444441]',
@@ -158,17 +162,18 @@ export const IntegrationCard: React.FC<Props> = ({
             loading={loading}
             initialValues={integration}
           />
-          
         </div>
       </div>
-      
+
       <AlertDialog
-        trigger={<Button
+        trigger={
+          <Button
             variant="outline"
             className="w-9 h-9 p-0 border-red-900/40 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent"
           >
             <Trash2 size={13} />
-          </Button>}
+          </Button>
+        }
         description="Cela supprimera l'intégration."
         confirmationMessage="Oui, Supprimer"
         onConfirm={handleDelete}

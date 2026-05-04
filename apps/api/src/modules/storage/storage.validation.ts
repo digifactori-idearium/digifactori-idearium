@@ -57,9 +57,10 @@ export const updateStorageSchema = z
       .min(1, 'La secretKey ne peut pas être vide')
       .optional(),
 
-    publicUrl: z
-      .url({ error: () => 'publicUrl doit être une URL valide' })
-      .optional(),
+    publicUrl: z.preprocess(
+      v => (v === '' ? undefined : v),
+      z.url({ error: () => 'publicUrl doit être une URL valide' }).optional()
+    ),
   })
   .refine(data => Object.values(data).some(v => v !== undefined), {
     message: 'Au moins un champ doit être fourni.',

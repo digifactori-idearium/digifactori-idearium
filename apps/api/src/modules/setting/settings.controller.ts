@@ -122,7 +122,7 @@ export default class SettingsController {
    *   id: string,
    *   name: string,
    *   url: string,
-   *   type: 'ASSET' | 'MUSIC' | 'OTHER',
+   *   type: 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER',
    *   key?: string,
    *   isActive?: boolean,
    *   fieldMapping?: { id: string, name: string, category?: string, file: string, thumbnail?: string }
@@ -161,7 +161,7 @@ export default class SettingsController {
    * @body   {
    *   name?: string,
    *   url?: string,
-   *   type?: 'ASSET' | 'MUSIC' | 'OTHER',
+   *   type?: 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER',
    *   key?: string,
    *   isActive?: boolean,
    *   fieldMapping?: { id: string, name: string, category?: string, file: string, thumbnail?: string }

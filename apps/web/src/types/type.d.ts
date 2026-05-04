@@ -1,3 +1,4 @@
+// ===== Inputs
 interface Option {
   text: string;
   value: string;
@@ -8,6 +9,7 @@ interface SearchOption {
   label: string;
 }
 
+// ===== User and auth management
 type Role = 'INTERN' | 'SUPERVISOR' | 'ADMIN';
 
 interface ApiResponse<T> {
@@ -44,17 +46,10 @@ type Profile = {
   pseudo: string;
   avatar: string | null;
   bio: string | null;
-  // followers: { followingId: string }[];
-  // following: { followedById: string }[];
   followers: string[];
   following: string[];
-  ideoramaLiked: {
-    ideoramaId: string;
-  }[];
-  ideoramas: {
-    id: string;
-    name: string;
-  }[];
+  ideoramaLiked: { ideoramaId: string }[];
+  ideoramas: { id: string; name: string }[];
 };
 
 interface CreateUserInput {
@@ -71,54 +66,33 @@ interface UpdateUserInput {
   last_name?: string;
 }
 
+// ===== 3D space management
 type Ideorama = {
   id: string;
   name: string;
-  description: string | null;
-  theme: string;
-  brightness: string;
   isPublic: boolean;
-  backgroundColor: string;
-  leftWallColor: string;
-  rightWallColor: string;
-  floorColor: string;
+  scene: ModelsInfo | null;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
-  model: ModelsInfo;
-  _count: {
-    likers: number;
-  };
+  _count?: { likers: number };
 };
 
 type ModelsInfo = {
   global: {
     brightness: 'bright' | 'dim' | 'dark';
     visible: boolean;
+    isPublic: boolean;
     music: { currentTrack: string; volume: number };
     theme: string;
   };
   background: { color: string; accent: string };
-  info: {
-    name: string;
-    description: string;
-    category?: string;
-  };
+  info: { name: string; category?: string };
   floor: PartSettings;
   objects: Record<string, ObjectState>;
 };
 
-type Asset = {
-  name: string;
-  category: string;
-  description: string;
-  source?: string;
-  preview?: source;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
-
-// My space
+// ===== My space
 interface CardDef {
   id: string;
   title: string;
@@ -179,7 +153,6 @@ interface Cloud {
 }
 
 // ===== Text editor
-
 interface Document {
   id: string;
   title: string;
@@ -228,17 +201,12 @@ interface EditorToolbarState {
   alignRight: boolean;
 }
 
-interface Integration {
-  id: string;
-  name: string;
-}
-
 interface CurrentStatusProps {
   status: Status;
 }
 
-// Settings and Integration
-type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
+// ===== Settings and integrations
+type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
 interface FieldMapping {
   id: string;
@@ -259,23 +227,143 @@ interface Integration {
   createdAt?: string;
 }
 
-interface MediaItem {
-  id: string;
-  name: string;
-  category: string;
-  file: string;
-  thumbnail?: string;
-}
-
 interface FetchResult {
   items: MediaItem[];
   hasMore: boolean;
 }
 
+type StorageProvider = 'S3' | 'R2' | 'GCS' | 'AZURE' | 'MINIO' | 'LOCAL';
+
+interface CloudStorage {
+  id: number;
+  name?: string | null;
+  provider: StorageProvider;
+  region?: string | null;
+  endpoint?: string | null;
+  bucket?: string | null;
+  accessKey?: string | null;
+  secretKey?: string | null;
+  publicUrl?: string | null;
+  settingId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Settings {
-  orgCode?: string;
-  orgParentalCode?: string;
-  storeName?: string;
-  storeURL?: string;
-  integrations?: Integration[];
+  id: number;
+  orgCode: number;
+  orgParentalCode: number;
+  storage: CloudStorage | null;
+  integrations: Integration[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ===== Internal Assets Management
+type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
+
+type AssetCategory =
+  | 'FOOD_AND_DRINK'
+  | 'CLUTTER'
+  | 'WEAPONS'
+  | 'TRANSPORT'
+  | 'FURNITURE_AND_DECOR'
+  | 'OBJECTS'
+  | 'NATURE'
+  | 'ANIMALS'
+  | 'BUILDINGS'
+  | 'PEOPLE_AND_CHARACTERS'
+  | 'SCENES_AND_LEVELS'
+  | 'OTHER';
+
+interface MediaItem {
+  id: string;
+  name: string;
+  type?: string;
+  category?: string;
+  file: string;
+  fileUrl?: string;
+  thumbnail?: string;
+  thumbnailUrl?: string;
+}
+
+type Asset = {
+  id: string;
+  name: string;
+  type: IntegrationType;
+  category: AssetCategory;
+  tags: string[];
+  file: string;
+  fileUrl: string;
+  thumbnail: string | null;
+  thumbnailUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+interface PaginatedAssets {
+  items: Asset[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface ListAssetsParams {
+  type?: IntegrationType;
+  category?: AssetCategory;
+  search?: string;
+  tags?: string;
+  page?: number;
+  limit?: number;
+}
+
+interface CreateAssetInput {
+  name: string;
+  type: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  file: File;
+  thumbnail?: File;
+}
+
+interface BulkAssetDescriptor {
+  name: string;
+  type: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  fileIndex: number;
+  thumbnailIndex?: number;
+}
+
+interface AssetUploadEntry {
+  name: string;
+  type: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  file: File;
+  thumbnail?: File;
+}
+
+interface BulkCreateAssetInput {
+  assets: AssetUploadEntry[];
+}
+
+interface BulkCreateResult {
+  succeeded: Asset[];
+  failed: { index: number; name: string; reason: string }[];
+}
+
+interface BulkDeleteResult {
+  deleted: number;
+  failed: { id: string; reason: string }[];
+}
+
+interface UpdateAssetInput {
+  name?: string;
+  type?: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  file?: File;
+  thumbnail?: File;
 }

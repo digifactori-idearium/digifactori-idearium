@@ -17,8 +17,10 @@ import { useSnapshot } from 'valtio';
 import { Controls } from './Gismo';
 import { SpeechBubble } from './SpeechBubble';
 
+import { useStorageBlob } from '@/hooks/useStorageFile';
 import { useTrigger } from '@/hooks/useTrigger';
 import { cleanObject } from '@/lib/actions/runtime';
+import { isStorageKey } from '@/lib/asset';
 import { actions, sceneState } from '@/stores';
 
 // Scratch objects
@@ -56,6 +58,29 @@ function collectMeshes(obj: THREE.Object3D): THREE.Mesh[] {
 
 // Model Component
 export const Model = memo(function Model({
+  id,
+  name,
+  file,
+  ...props
+}: ModelProps) {
+  const isStorageFile = isStorageKey(file) && file !== '';
+  const { url, loading, error } = useStorageBlob(isStorageFile ? file : null);
+
+  const resolvedFile = isStorageFile
+    ? url
+    : file || ('/models/person.glb' as string);
+
+  // Don't render until we have a URL to load
+  if (isStorageFile && (loading || !resolvedFile)) return null;
+  if (isStorageFile && error) {
+    console.error(`Model: failed to load ${file}:`, error);
+    return null;
+  }
+
+  return <ModelRenderer id={id} name={name} file={resolvedFile!} {...props} />;
+});
+
+const ModelRenderer = memo(function ModelRenderer({
   id,
   name,
   file,

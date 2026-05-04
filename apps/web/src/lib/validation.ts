@@ -2,57 +2,79 @@ import { z } from 'zod';
 
 import { FormInputData } from '@/components/common/form';
 
+function makeOptional(schema: z.ZodTypeAny): z.ZodTypeAny {
+  return z.preprocess(
+    val => (val === '' || val === null || val === undefined ? undefined : val),
+    schema.optional()
+  );
+}
+
 const setNestedObject = (obj: any, path: string, value: any) => {
   const keys = path.split('.');
   let current = obj;
   while (keys.length > 1) {
     const key = keys.shift()!;
-    if (!(current[key] instanceof z.ZodObject)) {
-      current[key] = current[key] || {};
-    }
+    current[key] = current[key] ?? {};
     current = current[key];
   }
   current[keys[0]] = value;
 };
 
-export const validation = (input: FormInputData) => {
+export const validation = (input: FormInputData): z.ZodTypeAny => {
   let schema: z.ZodTypeAny;
 
   switch (input.type) {
+    //  String types
     case 'email':
-      schema = z.string().email('Adresse mail invalide');
+      schema = z.email('Adresse mail invalide');
       break;
 
-    case 'password':
-      schema = z
+    case 'password': {
+      const maxLen = (input as any).max;
+      const minLen = (input as any).min ?? (maxLen !== undefined ? maxLen : 6);
+      let s = z
         .string()
-        .min(6, 'Le mot de passe doit contenir au moins 6 caractères');
+        .min(
+          minLen,
+          `Doit contenir au moins ${minLen} caractère${minLen > 1 ? 's' : ''}`
+        );
+      if (maxLen) {
+        s = s.max(maxLen, `Maximum ${maxLen} caractères`);
+      }
+      schema = s;
       break;
-
-    case 'number':
-      schema = z.preprocess(
-        val => (val === '' ? undefined : Number(val)),
-        z.number({ message: 'Doit être un chiffre' })
-      );
-      break;
+    }
 
     case 'select':
       schema = z
         .string()
-        .min(1, `Veuillez sélectionner un ${input.label.toLowerCase()}`);
+        .min(1, `Veuillez sélectionner ${input.label.toLowerCase()}`);
       break;
 
-    case 'switch':
-      schema = z.boolean();
+    case 'textarea':
+    case 'text':
+      schema = z.string();
       break;
 
+    case 'color':
+    case 'emoji':
+      schema = z.string();
+      break;
+
+    // Numeric types
+    case 'number':
     case 'slider':
-      schema = z.number();
+      schema = z.preprocess(
+        val => (val === '' || val === null ? undefined : Number(val)),
+        z.number({ message: 'Doit être un nombre' })
+      );
       break;
 
-    case 'fieldMapping':
-      schema = z.record(z.string(), z.string());
-      break;
+    // Boolean
+    case 'switch':
+      return z.boolean().default(false);
+
+    // Structured
     case 'vector3':
       schema = z.object({
         x: z.number(),
@@ -61,33 +83,37 @@ export const validation = (input: FormInputData) => {
       });
       break;
 
+    case 'fieldMapping':
+      schema = z.record(z.string(), z.string());
+      break;
+
+    // Passthrough
     case 'file':
     case 'image':
-      schema = z.any();
-      break;
-
     case 'dialog':
+    default:
       schema = z.any();
       break;
-
-    case 'color':
-    case 'emoji':
-    default:
-      schema = z.string();
   }
 
-  // Handle required logic — skip for types that don't use .min()
-  const stringLike = ['email', 'password', 'select', 'color', 'emoji', 'text'];
+  //  Required / optional handling
   if (input.required) {
+    const stringLike = [
+      'email',
+      'password',
+      'select',
+      'text',
+      'textarea',
+      'color',
+      'emoji',
+    ];
     if (stringLike.includes(input.type)) {
       schema = (schema as z.ZodString).min(1, `${input.label} est requis`);
     }
-    // number/boolean/object types are inherently required once typed
-  } else {
-    schema = schema.optional().or(z.literal(''));
+    return schema;
   }
 
-  return schema;
+  return makeOptional(schema);
 };
 
 export const createFormSchema = (inputs: FormInputData[]) => {
@@ -102,37 +128,14 @@ export const createFormSchema = (inputs: FormInputData[]) => {
     }
   });
 
-  const convertToZod = (obj: any): any => {
+  const convertToZod = (obj: any): z.ZodObject<any> => {
     const newShape: any = {};
     for (const key in obj) {
-      if (obj[key] instanceof z.ZodType) {
-        newShape[key] = obj[key];
-      } else {
-        newShape[key] = convertToZod(obj[key]);
-      }
+      newShape[key] =
+        obj[key] instanceof z.ZodType ? obj[key] : convertToZod(obj[key]);
     }
     return z.object(newShape);
   };
 
-  const baseSchema = convertToZod(shape);
-
-  return baseSchema.superRefine((data: any, ctx: z.RefinementCtx) => {
-    const role = data.role || (data.user && data.user.role);
-    const parentalCode =
-      data.parental_code || (data.user && data.user.parental_code);
-
-    if (role === 'CHILD') {
-      const isEmpty = !parentalCode;
-      const isPlaceholder = parentalCode === '****';
-      const isTooShort = String(parentalCode).length < 4;
-
-      if ((isEmpty || isTooShort) && !isPlaceholder) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Un code parental de 4 chiffres est requis pour les enfants',
-          path: data.user ? ['user', 'parental_code'] : ['parental_code'],
-        });
-      }
-    }
-  });
+  return convertToZod(shape);
 };

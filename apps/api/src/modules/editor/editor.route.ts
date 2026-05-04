@@ -11,12 +11,12 @@ export default function createEditorRoutes(voxelService: IEditorService) {
 
   editorRoutes.use(authenticate, requireAuth);
 
-  editorRoutes.post('/', voxelController.createDocument);
-  editorRoutes.get('/', voxelController.getUserDocuments);
   editorRoutes.get('/:documentId', voxelController.getDocumentById);
-  editorRoutes.patch('/:documentId', voxelController.updateDocument);
-  editorRoutes.delete('/:documentId', voxelController.deleteDocument);
+  editorRoutes.post('/', voxelController.createDocument);
   editorRoutes.post('/:documentId/save', voxelController.saveDocument);
+  editorRoutes.patch('/:documentId', voxelController.updateDocument);
+  editorRoutes.get('/', voxelController.getUserDocuments);
+  editorRoutes.delete('/:documentId', voxelController.deleteDocument);
 
   return editorRoutes;
 }

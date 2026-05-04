@@ -35,6 +35,9 @@ export interface FormInputData {
 
   //default
   default?: any;
+
+  // Upload
+  multiple?: boolean;
 }
 
 export interface FormInputProps {
