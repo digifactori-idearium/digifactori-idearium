@@ -75,7 +75,6 @@ export const saveVoxelModel = async (
       (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
       'http://localhost:3001';
 
-    // Do NOT set Content-Type manually; the browser must set it so it
     const response = await fetch(`${baseUrl}${BASE}/${voxelModelId}/save`, {
       method: 'PATCH',
       body: formData,
