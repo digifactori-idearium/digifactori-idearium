@@ -35,6 +35,13 @@ export const createVoxelModel = async (
 export const getAllVoxelModels = async (): Promise<
   ApiResponse<VoxelModel[]>
 > => {
+  const response = await axios.get(`${BASE}/all`);
+  return response.data;
+};
+
+export const getUserVoxelModels = async (): Promise<
+  ApiResponse<VoxelModel[]>
+> => {
   const response = await axios.get(BASE);
   return response.data;
 };

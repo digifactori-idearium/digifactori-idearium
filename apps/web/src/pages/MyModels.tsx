@@ -6,23 +6,23 @@ import { SuperButton } from '@/components/common/button';
 import { VoxelModelCreator } from '@/components/voxel/VoxelModelCreator';
 import VoxelModelsGroup from '@/components/voxel/VoxelModelsGroup';
 import { useProfile } from '@/hooks/useProfile';
-import { getAllVoxelModels, VoxelModel } from '@/services/voxel.service';
+import { getUserVoxelModels, VoxelModel } from '@/services/voxel.service';
 
 const MyModels: React.FC = () => {
   const { fetchProfile, loading } = useProfile();
 
   const [models, setModels] = useState<VoxelModel[]>([]);
   const [profile, setProfile] = useState<Profile>({
-      id: '',
-      userId: '',
-      pseudo: 'Unknown',
-      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Emma',
-      bio: '',
-      followers: [],
-      following: [],
-      ideoramaLiked: [],
-      ideoramas: []
-    });
+    id: '',
+    userId: '',
+    pseudo: 'Unknown',
+    avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Emma',
+    bio: '',
+    followers: [],
+    following: [],
+    ideoramaLiked: [],
+    ideoramas: [],
+  });
 
   const [createsNew, setCreatesNew] = useState(false);
 
@@ -30,7 +30,7 @@ const MyModels: React.FC = () => {
     const loadPage = async () => {
       const [profileData, modelsData] = await Promise.all([
         fetchProfile(),
-        getAllVoxelModels(),
+        getUserVoxelModels(),
       ]);
 
       setProfile(profileData.profile);
