@@ -128,29 +128,30 @@ const IdeoramasGroup: React.FC<{
             </CardContent>
 
             {/* Info bar */}
-            <div className="px-4 py-3 flex items-center gap-3">
+            <div className="px-4 py-2 flex items-center gap-3">
               {/* Avatar — links to profile */}
               <SuperButton
                 tooltip={`voir le profile de ${ideorama.user?.profile?.pseudo}`}
                 onClick={e => {
                   e.stopPropagation();
                   if (ideorama.userId === user?.id) {
-                    navigate(`/app/profile/${ideorama.userId}`);
-                  } else {
                     navigate(`/app/profile`);
+                  } else {
+                    navigate(`/app/profile/${ideorama.userId}`);
                   }
                 }}
-                className="shrink-0 ring-2 ring-white/10 rounded-full hover:ring-mauve/60 transition-all bg-transparent! p-0!"
+                className="shrink-0 ring-2 size-13 ring-white/10 rounded-full hover:ring-mauve/60 transition-all bg-transparent! p-0!"
               >
-                <Avatar className="h-9 w-9">
+                <Avatar className="h-12 w-12">
                   <AvatarImage
                     src={
                       ideorama.user?.profile?.avatar ??
                       'https://api.dicebear.com/7.x/bottts/svg?seed=Emma'
                     }
                     alt={ideorama.user?.profile?.pseudo}
+                    className="size-11"
                   />
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback className="text-sm">
                     {ideorama.user?.profile?.pseudo?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -158,7 +159,7 @@ const IdeoramasGroup: React.FC<{
 
               {/* Name + author */}
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-foreground truncate leading-tight">
+                <p className="font-bold text-xl text-foreground truncate leading-tight">
                   {ideorama.name}
                 </p>
                 <button
@@ -170,7 +171,7 @@ const IdeoramasGroup: React.FC<{
                       navigate(`/app/profile`);
                     }
                   }}
-                  className="text-xs text-mauve font-medium hover:underline leading-tight bg-transparent! p-0!"
+                  className="text-sm text-mauve font-medium hover:underline leading-tight bg-transparent! p-0!"
                 >
                   {ideorama.user?.profile?.pseudo}
                 </button>
