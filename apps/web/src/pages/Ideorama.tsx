@@ -23,7 +23,8 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useSnapshot } from 'valtio';
+import { subscribe, useSnapshot } from 'valtio';
+import { subscribeKey } from 'valtio/utils';
 
 import Scene from '@/components/3d-scene';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
@@ -64,9 +65,13 @@ const serializeScene = (): Record<string, unknown> | null => {
 };
 
 export default function Ideorama() {
-  const snap = useSnapshot(sceneState);
+  const mode = useSnapshot(sceneState).mode;
+  const current = useSnapshot(sceneState).current;
+  const newest = useSnapshot(sceneState).newest;
+
+  const isEditMode = mode === 'edit';
+
   const { ideoramaid } = useParams<{ ideoramaid: string }>();
-  const isEditMode = snap.mode === 'edit';
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
@@ -169,11 +174,7 @@ export default function Ideorama() {
     getIdeoramaById(ideoramaid)
       .then(res => {
         const record = res.data as any;
-        const scene = record.scene as ModelsInfo | null;
-
-        if (!scene) {
-          throw new Error(`No scene data for ideorama "${ideoramaid}"`);
-        }
+        const scene = record.scene as ModelsInfo;
 
         if (record.name) scene.info = { ...scene.info, name: record.name };
         if (typeof record.isPublic === 'boolean') {
@@ -204,19 +205,25 @@ export default function Ideorama() {
 
   // Auto-save on state change
   useEffect(() => {
-    if (isLoadingData.current || snap.isDragging) return;
-    localStorage.setItem('sceneState', JSON.stringify(serializeScene()));
-    performSave();
-  }, [snap.global, snap.background, snap.info, snap.floor, snap.objects]);
-
-  useEffect(() => {
-    if (isLoadingData.current) return;
-    if (!snap.isDragging) {
+    const unsub = subscribe(sceneState, () => {
+      if (isLoadingData.current || sceneState.isDragging) return;
       localStorage.setItem('sceneState', JSON.stringify(serializeScene()));
       performSave();
-      actions.stackState();
-    }
-  }, [snap.isDragging]);
+    });
+    return unsub;
+  }, [performSave]);
+
+  useEffect(() => {
+    const unsub = subscribeKey(sceneState, 'isDragging', isDragging => {
+      if (isLoadingData.current) return;
+      if (!isDragging) {
+        localStorage.setItem('sceneState', JSON.stringify(serializeScene()));
+        performSave();
+        actions.stackState();
+      }
+    });
+    return unsub;
+  }, [performSave]);
 
   // DnD handlers
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -251,7 +258,7 @@ export default function Ideorama() {
       onDragStart={handleDragStart}
     >
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
-        <div className="w-full h-full overflow-hidden flex flex-col">
+        <div className="w-full h-full flex flex-col">
           <Scene />
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
             <Button
@@ -271,7 +278,7 @@ export default function Ideorama() {
               )}
             </Button>
 
-            {snap.current != 0 && isEditMode && (
+            {current != 0 && isEditMode && (
               <SuperButton
                 tooltip="Revenir en arrière"
                 voiceText="Revenir en arrière"
@@ -284,7 +291,7 @@ export default function Ideorama() {
               </SuperButton>
             )}
 
-            {snap.current != snap.newest && isEditMode && (
+            {current != newest && isEditMode && (
               <SuperButton
                 tooltip="Rétablir"
                 voiceText="Rétablir"
