@@ -16,6 +16,9 @@ import AuthService from '@/modules/auth/auth.service';
 import createEditorRoutes from '@/modules/editor/editor.route';
 import EditorService from '@/modules/editor/editor.service';
 import createIdeoramaRoutes from '@/modules/ideorama/ideorama.route';
+import IdeoramaService from '@/modules/ideorama/ideorama.services';
+import createIdeaRoutes from './modules/idea/idea.route';
+import IdeaService from './modules/idea/idea.service';
 import IdeoramaService from '@/modules/ideorama/ideorama.service';
 import createProfileRoutes from '@/modules/profile/profile.route';
 import ProfileService from '@/modules/profile/profile.service';
@@ -68,6 +71,9 @@ app.use('/api/profile', createProfileRoutes(profileService));
 
 const ideoramaService = new IdeoramaService();
 app.use('/api/ideorama', createIdeoramaRoutes(ideoramaService));
+
+const ideaService = new IdeaService();
+app.use('/api/ideas', createIdeaRoutes(ideaService));
 
 const voxelService = new VoxelService();
 app.use('/api/voxel', createVoxelRoutes(voxelService));

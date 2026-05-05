@@ -4,41 +4,36 @@ import { IIdeaService } from '@/types';
 const ideaTable = prisma.idea;
 
 export default class IdeaService implements IIdeaService {
-  async createIdea(data: {
-    content: string;
-    column: 'todo' | 'progress' | 'done';
-    priority?: 'high' | 'low';
-    color?: string;
-    userId: string;
-  }) {
+
+  async getIdeas(userId: string) {
+    const ideas = await ideaTable.findMany({
+      where: { userId },
+    });
+
+    return ideas[0]?.data || {
+      todo: [],
+      progress: [],
+      done: [],
+    };
+  }
+
+  async saveIdeas(userId: string, data: any) {
+    const existing = await ideaTable.findMany({
+      where: { userId },
+    });
+
+    if (existing.length > 0) {
+      return ideaTable.update({
+        where: { id: existing[0].id },
+        data: { data },
+      });
+    }
+
     return ideaTable.create({
       data: {
-        content: data.content,
-        column: data.column,
-        priority: data.priority || 'low',
-        color: data.color || '#ffffff',
-        userId: data.userId,
+        userId,
+        data,
       },
-    });
-  }
-
-  async getUserIdeas(userId: string) {
-    return ideaTable.findMany({
-      where: { userId },
-      orderBy: { updatedAt: 'desc' },
-    });
-  }
-
-  async updateIdea(ideaId: string, data: any) {
-    return ideaTable.update({
-      where: { id: ideaId },
-      data,
-    });
-  }
-
-  async deleteIdea(ideaId: string) {
-    return ideaTable.delete({
-      where: { id: ideaId },
     });
   }
 }
