@@ -3,16 +3,14 @@ import IdeaController from './idea.controller';
 import { authenticate, requireAuth } from '@/middlewares/authentication';
 import { IIdeaService } from '@/types';
 
-export default function createIdeaRoutes(ideaService: IIdeaService) {
-  const controller = new IdeaController(ideaService);
+export default function createIdeaRoutes(service: IIdeaService) {
+  const controller = new IdeaController(service);
   const router = Router();
 
   router.use(authenticate, requireAuth);
 
-  router.post('/', controller.createIdea);
-  router.get('/', controller.getUserIdeas);
-  router.patch('/:ideaId', controller.updateIdea);
-  router.delete('/:ideaId', controller.deleteIdea);
+  router.get('/', controller.getIdeas);
+  router.post('/', controller.saveIdeas);
 
   return router;
 }
