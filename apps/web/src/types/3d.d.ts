@@ -65,7 +65,7 @@ interface IdeoramaState {
   id: string | null;
   global: {
     brightness: 'bright' | 'dim' | 'dark';
-    visible: boolean;
+    isPublic: boolean;
     music: { currentTrack: string; volume: number };
     theme: string;
   };
@@ -75,7 +75,6 @@ interface IdeoramaState {
   // Info State
   info: {
     name: string;
-    description: string;
     category?: string;
   };
 
@@ -164,7 +163,9 @@ type AssetItem = {
   name: string;
   category?: string;
   file: string;
+  fileUrl?: string;
   thumbnail?: string;
+  thumbnailUrl?: string;
 };
 
 type MusicItem = {

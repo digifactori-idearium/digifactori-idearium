@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 import DeleteIntegrationDialog from './DeleteIntegrationDialog';
 
-import { FormDialog } from '@/components/settings/FormDialog';
+import { FormDialog } from '@/components/common/form/FormDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { integrationInputs } from '@/lib/input';
@@ -12,8 +12,6 @@ import {
   updateIntegration,
   deleteIntegration,
 } from '@/services/settings.service';
-
-type IntegrationType = 'ASSET' | 'MUSIC' | 'OTHER';
 
 const TYPE_CONFIG: Record<
   IntegrationType,
@@ -26,24 +24,32 @@ const TYPE_CONFIG: Record<
     badgeText: string;
   }
 > = {
-  ASSET: {
-    label: '3D Model',
+  MODEL_3D: {
+    label: 'Modèle 3D',
     icon: <Box size={18} strokeWidth={1.8} className="text-white" />,
     accent: 'bg-[#1D9E75]',
     iconBg: 'bg-[#E1F5EE] dark:bg-[#085041]',
     badgeBg: 'bg-[#E1F5EE] dark:bg-[#085041]',
     badgeText: 'text-[#0F6E56] dark:text-[#9FE1CB]',
   },
-  MUSIC: {
-    label: 'Music',
+  SOUND: {
+    label: 'Son',
     icon: <Music size={18} strokeWidth={1.8} className="text-white" />,
     accent: 'bg-[#7F77DD]',
     iconBg: 'bg-[#EEEDFE] dark:bg-[#26215C]',
     badgeBg: 'bg-[#EEEDFE] dark:bg-[#26215C]',
     badgeText: 'text-[#3C3489] dark:text-[#CECBF6]',
   },
+  IMAGE: {
+    label: 'Image',
+    icon: <Box size={18} strokeWidth={1.8} className="text-white" />,
+    accent: 'bg-[#E07B39]',
+    iconBg: 'bg-[#FEF0E7] dark:bg-[#5C2E0E]',
+    badgeBg: 'bg-[#FEF0E7] dark:bg-[#5C2E0E]',
+    badgeText: 'text-[#9C4A1A] dark:text-[#F5C4A0]',
+  },
   OTHER: {
-    label: 'Other',
+    label: 'Autre',
     icon: <Zap size={18} strokeWidth={1.8} className="text-white" />,
     accent: 'bg-[#888780]',
     iconBg: 'bg-[#F1EFE8] dark:bg-[#444441]',
@@ -77,7 +83,7 @@ export const IntegrationCard: React.FC<Props> = ({
       onUpdated?.();
     } catch (error: any) {
       toast.error(error?.message || "Échec de la mise à jour de l'intégration");
-      throw error;
+      return false;
     } finally {
       setLoading(false);
     }
@@ -92,6 +98,7 @@ export const IntegrationCard: React.FC<Props> = ({
       onDeleted?.();
     } catch (error: any) {
       toast.error(error?.message || "Échec de suppression de l'intégration");
+      return false;
     } finally {
       setLoading(false);
     }

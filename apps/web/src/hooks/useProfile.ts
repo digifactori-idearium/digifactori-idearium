@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
-  getProfile,
-  updateProfile,
   deleteProfile,
+  getMyProfile,
+  getUser,
+  updateProfile,
 } from '../services/profile.service';
 
 import { useUser } from '@/providers/UserProvider';
@@ -16,10 +17,11 @@ export const useProfile = () => {
   const fetchProfile = useCallback(async (parentalCode?: string) => {
     setLoading(true);
     try {
-      const res = await getProfile(parentalCode);
-      return res.data;
+      const profile = await getMyProfile().then(res => res.data.profile);
+      const user = await getUser(parentalCode).then(res => res.data.user);
+      return { profile, user };
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message ?? 'Erreur lors de la récupération du profil');
       throw error;
     } finally {
       setLoading(false);
@@ -32,7 +34,7 @@ export const useProfile = () => {
       await updateProfile(user, profile);
       toast.success('Profil mis à jour !');
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message ?? 'Profil non mis à jour !');
       throw error;
     } finally {
       setLoading(false);
@@ -46,7 +48,7 @@ export const useProfile = () => {
       toast.success('Profil supprimé avec succès');
       removeToken();
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message ?? 'Profil non supprimé');
       throw error;
     } finally {
       setLoading(false);

@@ -26,17 +26,30 @@ export const fieldMappingSchema = z.object({
 /**
  * Schema for updating store settings.
  *
- * @property {string} [storeName] - The store display name
- * @property {string} [storeURL]  - Valid URL, checked for reachability in the controller
- * @property {string} [storeKey]  - Optional API key for the store
+ * @property {string} [name] - The store display name
+ * @property {string} [provider]  - Valid URL, checked for reachability in the controller
+ * @property {string} [endpoint]  - Optional API key for the store
+ *  * @property {string} [region]  - Optional API key for the store
+
+ * @property {string} [endpoint]  - Optional API key for the store
+
+ * @property {string} [endpoint]  - Optional API key for the store
+
+ * @property {string} [endpoint]  - Optional API key for the store
+
  *
  * Messages are in French (FR)
  */
 export const updateStoreSettingsSchema = z
   .object({
-    storeName: z.string().min(1, 'Le nom du store est requis').optional(),
-    storeURL: z.url('URL invalide').optional(),
-    storeKey: z.string().optional(),
+    name: z.string().min(1, 'Le nom du storage est requis').optional(),
+    provider: z.url('URL invalide').optional(),
+    endpoint: z.string().optional(),
+    region: z.string().optional(),
+    bucket: z.string().optional(),
+    accessKey: z.string().optional(),
+    secretKey: z.string().optional(),
+    publicUrl: z.string().optional(),
   })
   .refine(data => Object.values(data).some(v => v !== undefined), {
     message: 'Au moins un champ doit être fourni.',
@@ -54,24 +67,24 @@ export const updateStoreSettingsSchema = z
  */
 export const updateOrgSettingsSchema = z
   .object({
-    orgCode: z
-      .number({
-        error: () => 'Le code organisation doit être un nombre',
-      })
-      .min(6, 'Le code organisation doit comporter au moins 6 chiffres')
+    orgCode: z.coerce
+      .number({ error: () => 'Le code organisation doit être un nombre' })
+      .refine(
+        val => val.toString().length === 6,
+        'Le code organisation doit comporter exactement 6 chiffres'
+      )
       .optional(),
-    orgParentalCode: z
-      .number({
-        error: () => 'Le code parental doit être un nombre',
-      })
-      .min(4, 'Le code parental doit comporter au moins 4 chiffres')
+    orgParentalCode: z.coerce
+      .number({ error: () => 'Le code parental doit être un nombre' })
+      .refine(
+        val => val.toString().length === 4,
+        'Le code parental doit comporter exactement 4 chiffres'
+      )
       .optional(),
   })
   .refine(
     data => data.orgCode !== undefined || data.orgParentalCode !== undefined,
-    {
-      message: 'Au moins un champ doit être fourni.',
-    }
+    { message: 'Au moins un champ doit être fourni.' }
   );
 
 // ---------------------------------------------------------------------------
@@ -86,7 +99,7 @@ export const updateOrgSettingsSchema = z
  * @property {string} url - Endpoint URL of the integration
  *   - Must be a valid URL format
  *   - Must be reachable
- * @property {IntegrationType} type - Integration protocol type (ASSET | NUSIC | OTHER)
+ * @property {IntegrationType} type - Integration protocol type (MODEL_3D | SOUND | IMAGE | OTHER)
  * @property {string} key - API key or secret used to authenticate with the integration
  *   - Min 8 characters
  *   - Combined with url: endpoint must accept the key (async check)
@@ -104,7 +117,7 @@ export const createIntegrationSchema = z.object({
     error: iss =>
       iss.input === undefined
         ? 'Le type est requis'
-        : 'Type invalide. Valeurs acceptées: ASSET, MUSIC, AUTRE',
+        : 'Type invalide. Valeurs acceptées: MODEL_3D, SOUND, IMAGE, OTHER',
   }),
   key: z
     .string()
@@ -137,7 +150,8 @@ export const updateIntegrationSchema = z
       .optional(),
     type: z
       .enum(IntegrationType, {
-        error: () => 'Type invalide. Valeurs acceptées: ASSET, MUSIC, AUTRE',
+        error: () =>
+          'Type invalide. Valeurs acceptées: MODEL_3D, SOUND, IMAGE, OTHER',
       })
       .optional(),
     key: z

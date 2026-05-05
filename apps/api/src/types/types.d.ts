@@ -17,6 +17,13 @@ interface UserInput {
   role: 'INTERN' | 'SUPERVISOR' | 'ADMIN';
 }
 
+interface UserProfileInput {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: 'INTERN' | 'SUPERVISOR' | 'ADMIN';
+}
+
 interface ProfileInput {
   pseudo: string;
   bio?: string;
@@ -29,7 +36,7 @@ type RegisterInput = {
 };
 
 type SetProfileInput = {
-  user?: Partial<UserInput>;
+  user?: Partial<UserProfileInput>;
   profile: Partial<ProfileInput>;
 };
 
@@ -98,4 +105,92 @@ interface ActionConfig {
   subType: string;
   trigger: TriggerType;
   config: Record<string, any>;
+}
+
+// ASSETS MANAGEMENT TYPE
+
+interface UploadedFile {
+  originalname: string;
+  mimetype: string;
+  buffer: Buffer;
+}
+
+type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
+
+type AssetCategory =
+  | 'FOOD_AND_DRINK'
+  | 'CLUTTER'
+  | 'WEAPONS'
+  | 'TRANSPORT'
+  | 'FURNITURE_AND_DECOR'
+  | 'OBJECTS'
+  | 'NATURE'
+  | 'ANIMALS'
+  | 'BUILDINGS'
+  | 'PEOPLE_AND_CHARACTERS'
+  | 'SCENES_AND_LEVELS'
+  | 'OTHER';
+
+interface AssetRecord {
+  id: string;
+  name: string;
+  type?: IntegrationType;
+  category?: AssetCategory;
+  tags: string[];
+  file: string;
+  thumbnail: string | null;
+}
+
+interface CreateAssetInput {
+  name: string;
+  type?: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  file: UploadedFile;
+  thumbnail?: UploadedFile;
+}
+
+interface BulkCreateAssetInput {
+  name: string;
+  type?: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  fileIndex: number;
+  thumbnailIndex?: number;
+}
+
+interface UpdateAssetInput {
+  name?: string;
+  type?: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  file?: UploadedFile;
+  thumbnail?: UploadedFile;
+}
+
+interface ListAssetsFilter {
+  type?: IntegrationType;
+  category?: AssetCategory;
+  search?: string;
+  tags?: string[];
+  page: number;
+  limit: number;
+}
+
+interface PaginatedAssets {
+  items: AssetRecord[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface BulkCreateResult {
+  succeeded: AssetRecord[];
+  failed: { index: number; name: string; reason: string }[];
+}
+
+interface BulkDeleteResult {
+  deleted: number;
+  failed: { id: string; reason: string }[];
 }

@@ -12,6 +12,7 @@ import { sceneState } from '@/stores';
 
 interface ObjectSelectorProps {
   type?: 'parent' | 'action';
+  actionId?: string;
 }
 
 function setParent(objId: string, id: string) {
@@ -23,20 +24,22 @@ function setParent(objId: string, id: string) {
   sceneState.objects[objId].advanced.parent = current === id ? '' : id;
 }
 
-function setDeleteObjectId(objId: string, trigger: string, id: string) {
-  const actions = sceneState.objects[objId].actions;
-  const targetAction = actions?.find(
-    a => a.subType === 'delete' && a.type === 'utility' && a.trigger === trigger
-  );
-  if (targetAction) {
-    targetAction.config.delete_object_id =
-      targetAction.config.delete_object_id === id ? '' : id;
-  }
+function setDeleteObjectId(objId: string, actionId: string, id: string) {
+  const obj = sceneState.objects[objId];
+  if (!obj?.actions) return;
+
+  const action = obj.actions.find(a => a.id === actionId);
+  if (!action) return;
+
+  action.config.delete_object_id =
+    action.config.delete_object_id === id ? '' : id;
 }
 
-export function ObjectSelector({ type = 'parent' }: ObjectSelectorProps) {
+export function ObjectSelector({
+  type = 'parent',
+  actionId,
+}: ObjectSelectorProps) {
   const snap = useSnapshot(sceneState);
-  const trigger = snap.pendingTrigger;
   const selectedObjectId = snap.selectedObjectId;
   const sceneSelectedObject = selectedObjectId
     ? snap.objects[selectedObjectId]
@@ -48,12 +51,10 @@ export function ObjectSelector({ type = 'parent' }: ObjectSelectorProps) {
     if (type === 'parent') {
       return sceneSelectedObject?.advanced.parent ?? '';
     }
-    const action = sceneSelectedObject?.actions?.find(
-      a =>
-        a.subType === 'delete' && a.type === 'utility' && a.trigger === trigger
-    );
+    if (!actionId) return '';
+    const action = sceneSelectedObject?.actions?.find(a => a.id === actionId);
     return action?.config?.delete_object_id ?? '';
-  }, [type, sceneSelectedObject, trigger]);
+  }, [type, actionId, sceneSelectedObject]);
 
   const objectList = useMemo(() => {
     return Object.entries(snap.objects)
@@ -79,7 +80,6 @@ export function ObjectSelector({ type = 'parent' }: ObjectSelectorProps) {
 
   const selectObject = (id: string) => {
     const objId = sceneState.selectedObjectId;
-    const currentTrigger = sceneState.pendingTrigger;
     if (!objId) return;
 
     if (type === 'parent') {
@@ -87,8 +87,8 @@ export function ObjectSelector({ type = 'parent' }: ObjectSelectorProps) {
       return;
     }
 
-    if (!currentTrigger) return;
-    setDeleteObjectId(objId, currentTrigger, id);
+    if (!actionId) return;
+    setDeleteObjectId(objId, actionId, id);
   };
 
   return (
@@ -97,7 +97,6 @@ export function ObjectSelector({ type = 'parent' }: ObjectSelectorProps) {
         label="object"
         options={searchOptions}
         onSelect={id => {
-          // Scroll-to / highlight via searchQuery filter
           const found = objectList.find(o => o.id === id);
           if (found) setSearchQuery(found.name);
         }}
@@ -106,7 +105,6 @@ export function ObjectSelector({ type = 'parent' }: ObjectSelectorProps) {
         <div className="flex flex-col gap-2">
           {filteredList.map(object => {
             const isSelected = selectedValue === object.id;
-
             return (
               <div
                 key={object.id}
@@ -136,7 +134,6 @@ export function ObjectSelector({ type = 'parent' }: ObjectSelectorProps) {
                       <Box size={18} />
                     </div>
                   )}
-
                   <span
                     className={cn(
                       'text-sm font-medium transition-colors',
@@ -163,7 +160,7 @@ export function ObjectSelector({ type = 'parent' }: ObjectSelectorProps) {
                     <>
                       <div className="flex items-center group-hover:hidden">
                         <Check size={14} className="mr-1" />
-                        <span>Parent</span>
+                        <span>Sélectionné</span>
                       </div>
                       <span className="hidden group-hover:inline text-xs">
                         Retirer

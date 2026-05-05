@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { IntegrationCard } from '@/components/settings/IntegrationCard';
 import { NewIntegrationCard } from '@/components/settings/NewIntegrationCard';
+import { OrgCard } from '@/components/settings/OrgCard';
 import { StoreCard } from '@/components/settings/StoreCard';
 import { getSettings, getIntegrations } from '@/services/settings.service';
 
@@ -40,10 +41,16 @@ export const Settings: React.FC = () => {
 
       <div className="container mx-auto py-10 w-full max-w-6xl sm:px-6 lg:px-8">
         <h2 className="font-bold uppercase text-muted-foreground mb-3 ml-1">
+          Organisation
+        </h2>
+
+        <OrgCard setting={settings} onUpdated={fetchData} />
+
+        <h2 className="font-bold uppercase text-muted-foreground mb-3 ml-1">
           Store primaire
         </h2>
 
-        <StoreCard store={settings} onUpdated={fetchData} />
+        <StoreCard storage={settings?.storage} onUpdated={fetchData} />
 
         <h2 className="font-bold uppercase text-muted-foreground mb-3 ml-1">
           Intégrations

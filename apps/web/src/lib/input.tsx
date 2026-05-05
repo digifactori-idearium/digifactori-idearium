@@ -10,7 +10,6 @@ import {
   Users,
   Box,
   ChartBarStacked,
-  TextAlignStart,
   FileBox,
   LockKeyhole,
 } from 'lucide-react';
@@ -48,6 +47,7 @@ export const loginInputs = [
     type: 'password',
     name: 'password',
     placeholder: 'Entrez votre mot de passe',
+    min: 6,
     required: true,
     icon: Lock,
   },
@@ -87,6 +87,8 @@ export const registerBaseInputs: FormInputData[] = [
     type: 'password',
     name: 'user.password',
     placeholder: 'Créez votre mot de passe',
+    min: 6,
+
     required: true,
     icon: Lock,
   },
@@ -115,7 +117,7 @@ export const registerBaseInputs: FormInputData[] = [
 
 export const adminCodeInput: FormInputData = {
   label: 'Code administrateur',
-  type: 'text',
+  type: 'password',
   name: 'user.admin_code',
   placeholder: 'Entrez le code administrateur',
   required: true,
@@ -124,19 +126,21 @@ export const adminCodeInput: FormInputData = {
 
 export const orgCodeInput: FormInputData = {
   label: 'Code organisation',
-  type: 'number',
+  type: 'password',
   name: 'user.orgCode',
   placeholder: "Entrez le code de l'organisation",
+  max: 6,
   required: true,
   icon: KeyRound,
 };
 
 export const parentalCodeInput: FormInputData = {
   label: 'Code parental',
-  type: 'number',
+  type: 'password',
   name: 'user.parental_code',
   placeholder: 'Entrez le code parental (min. 4 chiffres)',
   required: true,
+  max: 6,
   icon: ShieldCheck,
 };
 
@@ -149,6 +153,7 @@ export const changePasswordInputs = [
     type: 'password',
     name: 'currentPassword',
     placeholder: 'Saisissez votre mot de passe actuel',
+    min: 6,
     required: true,
     icon: LockKeyhole,
   },
@@ -157,6 +162,7 @@ export const changePasswordInputs = [
     type: 'password',
     name: 'newPassword',
     placeholder: 'Saisissez votre nouveau mot de passe',
+    min: 6,
     required: true,
     icon: Lock,
   },
@@ -165,6 +171,7 @@ export const changePasswordInputs = [
     type: 'password',
     name: 'confirmPassword',
     placeholder: 'Confirmez votre nouveau mot de passe',
+    min: 6,
     required: true,
     icon: Lock,
   },
@@ -340,10 +347,10 @@ const ideoramaTags = [
 
 const globalConfigInputs = [
   {
-    label: 'Visibilité(Public)',
+    label: 'Rendre public',
     type: 'switch',
-    name: 'visible',
-    placeholder: 'Public ou pas',
+    name: 'isPublic',
+    placeholder: 'Visible par tous',
     required: false,
   },
   {
@@ -358,6 +365,7 @@ const globalConfigInputs = [
     ],
     required: false,
   },
+
   {
     label: 'Choisir la musique de fond',
     type: 'dialog',
@@ -391,7 +399,12 @@ const partConfigInput = [
   },
 ];
 const infoConfig = [
-  { name: 'description', label: 'Description', type: 'textarea' },
+  {
+    name: 'name',
+    label: "Nom de l'idéorama",
+    type: 'text',
+    placeholder: 'Mon idéorama',
+  },
   {
     name: 'category',
     label: 'Catégorie',
@@ -427,9 +440,18 @@ const objectInfoInputs = [
     label: 'Catégorie',
     type: 'select',
     options: [
-      { value: 'voxel', text: 'Voxel' },
-      { value: 'furniture', text: 'Furniture' },
-      { value: 'decoration', text: 'Decoration' },
+      { value: 'FOOD_AND_DRINK', text: 'Nourriture & Boissons' },
+      { value: 'CLUTTER', text: 'Divers' },
+      { value: 'WEAPONS', text: 'Armes' },
+      { value: 'TRANSPORT', text: 'Transport' },
+      { value: 'FURNITURE_AND_DECOR', text: 'Meubles & Décoration' },
+      { value: 'OBJECTS', text: 'Objets' },
+      { value: 'NATURE', text: 'Nature' },
+      { value: 'ANIMALS', text: 'Animaux' },
+      { value: 'BUILDINGS', text: 'Architecture' },
+      { value: 'PEOPLE_AND_CHARACTERS', text: 'Personnages' },
+      { value: 'SCENES_AND_LEVELS', text: 'Scènes & Niveaux' },
+      { value: 'OTHER', text: 'Autre' },
     ],
   },
 ];
@@ -488,32 +510,56 @@ export const assetInputs = [
     type: 'text',
     name: 'name',
     placeholder: "Entrez le nom de l'asset",
-    required: true,
+    required: false,
     icon: Box,
   },
   {
     label: 'Catégorie',
-    type: 'text',
+    type: 'select',
     name: 'category',
-    placeholder: "Entrez le type de catégorie de l'asset",
-    required: true,
+    placeholder: "Sélectionnez la catégorie de l'asset",
+    required: false,
     icon: ChartBarStacked,
+    options: [
+      { value: 'FOOD_AND_DRINK', text: 'Nourriture & Boissons' },
+      { value: 'CLUTTER', text: 'Divers' },
+      { value: 'WEAPONS', text: 'Armes' },
+      { value: 'TRANSPORT', text: 'Transport' },
+      { value: 'FURNITURE_AND_DECOR', text: 'Meubles & Décoration' },
+      { value: 'OBJECTS', text: 'Objets' },
+      { value: 'NATURE', text: 'Nature' },
+      { value: 'ANIMALS', text: 'Animaux' },
+      { value: 'BUILDINGS', text: 'Architecture' },
+      { value: 'PEOPLE_AND_CHARACTERS', text: 'Personnages' },
+      { value: 'SCENES_AND_LEVELS', text: 'Scènes & Niveaux' },
+      { value: 'OTHER', text: 'Autre' },
+    ],
   },
   {
-    label: 'Description',
-    type: 'text',
-    name: 'description',
-    placeholder: "Entrez la description de l'asset",
-    required: true,
-    icon: TextAlignStart,
+    label: 'Tags',
+    type: 'tags',
+    name: 'tags',
+    placeholder: 'Entrez les tags',
+    required: false,
+    icon: Box,
   },
   {
-    label: 'Source',
-    type: 'text',
-    name: 'source',
-    placeholder: "Entrez la source de l'asset",
-    required: true,
-    icon: FileBox,
+    label: 'Fichier',
+    type: 'assets',
+    name: 'file',
+    placeholder: "Entrez le nom de l'asset",
+    required: false,
+    multiple: false,
+    icon: Box,
+  },
+  {
+    label: 'Apercu',
+    type: 'assets',
+    name: 'thumbnail',
+    placeholder: "Entrez le nom de l'asset",
+    required: false,
+    multiple: false,
+    icon: Box,
   },
 ];
 
@@ -526,7 +572,8 @@ export const integrationInputs = [
     type: 'switch',
     name: 'isActive',
     placeholder: "Entrez le nom de l'intégration",
-    required: true,
+    required: false,
+    default: true,
     icon: Box,
   },
   {
@@ -560,8 +607,9 @@ export const integrationInputs = [
     placeholder: "Entrez le type de l'intégration",
     required: true,
     options: [
-      { value: 'ASSET', text: 'Asset-3d' },
-      { value: 'MUSIC', text: 'Musique' },
+      { value: 'MODEL_3D', text: 'Modèle 3D' },
+      { value: 'SOUND', text: 'Son' },
+      { value: 'IMAGE', text: 'Image' },
       { value: 'OTHER', text: 'Autre' },
     ],
     icon: ChartBarStacked,
@@ -600,27 +648,105 @@ export const integrationInputs = [
 ========================= */
 export const storeInputs = [
   {
+    label: 'Fournisseur',
+    type: 'select',
+    name: 'provider',
+    placeholder: 'Sélectionner le fournisseur cloud',
+    options: [
+      { value: 'LOCAL', text: 'Local' },
+      { value: 'S3', text: 'Amazon S3' },
+      { value: 'R2', text: 'Cloudflare R2' },
+      { value: 'GCS', text: 'Google Cloud Storage' },
+      { value: 'AZURE', text: 'Azure Blob Storage' },
+      { value: 'MINIO', text: 'MinIO' },
+    ],
+    required: true,
+    icon: Box,
+  },
+
+  {
     label: 'Nom',
     type: 'text',
-    name: 'storeName',
-    placeholder: 'Entrez le nom du store',
+    name: 'name',
+    placeholder: 'Entrez le nom du stockage',
+    required: true,
+    icon: Box,
+  },
+
+  {
+    label: 'Région',
+    type: 'text',
+    name: 'region',
+    placeholder: 'ex: us-east-1',
+    required: false,
+    icon: FileBox,
+  },
+
+  {
+    label: 'Endpoint',
+    type: 'text',
+    name: 'endpoint',
+    placeholder: 'https://...',
+    required: false,
+    icon: FileBox,
+  },
+
+  {
+    label: 'Bucket / Container',
+    type: 'text',
+    name: 'bucket',
+    placeholder: 'Nom du bucket ou container',
+    required: false,
+    icon: Box,
+  },
+
+  {
+    label: 'Access Key',
+    type: 'text',
+    name: 'accessKey',
+    placeholder: "Entrez l'accessKey",
+    required: false,
+    icon: KeyRound,
+  },
+
+  {
+    label: 'Secret Key',
+    type: 'password',
+    name: 'secretKey',
+    placeholder: 'Entrez la secretKey',
+    required: false,
+    icon: KeyRound,
+  },
+
+  {
+    label: 'URL publique',
+    type: 'text',
+    name: 'publicUrl',
+    placeholder: 'https://cdn.example.com',
+    required: false,
+    icon: FileBox,
+  },
+];
+
+export const orgInputs = [
+  {
+    label: "Code de l'organisation",
+    type: 'password',
+    name: 'orgCode',
+    placeholder: "Code d'accès de l'organisation",
+    max: 6,
+    min: 6,
     required: true,
     icon: Box,
   },
   {
-    label: 'Source',
-    type: 'text',
-    name: 'storeURL',
-    placeholder: 'Entrez la source du store',
+    label: 'Code parental Stagiaires',
+    type: 'password',
+    name: 'orgParentalCode',
+    placeholder: "Code d'accès pour les stagiaires",
+    max: 4,
+    min: 4,
     required: true,
     icon: FileBox,
-  },
-  {
-    label: 'Clef',
-    type: 'password',
-    name: 'storeKey',
-    placeholder: 'Entrez la source du store',
-    required: false,
-    icon: KeyRound,
   },
 ];

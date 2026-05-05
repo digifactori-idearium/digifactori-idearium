@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import {
   createUserSchema,
   updateRoleSchema,
-  updateUserSchema,
+  CreateUpdateUserSchema,
 } from './user.validation';
 
 import { IUserService } from '@/types';
@@ -108,11 +108,20 @@ export default class UserController {
    *
    * @route  PATCH /user/:id
    * @access ADMIN | SUPERVISOR
+   *
+   * @body   { email?: string, first_name?: string, last_name?: string, role?: Role }
+   *
+   * @returns
+   *   - 200 { data: User }
+   *   - 400 validation error
+   *   - 403 permission denied
+   *   - 404 user not found
    */
   updateUser = asyncHandler(async (req: Request, res: Response) => {
     const requester = req.user!;
     const id = req.params.id as string;
 
+    const updateUserSchema = CreateUpdateUserSchema(id);
     const result = await updateUserSchema.safeParseAsync(req.body);
     if (failOnValidation(result, res)) return;
 

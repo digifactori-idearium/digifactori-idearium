@@ -2,7 +2,6 @@ import { Role } from '@prisma/client';
 import { type Request, type Response } from 'express';
 
 import {
-  updateStoreSettingsSchema,
   createIntegrationSchema,
   updateIntegrationSchema,
   updateOrgSettingsSchema,
@@ -34,47 +33,6 @@ export default class SettingsController {
     HttpResponse.success(settings, 'Paramètres récupérés avec succès').send(
       res
     );
-  });
-
-  /**
-   * Updates the store settings (storeName, storeURL, storeKey).
-   * storeURL is validated for reachability before saving.
-   * At least one field must be provided.
-   *
-   * @route  PATCH /settings/store
-   * @access ADMIN
-   *
-   * @body   { storeName?: string, storeURL?: string, storeKey?: string }
-   *
-   * @returns
-   *   - 200 { data: Setting & { integrations: Integration[] } }
-   *   - 400 validation errors | unreachable store URL or invalid key
-   */
-  updateStoreSettings = asyncHandler(async (req: Request, res: Response) => {
-    const result = await updateStoreSettingsSchema.safeParseAsync(req.body);
-    if (failOnValidation(result, res)) return;
-
-    const { storeURL, storeKey } = result.data!;
-    if (storeURL || storeKey) {
-      const existing = await this.settingsService.getSettings();
-      const resolvedUrl = storeURL ?? existing?.storeURL;
-      const resolvedKey = storeKey ?? (existing?.storeKey as string);
-
-      if (resolvedUrl) {
-        const isValid = await isUrlReachable(resolvedUrl, resolvedKey);
-        if (!isValid) {
-          return HttpResponse.badRequest('Store URL ou clé API invalide').send(
-            res
-          );
-        }
-      }
-    }
-
-    const settings = await this.settingsService.updateSettings(result.data!);
-    HttpResponse.success(
-      settings,
-      'Paramètres du store mis à jour avec succès'
-    ).send(res);
   });
 
   /**
@@ -120,7 +78,8 @@ export default class SettingsController {
    *   - 200 { data: Integration[] }
    */
   getIntegrations = asyncHandler(async (req: Request, res: Response) => {
-    const integrations = await this.settingsService.getIntegrations();
+    const type = req.query.type ? String(req.query.type) : undefined;
+    const integrations = await this.settingsService.getIntegrations(type);
     HttpResponse.success(
       integrations,
       'Intégrations récupérées avec succès'
@@ -163,7 +122,7 @@ export default class SettingsController {
    *   id: string,
    *   name: string,
    *   url: string,
-   *   type: 'ASSET' | 'MUSIC' | 'OTHER',
+   *   type: 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER',
    *   key?: string,
    *   isActive?: boolean,
    *   fieldMapping?: { id: string, name: string, category?: string, file: string, thumbnail?: string }
@@ -202,7 +161,7 @@ export default class SettingsController {
    * @body   {
    *   name?: string,
    *   url?: string,
-   *   type?: 'ASSET' | 'MUSIC' | 'OTHER',
+   *   type?: 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER',
    *   key?: string,
    *   isActive?: boolean,
    *   fieldMapping?: { id: string, name: string, category?: string, file: string, thumbnail?: string }

@@ -1,4 +1,4 @@
-import { FieldValues, SubmitHandler } from 'react-hook-form';
+import { FieldValues } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { Form } from '@/components/common/form';
@@ -23,7 +23,7 @@ export const EditorCreator: React.FC<{
 }> = ({ isOpen, setIsOpen, userId, onOpen }) => {
   const { loading, createDocument } = useDocumentList();
 
-  const onSubmit: SubmitHandler<FieldValues> = async data => {
+  const onSubmit = async (data: FieldValues): Promise<boolean | void> => {
     try {
       const id = await createDocument({
         userId,
@@ -36,6 +36,7 @@ export const EditorCreator: React.FC<{
       toast.success('Création du document réussie');
     } catch (error: any) {
       toast.error(error?.message || 'Échec de la création du document');
+      return false;
     }
   };
 

@@ -1,12 +1,13 @@
 import {
+  CloudStorage,
+  Document,
   Ideorama,
+  Integration,
   Profile,
   Role,
+  Setting,
   User,
   VoxelModel,
-  Document,
-  Setting,
-  Integration,
 } from '@prisma/client';
 
 export interface UserPayload {
@@ -39,15 +40,20 @@ export interface IAuthService {
 }
 
 export interface IIdeoramaService {
-  createIdeorama(ideoramaData: Ideorama): Promise<Ideorama>;
-  updateIdeoramaModelPath(
-    ideoramaId: string,
-    uploadPath: string
-  ): Promise<Ideorama>;
+  createIdeorama(ideoramaData: Partial<Ideorama>): Promise<Ideorama>;
   getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
+  saveScene(
+    ideoramaId: string,
+    scene: import('@prisma/client').Prisma.InputJsonValue,
+    meta?: { name?: string; isPublic?: boolean }
+  ): Promise<Ideorama>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
-  updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama>;
+  updateIdeorama(
+    ideoramaId: string,
+    data: import('@prisma/client').Prisma.IdeoramaUpdateInput
+  ): Promise<Ideorama>;
   isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
+  likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
 }
 
@@ -60,10 +66,18 @@ export interface IProfileService {
   verifyPassword(userId: string, password: string): Promise<boolean>;
   getSingleProfile(userId: string): Promise<Profile | null>;
   getSingleUser(userId: string): Promise<User | null>;
+  getCorrectParentalCode(): Promise<number | undefined>;
   updateProfile(
     userId: string,
     body: SetProfileInput
   ): Promise<{ user?: User; profile: Profile }>;
+  followUser(userId: string, followedUserId: string): Promise<boolean>;
+  getFollowers(
+    userId: string
+  ): Promise<{ pseudo: string; avatar: string | null }[]>;
+  getFollowing(
+    userId: string
+  ): Promise<{ pseudo: string; avatar: string | null }[]>;
   deleteUser(userId: string): Promise<{ user: User; profile: Profile }>;
 }
 
@@ -72,16 +86,15 @@ export interface IVoxelService {
     name?: string;
     userId: string;
   }): Promise<VoxelModel>;
-  updateVoxelModelPath(
+
+  updateVoxelModelFileKey(
     voxelModelId: string,
-    uploadPath: string
+    fileKey: string
   ): Promise<VoxelModel>;
-  getVoxelModelById(
-    voxelModelId: string,
-    userId: string
-  ): Promise<VoxelModel | null>;
+
+  getVoxelModelById(voxelModelId: string): Promise<VoxelModel | null>;
   getUserVoxelModels(userId: string): Promise<VoxelModel[]>;
-  deleteVoxelModel(voxelModelId: string, userId: string): Promise<VoxelModel>;
+  deleteVoxelModel(voxelModelId: string): Promise<VoxelModel>;
 }
 
 export interface IEditorService {
@@ -123,17 +136,18 @@ export interface IEditorService {
 
 export interface ISettingsService {
   // Settings (singleton)
-  getSettings(): Promise<Setting & { integrations: Integration[] }>;
+  getSettings(): Promise<
+    Setting & { integrations: Integration[] } & { storage: CloudStorage | null }
+  >;
   updateSettings(data: {
-    storeName?: string;
-    storeURL?: string;
-    storeKey?: string;
     orgCode?: number;
     orgParentalCode?: number;
-  }): Promise<Setting & { integrations: Integration[] }>;
+  }): Promise<
+    Setting & { integrations: Integration[] } & { storage: CloudStorage | null }
+  >;
 
   // Integrations
-  getIntegrations(): Promise<Integration[]>;
+  getIntegrations(type?: string): Promise<Integration[]>;
   getIntegrationById(integrationId: string): Promise<Integration>;
   createIntegration(data: {
     name: string;
@@ -175,4 +189,18 @@ export interface IUserService {
   setActive(id: string, isActive: boolean): Promise<User>;
   updateRole(id: string, role: Role): Promise<User>;
   deleteUser(id: string): Promise<{ user: User }>;
+}
+
+export interface IAssetService {
+  getAssets(filter: ListAssetsFilter): Promise<PaginatedAssets>;
+  getAssetById(id: string): Promise<AssetRecord>;
+  createAsset(input: CreateAssetInput): Promise<AssetRecord>;
+  bulkCreateAssets(
+    descriptors: BulkCreateAssetInput[],
+    files: UploadedFile[],
+    thumbnails: UploadedFile[]
+  ): Promise<BulkCreateResult>;
+  updateAsset(id: string, input: UpdateAssetInput): Promise<AssetRecord>;
+  deleteAsset(id: string): Promise<AssetRecord>;
+  bulkDeleteAssets(ids: string[]): Promise<BulkDeleteResult>;
 }

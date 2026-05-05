@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useUser } from '@/providers/UserProvider';
-import { getProfile } from '@/services/profile.service';
+import { getUser } from '@/services/profile.service';
 
 interface AdvancedDialogProps {
   user?: any;
@@ -31,7 +31,7 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
   onDelete,
   children,
 }) => {
-  const { user: sessionUser } = useUser();
+  const { user: sessionUser, removeToken } = useUser();
   const [user, setUser] = useState<any>();
   const [open, setOpen] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(sessionUser?.role !== 'INTERN');
@@ -41,9 +41,9 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
 
   const handleUnlock = async () => {
     try {
-      const response = await getProfile(code);
-      if (response.data?.user) {
-        setUser(response.data?.user);
+      const response = await getUser(code);
+      if (response.data.user) {
+        setUser(response.data.user);
         setIsUnlocked(true);
         toast.success('Accès autorisé');
       } else {
@@ -56,15 +56,9 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
 
   const handleFormSubmit = async (formData: any) => {
     const userData = { ...formData };
-
-    try {
-      await onUpdate(userData, profile);
-
-      toast.success('Paramètres mis à jour');
-      setOpen(false);
-    } catch {
-      toast.error('Erreur lors de la mise à jour');
-    }
+    await onUpdate(userData, profile);
+    setOpen(false);
+    removeToken();
   };
 
   return (

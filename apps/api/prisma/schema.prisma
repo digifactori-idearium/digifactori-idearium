@@ -42,38 +42,31 @@ model Profile {
   pseudo        String          @unique
   avatar        String?
   bio           String?
-  followers     Follows[]       @relation("followers")
-  following     Follows[]       @relation("following")
+  followers     Follow[]        @relation("UserFollowers")
+  following     Follow[]        @relation("UserFollowing")
   ideoramaLiked IdeoramaLikes[] @relation("ideoramaLiked")
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   user          User            @relation(fields: [userId], references: [id])
 }
 
-model Follows {
-  followers    Profile @relation("followers", fields: [followedById], references: [id])
-  followedById String
-  following    Profile @relation("following", fields: [followingId], references: [id])
-  followingId  String
+model Follow {
+  follower   Profile @relation("UserFollowing", fields: [followerId], references: [userId])
+  followerId String
 
-  @@id([followingId, followedById])
+  following  Profile @relation("UserFollowers", fields: [followedId], references: [userId])
+  followedId String
+
+  @@id([followerId, followedId])
 }
 
 // use metadata
 model Ideorama {
-  id          String  @id @default(cuid())
-  name        String  @default("New Ideorama")
-  description String?
-  theme       String  @default("black-orange")
-  brightness  String  @default("bright")
-  isPublic    Boolean @default(true)
+  id       String  @id @default(cuid())
+  name     String  @default("New Ideorama")
+  isPublic Boolean @default(true)
 
-  backgroundColor String @default("#f0d400")
-  leftWallColor   String @default("#f45405")
-  rightWallColor  String @default("#e80606")
-  floorColor      String @default("#100101")
-
-  model String
+  scene Json?
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -87,7 +80,7 @@ model Ideorama {
 }
 
 model IdeoramaLikes {
-  profile    Profile  @relation("ideoramaLiked", fields: [userId], references: [id])
+  profile    Profile  @relation("ideoramaLiked", fields: [userId], references: [userId])
   userId     String
   ideorama   Ideorama @relation("likers", fields: [ideoramaId], references: [id])
   ideoramaId String
@@ -129,11 +122,10 @@ model VoxelModel {
   updatedAt DateTime @updatedAt
 }
 
-
 model Document {
   id        String   @id @default(cuid())
   title     String   @default("Sans titre")
-  content   String   @default("") 
+  content   String   @default("")
   json      Json?
   wordCount Int      @default(0)
   emoji     String   @default("📝")
@@ -146,23 +138,62 @@ model Document {
 
 // ASSETS
 enum IntegrationType {
-  ASSET
-  MUSIC
+  MODEL_3D
+  SOUND
+  IMAGE
   OTHER
 }
 
-
+enum AssetCategory {
+  FOOD_AND_DRINK
+  CLUTTER
+  WEAPONS
+  TRANSPORT
+  FURNITURE_AND_DECOR
+  OBJECTS
+  NATURE
+  ANIMALS
+  BUILDINGS
+  PEOPLE_AND_CHARACTERS
+  SCENES_AND_LEVELS
+  OTHER
+}
 
 model Setting {
-  id              Int        @id @default(1)
-  orgCode         Int        @default(202026)
-  orgParentalCode Int        @default(2026)
-  storeName       String
-  storeURL     String
-  storeKey     String?
-  integrations Integration[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id              Int           @id @default(1)
+  orgCode         Int           @default(202026)
+  orgParentalCode Int           @default(2026)
+  storage         CloudStorage?
+  integrations    Integration[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+enum StorageProvider {
+  S3
+  R2
+  GCS
+  AZURE
+  MINIO
+  LOCAL
+}
+
+model CloudStorage {
+  id        Int             @id @default(1)
+  name      String?
+  provider  StorageProvider @default(LOCAL)
+  region    String?
+  endpoint  String?
+  bucket    String?
+  accessKey String?
+  secretKey String?
+  publicUrl String?
+
+  settingId Int     @unique
+  setting   Setting @relation(fields: [settingId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Integration {
@@ -172,10 +203,23 @@ model Integration {
   name         String
   url          String
   type         IntegrationType
-  key          String?          
+  key          String?
   isActive     Boolean         @default(true)
-  fieldMapping Json            @default("{}")  
+  fieldMapping Json            @default("{}")
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 }
 
+model Asset {
+  id       String          @id @default(cuid())
+  name     String
+  type     IntegrationType @default(OTHER)
+  category AssetCategory   @default(OTHER)
+  tags     String[]
+
+  file      String
+  thumbnail String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

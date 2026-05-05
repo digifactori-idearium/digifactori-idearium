@@ -1,26 +1,27 @@
-import { useGLTF, useCursor } from '@react-three/drei';
+import { useCursor, useGLTF } from '@react-three/drei';
 import { ThreeEvent, useFrame } from '@react-three/fiber';
 import {
   JSX,
+  memo,
+  useCallback,
   useEffect,
   useLayoutEffect,
-  useState,
-  useRef,
-  useCallback,
-  memo,
   useMemo,
+  useRef,
+  useState,
 } from 'react';
 import * as THREE from 'three';
-import { GLTF } from 'three-stdlib';
-import { SkeletonUtils } from 'three-stdlib';
+import { GLTF, SkeletonUtils } from 'three-stdlib';
 import { useSnapshot } from 'valtio';
 
 import { Controls } from './Gismo';
 import { SpeechBubble } from './SpeechBubble';
 
+import { useStorageBlob } from '@/hooks/useStorageFile';
 import { useTrigger } from '@/hooks/useTrigger';
 import { cleanObject } from '@/lib/actions/runtime';
-import { sceneState, actions } from '@/stores';
+import { isStorageKey } from '@/lib/asset';
+import { actions, sceneState } from '@/stores';
 
 // Scratch objects
 const _initPos = new THREE.Vector3();
@@ -57,6 +58,29 @@ function collectMeshes(obj: THREE.Object3D): THREE.Mesh[] {
 
 // Model Component
 export const Model = memo(function Model({
+  id,
+  name,
+  file,
+  ...props
+}: ModelProps) {
+  const isStorageFile = isStorageKey(file) && file !== '';
+  const { url, loading, error } = useStorageBlob(isStorageFile ? file : null);
+
+  const resolvedFile = isStorageFile
+    ? url
+    : file || ('/models/person.glb' as string);
+
+  // Don't render until we have a URL to load
+  if (isStorageFile && (loading || !resolvedFile)) return null;
+  if (isStorageFile && error) {
+    console.error(`Model: failed to load ${file}:`, error);
+    return null;
+  }
+
+  return <ModelRenderer id={id} name={name} file={resolvedFile!} {...props} />;
+});
+
+const ModelRenderer = memo(function ModelRenderer({
   id,
   name,
   file,
@@ -194,6 +218,7 @@ export const Model = memo(function Model({
       if (!mat) continue;
 
       if (!mat.userData.originalColor) {
+        // eslint-disable-next-line react-hooks/immutability
         mat.userData.originalColor = mat.color.clone();
       }
       const originalColor = mat.userData.originalColor as THREE.Color;
@@ -216,7 +241,7 @@ export const Model = memo(function Model({
           mat.emissiveIntensity = 0;
         }
       } else {
-        mat.emissive.set('#000000');
+        // mat.emissive.set('#000000');
         mat.emissiveIntensity = 0;
       }
 

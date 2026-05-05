@@ -16,11 +16,11 @@ export const getSettings = async (): Promise<Settings> => {
   }
 };
 
-export const updateSettings = async (
+export const updateStoreSettings = async (
   payload: Partial<Settings>
 ): Promise<Settings> => {
   try {
-    const response = await axios.patch('api/settings', payload);
+    const response = await axios.patch('api/storage', payload);
 
     if (response.data.status === 'error') {
       throw new Error(response.data.error?.message);
@@ -31,11 +31,11 @@ export const updateSettings = async (
     return handleApiError(error);
   }
 };
-
-// Integrations
-export const getIntegrations = async (): Promise<Integration[]> => {
+export const updateOrgSettings = async (
+  payload: Partial<Settings>
+): Promise<Settings> => {
   try {
-    const response = await axios.get('api/settings/integrations');
+    const response = await axios.patch('api/settings/org', payload);
 
     if (response.data.status === 'error') {
       throw new Error(response.data.error?.message);
@@ -46,7 +46,24 @@ export const getIntegrations = async (): Promise<Integration[]> => {
     return handleApiError(error);
   }
 };
+// Integrations
+export const getIntegrations = async (
+  type?: IntegrationType
+): Promise<Integration[]> => {
+  try {
+    const response = await axios.get('api/settings/integrations', {
+      params: type ? { type } : undefined,
+    });
 
+    if (response.data.status === 'error') {
+      throw new Error(response.data.error?.message);
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    return handleApiError(error);
+  }
+};
 export const getIntegrationById = async (id: string): Promise<Integration> => {
   try {
     const response = await axios.get(`api/settings/integrations/${id}`);
