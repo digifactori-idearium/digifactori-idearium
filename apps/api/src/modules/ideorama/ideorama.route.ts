@@ -21,7 +21,7 @@ export default function createIdeoramaRoutes(
   router.get('/', ideoramaController.getUserIdeoramasController);
 
   router.get(
-    '/:userId',
+    '/user/:userId',
     ideoramaController.getParticularUserIdeoramasController
   );
 

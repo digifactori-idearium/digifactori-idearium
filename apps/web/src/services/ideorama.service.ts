@@ -34,7 +34,7 @@ export const getUserIdeoramas = async (): Promise<ApiResponse<Ideorama[]>> => {
 export const getParticularUserIdeoramas = async (
   userId: string
 ): Promise<ApiResponse<Ideorama[]>> => {
-  const response = await axios.get(`${BASE}/${userId}`);
+  const response = await axios.get(`${BASE}/user/${userId}`);
   return response.data;
 };
 
