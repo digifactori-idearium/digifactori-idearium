@@ -182,7 +182,7 @@ export default class IdeoramaService implements IIdeoramaService {
    * Permanently deletes an ideorama.
    */
   async deleteIdeorama(ideoramaId: string): Promise<Ideorama> {
-    return ideoramaTable.delete({
+    return await ideoramaTable.delete({
       where: { id: ideoramaId },
     });
   }

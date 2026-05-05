@@ -129,7 +129,9 @@ app.use((req: express.Request, res: express.Response) => {
 
 // Server start
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`API Documentation: http://localhost:${PORT}/api`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
+  if (IS_DEV) {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`API Documentation: http://localhost:${PORT}/api`);
+    console.log(`Health check: http://localhost:${PORT}/api/health`);
+  }
 });
