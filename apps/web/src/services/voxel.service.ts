@@ -77,19 +77,16 @@ export const saveVoxelModel = async (
     const formData = new FormData();
     formData.append('file', blob, `${voxelModelId}.glb`);
 
-    const token = localStorage.getItem('token');
-    const baseUrl =
-      (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
-      'http://localhost:3001';
-
-    const response = await fetch(`${baseUrl}${BASE}/${voxelModelId}/save`, {
-      method: 'PATCH',
-      body: formData,
-      keepalive: true,
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    await axios.patch(`${BASE}/${voxelModelId}/save`, formData, {
+      fetchOptions: {
+        keepalive: true,
+      },
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
 
-    return response.ok;
+    return true;
   } catch (error) {
     console.error('Error saving voxel model:', error);
     return false;
