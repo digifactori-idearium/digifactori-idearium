@@ -1,5 +1,7 @@
 import axios from './axios.service';
 
+import { handleApiError } from '@/lib/api';
+
 interface ApiResponse<T> {
   status: string;
   message?: string;
@@ -88,7 +90,7 @@ export const saveVoxelModel = async (
 
     return true;
   } catch (error) {
-    console.error('Error saving voxel model:', error);
+    console.error('Error saving voxel model:', handleApiError(error));
     return false;
   }
 };

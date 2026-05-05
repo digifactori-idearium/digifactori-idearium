@@ -1,5 +1,7 @@
 import axios from '../services/axios.service';
 
+import { handleApiError } from '@/lib/api';
+
 interface ApiResponse<T> {
   status: string;
   message: string;
@@ -56,7 +58,7 @@ export const saveIdeorama = async (
     await axios.patch(`${BASE}/${ideoramaId}/save`, { scene: sceneObj });
     return true;
   } catch (error) {
-    console.error('saveIdeorama error:', error);
+    console.error('saveIdeorama error:', handleApiError(error));
     return false;
   }
 };
@@ -88,7 +90,7 @@ export const beaconSaveIdeorama = (
 
     return true;
   } catch (error) {
-    console.error('beaconSaveIdeorama error:', error);
+    console.error('beaconSaveIdeorama error:', handleApiError(error));
     return false;
   }
 };

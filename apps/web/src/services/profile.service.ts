@@ -1,6 +1,7 @@
 import axios from '../services/axios.service';
 
 import { handleApiError } from '@/lib/api';
+
 type getProfileResponse = {
   profile: Profile;
   user: User;
@@ -17,12 +18,14 @@ interface ApiResponse<T> {
   status_code: number;
 }
 
+const BASE_URL = 'api/profile/';
+
 // Services
 export const getMyProfile = async (): Promise<
   ApiResponse<getProfileResponse>
 > => {
   try {
-    const response = await axios.get(`http://localhost:3001/api/profile/`);
+    const response = await axios.get(`${BASE_URL}/`);
 
     if (response.data.status === 'error') {
       throw new Error(
@@ -39,7 +42,7 @@ export const getUser = async (
   parentalCode: string | undefined
 ): Promise<ApiResponse<{ user: User | null }>> => {
   try {
-    const response = await axios.get(`http://localhost:3001/api/profile/user`, {
+    const response = await axios.get(`${BASE_URL}/user`, {
       headers: { 'X-Parental-Code': parentalCode },
     });
     if (response.data.status === 'error') {
@@ -58,13 +61,10 @@ export const updateProfile = async (
   newProfileInfo: Partial<Profile>
 ) => {
   try {
-    const response = await axios.patch(
-      `http://localhost:3001/api/profile/setting`,
-      {
-        user: newUserInfo,
-        profile: newProfileInfo,
-      }
-    );
+    const response = await axios.patch(`${BASE_URL}/setting`, {
+      user: newUserInfo,
+      profile: newProfileInfo,
+    });
 
     if (response.data.status === 'error') {
       throw new Error(
@@ -81,9 +81,7 @@ export const getProfile = async (
   userId: string
 ): Promise<ApiResponse<{ profile: Profile }>> => {
   try {
-    const response = await axios.get(
-      `http://localhost:3001/api/profile/${userId}`
-    );
+    const response = await axios.get(`${BASE_URL}/${userId}`);
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -103,10 +101,9 @@ export const getProfile = async (
 
 export const followUser = async (followedUserId: string) => {
   try {
-    const response = await axios.post(
-      `http://localhost:3001/api/profile/follow`,
-      { followedUserId: followedUserId }
-    );
+    const response = await axios.post(`${BASE_URL}/follow`, {
+      followedUserId: followedUserId,
+    });
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -126,9 +123,7 @@ export const getFollowers = async (
   ApiResponse<{ followers: { pseudo: string; avatar: string }[] }>
 > => {
   try {
-    const response = await axios.get(
-      `http://localhost:3001/api/profile/${userId}/followers`
-    );
+    const response = await axios.get(`${BASE_URL}/${userId}/followers`);
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -150,9 +145,7 @@ export const getFollowing = async (
   ApiResponse<{ following: { pseudo: string; avatar: string }[] }>
 > => {
   try {
-    const response = await axios.get(
-      `http://localhost:3001/api/profile/${userId}/following`
-    );
+    const response = await axios.get(`${BASE_URL}/${userId}/following`);
     if (response.data.status === 'error') {
       throw new Error(
         response.data.errors[0]?.message || response.data.error?.message
@@ -172,9 +165,7 @@ export const deleteProfile = async (): Promise<
   ApiResponse<DeleteProfileResponse>
 > => {
   try {
-    const response = await axios.delete(
-      `http://localhost:3001/api/profile/delete`
-    );
+    const response = await axios.delete(`${BASE_URL}/delete`);
 
     if (response.data.status === 'error') {
       throw new Error(
