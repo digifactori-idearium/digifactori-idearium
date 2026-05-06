@@ -82,3 +82,19 @@ export const deleteUser = async (id: string): Promise<void> => {
     return handleApiError(error);
   }
 };
+/**
+ * DELETE /user/bulk
+ * Returns counts of deleted and failed items (207 Multi-Status).
+ */
+export const bulkDeleteUsers = async (
+  ids: string[]
+): Promise<BulkDeleteResult> => {
+  try {
+    const response = await axios.delete('api/user/bulk', {
+      data: { ids },
+    });
+    return response.data.data;
+  } catch (error: any) {
+    return handleApiError(error);
+  }
+};
