@@ -5,13 +5,32 @@ import { toast } from 'sonner';
 import { AssetDeleteDialog } from '../assets/AssetDeleteDialog';
 
 import { FormDialog } from '@/components/common/form/FormDialog';
-import { assetInputs } from '@/lib/input';
+import {
+  assetInputs,
+  asset3DModelInputs,
+  assetMusicInputs,
+  assetImageInputs,
+} from '@/lib/input';
 import { deleteAsset, updateAsset } from '@/services/asset.service';
 
 interface AssetActionsProps {
   asset: Asset;
   refresh: () => void;
 }
+
+// Helper function to get inputs based on asset type
+const getAssetInputsForType = (type?: IntegrationType) => {
+  switch (type) {
+    case 'MODEL_3D':
+      return asset3DModelInputs;
+    case 'SOUND':
+      return assetMusicInputs;
+    case 'IMAGE':
+      return assetImageInputs;
+    default:
+      return assetInputs;
+  }
+};
 
 export const AssetActions = ({ asset, refresh }: AssetActionsProps) => {
   const [loading, setLoading] = useState(false);
@@ -52,7 +71,7 @@ export const AssetActions = ({ asset, refresh }: AssetActionsProps) => {
         }
         title="Modifier l'asset"
         description="Modifier les informations de l'asset"
-        inputs={assetInputs}
+        inputs={getAssetInputsForType(asset.type)}
         initialValues={{
           name: asset.name,
           category: asset.category,

@@ -1,4 +1,5 @@
 import WavesurferPlayer from '@wavesurfer/react';
+import { AlertTriangle } from 'lucide-react';
 import React, { useState, memo } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 
@@ -79,8 +80,11 @@ export const AssetPreview = memo(
     if (error || !url)
       return (
         <PreviewContainer>
-          <div className="text-[10px] text-destructive uppercase">
-            {error ? 'Error' : 'Empty'}
+          <div className="flex flex-col items-center justify-center gap-1 text-muted-foreground">
+            <AlertTriangle className="h-7 w-7 text-muted-foreground/50" />
+            <span className="text-[10px] uppercase tracking-wide">
+              {error ? 'Error' : 'Empty'}
+            </span>
           </div>
         </PreviewContainer>
       );
