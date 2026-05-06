@@ -18,7 +18,7 @@ interface ApiResponse<T> {
   status_code: number;
 }
 
-const BASE_URL = 'api/profile/';
+const BASE_URL = 'api/profile';
 
 // Services
 export const getMyProfile = async (): Promise<

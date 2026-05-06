@@ -262,7 +262,6 @@ interface Settings {
 }
 
 // ===== Internal Assets Management
-type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
 type AssetCategory =
   | 'FOOD_AND_DRINK'
