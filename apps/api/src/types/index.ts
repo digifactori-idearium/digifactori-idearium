@@ -189,6 +189,11 @@ export interface IUserService {
   setActive(id: string, isActive: boolean): Promise<User>;
   updateRole(id: string, role: Role): Promise<User>;
   deleteUser(id: string): Promise<{ user: User }>;
+  bulkDeleteUsers(
+    ids: string[],
+    requesterRole: Role,
+    requesterId: string
+  ): Promise<{ deleted: number; failed: { id: string; reason: string }[] }>;
 }
 
 export interface IAssetService {
