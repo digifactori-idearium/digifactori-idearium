@@ -35,6 +35,7 @@ import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { resolveAssetUrl, resolveThumbnailUrl } from '@/lib/asset';
+import { useUser } from '@/providers/UserProvider';
 import {
   beaconSaveIdeorama,
   getIdeoramaById,
@@ -68,7 +69,10 @@ export default function Ideorama() {
   const { ideoramaid } = useParams<{ ideoramaid: string }>();
   const isEditMode = snap.mode === 'edit';
 
+  const { user } = useUser();
+
   const [activeAsset, setActiveAsset] = useState<any>(null);
+  const [ideoramaUserId, setIdeoramaUserId] = useState('');
 
   const isLoadingData = useRef(true);
   const isSaving = useRef(false);
@@ -156,6 +160,7 @@ export default function Ideorama() {
       sceneState.history = [];
       sceneState.current = -1;
       sceneState.newest = 0;
+      sceneState.mode = 'play';
     };
   }, [performBeaconSave]);
 
@@ -164,10 +169,11 @@ export default function Ideorama() {
     if (!ideoramaid) return;
 
     isLoadingData.current = true;
-
     getIdeoramaById(ideoramaid)
       .then(res => {
         const record = res.data as any;
+        setIdeoramaUserId(res.data.userId);
+        console.log(ideoramaUserId);
         const scene = record.scene as ModelsInfo | null;
 
         if (!scene) {
@@ -253,22 +259,26 @@ export default function Ideorama() {
         <div className="w-full h-full overflow-hidden flex flex-col">
           <Scene />
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-            <Button
-              onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
-              className="p-2 main-small-btn"
-            >
-              {isEditMode ? (
-                <span className="flex items-center gap-1">
-                  <CirclePlay className="w-4 h-4 text-white" />
-                  <span className="text-white">Jouer</span>
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <SquarePen className="w-4 h-4 text-white" />
-                  <span className="text-white">Modifier</span>
-                </span>
-              )}
-            </Button>
+            {(user?.role == 'SUPERVISOR' ||
+              user?.role == 'ADMIN' ||
+              user?.id == ideoramaUserId) && (
+              <Button
+                onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
+                className="p-2 main-small-btn"
+              >
+                {isEditMode ? (
+                  <span className="flex items-center gap-1">
+                    <CirclePlay className="w-4 h-4 text-white" />
+                    <span className="text-white">Jouer</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <SquarePen className="w-4 h-4 text-white" />
+                    <span className="text-white">Modifier</span>
+                  </span>
+                )}
+              </Button>
+            )}
 
             {snap.current != 0 && isEditMode && (
               <SuperButton

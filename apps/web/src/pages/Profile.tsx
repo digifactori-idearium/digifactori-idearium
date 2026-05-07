@@ -43,7 +43,6 @@ const ProfilePage: React.FC = () => {
     if (!userId) return;
     getProfile(userId).then(res => {
       setProfile(res.data.profile);
-      console.log(res.data.profile);
     });
   }, [userId]);
 

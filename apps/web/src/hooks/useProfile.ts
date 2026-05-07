@@ -36,7 +36,6 @@ export const useProfile = () => {
       );
       toast.success('Profil mis à jour !');
       return { token };
-      return {};
     } catch (error: any) {
       toast.error(error.message ?? 'Profil non mis à jour !');
       throw error;
