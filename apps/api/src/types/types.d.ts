@@ -28,6 +28,7 @@ interface ProfileInput {
   pseudo: string;
   bio?: string;
   avatar?: string;
+  voiceButtons?: boolean;
 }
 
 type RegisterInput = {

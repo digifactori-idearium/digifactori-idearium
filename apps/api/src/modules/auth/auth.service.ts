@@ -11,6 +11,20 @@ const profileTable = prisma.profile;
 
 export default class AuthService implements IAuthService {
   /**
+   * Returns the profile of the user
+   *
+   * @param userId - the user id. It exists in DB
+   */
+  async getProfileById(userId: string): Promise<Profile | null> {
+    const profile = await profileTable.findUnique({
+      where: {
+        userId: userId,
+      },
+    });
+    return profile;
+  }
+
+  /**
    * Creates a new user in DB.
    *
    * @param input - the user data
@@ -89,9 +103,13 @@ export default class AuthService implements IAuthService {
    *
    * @param email - the email of the user who tries to login
    * @param password - the entered password to verify
-   * @returns a promise with the user exists and if the password is correct (Promise<User>), Promise<null> otherwise
+   * @returns a promise with the user and its profile if it exists and if the password
+   * is correct (Promise<{ profile: Profile; user: User }>), Promise<null> otherwise
    */
-  async loginEmail(email: string, password: string): Promise<User | null> {
+  async loginEmail(
+    email: string,
+    password: string
+  ): Promise<{ profile: Profile; user: User } | null> {
     const user = await userTable.findUnique({
       where: {
         email: email,
@@ -99,7 +117,12 @@ export default class AuthService implements IAuthService {
     });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      return user;
+      const profile = (await profileTable.findUnique({
+        where: {
+          userId: user.id,
+        },
+      })) as Profile;
+      return { profile, user };
     } else {
       return null;
     }
@@ -110,10 +133,14 @@ export default class AuthService implements IAuthService {
    *
    * @param email - the email of the user who tries to login
    * @param password - the entered password to verify
-   * @returns a promise with the user exists and if the password is correct (Promise<User), Promise<null> otherwise
+   * @returns a promise with the user and its profile if it exists and if the password
+   * is correct (Promise<{ profile: Profile; user: User }>), Promise<null> otherwise
    */
-  async loginPseudo(pseudo: string, password: string): Promise<User | null> {
-    const profile = await profileTable.findUnique({
+  async loginPseudo(
+    pseudo: string,
+    password: string
+  ): Promise<{ profile: Profile; user: User } | null> {
+    const data = await profileTable.findUnique({
       where: {
         pseudo,
       },
@@ -122,8 +149,20 @@ export default class AuthService implements IAuthService {
       },
     });
 
-    if (profile && (await bcrypt.compare(password, profile.user.password))) {
-      return profile.user;
+    if (data && (await bcrypt.compare(password, data.user.password))) {
+      return {
+        profile: {
+          id: data.id,
+          userId: data.userId,
+          pseudo: data.pseudo,
+          bio: data.bio,
+          avatar: data.avatar,
+          voiceButtons: data.voiceButtons,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        },
+        user: data.user,
+      };
     } else {
       return null;
     }

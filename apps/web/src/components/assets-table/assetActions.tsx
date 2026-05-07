@@ -2,9 +2,8 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { AssetDeleteDialog } from '../assets/AssetDeleteDialog';
-
 import { FormDialog } from '@/components/common/form/FormDialog';
+import AssetDeleteDialog from '@/components/dialog/AlertDialog';
 import { assetInputs } from '@/lib/input';
 import { deleteAsset, updateAsset } from '@/services/asset.service';
 
@@ -72,7 +71,15 @@ export const AssetActions = ({ asset, refresh }: AssetActionsProps) => {
             <Trash2 className="h-4 w-4" />
           </button>
         }
-        name={asset.name}
+        description={
+          <>
+            `Cela supprimera définitivement l'asset `
+            <span className="font-bold text-mauve">
+              {asset.name ?? ' sélectionné(s)'}
+            </span>
+          </>
+        }
+        confirmationMessage="Oui, Supprimer"
         onConfirm={handleDelete}
         onCancel={() => {}}
       />

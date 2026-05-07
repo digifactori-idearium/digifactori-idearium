@@ -1,7 +1,9 @@
+import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import DeleteProfileDialog from './DeleteProfileDialog';
+import { SuperButton } from '../common/button/SuperButton';
+import DeleteProfileDialog from '../dialog/AlertDialog';
 
 import { Form } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
@@ -15,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useUser } from '@/providers/UserProvider';
 import { getUser } from '@/services/profile.service';
+
 
 interface AdvancedDialogProps {
   user?: any;
@@ -32,10 +35,11 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
   children,
 }) => {
   const { user: sessionUser, removeToken } = useUser();
+
   const [user, setUser] = useState<any>();
   const [open, setOpen] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(sessionUser?.role !== 'INTERN');
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(''); 
 
   const effectiveUser = propUser || user;
 
@@ -73,7 +77,7 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
       }}
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[85vh] z-110 flex flex-col overflow-hidden bg-sidebar! border-mauve! dialog-btn">
+      <DialogContent className="sm:max-w-md max-h-[85vh] z-110 flex flex-col bg-sidebar! border-mauve! dialog-btn">
         <DialogHeader>
           <DialogTitle>
             {isUnlocked ? 'Paramètres du compte' : 'Code Parental Requis'}
@@ -82,11 +86,25 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
 
         {isUnlocked && effectiveUser && (
           <div className="absolute top-5 right-16">
-            <DeleteProfileDialog pseudo={profile.pseudo} onConfirm={onDelete} />
+            <DeleteProfileDialog
+              trigger={<SuperButton className="w-8 h-8 flex justify-center items-center bg-red-300! text-red-700! rounded-full"
+                tooltip="Supprimer votre profile"
+                voiceText="Supprimer votre profile"
+              >
+                <Trash2 className="w-6 h-6" />
+              </SuperButton>}
+              description={<>
+                Cela supprimera définitivement le profil de{' '}
+                <span className="font-bold text-mauve">{profile.pseudo}</span>.
+              </>}
+              confirmationMessage="Oui, supprimer"
+              onConfirm={onDelete}
+              onCancel={()=>{}}
+              />
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="z-1 flex-1 overflow-y-auto pr-2 custom-scrollbar">
           {isUnlocked ? (
             effectiveUser ? (
               <div className="p-3">

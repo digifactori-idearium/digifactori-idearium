@@ -8,13 +8,13 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { Loading } from '@/components/common';
 import { SuperButton } from '@/components/common/button/SuperButton';
-import AlertDialog from '@/components/dialog/AlertDialog';
+import ResetVoxelDialog from '@/components/dialog/AlertDialog';
 import EditPanel from '@/components/voxel/panel';
 import Voxel, { VoxelPoint } from '@/pages/Voxel';
 import {
+  getSignedUrl,
   getVoxelModelById,
   saveVoxelModel,
-  getSignedUrl,
 } from '@/services/voxel.service';
 
 type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error';
@@ -112,7 +112,6 @@ export default function VoxelLayout() {
   const [voxels, setVoxels] = useState<VoxelPoint[]>([]);
   const [modelName, setModelName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [scene, setScene] = useState<THREE.Scene | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
@@ -230,16 +229,26 @@ export default function VoxelLayout() {
   return (
     <div className="w-full h-full relative">
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-        <SuperButton
-          tooltip="Réinitialiser"
-          voiceText="Réinitialiser"
-          onClick={() => setResetDialogOpen(true)}
-          className="z-50 p-2 main-small-btn"
-        >
-          <span className="flex items-center gap-1">
-            <RotateCcw className="w-4 h-4 text-white!" />
-          </span>
-        </SuperButton>
+        <ResetVoxelDialog
+          trigger={
+            <SuperButton
+              tooltip="Réinitialiser"
+              voiceText="Réinitialiser"
+              className="z-50 p-2 main-small-btn"
+            >
+              <span className="flex items-center gap-1">
+                <RotateCcw className="w-4 h-4 text-white!" />
+              </span>
+            </SuperButton>
+          }
+          description="Cela réinitialisera votre modèle"
+          confirmationMessage="Oui, réinitialiser"
+          onConfirm={() => {
+            setVoxels([]);
+            toast.success('Idéorama réinitialisé');
+          }}
+          onCancel={() => {}}
+        />
 
         {saveStatus !== 'idle' && (
           <span
@@ -250,18 +259,6 @@ export default function VoxelLayout() {
             {STATUS_LABEL[saveStatus]}
           </span>
         )}
-
-        <AlertDialog
-          open={resetDialogOpen}
-          description="Cela réinitialisera votre modèle"
-          confirmationMessage="Oui, réinitialiser"
-          onConfirm={() => {
-            setVoxels([]);
-            toast.success('Idéorama réinitialisé');
-            setResetDialogOpen(false);
-          }}
-          onCancel={() => setResetDialogOpen(false)}
-        />
       </div>
 
       <div

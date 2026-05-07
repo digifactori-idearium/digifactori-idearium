@@ -2,21 +2,11 @@ import { House, LogOutIcon, Moon, Sun } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import {
-  VoiceLink,
-  VoiceButton,
   SuperButton,
+  VoiceButton,
+  VoiceLink,
 } from '@/components/common/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import AlertDialog from '@/components/dialog/AlertDialog';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useTheme } from '@/providers/theme-provider';
@@ -24,7 +14,7 @@ import { useUser } from '@/providers/UserProvider';
 
 export function AppHeader() {
   const { theme, setTheme } = useTheme();
-  const { removeToken, user } = useUser();
+  const { removeToken } = useUser();
   const navigate = useNavigate();
 
   const handleTheme = () => {
@@ -56,41 +46,23 @@ export function AppHeader() {
             </VoiceLink>
           </div>
 
+          <AlertDialog
+            trigger={
+              <VoiceButton
+                className="side-btn text-foreground! flex gap-2"
+                voiceText="Me déconnecter"
+              >
+                <LogOutIcon className="w-5 h-5 text-red-500" />
+                <span className="hidden sm:inline">Me déconnecter</span>
+              </VoiceButton>
+            }
+            description="Êtes-vous sûr de vouloir quitter votre session ? Vous
+                      devrez vous reconnecter pour accéder à vos données."
+            confirmationMessage="Se déconnecter"
+            onConfirm={onLogout}
+            onCancel={() => {}}
+          />
           <div className="flex gap-1 md:gap-2">
-            {user && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <VoiceButton
-                    className="side-btn text-foreground! flex gap-2"
-                    voiceText="Me déconnecter"
-                  >
-                    <LogOutIcon className="w-5 h-5 text-red-500" />
-                    <span className="hidden sm:inline">Me déconnecter</span>
-                  </VoiceButton>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-4xl border-mauve! bg-sidebar!  shadow-2xl p-8">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Se déconnecter ?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Êtes-vous sûr de vouloir quitter votre session ? Vous
-                      devrez vous reconnecter pour accéder à vos données.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="form-button p-4">
-                      Annuler
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={onLogout}
-                      className="danger-btn"
-                    >
-                      Se déconnecter
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-
             <SuperButton
               tooltip="Changez le theme"
               voiceText={`Changez le theme en ${theme === 'dark' ? 'blanc' : 'noir'}`}
