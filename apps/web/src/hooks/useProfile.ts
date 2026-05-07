@@ -36,12 +36,15 @@ export const useProfile = () => {
   }, []);
 
   const updateUserProfile = useCallback(
-    async (user: User, profile: Profile) => {
+    async (user: User | null, profile: Profile) => {
       setLoading(true);
       setError(null);
       try {
-        await updateProfile(user, profile);
+        const token = await updateProfile(user, profile).then(
+          res => res.data.accessToken
+        );
         toast.success('Profil mis à jour !');
+        return { token };
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'Profil non mis à jour !';

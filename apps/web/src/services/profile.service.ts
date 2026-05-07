@@ -57,7 +57,7 @@ export const getUser = async (
 };
 
 export const updateProfile = async (
-  newUserInfo: Partial<User>,
+  newUserInfo: Partial<User | null>,
   newProfileInfo: Partial<Profile>
 ) => {
   try {
