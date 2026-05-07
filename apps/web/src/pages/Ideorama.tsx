@@ -93,7 +93,7 @@ export default function Ideorama() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  //Save
+  // Save
   const performSave = useCallback(async () => {
     if (!ideoramaid) return;
     if (isSaving.current) {
@@ -177,6 +177,8 @@ export default function Ideorama() {
       .then(res => {
         const record = res.data as any;
         const scene = record.scene as ModelsInfo;
+        setIdeoramaUserId(record.userId);
+        console.log(record.userId);
 
         if (record.name) scene.info = { ...scene.info, name: record.name };
         if (typeof record.isPublic === 'boolean') {
