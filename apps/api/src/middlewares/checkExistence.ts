@@ -1,4 +1,4 @@
-import { Ideorama, VoxelModel } from '@prisma/client';
+import { Document, Ideorama, VoxelModel } from '@prisma/client';
 import type { NextFunction, Response } from 'express';
 
 import HttpResponse from '@/utils/http-response';
@@ -43,6 +43,29 @@ export const checkVoxelModelExistence = async (
       HttpResponse.notFound(
         "Le modèle voxel que vous cherchez n'existe pas"
       ).send(res);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const checkDocumentExistence = async (
+  documentId: string,
+  res: Response,
+  next: NextFunction,
+  getDocumentById: (voxelModelId: string) => Promise<Document | null>
+): Promise<void> => {
+  if (!/^[a-zA-Z0-9_-]+$/.test(documentId)) {
+    return HttpResponse.badRequest('Identifiant invalide').send(res);
+  }
+  try {
+    const document = await getDocumentById(documentId);
+    if (document) {
+      next();
+    } else {
+      HttpResponse.notFound("Le document que vous cherchez n'existe pas").send(
+        res
+      );
     }
   } catch (error) {
     next(error);
