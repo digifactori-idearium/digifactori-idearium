@@ -66,7 +66,7 @@ const ProfilePage: React.FC = () => {
       getFollowing(user.id)
         .then(res => {
           setCurrentUserFollowing(
-            res.data.map((u: { userId: string }) => u.userId)
+            (res.data.following ?? []).map((u: { userId: string }) => u.userId)
           );
         })
         .catch(err => console.error('Failed to fetch following.', err));
