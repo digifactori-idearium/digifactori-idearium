@@ -1,4 +1,4 @@
-import { Loader2, Lock } from 'lucide-react';
+import { Contact, Loader2, Lock } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -98,6 +98,14 @@ const MyProfile: React.FC = () => {
     <div className="w-full">
       <ProfileHeader>
         <div className="flex flex-wrap gap-2 justify-center items-center">
+          <VoiceButton
+            voiceText={'Voir mon profile public'}
+            className="flex items-center gap-2 form-button"
+            onClick={() => navigate(`/app/profile/${acc.user?.id}`)}
+          >
+            <Contact className="w-4 h-4" />
+            Voir mon profile public
+          </VoiceButton>
           <AdvancedSettingsDialog
             user={acc.user}
             profile={acc.profile}

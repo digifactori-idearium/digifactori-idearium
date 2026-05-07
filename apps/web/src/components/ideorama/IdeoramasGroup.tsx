@@ -129,11 +129,7 @@ const IdeoramasGroup: React.FC<{
                 tooltip={`voir le profile de ${ideorama.user?.profile?.pseudo}`}
                 onClick={e => {
                   e.stopPropagation();
-                  if (ideorama.userId === user?.id) {
-                    navigate(`/app/profile`);
-                  } else {
-                    navigate(`/app/profile/${ideorama.userId}`);
-                  }
+                  navigate(`/app/profile/${ideorama.userId}`);
                 }}
                 className="shrink-0 ring-2 size-13 ring-white/10 rounded-full hover:ring-mauve/60 transition-all bg-transparent! p-0!"
               >
@@ -160,11 +156,7 @@ const IdeoramasGroup: React.FC<{
                 <button
                   onClick={e => {
                     e.stopPropagation();
-                    if (ideorama.userId === user?.id) {
-                      navigate(`/app/profile/${ideorama.userId}`);
-                    } else {
-                      navigate(`/app/profile`);
-                    }
+                    navigate(`/app/profile/${ideorama.userId}`);
                   }}
                   className="text-sm text-mauve font-medium hover:underline leading-tight bg-transparent! p-0!"
                 >
