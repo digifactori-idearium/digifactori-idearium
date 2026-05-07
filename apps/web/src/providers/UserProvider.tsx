@@ -1,10 +1,10 @@
 import { jwtDecode } from 'jwt-decode';
 import {
   createContext,
-  useContext,
   ReactNode,
-  useEffect,
   useCallback,
+  useContext,
+  useEffect,
   useMemo,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -86,6 +86,7 @@ export default function UserProvider({ children }: { children: ReactNode }) {
       id: decoded.userId,
       email: decoded.email,
       role: decoded.role,
+      voiceButtons: decoded.voiceButtons,
       token: token!,
     };
   }, [decodeToken, token]);

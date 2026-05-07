@@ -32,11 +32,13 @@ const MyModels: React.FC = () => {
     pseudo: 'Unknown',
     avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Emma',
     bio: '',
+    voiceButtons: true,
     followers: [],
     following: [],
     ideoramaLiked: [],
     ideoramas: [],
   });
+
   const [createsNew, setCreatesNew] = useState(false);
 
   useEffect(() => {

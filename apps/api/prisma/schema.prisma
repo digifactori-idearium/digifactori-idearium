@@ -40,6 +40,7 @@ model Profile {
   pseudo        String          @unique
   avatar        String?
   bio           String?
+  voiceButtons  Boolean         @default(true)
   followers     Follow[]        @relation("UserFollowers")
   following     Follow[]        @relation("UserFollowing")
   ideoramaLiked IdeoramaLikes[] @relation("ideoramaLiked")

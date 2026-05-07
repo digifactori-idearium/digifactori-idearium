@@ -2,13 +2,13 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { AssetDeleteDialog } from '../assets/AssetDeleteDialog';
 import { DataTable } from '../common/data-table/dataTable';
 
 import { columns } from './assetsColumns';
 
 import { AssetFilesUpload } from '@/components/assets-upload/AssetFilesUpload';
 import { SuperButton } from '@/components/common/button';
+import AssetDeleteDialog from '@/components/dialog/AlertDialog';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { inferType } from '@/lib/asset';
 import {
@@ -154,6 +154,15 @@ export default function AssetHandling() {
                     Supprimer la sélection
                   </button>
                 }
+                description={
+                  <>
+                    Cela supprimera définitivement les(l') asset(s){' '}
+                    <span className="font-bold text-mauve">
+                      {'sélectionné(s)'}
+                    </span>
+                  </>
+                }
+                confirmationMessage="Oui, supprimer"
                 onConfirm={handleDeleteSelected}
                 onCancel={() => {}}
               />

@@ -21,6 +21,7 @@ const ProfilePage: React.FC = () => {
     pseudo: '',
     bio: '',
     avatar: null,
+    voiceButtons: true,
     followers: [],
     following: [],
     ideoramaLiked: [],

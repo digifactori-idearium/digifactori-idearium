@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { Ideorama, User } from '@prisma/client';
+import { Ideorama, Profile, User } from '@prisma/client';
 import express from 'express';
 import request from 'supertest';
 
@@ -26,6 +26,20 @@ function createFakeUser(overrides: Partial<User> = {}): User {
     password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
     isActive: true,
     role: 'INTERN',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+function createFakeProfile(overrides: Partial<Profile> = {}): Profile {
+  return {
+    id: 'profileId',
+    userId: 'cmnup6jyf0000p0utn33xhdpq',
+    pseudo: 'TestUser',
+    avatar: null,
+    bio: null,
+    voiceButtons: true,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -87,7 +101,7 @@ let mockService!: MockIdeoramaService;
 let app!: express.Express;
 
 beforeAll(async () => {
-  token = generateToken(createFakeUser()) as string;
+  token = generateToken(createFakeUser(), createFakeProfile()) as string;
 });
 
 beforeEach(() => {

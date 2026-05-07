@@ -17,9 +17,6 @@ const IdeoramasGroup: React.FC<{
   const navigate = useNavigate();
   const { user } = useUser();
 
-  const [ideoramaToDelete, setIdeoramaToDelete] = useState<Ideorama | null>(
-    null
-  );
   const [loadingLike, setLoadingLike] = useState<string | null>(null);
 
   const handleLike = async (e: React.MouseEvent, ideorama: Ideorama) => {
@@ -74,17 +71,15 @@ const IdeoramasGroup: React.FC<{
     }
   };
 
-  const handleDelete = async () => {
-    if (!ideoramaToDelete?.id) return;
+  const handleDelete = async (ideoramaId: string) => {
+    if (!ideoramaId) return;
 
     try {
-      await deleteIdeorama(ideoramaToDelete.id);
-      setIdeoramas(prev => prev.filter(i => i.id !== ideoramaToDelete.id));
+      await deleteIdeorama(ideoramaId);
+      setIdeoramas(prev => prev.filter(i => i.id !== ideoramaId));
       toast.success('Idéorama supprimé avec succès');
     } catch {
       toast.error("Échec lors de la suppression de l'idéorama");
-    } finally {
-      setIdeoramaToDelete(null);
     }
   };
 
@@ -179,38 +174,37 @@ const IdeoramasGroup: React.FC<{
 
               {/* Delete — owner only */}
               {isOwner && (
-                <SuperButton
-                  tooltip={`supprimer ${ideorama.name}`}
-                  onClick={e => {
-                    e.stopPropagation();
-                    setIdeoramaToDelete(ideorama);
-                  }}
-                  className="shrink-0 p-1.5! rounded-lg text-muted-foreground hover:text-destructive
+                <AlertDialog
+                  trigger={
+                    <SuperButton
+                      tooltip={`supprimer ${ideorama.name}`}
+                      onClick={e => {
+                        e.stopPropagation();
+                      }}
+                      className="shrink-0 p-1.5! rounded-lg text-muted-foreground hover:text-destructive
                     hover:bg-destructive/10 transition-all active:scale-90 bg-transparent "
-                  title="Supprimer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </SuperButton>
+                      title="Supprimer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </SuperButton>
+                  }
+                  description={
+                    <>
+                      Cela supprimera définitivement l'idéorama{' '}
+                      <span className="font-bold text-mauve">
+                        {ideorama.name}
+                      </span>
+                    </>
+                  }
+                  confirmationMessage="Oui, supprimer"
+                  onConfirm={() => handleDelete(ideorama.id)}
+                  onCancel={() => {}}
+                />
               )}
             </div>
           </Card>
         );
       })}
-
-      <AlertDialog
-        open={ideoramaToDelete != null}
-        description={
-          <>
-            Cela supprimera définitivement l'idéorama{' '}
-            <span className="font-bold text-mauve">
-              {ideoramaToDelete?.name}
-            </span>
-          </>
-        }
-        confirmationMessage="Oui, supprimer"
-        onConfirm={handleDelete}
-        onCancel={() => setIdeoramaToDelete(null)}
-      />
     </div>
   );
 };

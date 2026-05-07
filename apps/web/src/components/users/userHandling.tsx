@@ -2,12 +2,12 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { UserDeleteDialog } from './UserDeleteDialog';
 import { columns } from './usersColumns';
 
 import { SuperButton } from '@/components/common/button';
 import { DataTable } from '@/components/common/data-table/dataTable';
 import { FormDialog } from '@/components/common/form/FormDialog';
+import UserDeleteDialog from '@/components/dialog/AlertDialog';
 import {
   manageUserInputs,
   adminUserRole,
@@ -132,6 +132,8 @@ export default function UserHandling() {
                     Supprimer la sélection
                   </button>
                 }
+                description={`Êtes-vous sûr de vouloir supprimer ${selectedUserIds.length} utilisateur(s) ? Cette action est irréversible.`}
+                confirmationMessage="Oui, supprimer"
                 onConfirm={handleDeleteSelected}
                 onCancel={() => {}}
               />

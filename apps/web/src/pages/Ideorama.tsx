@@ -29,7 +29,7 @@ import { subscribeKey } from 'valtio/utils';
 import Scene from '@/components/3d-scene';
 import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
 import { SuperButton } from '@/components/common/button';
-import AlertDialog from '@/components/dialog/AlertDialog';
+import ResetIdeoramaDialog from '@/components/dialog/AlertDialog';
 import { AssetsPanel } from '@/components/panels/AssetsPanel';
 import { ObjectListPanel } from '@/components/panels/ObjectListPanel';
 import { SettingPanel } from '@/components/panels/SettingPanel';
@@ -37,9 +37,9 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { resolveAssetUrl, resolveThumbnailUrl } from '@/lib/asset';
 import {
+  beaconSaveIdeorama,
   getIdeoramaById,
   saveIdeorama,
-  beaconSaveIdeorama,
 } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 import { createReplacer } from '@/utils/utils';
@@ -74,7 +74,6 @@ export default function Ideorama() {
   const { ideoramaid } = useParams<{ ideoramaid: string }>();
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   const isLoadingData = useRef(true);
   const isSaving = useRef(false);
@@ -303,38 +302,35 @@ export default function Ideorama() {
                 </span>
               </SuperButton>
             )}
-
             {isEditMode && (
-              <SuperButton
-                tooltip="Réinitialiser"
-                voiceText="Réinitialiser"
-                onClick={() => setResetDialogOpen(true)}
-                className="z-50 p-2 main-small-btn"
-              >
-                <span className="flex items-center gap-1">
-                  <RotateCcw className="w-4 h-4 text-white!" />
-                </span>
-              </SuperButton>
+              <ResetIdeoramaDialog
+                trigger={
+                  <SuperButton
+                    tooltip="Réinitialiser"
+                    voiceText="Réinitialiser"
+                    className="z-50 p-2 main-small-btn"
+                  >
+                    <span className="flex items-center gap-1">
+                      <RotateCcw className="w-4 h-4 text-white!" />
+                    </span>
+                  </SuperButton>
+                }
+                description="Cela réinitialisera votre ideorama"
+                confirmationMessage="Oui, réinitialiser"
+                onConfirm={() => {
+                  actions.resetIdeorama().then(res => {
+                    if (res) {
+                      toast.success('Idéorama réinitialisé');
+                    } else {
+                      toast.error(
+                        "Échec lors de la réinitialisation de l'idéorama"
+                      );
+                    }
+                  });
+                }}
+                onCancel={() => {}}
+              />
             )}
-
-            <AlertDialog
-              open={resetDialogOpen}
-              description="Cela réinitialisera votre ideorama"
-              confirmationMessage="Oui, réinitialiser"
-              onConfirm={() => {
-                actions.resetIdeorama().then(res => {
-                  if (res) {
-                    toast.success('Idéorama réinitialisé');
-                  } else {
-                    toast.error(
-                      "Échec lors de la réinitialisation de l'idéorama"
-                    );
-                  }
-                });
-                setResetDialogOpen(false);
-              }}
-              onCancel={() => setResetDialogOpen(false)}
-            />
           </div>
 
           {isEditMode && (
