@@ -3,14 +3,30 @@ import {
   type OnChangeFn,
   type PaginationState,
   type RowSelectionState,
+  type FilterFn,
+  ColumnFiltersState,
+  VisibilityState,
+  SortingState,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
+import * as React from 'react';
 
 import { DataTablePagination } from './DataTablePagination';
 
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -30,6 +46,23 @@ interface DataTableProps<TData, TValue> {
   onSelectedRowsChange?: (rows: TData[]) => void;
 }
 
+const globalFilterFn: FilterFn<any> = (row, _columnId, filterValue) => {
+  const search = String(filterValue).toLowerCase().trim();
+  if (!search) return true;
+
+  return row.getAllCells().some(cell => {
+    if (
+      cell.column.id === 'id' ||
+      cell.column.id === 'select' ||
+      cell.column.id === 'actions'
+    )
+      return false;
+    const value = cell.getValue();
+    if (value == null) return false;
+    return String(value).toLowerCase().includes(search);
+  });
+};
+
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -40,6 +73,12 @@ export function DataTable<TData, TValue>({
   onSelectedRowsChange,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
 
   const serverPagination =
     pageCount !== undefined && onPageChange !== undefined;
@@ -48,6 +87,8 @@ export function DataTable<TData, TValue>({
     pageIndex: pageIndex ?? 0,
     pageSize: 20,
   });
+
+  const [globalFilter, setGlobalFilter] = React.useState('');
 
   const controlledPagination: PaginationState = serverPagination
     ? { pageIndex: pageIndex!, pageSize: pagination.pageSize }
@@ -72,6 +113,10 @@ export function DataTable<TData, TValue>({
     state: {
       rowSelection,
       pagination: controlledPagination,
+      sorting,
+      columnFilters,
+      columnVisibility,
+      globalFilter,
     },
     // api pagination
     manualPagination: serverPagination,
@@ -90,8 +135,16 @@ export function DataTable<TData, TValue>({
         onSelectedRowsChange(selectedRows);
       }
     },
+    globalFilterFn,
+    onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: handlePaginationChange,
     getCoreRowModel: getCoreRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
   });
 
   useEffect(() => {
@@ -100,6 +153,38 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Rechercher..."
+          value={globalFilter}
+          onChange={e => setGlobalFilter(e.target.value)}
+          className="w-full sm:max-w-sm border-mauve/80!"
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="ml-auto text-white! bg-mauve! hover:bg-mauve/80! border-mauve!">
+              Colonnes
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter(column => column.getCanHide())
+              .map(column => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={value => column.toggleVisibility(!!value)}
+                >
+                  {typeof column.columnDef.header === 'string'
+                    ? column.columnDef.header
+                    : ((column.columnDef.meta as any)?.label ?? column.id)}
+                </DropdownMenuCheckboxItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

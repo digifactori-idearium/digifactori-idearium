@@ -1,5 +1,5 @@
 import { jwtDecode } from 'jwt-decode';
-import React, {
+import {
   createContext,
   ReactNode,
   useCallback,
@@ -7,119 +7,95 @@ import React, {
   useEffect,
   useMemo,
 } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import useLocalStorage from '@/hooks/useLocaleStorage';
 
 interface UserContextType {
   user: UserSession | null;
+  isAuthenticated: boolean;
   removeToken: () => void;
-  setToken: (newToken: string | null) => void;
+  setToken: (token: string | null) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const useUser = () => {
-  const context = useContext(UserContext);
-  if (!context) {
-    throw new Error('useUser must be used within a UserProvider');
-  }
-  return context;
+  const ctx = useContext(UserContext);
+  if (!ctx) throw new Error('useUser must be used within UserProvider');
+  return ctx;
 };
 
-interface UserProviderProps {
-  children?: ReactNode;
-}
-
-const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+export default function UserProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useLocalStorage('token');
+  const navigate = useNavigate();
 
   const removeToken = useCallback(() => {
     setToken(null);
   }, [setToken]);
 
-  const getDecodedToken = useCallback(() => {
+  const decodeToken = useCallback(() => {
     if (!token) return null;
-
     try {
       const decoded: any = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
-
-      if (!decoded.exp || decoded.exp < currentTime) {
-        return null;
-      }
-
+      const now = Date.now() / 1000;
+      if (!decoded.exp || decoded.exp < now) return null;
       return decoded;
     } catch {
       return null;
     }
   }, [token]);
 
-  // Handle expired token on load
+  // Expired/invalid token in storage
   useEffect(() => {
-    const decoded = getDecodedToken();
-
+    const decoded = decodeToken();
     if (!decoded && token) {
-      toast.error('Session expirée. Veuillez vous reconnecter.', {
-        id: 'session-expired',
-      });
+      toast.error('Session expirée.', { id: 'session-expired' });
       removeToken();
+      navigate('/', { replace: true });
     }
-  }, [getDecodedToken, token, removeToken]);
+  }, [decodeToken, token, removeToken, navigate]);
 
-  // Handle 401/403 from the custom event in axios
+  // 401 / 403 from axios interceptor
   useEffect(() => {
-    const handleUnauthorized = (e: CustomEvent) => {
-      const message =
-        e.detail.status === 403
-          ? 'Accès refusé.'
-          : 'Session expirée. Veuillez vous reconnecter.';
+    const handler = (e: CustomEvent) => {
+      const status = e.detail.status;
 
-      toast.error(message, { id: 'session-expired' });
-      removeToken();
+      if (status === 401) {
+        toast.error('Session expirée.', { id: 'session-expired' });
+        removeToken();
+        navigate('/', { replace: true });
+      }
 
-      if (window.location.pathname !== '/') {
-        window.location.href = '/';
+      if (status === 403) {
+        toast.error('Accès refusé.', { id: 'not-allowed' });
+        navigate('/app/my-space', { replace: true });
       }
     };
 
-    window.addEventListener(
-      'auth:unauthorized',
-      handleUnauthorized as EventListener
-    );
+    window.addEventListener('auth:unauthorized', handler as EventListener);
     return () =>
-      window.removeEventListener(
-        'auth:unauthorized',
-        handleUnauthorized as EventListener
-      );
-  }, [removeToken]);
+      window.removeEventListener('auth:unauthorized', handler as EventListener);
+  }, [removeToken, navigate]);
 
-  const user = useMemo<UserSession | null>(() => {
-    const decoded = getDecodedToken();
-
+  const user = useMemo(() => {
+    const decoded = decodeToken();
     if (!decoded) return null;
-
     return {
       id: decoded.userId,
       email: decoded.email,
       role: decoded.role,
       voiceButtons: decoded.voiceButtons,
-      token: token as string,
+      token: token!,
     };
-  }, [getDecodedToken, token]);
-
-  const contextValue = useMemo(
-    () => ({
-      user,
-      removeToken,
-      setToken,
-    }),
-    [user, removeToken, setToken]
-  );
+  }, [decodeToken, token]);
 
   return (
-    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
+    <UserContext.Provider
+      value={{ user, isAuthenticated: !!user, removeToken, setToken }}
+    >
+      {children}
+    </UserContext.Provider>
   );
-};
-
-export default UserProvider;
+}

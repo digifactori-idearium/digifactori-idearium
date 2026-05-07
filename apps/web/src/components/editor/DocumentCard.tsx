@@ -63,8 +63,8 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           trigger={
             <SuperButton
               className="absolute top-3 right-3 transition-opacity flex items-center justify-center w-7 h-7 rounded-lg bg-red-400 hover:bg-red-600 text-white"
-              tooltip='Supprimer le document'
-              voiceText='Supprimer le document'
+              tooltip="Supprimer le document"
+              voiceText="Supprimer le document"
               onClick={e => e.stopPropagation()}
             >
               <Trash2 className="w-3.5 h-3.5" />

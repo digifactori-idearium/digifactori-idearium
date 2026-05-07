@@ -1,6 +1,7 @@
 import {
   Box,
   Cuboid,
+  Home,
   LucideIcon,
   NotebookText,
   Rocket,
@@ -28,8 +29,9 @@ export function NavLink() {
   const { user } = useUser();
 
   const links: Record<string, NavLinkItem> = {
+    home: { path: '', label: 'Accueil', icon: Home },
     mySpace: { path: 'my-space', label: 'Mon Espace', icon: Rocket },
-    home: {
+    MyIdeoramas: {
       path: 'my-ideoramas',
       label: 'Mes Idéoramas',
       icon: SolarPanel,

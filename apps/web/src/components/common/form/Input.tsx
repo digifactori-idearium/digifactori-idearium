@@ -38,6 +38,7 @@ export interface FormInputData {
 
   // Upload
   multiple?: boolean;
+  acceptedTypes?: Record<string, string[]>;
 }
 
 export interface FormInputProps {

@@ -11,7 +11,7 @@ export const getSettings = async (): Promise<Settings> => {
     }
 
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -27,7 +27,7 @@ export const updateStoreSettings = async (
     }
 
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -42,7 +42,7 @@ export const updateOrgSettings = async (
     }
 
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -60,7 +60,7 @@ export const getIntegrations = async (
     }
 
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -73,7 +73,7 @@ export const getIntegrationById = async (id: string): Promise<Integration> => {
     }
 
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -89,7 +89,7 @@ export const createIntegration = async (
     }
 
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -109,7 +109,7 @@ export const updateIntegration = async (
     }
 
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -125,7 +125,7 @@ export const toggleIntegration = async (id: string): Promise<Integration> => {
     }
 
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -137,7 +137,7 @@ export const deleteIntegration = async (id: string): Promise<void> => {
     if (response.data.status === 'error') {
       throw new Error(response.data.error?.message);
     }
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };

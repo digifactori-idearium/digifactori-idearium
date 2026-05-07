@@ -22,18 +22,32 @@ export function vector3ToArrayIndex(
  * @param size {number} The size of x,y,z dimension
  */
 export function arrayIndexToVector3(index: number, size: number = 32) {
+  const sizeSq = size * size;
   return new three.Vector3(
-    (index / (size * size)) >> 0,
-    ((index / size) % size) >> 0,
-    (index % size) >> 0
+    Math.floor(index / sizeSq),
+    Math.floor((index / size) % size),
+    index % size
   );
 }
 
-export function getContrastColor(hex: string) {
-  const c = hex.replace('#', '');
-  const r = parseInt(c.substr(0, 2), 16);
-  const g = parseInt(c.substr(2, 2), 16);
-  const b = parseInt(c.substr(4, 2), 16);
+export function getContrastColor(hex: string): 'text-black' | 'text-white' {
+  // Validate and normalize hex
+  let color = hex.replace('#', '').trim();
+  if (!/^[0-9A-Fa-f]{3}([0-9A-Fa-f]{3})?$/.test(color)) {
+    throw new Error(`Invalid hex color: ${hex}`);
+  }
+
+  // Handle shorthand #RGB -> #RRGGBB
+  if (color.length === 3) {
+    color = color
+      .split('')
+      .map(c => c + c)
+      .join('');
+  }
+
+  const r = parseInt(color.substring(0, 2), 16);
+  const g = parseInt(color.substring(2, 4), 16);
+  const b = parseInt(color.substring(4, 6), 16);
 
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
 

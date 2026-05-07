@@ -9,7 +9,7 @@ export const getUsers = async (): Promise<User[]> => {
   try {
     const response = await axios.get('api/user/list');
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -18,7 +18,7 @@ export const getUserById = async (id: string): Promise<User> => {
   try {
     const response = await axios.get(`api/user/${id}`);
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -34,7 +34,7 @@ export const createUser = async (
   try {
     const response = await axios.post('api/user', data);
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -46,7 +46,7 @@ export const updateUser = async (
   try {
     const response = await axios.patch(`api/user/${id}`, data);
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -55,7 +55,7 @@ export const updateUserRole = async (id: string, role: Role): Promise<User> => {
   try {
     const response = await axios.patch(`api/user/${id}/role`, { role });
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -70,7 +70,7 @@ export const setUserActive = async (
   try {
     const response = await axios.patch(`api/user/${id}/active`, { isActive });
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -78,6 +78,22 @@ export const setUserActive = async (
 export const deleteUser = async (id: string): Promise<void> => {
   try {
     await axios.delete(`api/user/${id}`);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+/**
+ * DELETE /user/bulk
+ * Returns counts of deleted and failed items (207 Multi-Status).
+ */
+export const bulkDeleteUsers = async (
+  ids: string[]
+): Promise<BulkDeleteResult> => {
+  try {
+    const response = await axios.delete('api/user/bulk', {
+      data: { ids },
+    });
+    return response.data.data;
   } catch (error: any) {
     return handleApiError(error);
   }
