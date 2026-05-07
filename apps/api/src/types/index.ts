@@ -23,6 +23,8 @@ export interface RequestBodyProfile {
 }
 
 export interface IAuthService {
+  verifyPassword(userId: string, password: string);
+  getSingleUser(id: string): Promise<User | null>;
   createUser(input: UserInput): Promise<User>;
   createProfile: (input: ProfileInput, userId: string) => Promise<Profile>;
   createAccount: (
@@ -36,13 +38,8 @@ export interface IAuthService {
     email: string,
     password: string
   ) => Promise<{ profile: Profile; user: User } | null>;
-  changePassword: (
-    userId: string,
-    currentPassword: string,
-    newPassword: string
-  ) => Promise<true>;
+  changePassword: (userId: string, newPassword: string) => Promise<true>;
   requestPasswordReset: (email: string) => Promise<void>;
-  resetPassword: (token: string, newPassword: string) => Promise<true>;
 }
 
 export interface IIdeoramaService {
