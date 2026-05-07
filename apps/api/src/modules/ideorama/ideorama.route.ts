@@ -12,14 +12,13 @@ export default function createIdeoramaRoutes(
   const ideoramaController = new IdeoramaController(ideoramaService);
   const router: ExpressRouter = Router();
 
-  router.get('/all', ideoramaController.getIdeoramasController); //public
+  // 1. PUBLIC ROUTES (No Auth)
+  router.get('/all', ideoramaController.getIdeoramasController);
 
   router.use(authenticate, requireAuth);
 
   router.get('/empty', ideoramaController.getEmptyIdeorama);
-
   router.get('/', ideoramaController.getUserIdeoramasController);
-
   router.get(
     '/user/:userId',
     ideoramaController.getParticularUserIdeoramasController
@@ -29,7 +28,7 @@ export default function createIdeoramaRoutes(
 
   router.post('/', ideoramaController.createIdeoramaController);
 
-  router.patch(
+  router.post(
     '/:ideoramaId/save',
     (req, res, next) =>
       checkIdeoramaExistence(
@@ -41,8 +40,7 @@ export default function createIdeoramaRoutes(
     ideoramaController.saveIdeoramaController
   );
 
-  // for beacon, since it doesn't support PATCH method, we use POST method instead
-  router.post(
+  router.patch(
     '/:ideoramaId/save',
     (req, res, next) =>
       checkIdeoramaExistence(
