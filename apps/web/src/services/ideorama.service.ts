@@ -11,6 +11,9 @@ interface ApiResponse<T> {
 
 const BASE = '/api/ideorama';
 
+const API_BASE_FOR_BEACON =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
 export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
   const response = await axios.get(`${BASE}/empty`);
   return response.data;
@@ -78,7 +81,7 @@ export const beaconSaveIdeorama = (
 
     const token = localStorage.getItem('token');
 
-    fetch(`${BASE}/${ideoramaId}/save`, {
+    fetch(`${API_BASE_FOR_BEACON}${BASE}/${ideoramaId}/save`, {
       method: 'PATCH',
       keepalive: true,
       headers: {

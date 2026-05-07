@@ -58,7 +58,7 @@ function resolveExtensionType(fileKey: string): ExtensionType {
 const PreviewContainer = ({
   children,
 }: Readonly<{ children: React.ReactNode }>) => (
-  <span className="shrink-0 flex h-20 w-20 items-center justify-center rounded-md bg-sidebar overflow-hidden border border-border/50">
+  <span className="shrink-0 flex h-20 w-20 items-center justify-center rounded-md bg-transparent overflow-hidden border border-border/50">
     {children}
   </span>
 );
@@ -66,6 +66,7 @@ const PreviewContainer = ({
 export const AssetPreview = memo(
   ({ fileKey }: AssetPreviewProps) => {
     const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
+
     const { url, loading, error } = useStorageUrl(fileKey);
 
     if (loading)

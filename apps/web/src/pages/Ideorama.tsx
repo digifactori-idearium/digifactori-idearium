@@ -27,7 +27,7 @@ import { subscribe, useSnapshot } from 'valtio';
 import { subscribeKey } from 'valtio/utils';
 
 import Scene from '@/components/3d-scene';
-import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
+import { AssetPreview } from '@/components/assets/AssetPreview';
 import { SuperButton } from '@/components/common/button';
 import ResetIdeoramaDialog from '@/components/dialog/AlertDialog';
 import { AssetsPanel } from '@/components/panels/AssetsPanel';
@@ -35,7 +35,6 @@ import { ObjectListPanel } from '@/components/panels/ObjectListPanel';
 import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { resolveAssetUrl, resolveThumbnailUrl } from '@/lib/asset';
 import {
   beaconSaveIdeorama,
   getIdeoramaById,
@@ -381,23 +380,14 @@ export default function Ideorama() {
         >
           {activeAsset && (
             <div className="w-24 h-24 cursor-grabbing rounded-xl overflow-hidden opacity-90 flex items-center justify-center">
-              {resolveThumbnailUrl(
-                activeAsset.thumbnail,
-                activeAsset.thumbnailUrl
-              ) ? (
-                <img
-                  src={resolveThumbnailUrl(
-                    activeAsset.thumbnail,
-                    activeAsset.thumbnailUrl
-                  )}
-                  alt="Dragging Asset"
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <AssetThumbnail
-                  file={resolveAssetUrl(activeAsset.file, activeAsset.fileUrl)}
-                />
-              )}
+              <AssetPreview
+                fileKey={
+                  activeAsset.thumbnailUrl ||
+                  activeAsset.thumbnail ||
+                  activeAsset.fileUrl ||
+                  activeAsset.file
+                }
+              />
             </div>
           )}
         </DragOverlay>
