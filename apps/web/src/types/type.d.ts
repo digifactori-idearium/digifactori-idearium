@@ -31,6 +31,8 @@ type User = {
   parental_code: string | null;
   role: Role;
   profile?: Profile;
+  following?: { pseudo: string; avatar: string; userId: string }[];
+  followers?: { pseudo: string; avatar: string; userId: string }[];
 };
 
 type UserSession = {

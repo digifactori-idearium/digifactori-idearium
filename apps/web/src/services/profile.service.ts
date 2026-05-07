@@ -119,9 +119,7 @@ export const followUser = async (followedUserId: string) => {
 
 export const getFollowers = async (
   userId: string
-): Promise<
-  ApiResponse<{ followers: { pseudo: string; avatar: string }[] }>
-> => {
+): Promise<ApiResponse<User>> => {
   try {
     const response = await axios.get(`${BASE_URL}/${userId}/followers`);
     if (response.data.status === 'error') {
@@ -141,9 +139,7 @@ export const getFollowers = async (
 
 export const getFollowing = async (
   userId: string
-): Promise<
-  ApiResponse<{ following: { pseudo: string; avatar: string }[] }>
-> => {
+): Promise<ApiResponse<User>> => {
   try {
     const response = await axios.get(`${BASE_URL}/${userId}/following`);
     if (response.data.status === 'error') {
