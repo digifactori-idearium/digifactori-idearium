@@ -1,12 +1,12 @@
 import {
   Box,
   Cuboid,
-  Home,
   LucideIcon,
   NotebookText,
   Rocket,
   Settings,
   SolarPanel,
+  SwatchBook,
   Users,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -29,8 +29,8 @@ export function NavLink() {
   const { user } = useUser();
 
   const links: Record<string, NavLinkItem> = {
-    home: { path: '', label: 'Accueil', icon: Home },
     mySpace: { path: 'my-space', label: 'Mon Espace', icon: Rocket },
+    home: { path: '', label: 'Ideoramas', icon: SwatchBook },
     MyIdeoramas: {
       path: 'my-ideoramas',
       label: 'Mes Idéoramas',
