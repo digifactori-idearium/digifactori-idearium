@@ -168,7 +168,7 @@ export default class ProfileService implements IProfileService {
    */
   async getFollowers(
     userId: string
-  ): Promise<{ pseudo: string; avatar: string | null }[]> {
+  ): Promise<{ pseudo: string; avatar: string | null; userId: string }[]> {
     const followers = await followTable.findMany({
       where: {
         followedId: userId,
@@ -194,7 +194,7 @@ export default class ProfileService implements IProfileService {
    */
   async getFollowing(
     userId: string
-  ): Promise<{ pseudo: string; avatar: string | null }[]> {
+  ): Promise<{ pseudo: string; avatar: string | null; userId: string }[]> {
     const following = await followTable.findMany({
       where: {
         followerId: userId,

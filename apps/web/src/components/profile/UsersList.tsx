@@ -39,6 +39,7 @@ export function UsersList({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
+  console.log('users:', users);
   const filtered = users.filter(user =>
     user.pseudo.toLowerCase().includes(search.toLowerCase())
   );

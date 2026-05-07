@@ -121,8 +121,14 @@ const ProfilePage: React.FC = () => {
           trigger={
             <SuperButton
               className="text-white! bg-mauve! hover:bg-mauve/80! border-mauve!"
-              tooltip={`Voir les followers de ${profile?.pseudo}`}
+              disabled={(profile?.followers.length || 0) === 0}
+              tooltip={
+                (profile?.followers.length || 0) > 1
+                  ? `Voir les abonnés de ${profile?.pseudo}`
+                  : `Voir l'abonné de ${profile?.pseudo}`
+              }
               onClick={() => {
+                if ((profile?.followers.length || 0) === 0) return;
                 getFollowers(profile!.userId).then(res => {
                   setFollowers(res.data);
                 });
@@ -141,8 +147,14 @@ const ProfilePage: React.FC = () => {
           trigger={
             <SuperButton
               className="text-white! bg-mauve! hover:bg-mauve/80! border-mauve!"
-              tooltip={`Voir les utilisateurs suivis par ${profile?.pseudo}`}
+              disabled={(profile?.following.length || 0) === 0}
+              tooltip={
+                (profile?.following.length || 0) > 1
+                  ? `Voir les abonnements de ${profile?.pseudo}`
+                  : `Voir l'abonnement de ${profile?.pseudo}`
+              }
               onClick={() => {
+                if ((profile?.following.length || 0) === 0) return;
                 getFollowing(profile!.userId).then(res => {
                   setFollowing(res.data);
                 });
