@@ -161,9 +161,9 @@ const IdeoramasGroup: React.FC<{
                   onClick={e => {
                     e.stopPropagation();
                     if (ideorama.userId === user?.id) {
-                      navigate(`/app/profile/${ideorama.userId}`);
-                    } else {
                       navigate(`/app/profile`);
+                    } else {
+                      navigate(`/app/profile/${ideorama.userId}`);
                     }
                   }}
                   className="text-sm text-mauve font-medium hover:underline leading-tight bg-transparent! p-0!"
