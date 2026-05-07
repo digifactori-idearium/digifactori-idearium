@@ -16,7 +16,7 @@ const FAKE_PSEUDO = 'fakePseudo';
 
 function createFakeUser(overrides = {}): { user: User; userJSON: any } {
   const user: User = {
-    id: 'fake-user-id',
+    id: FAKE_USER_ID,
     email: 'pseudo@gmail.com',
     first_name: 'FirstName',
     last_name: 'LastName',
@@ -40,7 +40,7 @@ function createFakeProfile(overrides = {}): {
   profileJSON: any;
 } {
   const profile = {
-    id: 'fake-profile-id',
+    id: FAKE_PROFILE_ID,
     createdAt: new Date(),
     updatedAt: new Date(),
     userId: 'fake-user-id',

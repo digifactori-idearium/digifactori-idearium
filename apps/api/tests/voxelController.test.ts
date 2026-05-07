@@ -24,7 +24,7 @@ const FAKE_MODEL_ID = 'id';
 
 function createFakeUser(overrides = {}): User {
   const user: User = {
-    id: 'cmnup6jyf0000p0utn33xhdpq',
+    id: FAKE_USER_ID,
     email: 'gyfenfer1@gmail.com',
     first_name: 'FirstName',
     last_name: 'LastName',
@@ -41,7 +41,7 @@ function createFakeUser(overrides = {}): User {
 function createFakeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
     id: 'profileId',
-    userId: 'cmnup6jyf0000p0utn33xhdpq',
+    userId: FAKE_USER_ID,
     pseudo: 'TestUser',
     avatar: null,
     bio: null,
@@ -205,6 +205,11 @@ describe('Voxel model handling', () => {
       expect(mockService.getUserVoxelModels).toHaveBeenCalledWith(FAKE_USER_ID);
       expect(res.body.data).toEqual([modelJSON]);
       expect(res.status).toBe(200);
+    });
+
+    it('should return 401 if not authenticated', async () => {
+      const res = await request(app).get('/api/voxel/');
+      expect(res.status).toBe(401);
     });
   });
 

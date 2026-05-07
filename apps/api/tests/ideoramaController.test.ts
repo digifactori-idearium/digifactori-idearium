@@ -14,37 +14,8 @@ jest.mock('fs', () => ({
   writeFileSync: jest.fn(),
 }));
 
-const FAKE_USER_ID = 'cmnup6jyf0000p0utn33xhdpq';
+const FAKE_USER_ID = 'fake-user-id';
 const FAKE_IDEORAMA_ID = 'id';
-
-function createFakeUser(overrides: Partial<User> = {}): User {
-  return {
-    id: 'cmnup6jyf0000p0utn33xhdpq',
-    email: 'gyfenfer1@gmail.com',
-    first_name: 'FirstName',
-    last_name: 'LastName',
-    password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
-    isActive: true,
-    role: 'INTERN',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  };
-}
-
-function createFakeProfile(overrides: Partial<Profile> = {}): Profile {
-  return {
-    id: 'profileId',
-    userId: 'cmnup6jyf0000p0utn33xhdpq',
-    pseudo: 'TestUser',
-    avatar: null,
-    bio: null,
-    voiceButtons: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  };
-}
 
 const EMPTY_SCENE = {
   global: {
@@ -59,12 +30,41 @@ const EMPTY_SCENE = {
   objects: {},
 };
 
+function createFakeUser(overrides: Partial<User> = {}): User {
+  return {
+    id: FAKE_USER_ID,
+    email: 'gyfenfer1@gmail.com',
+    first_name: 'FirstName',
+    last_name: 'LastName',
+    password: '$2b$10$IyzVm9N/qexU6gD/fEoyz.9VeyRlcK4/UdsJYI3SNrVgV7ZUXz8r6',
+    isActive: true,
+    role: 'INTERN',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+function createFakeProfile(overrides: Partial<Profile> = {}): Profile {
+  return {
+    id: 'fake-profile-id',
+    userId: FAKE_USER_ID,
+    pseudo: 'TestUser',
+    avatar: null,
+    bio: null,
+    voiceButtons: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
 function createFakeIdeorama(overrides: Partial<Ideorama> = {}): {
   ideorama: Ideorama;
   ideoramaJSON: Record<string, unknown>;
 } {
   const ideorama: Ideorama = {
-    id: 'id',
+    id: FAKE_IDEORAMA_ID,
     name: 'test',
     isPublic: true,
     scene: 'path',
@@ -115,6 +115,26 @@ beforeEach(() => {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('Ideorama handling', () => {
+  describe('GET ideorama/', () => {
+    it('should return all ideoramas of a user', async () => {
+      const { ideorama, ideoramaJSON } = createFakeIdeorama();
+      mockService.getUserIdeoramas.mockResolvedValue([ideorama]);
+
+      const res = await request(app)
+        .get('/api/ideorama/')
+        .set('Authorization', authHeader());
+
+      expect(mockService.getUserIdeoramas).toHaveBeenCalledWith(FAKE_USER_ID);
+      expect(res.body.data).toEqual([ideoramaJSON]);
+      expect(res.status).toBe(200);
+    });
+
+    it('should return 401 if not authenticated', async () => {
+      const res = await request(app).get('/api/ideorama/');
+      expect(res.status).toBe(401);
+    });
+  });
+
   describe('GET /ideorama/:ideoramaId', () => {
     it('should return the ideorama found with its id', async () => {
       const { ideorama, ideoramaJSON } = createFakeIdeorama({ scene: {} });
@@ -198,21 +218,6 @@ describe('Ideorama handling', () => {
 
       expect(mockService.saveScene).not.toHaveBeenCalled();
       expect(res.status).toBe(404);
-    });
-  });
-
-  describe('GET ideorama/', () => {
-    it('should return all ideoramas of a user', async () => {
-      const { ideorama, ideoramaJSON } = createFakeIdeorama();
-      mockService.getUserIdeoramas.mockResolvedValue([ideorama]);
-
-      const res = await request(app)
-        .get('/api/ideorama/')
-        .set('Authorization', authHeader());
-
-      expect(mockService.getUserIdeoramas).toHaveBeenCalledWith(FAKE_USER_ID);
-      expect(res.body.data).toEqual([ideoramaJSON]);
-      expect(res.status).toBe(200);
     });
   });
 
