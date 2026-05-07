@@ -85,7 +85,7 @@ export const UserActions = ({
         trigger={
           <SuperButton
             tooltip="Supprimer l'utilisateur"
-            voiceText="Supprimer l'utilisateur"
+            className="p-2 rounded-full hover:bg-red-500/30 bg-red-500/10 text-red-500 transition-colors"
           >
             <Trash2 className="h-4 w-4" />
           </SuperButton>
