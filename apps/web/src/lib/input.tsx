@@ -345,6 +345,43 @@ const ideoramaTags = [
   { value: 'history', text: 'Histoire (Sujet)' },
 ];
 
+const ASSET_CATEGORY_OPTIONS = [
+  { value: 'FOOD_AND_DRINK', text: 'Nourriture & Boissons' },
+  { value: 'CLUTTER', text: 'Divers' },
+  { value: 'WEAPONS', text: 'Armes' },
+  { value: 'TRANSPORT', text: 'Transport' },
+  { value: 'FURNITURE_AND_DECOR', text: 'Meubles & Décoration' },
+  { value: 'OBJECTS', text: 'Objets' },
+  { value: 'NATURE', text: 'Nature' },
+  { value: 'ANIMALS', text: 'Animaux' },
+  { value: 'BUILDINGS', text: 'Architecture' },
+  { value: 'PEOPLE_AND_CHARACTERS', text: 'Personnages' },
+  { value: 'SCENES_AND_LEVELS', text: 'Scènes & Niveaux' },
+  { value: 'OTHER', text: 'Autre' },
+];
+
+// Accepted file types
+const MODEL_3D_ACCEPTED_TYPES = {
+  'model/gltf-binary': ['.glb'],
+  'model/gltf+json': ['.gltf'],
+};
+
+const IMAGE_ACCEPTED_TYPES = {
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
+};
+
+const AUDIO_ACCEPTED_TYPES = {
+  'audio/mpeg': ['.mp3'],
+  'audio/wav': ['.wav'],
+  'audio/ogg': ['.ogg'],
+  'audio/flac': ['.flac'],
+  'audio/aac': ['.aac'],
+  'audio/webm': ['.weba'],
+  'audio/x-aiff': ['.aiff', '.aif'],
+};
+
 const globalConfigInputs = [
   {
     label: 'Rendre public',
@@ -520,20 +557,7 @@ export const assetInputs = [
     placeholder: "Sélectionnez la catégorie de l'asset",
     required: false,
     icon: ChartBarStacked,
-    options: [
-      { value: 'FOOD_AND_DRINK', text: 'Nourriture & Boissons' },
-      { value: 'CLUTTER', text: 'Divers' },
-      { value: 'WEAPONS', text: 'Armes' },
-      { value: 'TRANSPORT', text: 'Transport' },
-      { value: 'FURNITURE_AND_DECOR', text: 'Meubles & Décoration' },
-      { value: 'OBJECTS', text: 'Objets' },
-      { value: 'NATURE', text: 'Nature' },
-      { value: 'ANIMALS', text: 'Animaux' },
-      { value: 'BUILDINGS', text: 'Architecture' },
-      { value: 'PEOPLE_AND_CHARACTERS', text: 'Personnages' },
-      { value: 'SCENES_AND_LEVELS', text: 'Scènes & Niveaux' },
-      { value: 'OTHER', text: 'Autre' },
-    ],
+    options: ASSET_CATEGORY_OPTIONS,
   },
   {
     label: 'Tags',
@@ -560,6 +584,149 @@ export const assetInputs = [
     required: false,
     multiple: false,
     icon: Box,
+  },
+];
+
+/* =========================
+   3D MODEL ASSET INPUTS
+========================= */
+export const asset3DModelInputs = [
+  {
+    label: 'Nom',
+    type: 'text',
+    name: 'name',
+    placeholder: 'Entrez le nom du modèle 3D',
+    required: false,
+    icon: Box,
+  },
+  {
+    label: 'Catégorie',
+    type: 'select',
+    name: 'category',
+    placeholder: "Sélectionnez la catégorie de l'asset",
+    required: false,
+    icon: ChartBarStacked,
+    options: ASSET_CATEGORY_OPTIONS,
+  },
+  {
+    label: 'Tags',
+    type: 'tags',
+    name: 'tags',
+    placeholder: 'Entrez les tags',
+    required: false,
+    icon: Box,
+  },
+  {
+    label: 'Fichier 3D (GLB/GLTF)',
+    type: 'assets',
+    name: 'file',
+    placeholder: 'Glissez un fichier GLB ou GLTF',
+    required: false,
+    multiple: false,
+    icon: Box,
+    acceptedTypes: MODEL_3D_ACCEPTED_TYPES,
+  },
+  {
+    label: 'Image (Aperçu)',
+    type: 'assets',
+    name: 'thumbnail',
+    placeholder: "Glissez une image pour l'aperçu",
+    required: false,
+    multiple: false,
+    icon: Box,
+    acceptedTypes: IMAGE_ACCEPTED_TYPES,
+  },
+];
+
+/* =========================
+   MUSIC ASSET INPUTS
+========================= */
+export const assetMusicInputs = [
+  {
+    label: 'Nom',
+    type: 'text',
+    name: 'name',
+    placeholder: 'Entrez le nom de la musique',
+    required: false,
+    icon: Box,
+  },
+  {
+    label: 'Catégorie',
+    type: 'select',
+    name: 'category',
+    placeholder: "Sélectionnez la catégorie de l'asset",
+    required: false,
+    icon: ChartBarStacked,
+    options: ASSET_CATEGORY_OPTIONS,
+  },
+  {
+    label: 'Tags',
+    type: 'tags',
+    name: 'tags',
+    placeholder: 'Entrez les tags',
+    required: false,
+    icon: Box,
+  },
+  {
+    label: 'Fichier Audio',
+    type: 'assets',
+    name: 'file',
+    placeholder: 'Glissez un fichier audio (MP3, WAV, OGG, etc.)',
+    required: false,
+    multiple: false,
+    icon: Box,
+    acceptedTypes: AUDIO_ACCEPTED_TYPES,
+  },
+  {
+    label: 'Image (Aperçu)',
+    type: 'assets',
+    name: 'thumbnail',
+    placeholder: "Glissez une image pour l'aperçu",
+    required: false,
+    multiple: false,
+    icon: Box,
+    acceptedTypes: IMAGE_ACCEPTED_TYPES,
+  },
+];
+
+/* =========================
+   IMAGE ASSET INPUTS
+========================= */
+export const assetImageInputs = [
+  {
+    label: 'Nom',
+    type: 'text',
+    name: 'name',
+    placeholder: "Entrez le nom de l'image",
+    required: false,
+    icon: Box,
+  },
+  {
+    label: 'Catégorie',
+    type: 'select',
+    name: 'category',
+    placeholder: "Sélectionnez la catégorie de l'asset",
+    required: false,
+    icon: ChartBarStacked,
+    options: ASSET_CATEGORY_OPTIONS,
+  },
+  {
+    label: 'Tags',
+    type: 'tags',
+    name: 'tags',
+    placeholder: 'Entrez les tags',
+    required: false,
+    icon: Box,
+  },
+  {
+    label: 'Image',
+    type: 'assets',
+    name: 'file',
+    placeholder: 'Glissez une image (JPEG, PNG, WEBP)',
+    required: false,
+    multiple: false,
+    icon: Box,
+    acceptedTypes: IMAGE_ACCEPTED_TYPES,
   },
 ];
 

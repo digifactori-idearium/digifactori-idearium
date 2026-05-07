@@ -35,6 +35,19 @@ export default class IdeoramaController {
   );
 
   /**
+   * Returns all ideoramas .
+   *
+   * @route  GET /ideorama
+   * @access Authenticated
+   */
+  getIdeoramasController = asyncHandler(async (req: Request, res: Response) => {
+    const ideoramas = await this.ideoramaService.getIdeoramas();
+    HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
+      res
+    );
+  });
+
+  /**
    * Returns all ideoramas for the authenticated user.
    *
    * @route  GET /ideorama
@@ -44,6 +57,23 @@ export default class IdeoramaController {
     async (req: Request, res: Response) => {
       const ideoramas = await this.ideoramaService.getUserIdeoramas(
         req.user!.userId
+      );
+      HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
+        res
+      );
+    }
+  );
+
+  /**
+   * Returns all ideoramas for the authenticated user.
+   *
+   * @route  GET /ideorama
+   * @access Authenticated
+   */
+  getParticularUserIdeoramasController = asyncHandler(
+    async (req: Request, res: Response) => {
+      const ideoramas = await this.ideoramaService.getUserIdeoramas(
+        req.params.userId as string
       );
       HttpResponse.success(ideoramas, 'Idéoramas récupérés avec succès').send(
         res
@@ -134,11 +164,15 @@ export default class IdeoramaController {
    *
    * @params ideoramaId
    */
-  likeIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
+  likeIdeoramaController = asyncHandler(async (req, res) => {
     const ideoramaId = req.params.ideoramaId as string;
 
-    await this.ideoramaService.likeIdeorama(ideoramaId, req.user!.userId);
-    HttpResponse.success(null, 'Idéorama liké avec succès').send(res);
+    const result = await this.ideoramaService.likeIdeorama(
+      ideoramaId,
+      req.user!.userId
+    );
+
+    HttpResponse.success(result).send(res);
   });
 
   /**

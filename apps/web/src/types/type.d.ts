@@ -37,6 +37,7 @@ type UserSession = {
   id: string;
   email: string;
   role: Role;
+  voiceButtons: boolean;
   token: string;
 };
 
@@ -46,6 +47,7 @@ type Profile = {
   pseudo: string;
   avatar: string | null;
   bio: string | null;
+  voiceButtons: boolean;
   followers: string[];
   following: string[];
   ideoramaLiked: { ideoramaId: string }[];
@@ -75,7 +77,9 @@ type Ideorama = {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
+  user?: User;
   _count?: { likers: number };
+  likers?: { userId: string }[];
 };
 
 type ModelsInfo = {
@@ -260,7 +264,6 @@ interface Settings {
 }
 
 // ===== Internal Assets Management
-type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
 type AssetCategory =
   | 'FOOD_AND_DRINK'

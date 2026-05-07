@@ -14,7 +14,7 @@ const configSchema = z.object({
   JWT_SECRET: z.string().min(32).default('MY SECRET TOKEN KEY'),
   JWT_EXPIRES_IN: z.string().default('7d'),
   API_URL: z.url().default('http://localhost:3001'),
-  CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  CORS_ORIGIN: z.string().default('http://localhost:3001'),
 });
 
 const config = configSchema.parse(process.env);

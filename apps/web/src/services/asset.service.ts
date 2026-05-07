@@ -12,7 +12,7 @@ export const fetchStorageFile = async (fileKey: string) => {
       responseType: 'blob',
     });
     return response.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -26,7 +26,7 @@ export const getAssets = async (
   try {
     const response = await axios.get('api/asset/list', { params });
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -38,7 +38,7 @@ export const getAssetById = async (id: string): Promise<Asset> => {
   try {
     const response = await axios.get(`api/asset/${id}`);
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -53,7 +53,7 @@ export const createAsset = async (input: CreateAssetInput): Promise<Asset> => {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -73,7 +73,7 @@ export const bulkCreateAssets = async (
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -93,7 +93,7 @@ export const updateAsset = async (
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -105,7 +105,7 @@ export const updateAsset = async (
 export const deleteAsset = async (id: string): Promise<void> => {
   try {
     await axios.delete(`api/asset/${id}`);
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -122,7 +122,7 @@ export const bulkDeleteAssets = async (
       data: { ids },
     });
     return response.data.data;
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };

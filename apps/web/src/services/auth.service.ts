@@ -19,7 +19,7 @@ export const login = async (
     }
     const { accessToken, user } = response.data.data;
     return { token: accessToken, role: user.role };
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -34,7 +34,7 @@ export const register = async (userData: any): Promise<AuthResponse> => {
     }
     const { accessToken, user } = response.data.data;
     return { token: accessToken, role: user.role };
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -54,7 +54,7 @@ export const changePassword = async (
       newPassword,
       confirmPassword,
     });
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -66,7 +66,7 @@ export const changePassword = async (
 export const requestPasswordReset = async (email: string): Promise<void> => {
   try {
     await axios.post('api/auth/reset-password/request', { email });
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };
@@ -85,7 +85,7 @@ export const resetPassword = async (
       newPassword,
       confirmPassword,
     });
-  } catch (error: any) {
+  } catch (error) {
     return handleApiError(error);
   }
 };

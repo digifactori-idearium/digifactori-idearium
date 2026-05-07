@@ -5,6 +5,7 @@ import {
   createUserSchema,
   updateRoleSchema,
   CreateUpdateUserSchema,
+  bulkDeleteUsersSchema,
 } from './user.validation';
 
 import { IUserService } from '@/types';
@@ -292,5 +293,39 @@ export default class UserController {
       ? 'Compte activé avec succès.'
       : 'Compte désactivé avec succès.';
     return HttpResponse.success(updated, message).send(res);
+  });
+
+  /**
+   * Permanently deletes multiple users (partial success supported).
+   * - ADMIN      → any non-ADMIN user
+   * - SUPERVISOR → only INTERN accounts
+   *
+   * @route  DELETE /user/bulk
+   * @access ADMIN | SUPERVISOR
+   *
+   * @body   { ids: string[] }
+   *
+   * @returns 207 { data: { deleted: number, failed: { id, reason }[] } }
+   */
+  bulkDeleteUsers = asyncHandler(async (req: Request, res: Response) => {
+    const requester = req.user!;
+
+    const result = await bulkDeleteUsersSchema.safeParseAsync(req.body);
+    if (failOnValidation(result, res)) return;
+
+    const bulkResult = await this.userService.bulkDeleteUsers(
+      result.data!.ids,
+      requester.role as Role,
+      requester.userId
+    );
+
+    res
+      .status(207)
+      .json(
+        HttpResponse.success(
+          bulkResult,
+          `${bulkResult.deleted} utilisateur(s) supprimé(s), ${bulkResult.failed.length} échec(s)`
+        ).toJson()
+      );
   });
 }

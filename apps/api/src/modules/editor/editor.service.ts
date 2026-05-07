@@ -1,5 +1,6 @@
 import { prisma } from '@/config/client.config';
 import { IEditorService } from '@/types';
+import { errorMessage } from '@/utils/errors';
 
 const documentTable = prisma.document;
 
@@ -33,9 +34,9 @@ export default class EditorService implements IEditorService {
       });
 
       return newDocument;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la création du document: ${error.message}`
+        `Erreur lors de la création du document: ${errorMessage(error)}`
       );
     }
   }
@@ -58,9 +59,9 @@ export default class EditorService implements IEditorService {
       });
 
       return documents;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la récupération des documents: ${error.message}`
+        `Erreur lors de la récupération des documents: ${errorMessage(error)}`
       );
     }
   }
@@ -84,9 +85,9 @@ export default class EditorService implements IEditorService {
       }
 
       return document;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la récupération du document: ${error.message}`
+        `Erreur lors de la récupération du document: ${errorMessage(error)}`
       );
     }
   }
@@ -124,9 +125,9 @@ export default class EditorService implements IEditorService {
       });
 
       return updatedDocument;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la mise à jour du document: ${error.message}`
+        `Erreur lors de la mise à jour du document: ${errorMessage(error)}`
       );
     }
   }
@@ -143,9 +144,9 @@ export default class EditorService implements IEditorService {
       });
 
       return deletedDocument;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la suppression du document: ${error.message}`
+        `Erreur lors de la suppression du document: ${errorMessage(error)}`
       );
     }
   }
@@ -183,9 +184,9 @@ export default class EditorService implements IEditorService {
       });
 
       return updatedDocument;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la sauvegarde du document: ${error.message}`
+        `Erreur lors de la sauvegarde du document: ${errorMessage(error)}`
       );
     }
   }

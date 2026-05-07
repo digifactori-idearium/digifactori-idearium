@@ -143,7 +143,6 @@ function VoxelMotor({
     const position = new THREE.Vector3();
 
     if (event.face) {
-      console.log('here');
       if (mode === 'add') {
         position.copy(event.point).add(event.face.normal);
       } else {
@@ -419,6 +418,7 @@ export default function Voxel({
       <Canvas
         style={{ width: '100%', height: '100%' }}
         camera={{ position: [500, 800, 1300], fov: 45, near: 1, far: 10000 }}
+        resize={{ debounce: 0 }}
       >
         <SceneBridge setScene={setScene} />
         <VoxelMotor

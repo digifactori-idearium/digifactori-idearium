@@ -40,19 +40,20 @@ model Profile {
   pseudo        String          @unique
   avatar        String?
   bio           String?
+  voiceButtons  Boolean         @default(true)
   followers     Follow[]        @relation("UserFollowers")
   following     Follow[]        @relation("UserFollowing")
   ideoramaLiked IdeoramaLikes[] @relation("ideoramaLiked")
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  user          User            @relation(fields: [userId], references: [id])
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Follow {
-  follower   Profile @relation("UserFollowing", fields: [followerId], references: [userId])
+  follower   Profile @relation("UserFollowing", fields: [followerId], references: [userId], onDelete: Cascade)
   followerId String
 
-  following  Profile @relation("UserFollowers", fields: [followedId], references: [userId])
+  following  Profile @relation("UserFollowers", fields: [followedId], references: [userId], onDelete: Cascade)
   followedId String
 
   @@id([followerId, followedId])
@@ -66,45 +67,31 @@ model Ideorama {
 
   scene Json?
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   likers IdeoramaLikes[] @relation("likers")
-
-  voxels Voxel[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model IdeoramaLikes {
-  profile    Profile  @relation("ideoramaLiked", fields: [userId], references: [userId])
+  profile    Profile  @relation("ideoramaLiked", fields: [userId], references: [userId], onDelete: Cascade)
   userId     String
-  ideorama   Ideorama @relation("likers", fields: [ideoramaId], references: [id])
+  ideorama   Ideorama @relation("likers", fields: [ideoramaId], references: [id], onDelete: Cascade)
   ideoramaId String
 
   @@id([ideoramaId, userId])
 }
 
-model Voxel {
-  id    String @id @default(cuid())
-  x     Int
-  y     Int
-  z     Int
-  color String
-
-  ideoramaId String
-  ideorama   Ideorama @relation(fields: [ideoramaId], references: [id])
-
-  createdAt DateTime @default(now())
-}
 
 model VoxelModel {
   id        String   @id @default(cuid())
   name      String   @default("New Voxel Model")
   model     String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -117,8 +104,8 @@ model Document {
   wordCount Int      @default(0)
   emoji     String   @default("📝")
   color     String   @default("#a78bfa")
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
