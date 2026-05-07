@@ -1,13 +1,13 @@
 import {
-  LucideIcon,
-  Users,
   Box,
-  Settings,
-  NotebookText,
   Cuboid,
-  Rocket,
-  SolarPanel,
   Home,
+  LucideIcon,
+  NotebookText,
+  Rocket,
+  Settings,
+  SolarPanel,
+  Users,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -44,7 +44,7 @@ export function NavLink() {
 
     textEditor: {
       path: 'text-editor',
-      label: 'Éditeur Texte',
+      label: 'Mes textes',
       icon: NotebookText,
     },
     userHandling: {

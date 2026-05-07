@@ -35,6 +35,7 @@ import { ObjectListPanel } from '@/components/panels/ObjectListPanel';
 import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useUser } from '@/providers/UserProvider';
 import {
   beaconSaveIdeorama,
   getIdeoramaById,
@@ -72,7 +73,10 @@ export default function Ideorama() {
 
   const { ideoramaid } = useParams<{ ideoramaid: string }>();
 
+  const { user } = useUser();
+
   const [activeAsset, setActiveAsset] = useState<any>(null);
+  const [ideoramaUserId, setIdeoramaUserId] = useState('');
 
   const isLoadingData = useRef(true);
   const isSaving = useRef(false);
@@ -89,7 +93,7 @@ export default function Ideorama() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  //Save
+  // Save
   const performSave = useCallback(async () => {
     if (!ideoramaid) return;
     if (isSaving.current) {
@@ -160,6 +164,7 @@ export default function Ideorama() {
       sceneState.history = [];
       sceneState.current = -1;
       sceneState.newest = 0;
+      sceneState.mode = 'play';
     };
   }, [performBeaconSave]);
 
@@ -168,11 +173,12 @@ export default function Ideorama() {
     if (!ideoramaid) return;
 
     isLoadingData.current = true;
-
     getIdeoramaById(ideoramaid)
       .then(res => {
         const record = res.data as any;
         const scene = record.scene as ModelsInfo;
+        setIdeoramaUserId(record.userId);
+        console.log(record.userId);
 
         if (record.name) scene.info = { ...scene.info, name: record.name };
         if (typeof record.isPublic === 'boolean') {
@@ -259,22 +265,26 @@ export default function Ideorama() {
         <div className="w-full h-full flex flex-col">
           <Scene />
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-            <Button
-              onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
-              className="p-2 main-small-btn"
-            >
-              {isEditMode ? (
-                <span className="flex items-center gap-1">
-                  <CirclePlay className="w-4 h-4 text-white" />
-                  <span className="text-white">Jouer</span>
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <SquarePen className="w-4 h-4 text-white" />
-                  <span className="text-white">Modifier</span>
-                </span>
-              )}
-            </Button>
+            {(user?.role == 'SUPERVISOR' ||
+              user?.role == 'ADMIN' ||
+              user?.id == ideoramaUserId) && (
+              <Button
+                onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
+                className="p-2 main-small-btn"
+              >
+                {isEditMode ? (
+                  <span className="flex items-center gap-1">
+                    <CirclePlay className="w-4 h-4 text-white" />
+                    <span className="text-white">Jouer</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <SquarePen className="w-4 h-4 text-white" />
+                    <span className="text-white">Modifier</span>
+                  </span>
+                )}
+              </Button>
+            )}
 
             {current != 0 && isEditMode && (
               <SuperButton
