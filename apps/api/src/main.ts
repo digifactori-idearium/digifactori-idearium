@@ -75,6 +75,9 @@ app.use('/api/ideorama', createIdeoramaRoutes(ideoramaService));
 const ideaService = new IdeaService();
 app.use('/api/ideas', createIdeaRoutes(ideaService));
 
+const ideaService = new IdeaService();
+app.use('/api/ideas', createIdeaRoutes(ideaService));
+
 const voxelService = new VoxelService();
 app.use('/api/voxel', createVoxelRoutes(voxelService));
 
