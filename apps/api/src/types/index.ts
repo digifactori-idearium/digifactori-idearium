@@ -40,14 +40,18 @@ export interface IAuthService {
 }
 
 export interface IIdeoramaService {
-  createIdeorama(ideoramaData: Ideorama): Promise<Ideorama>;
-  updateIdeoramaModelPath(
-    ideoramaId: string,
-    uploadPath: string
-  ): Promise<Ideorama>;
+  createIdeorama(ideoramaData: Partial<Ideorama>): Promise<Ideorama>;
   getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
+  saveScene(
+    ideoramaId: string,
+    scene: import('@prisma/client').Prisma.InputJsonValue,
+    meta?: { name?: string; isPublic?: boolean }
+  ): Promise<Ideorama>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
-  updateIdeorama(ideoramaId: string, data: Ideorama): Promise<Ideorama>;
+  updateIdeorama(
+    ideoramaId: string,
+    data: import('@prisma/client').Prisma.IdeoramaUpdateInput
+  ): Promise<Ideorama>;
   isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
   likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
@@ -57,6 +61,7 @@ export interface IProfileService {
   verifyPassword(userId: string, password: string): Promise<boolean>;
   getSingleProfile(userId: string): Promise<Profile | null>;
   getSingleUser(userId: string): Promise<User | null>;
+  getCorrectParentalCode(): Promise<number | undefined>;
   updateProfile(
     userId: string,
     body: SetProfileInput
@@ -76,16 +81,15 @@ export interface IVoxelService {
     name?: string;
     userId: string;
   }): Promise<VoxelModel>;
-  updateVoxelModelPath(
+
+  updateVoxelModelFileKey(
     voxelModelId: string,
-    uploadPath: string
+    fileKey: string
   ): Promise<VoxelModel>;
-  getVoxelModelById(
-    voxelModelId: string,
-    userId: string
-  ): Promise<VoxelModel | null>;
+
+  getVoxelModelById(voxelModelId: string): Promise<VoxelModel | null>;
   getUserVoxelModels(userId: string): Promise<VoxelModel[]>;
-  deleteVoxelModel(voxelModelId: string, userId: string): Promise<VoxelModel>;
+  deleteVoxelModel(voxelModelId: string): Promise<VoxelModel>;
 }
 
 export interface IEditorService {

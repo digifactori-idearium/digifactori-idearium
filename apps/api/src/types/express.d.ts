@@ -8,6 +8,8 @@ declare global {
         role: Role;
         email: string;
       };
+      file?: Multer.File;
+
       files?: Record<string, Multer.File[]> | Multer.File[];
     }
 

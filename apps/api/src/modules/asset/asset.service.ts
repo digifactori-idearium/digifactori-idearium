@@ -38,11 +38,12 @@ export default class AssetService implements IAssetService {
    * Paginated, filtered list with public URLs of assets.
    */
   async getAssets(filter: ListAssetsFilter) {
-    const { category, search, tags, page, limit } = filter;
+    const { category, type, search, tags, page, limit } = filter;
     const skip = (page - 1) * limit;
 
     const where = {
       ...(category ? { category } : {}),
+      ...(type ? { type } : {}),
       ...(search
         ? { name: { contains: search, mode: 'insensitive' as const } }
         : {}),
@@ -112,6 +113,7 @@ export default class AssetService implements IAssetService {
         data: {
           name: input.name,
           category: input.category as any,
+          type: input.type as any,
           tags: input.tags ?? [],
           file: '__pending__',
         },
@@ -205,6 +207,7 @@ export default class AssetService implements IAssetService {
         const asset = await this.createAsset({
           name: desc.name,
           category: desc.category,
+          type: desc.type,
           tags: desc.tags,
           file,
           thumbnail,
@@ -265,6 +268,9 @@ export default class AssetService implements IAssetService {
           ...(input.name !== undefined && { name: input.name }),
           ...(input.category !== undefined && {
             category: input.category as any,
+          }),
+          ...(input.type !== undefined && {
+            type: input.type as any,
           }),
           ...(input.tags !== undefined && { tags: input.tags }),
           ...(fileKey !== undefined && { file: fileKey }),

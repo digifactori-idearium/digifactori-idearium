@@ -1,6 +1,8 @@
 import {
   BlobServiceClient,
+  BlobSASPermissions,
   StorageSharedKeyCredential,
+  generateBlobSASQueryParameters,
 } from '@azure/storage-blob';
 
 import { buildKey } from './local.adapter';
@@ -57,6 +59,33 @@ export class AzureAdapter implements StorageAdapter {
   }
 
   getPublicUrl(key: string): string {
-    return `${this.config.publicUrl.replace(/\/$/, '')}/${this.config.container}/${key}`;
+    if (!this.config.publicUrl) return '';
+    return `${this.config.publicUrl.replace(/\/$/, '')}/${key}`;
+  }
+
+  /**
+   * Generates an Azure Blob SAS URL valid for `expiresIn` seconds.
+   * The browser fetches the file directly from Azure — no backend proxy.
+   */
+  async getSignedUrl(key: string, expiresIn = 3600): Promise<string> {
+    const startsOn = new Date();
+    const expiresOn = new Date(startsOn.getTime() + expiresIn * 1000);
+
+    const sasQuery = generateBlobSASQueryParameters(
+      {
+        containerName: this.config.container,
+        blobName: key,
+        permissions: BlobSASPermissions.parse('r'),
+        startsOn,
+        expiresOn,
+      },
+      this.credential
+    ).toString();
+
+    const blobUrl = this.client
+      .getContainerClient(this.config.container)
+      .getBlockBlobClient(key).url;
+
+    return `${blobUrl}?${sasQuery}`;
   }
 }

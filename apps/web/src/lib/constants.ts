@@ -1,3 +1,14 @@
+export {
+  ASSET_TYPES,
+  ASSET_TYPE_FR,
+  ASSET_TYPE_EN,
+  matchAssetType,
+} from './asset-types';
+
+/**
+ * @deprecated Use ASSET_TYPES from asset-types.ts instead.
+ * Kept for backward compatibility with any code that still references CATEGORIES.
+ */
 export const CATEGORIES = [
   { id: 0, fr: 'Nourriture', en: 'Food & Drink' },
   { id: 1, fr: 'Divers', en: 'Clutter' },

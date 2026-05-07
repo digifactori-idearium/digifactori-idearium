@@ -50,7 +50,7 @@ export const Settings: React.FC = () => {
           Store primaire
         </h2>
 
-        <StoreCard store={settings} onUpdated={fetchData} />
+        <StoreCard storage={settings?.storage} onUpdated={fetchData} />
 
         <h2 className="font-bold uppercase text-muted-foreground mb-3 ml-1">
           Intégrations

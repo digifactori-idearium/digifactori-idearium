@@ -2,7 +2,9 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { buildKey } from './local.adapter';
 import { type StorageAdapter, type UploadedFile } from './storage.adapter';
@@ -65,6 +67,15 @@ export class S3Adapter implements StorageAdapter {
   }
 
   getPublicUrl(key: string): string {
+    if (!this.config.publicUrl) return '';
     return `${this.config.publicUrl.replace(/\/$/, '')}/${key}`;
+  }
+
+  async getSignedUrl(key: string, expiresIn = 3600): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: this.config.bucket,
+      Key: key,
+    });
+    return getSignedUrl(this.client, command, { expiresIn });
   }
 }

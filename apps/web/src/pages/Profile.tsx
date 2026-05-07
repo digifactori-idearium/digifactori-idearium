@@ -82,7 +82,7 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (profile) {
-      getAllIdeoramas(profile?.userId).then(res => {
+      getAllIdeoramas().then(res => {
         setIdeoramas(res.data);
       });
     }

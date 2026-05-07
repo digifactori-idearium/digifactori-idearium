@@ -60,12 +60,11 @@ model Follow {
 
 // use metadata
 model Ideorama {
-  id          String  @id @default(cuid())
-  name        String  @default("New Ideorama")
-  description String?
-  isPublic    Boolean @default(true)
+  id       String  @id @default(cuid())
+  name     String  @default("New Ideorama")
+  isPublic Boolean @default(true)
 
-  model String
+  scene Json?
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -126,19 +125,35 @@ model Document {
 
 // ASSETS
 enum IntegrationType {
-  ASSET
-  MUSIC
+  MODEL_3D
+  SOUND
+  IMAGE
+  OTHER
+}
+
+enum AssetCategory {
+  FOOD_AND_DRINK
+  CLUTTER
+  WEAPONS
+  TRANSPORT
+  FURNITURE_AND_DECOR
+  OBJECTS
+  NATURE
+  ANIMALS
+  BUILDINGS
+  PEOPLE_AND_CHARACTERS
+  SCENES_AND_LEVELS
   OTHER
 }
 
 model Setting {
-  id              Int            @id @default(1)
-  orgCode         Int            @default(202026)
-  orgParentalCode Int            @default(2026)
+  id              Int           @id @default(1)
+  orgCode         Int           @default(202026)
+  orgParentalCode Int           @default(2026)
   storage         CloudStorage?
   integrations    Integration[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 enum StorageProvider {
@@ -183,10 +198,11 @@ model Integration {
 }
 
 model Asset {
-  id        String          @id @default(cuid())
-  name      String
-  category  IntegrationType
-  tags      String[]
+  id       String          @id @default(cuid())
+  name     String
+  type     IntegrationType @default(OTHER)
+  category AssetCategory   @default(OTHER)
+  tags     String[]
 
   file      String
   thumbnail String?
