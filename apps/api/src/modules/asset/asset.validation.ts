@@ -127,7 +127,7 @@ export const createBulkAssetsSchema = z.object({
               path: [`[${i}]`, ...(issue.path ?? [])],
             });
           });
-          return z.NEVER as any;
+          return z.NEVER;
         }
         return result.data;
       });
@@ -185,12 +185,12 @@ export const listAssetsQuerySchema = z.object({
   page: z
     .string()
     .optional()
-    .transform(val => (val ? Math.max(1, parseInt(val, 10)) : 1)),
+    .transform(val => (val ? Math.max(1, Number.parseInt(val, 10)) : 1)),
   limit: z
     .string()
     .optional()
     .transform(val =>
-      val ? Math.min(100, Math.max(1, parseInt(val, 10))) : 20
+      val ? Math.min(100, Math.max(1, Number.parseInt(val, 10))) : 20
     ),
 });
 

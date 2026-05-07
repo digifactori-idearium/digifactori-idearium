@@ -6,6 +6,7 @@ import { resetState, stackNewState } from '@/lib/state';
 import { themesToColors } from '@/lib/theme';
 import { round } from '@/lib/utils';
 import { getEmptyIdeorama } from '@/services/ideorama.service';
+// infered types
 
 //theme
 const INITIAL_THEME = 'day' as keyof typeof themesToColors;
@@ -75,7 +76,11 @@ export const actions = {
     sceneState.floor.color = themeData.floor;
   },
 
-  markThemeCustomized(sliceKey: string, values: Partial<any>, target: any) {
+  markThemeCustomized(
+    sliceKey: string,
+    values: Partial<{ color: string }>,
+    target: Record<string, unknown>
+  ) {
     const colorSlices = ['background', 'floor'];
     if (!colorSlices.includes(sliceKey)) return;
     if (!values.color) return;

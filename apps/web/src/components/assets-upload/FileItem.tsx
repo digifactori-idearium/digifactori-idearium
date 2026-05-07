@@ -23,7 +23,6 @@ export const FileItem = ({
 
   const nameSplit = file.name.split('.');
   const ext = nameSplit.length > 1 ? nameSplit.pop() : '';
-  // Name without the extension
   const baseName = nameSplit.join('.');
 
   const [fileName, setFileName] = useState<string>(baseName);
@@ -76,8 +75,6 @@ export const FileItem = ({
                 } else {
                   const fullNewName = newName + '.' + ext;
                   const nameExists = files.some(
-                    // Check if the name already exists (with the same extension)
-                    // Ignore the current file when renaming with the same name
                     f => f.name === fullNewName && f.name !== file.name
                   );
                   if (nameExists) {
@@ -92,7 +89,7 @@ export const FileItem = ({
                 }
               }}
               onKeyDown={e => {
-                if (e.key == 'Enter') {
+                if (e.key === 'Enter') {
                   e.preventDefault();
                   e.currentTarget.blur();
                 }

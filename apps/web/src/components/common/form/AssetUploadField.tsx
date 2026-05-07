@@ -31,6 +31,7 @@ interface AssetUploadFieldProps {
   error?: string;
   placeholder?: string;
   multiple?: boolean;
+  acceptedTypes?: Record<string, string[]>;
 }
 
 export const AssetUploadField: React.FC<AssetUploadFieldProps> = ({
@@ -39,8 +40,10 @@ export const AssetUploadField: React.FC<AssetUploadFieldProps> = ({
   error,
   placeholder = 'Glissez vos fichiers ici ou cliquez pour parcourir',
   multiple = true,
+  acceptedTypes,
 }) => {
   const [files, setFiles] = React.useState<File[]>([]);
+  const finalAcceptedTypes = acceptedTypes || ACCEPTED_TYPES;
 
   const updateValue = (updated: File[]) => {
     setFiles(updated);
@@ -62,7 +65,7 @@ export const AssetUploadField: React.FC<AssetUploadFieldProps> = ({
       );
       updateValue([...files, ...deduped]);
     },
-    accept: ACCEPTED_TYPES,
+    accept: finalAcceptedTypes,
     maxSize: MAX_SIZE_MB * 1024 * 1024,
     maxFiles: multiple ? undefined : 1,
   });

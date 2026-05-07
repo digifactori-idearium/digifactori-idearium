@@ -56,6 +56,15 @@ export default class VoxelService implements IVoxelService {
   }
 
   /**
+   * Finds all existing voxel models, ordered by creation date.
+   */
+  async getVoxelModels(): Promise<VoxelModel[]> {
+    return voxelModelTable.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
    * Deletes a voxel model from DB.
    */
   async deleteVoxelModel(voxelModelId: string): Promise<VoxelModel> {

@@ -18,7 +18,6 @@ import { Input } from '@/components/ui/input';
 import { useUser } from '@/providers/UserProvider';
 import { getUser } from '@/services/profile.service';
 
-
 interface AdvancedDialogProps {
   user?: any;
   profile: any;
@@ -39,7 +38,7 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
   const [user, setUser] = useState<any>();
   const [open, setOpen] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(sessionUser?.role !== 'INTERN');
-  const [code, setCode] = useState(''); 
+  const [code, setCode] = useState('');
 
   const effectiveUser = propUser || user;
 
@@ -87,20 +86,26 @@ const AdvancedSettingsDialog: React.FC<AdvancedDialogProps> = ({
         {isUnlocked && effectiveUser && (
           <div className="absolute top-5 right-16">
             <DeleteProfileDialog
-              trigger={<SuperButton className="w-8 h-8 flex justify-center items-center bg-red-300! text-red-700! rounded-full"
-                tooltip="Supprimer votre profile"
-                voiceText="Supprimer votre profile"
-              >
-                <Trash2 className="w-6 h-6" />
-              </SuperButton>}
-              description={<>
-                Cela supprimera définitivement le profil de{' '}
-                <span className="font-bold text-mauve">{profile.pseudo}</span>.
-              </>}
+              trigger={
+                <SuperButton
+                  className="w-8 h-8 flex justify-center items-center bg-red-300! text-red-700! rounded-full"
+                  tooltip="Supprimer votre profile"
+                  voiceText="Supprimer votre profile"
+                >
+                  <Trash2 className="w-6 h-6" />
+                </SuperButton>
+              }
+              description={
+                <>
+                  Cela supprimera définitivement le profil de{' '}
+                  <span className="font-bold text-mauve">{profile.pseudo}</span>
+                  .
+                </>
+              }
               confirmationMessage="Oui, supprimer"
               onConfirm={onDelete}
-              onCancel={()=>{}}
-              />
+              onCancel={() => {}}
+            />
           </div>
         )}
 
