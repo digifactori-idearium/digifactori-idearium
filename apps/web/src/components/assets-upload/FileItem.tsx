@@ -1,0 +1,112 @@
+import convertSize from 'convert-size';
+import { RotateCcw, Trash } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+
+import { AssetUplaodPreview } from '../assets/AssetUploadPreview';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
+export const FileItem = ({
+  file,
+  files,
+  onRemove,
+  onRename,
+}: {
+  file: File;
+  files: File[];
+  onRemove: () => void;
+  onRename: (oldName: string, newName: string) => void;
+}) => {
+  const objectUrl = useMemo(() => URL.createObjectURL(file), [file]);
+
+  const nameSplit = file.name.split('.');
+  const ext = nameSplit.length > 1 ? nameSplit.pop() : '';
+  const baseName = nameSplit.join('.');
+
+  const [fileName, setFileName] = useState<string>(baseName);
+  const [originalName] = useState<string>(baseName);
+
+  function undoRename() {
+    setFileName(originalName);
+  }
+
+  useEffect(() => {
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [objectUrl]);
+
+  return (
+    <li className="relative">
+      <Card className="bg-sidebar relative p-4 shadow-none">
+        <div className="flex gap-3 absolute right-4 top-1/2 -translate-y-1/2 z-10">
+          {fileName !== originalName && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Undo"
+              onClick={undoRename}
+            >
+              <RotateCcw className="h-5 w-5" aria-hidden={true} />
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="destructive"
+            size="icon"
+            aria-label="Remove file"
+            onClick={onRemove}
+          >
+            <Trash className="h-5 w-5" aria-hidden={true} />
+          </Button>
+        </div>
+        <CardContent className="flex items-center space-x-3 p-0">
+          <AssetUplaodPreview name={file.name} url={objectUrl} file={file} />
+          <div className="min-w-0 pr-24">
+            <p
+              className="rounded-sm border-2 border-transparent focus:border-mauve focus:outline-none transition-colors text-foreground hover:text-foreground/70 cursor-text text-pretty font-medium wrap-break-word"
+              contentEditable
+              suppressContentEditableWarning
+              onBlur={e => {
+                const newName = e.currentTarget.textContent?.trim();
+                if (!newName) {
+                  e.currentTarget.textContent = fileName;
+                } else {
+                  const fullNewName = newName + '.' + ext;
+                  const nameExists = files.some(
+                    f => f.name === fullNewName && f.name !== file.name
+                  );
+                  if (nameExists) {
+                    e.currentTarget.textContent = fileName;
+                    toast.error(
+                      'Un fichier de même type existe déjà avec ce nom.'
+                    );
+                  } else {
+                    setFileName(newName);
+                    onRename(file.name, newName + '.' + ext);
+                  }
+                }
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  e.currentTarget.blur();
+                }
+              }}
+            >
+              {fileName}
+            </p>
+            <p className="text-pretty mt-0.5 text-sm text-muted-foreground">
+              <b>Taille</b>: {Math.round(parseFloat(convertSize(file.size)))}
+              {convertSize(file.size).split(' ')[1]}
+            </p>
+            <p className="text-pretty mt-0.5 text-sm text-muted-foreground">
+              <b>Type</b>: {ext}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </li>
+  );
+};

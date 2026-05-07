@@ -1,0 +1,197 @@
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
+interface LoginInput {
+  email: string;
+  pseudo: string;
+  password: string;
+}
+
+interface UserInput {
+  email: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+  role: 'INTERN' | 'SUPERVISOR' | 'ADMIN';
+}
+
+interface UserProfileInput {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: 'INTERN' | 'SUPERVISOR' | 'ADMIN';
+}
+
+interface ProfileInput {
+  pseudo: string;
+  bio?: string;
+  avatar?: string;
+  voiceButtons?: boolean;
+}
+
+type RegisterInput = {
+  user: UserInput;
+  profile: ProfileInput;
+};
+
+type SetProfileInput = {
+  user?: Partial<UserProfileInput>;
+  profile: Partial<ProfileInput>;
+};
+
+type ModelInfo = {
+  global: {
+    brightness: 'bright' | 'dim' | 'dark';
+    visible: boolean;
+    music: { currentTrack: string; volume: number };
+    theme: string;
+  };
+  background: { color: string; accent: string };
+  info: {
+    name: string;
+    description: string;
+    category?: string;
+  };
+  floor: {
+    color: string;
+    hidden: boolean;
+    texture: string;
+  };
+  objects: Record<string, ObjectState>;
+};
+
+interface ObjectState {
+  // Info
+  info: {
+    name: string;
+    category?: string;
+    file?: string;
+  };
+
+  // Transform
+  transform: {
+    position: { x: number; y: number; z: number };
+    rotation: { x: number; y: number; z: number };
+    scale: number;
+  };
+
+  // Style
+  style: {
+    tint: string;
+    opacity: number;
+    glow: number;
+    threshold: number;
+  };
+
+  // Advanced
+  advanced: {
+    parent: string | null;
+    physics: boolean;
+    hidden: boolean;
+    locked: boolean;
+  };
+
+  actions?: ActionConfig[];
+  actionsVersion?: number;
+}
+
+type TriggerType = 'onStart' | 'onTap';
+
+interface ActionConfig {
+  id: string;
+  type: ActionType;
+  active?: boolean;
+  subType: string;
+  trigger: TriggerType;
+  config: Record<string, any>;
+}
+
+// ASSETS MANAGEMENT TYPE
+
+interface UploadedFile {
+  originalname: string;
+  mimetype: string;
+  buffer: Buffer;
+}
+
+type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
+
+type AssetCategory =
+  | 'FOOD_AND_DRINK'
+  | 'CLUTTER'
+  | 'WEAPONS'
+  | 'TRANSPORT'
+  | 'FURNITURE_AND_DECOR'
+  | 'OBJECTS'
+  | 'NATURE'
+  | 'ANIMALS'
+  | 'BUILDINGS'
+  | 'PEOPLE_AND_CHARACTERS'
+  | 'SCENES_AND_LEVELS'
+  | 'OTHER';
+
+interface AssetRecord {
+  id: string;
+  name: string;
+  type?: IntegrationType;
+  category?: AssetCategory;
+  tags: string[];
+  file: string;
+  thumbnail: string | null;
+}
+
+interface CreateAssetInput {
+  name: string;
+  type?: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  file: UploadedFile;
+  thumbnail?: UploadedFile;
+}
+
+interface BulkCreateAssetInput {
+  name: string;
+  type?: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  fileIndex: number;
+  thumbnailIndex?: number;
+}
+
+interface UpdateAssetInput {
+  name?: string;
+  type?: IntegrationType;
+  category?: AssetCategory;
+  tags?: string[];
+  file?: UploadedFile;
+  thumbnail?: UploadedFile;
+}
+
+interface ListAssetsFilter {
+  type?: IntegrationType;
+  category?: AssetCategory;
+  search?: string;
+  tags?: string[];
+  page: number;
+  limit: number;
+}
+
+interface PaginatedAssets {
+  items: AssetRecord[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface BulkCreateResult {
+  succeeded: AssetRecord[];
+  failed: { index: number; name: string; reason: string }[];
+}
+
+interface BulkDeleteResult {
+  deleted: number;
+  failed: { id: string; reason: string }[];
+}

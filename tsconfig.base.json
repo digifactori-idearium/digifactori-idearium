@@ -28,7 +28,7 @@
     "outDir": "./dist",
 
     // Interop Constraints
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "forceConsistentCasingInFileNames": true,
 
     // Type Checking
@@ -53,9 +53,7 @@
 
     // Completeness
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
-
-    "baseUrl": "."
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx"],
   "exclude": [

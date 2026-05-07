@@ -1,0 +1,52 @@
+import * as React from 'react';
+
+import { NavBrand } from './NavBrand';
+import { NavLink } from './NavLink';
+import { NavLinkSkeleton } from './NavSkeleton';
+
+import { VoiceLink } from '@/components/common/button';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenuButton,
+} from '@/components/ui/sidebar';
+import { useUser } from '@/providers/UserProvider';
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useUser();
+  return (
+    <Sidebar collapsible="offcanvas" {...props}>
+      <SidebarHeader>
+        <NavBrand />
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          {/* <SidebarGroupLabel>Links</SidebarGroupLabel> */}
+          <SidebarGroupContent>
+            <React.Suspense fallback={<NavLinkSkeleton />}>
+              <NavLink />
+            </React.Suspense>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      {user && (
+        <SidebarFooter>
+          <SidebarMenuButton asChild>
+            <VoiceLink
+              to="/app/profile"
+              voiceText="Voir mon profile"
+              role="button"
+              className="flex justify-center items-center py-6 text-xl text-white! bg-[#6F51B0]! hover:bg-[#6F51B0]/80! rounded-4xl!"
+            >
+              <span>😊 Profile</span>
+            </VoiceLink>
+          </SidebarMenuButton>
+        </SidebarFooter>
+      )}
+    </Sidebar>
+  );
+}
