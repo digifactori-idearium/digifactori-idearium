@@ -71,29 +71,24 @@ export const beaconSaveIdeorama = (
   scene: Record<string, unknown> | string | null
 ): boolean => {
   try {
-    if (!ideoramaId || !scene) {
-      console.warn('beaconSaveIdeorama: missing required fields');
-      return false;
-    }
+    if (!ideoramaId || !scene) return false;
 
-    const sceneObj: Record<string, unknown> =
-      typeof scene === 'string' ? JSON.parse(scene) : scene;
+    const sceneObj = typeof scene === 'string' ? JSON.parse(scene) : scene;
 
-    const token = localStorage.getItem('token');
+    const payload = JSON.stringify({
+      ideoramaId,
+      scene: sceneObj,
+      token: localStorage.getItem('token'),
+    });
 
-    fetch(`${API_BASE_FOR_BEACON}${BASE}/${ideoramaId}/save`, {
-      method: 'PATCH',
-      keepalive: true,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ scene: sceneObj }),
-    }).catch(err => console.error('beaconSaveIdeorama failed:', err));
-
-    return true;
+    return navigator.sendBeacon(
+      `${API_BASE_FOR_BEACON}/api/ideorama/beacon-save`,
+      new Blob([payload], {
+        type: 'application/json',
+      })
+    );
   } catch (error) {
-    console.error('beaconSaveIdeorama error:', handleApiError(error));
+    console.error('beaconSaveIdeorama error:', error);
     return false;
   }
 };

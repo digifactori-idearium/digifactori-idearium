@@ -41,6 +41,19 @@ export default function createIdeoramaRoutes(
     ideoramaController.saveIdeoramaController
   );
 
+  // for beacon, since it doesn't support PATCH method, we use POST method instead
+  router.post(
+    '/:ideoramaId/save',
+    (req, res, next) =>
+      checkIdeoramaExistence(
+        req.params.ideoramaId as string,
+        res,
+        next,
+        ideoramaService.getIdeoramaById
+      ),
+    ideoramaController.saveIdeoramaController
+  );
+
   router.post(
     '/:ideoramaId/like',
     (req, res, next) =>
