@@ -71,8 +71,6 @@ model Ideorama {
 
   likers IdeoramaLikes[] @relation("likers")
 
-  voxels Voxel[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -86,18 +84,6 @@ model IdeoramaLikes {
   @@id([ideoramaId, userId])
 }
 
-model Voxel {
-  id    String @id @default(cuid())
-  x     Int
-  y     Int
-  z     Int
-  color String
-
-  ideoramaId String
-  ideorama   Ideorama @relation(fields: [ideoramaId], references: [id])
-
-  createdAt DateTime @default(now())
-}
 
 model VoxelModel {
   id        String   @id @default(cuid())
