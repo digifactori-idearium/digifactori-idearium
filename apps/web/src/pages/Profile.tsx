@@ -370,9 +370,10 @@ const ProfilePage: React.FC = () => {
             trigger={
               <button
                 className="kid-btn inline-flex items-center gap-2 rounded-full px-5 py-2
-                           border-2 border-yellow-400 bg-yellow-400/10 text-yellow-300
-                           transition-all duration-150 disabled:opacity-50 disabled:cursor-default
-                           hover:bg-yellow-400/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-yellow-400/20"
+           border-2 border-yellow-500 bg-yellow-400/10 text-yellow-600
+           transition-all duration-150 disabled:opacity-50 disabled:cursor-default
+           hover:bg-yellow-400/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-yellow-400/20
+           dark:border-yellow-400 dark:text-yellow-300"
                 style={{
                   fontFamily: "'Fredoka One', cursive",
                   fontSize: '1.05rem',
