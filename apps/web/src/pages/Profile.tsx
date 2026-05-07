@@ -7,7 +7,7 @@ import IdeoramasGroup from '@/components/ideorama/IdeoramasGroup';
 import { UsersList } from '@/components/profile/UsersList';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/providers/UserProvider';
-import { getAllIdeoramas } from '@/services/ideorama.service';
+import { getParticularUserIdeoramas } from '@/services/ideorama.service';
 import {
   followUser,
   getFollowers,
@@ -23,6 +23,7 @@ const ProfilePage: React.FC = () => {
     pseudo: '',
     bio: '',
     avatar: null,
+    voiceButtons: true,
     followers: [],
     following: [],
     ideoramaLiked: [],
@@ -76,13 +77,12 @@ const ProfilePage: React.FC = () => {
     if (!userId) return;
     getProfile(userId).then(res => {
       setProfile(res.data.profile);
-      console.log(res.data.profile);
     });
   }, [userId]);
 
   useEffect(() => {
     if (profile) {
-      getAllIdeoramas().then(res => {
+      getParticularUserIdeoramas(profile.userId).then(res => {
         setIdeoramas(res.data);
       });
     }
@@ -130,7 +130,7 @@ const ProfilePage: React.FC = () => {
               onClick={() => {
                 if ((profile?.followers.length || 0) === 0) return;
                 getFollowers(profile!.userId).then(res => {
-                  setFollowers(res.data);
+                  setFollowers(res.data.followers ?? []);
                 });
               }}
             >
@@ -156,7 +156,7 @@ const ProfilePage: React.FC = () => {
               onClick={() => {
                 if ((profile?.following.length || 0) === 0) return;
                 getFollowing(profile!.userId).then(res => {
-                  setFollowing(res.data);
+                  setFollowing(res.data.following ?? []);
                 });
               }}
             >
@@ -218,12 +218,7 @@ const ProfilePage: React.FC = () => {
 
       <hr className="border-gray-100 mt-8" />
       <h1 className="magic-text pb-3">Idéoramas de {profile?.pseudo}</h1>
-      <IdeoramasGroup
-        ideoramas={ideoramas}
-        setIdeoramas={setIdeoramas}
-        profile={profile}
-        setProfile={setProfile}
-      />
+      <IdeoramasGroup ideoramas={ideoramas} setIdeoramas={setIdeoramas} />
     </div>
   );
 };
