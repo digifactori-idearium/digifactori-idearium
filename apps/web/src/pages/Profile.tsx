@@ -38,6 +38,40 @@ const ProfilePage: React.FC = () => {
 
   const user = useUser().user;
 
+  const [currentUserFollowing, setCurrentUserFollowing] = useState<string[]>(
+    []
+  );
+
+  const handleFollowChange = (
+    targetUserId: string,
+    isNowFollowing: boolean
+  ) => {
+    setCurrentUserFollowing(prev =>
+      isNowFollowing
+        ? [...prev, targetUserId]
+        : prev.filter(id => id != targetUserId)
+    );
+
+    setProfile(prev => ({
+      ...prev,
+      following: isNowFollowing
+        ? [...prev.following, targetUserId]
+        : prev.following.filter(id => id !== targetUserId),
+    }));
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      getFollowing(user.id)
+        .then(res => {
+          setCurrentUserFollowing(
+            res.data.map((u: { userId: string }) => u.userId)
+          );
+        })
+        .catch(err => console.error('Failed to fetch following.', err));
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     if (!userId) return;
     getProfile(userId).then(res => {
@@ -97,6 +131,8 @@ const ProfilePage: React.FC = () => {
               {`${profile?.followers.length || 0} abonné${(profile?.followers.length || 0) > 1 ? 's' : ''}`}
             </SuperButton>
           }
+          currentUserFollowing={currentUserFollowing}
+          onFollowChange={handleFollowChange}
         />
 
         <UsersList
@@ -115,6 +151,8 @@ const ProfilePage: React.FC = () => {
               {`${profile?.following.length || 0} abonnement${(profile?.following.length || 0) > 1 ? 's' : ''}`}
             </SuperButton>
           }
+          currentUserFollowing={currentUserFollowing}
+          onFollowChange={handleFollowChange}
         />
         {profile.userId != user?.id && (
           <SuperButton
@@ -125,12 +163,15 @@ const ProfilePage: React.FC = () => {
               // If the user is already a follower, unfollow them and remove them from the followers list
               if (profile?.followers.some(f => f == user?.id)) {
                 setFollowers(
-                  followers.filter(f => f.pseudo != profile?.pseudo)
+                  followers.filter(f => f.pseudo !== profile?.pseudo)
                 );
                 setProfile({
                   ...profile,
-                  followers: profile.followers.filter(f => f != user?.id),
+                  followers: profile.followers.filter(f => f !== user?.id),
                 });
+                setCurrentUserFollowing(prev =>
+                  prev.filter(id => id !== profile!.userId)
+                );
               } else {
                 setFollowers([
                   ...followers,
@@ -140,6 +181,7 @@ const ProfilePage: React.FC = () => {
                     userId: profile!.userId,
                   },
                 ]);
+                setCurrentUserFollowing(prev => [...prev, profile!.userId]);
                 if (profile) {
                   setProfile({
                     ...profile,
