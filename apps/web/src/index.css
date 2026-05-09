@@ -106,6 +106,10 @@ button:focus-visible {
   );
 }
 
+[data-sidebar='sidebar'][data-mobile='true'] {
+  z-index: 120 !important;
+}
+
 /*  ================ myspace ================== */
 
 /* Pulsing ring */

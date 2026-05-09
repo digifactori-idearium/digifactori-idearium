@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 
 import AuthModal from '@/components/auth';
-import AppFooter from '@/components/footer/AppFooter';
+import AppFooter from '@/components/footer';
 import { Header } from '@/components/header';
 import AuthProvider from '@/providers/AuthProvider';
 

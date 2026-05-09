@@ -43,7 +43,7 @@ export function AppHeader() {
               className="text-base text-foreground! hover:text-foreground/80! font-medium flex items-center gap-1.5"
             >
               <Rocket className="h-5" />{' '}
-              <span className="text-base">Mon Espace</span>
+              <span className="text-base hidden sm:inline">Mon Espace</span>
             </VoiceLink>
 
             <Separator
@@ -57,7 +57,7 @@ export function AppHeader() {
               className="text-base text-foreground! hover:text-foreground/80! font-medium flex items-center gap-1.5"
             >
               <SwatchBook className="h-5" />{' '}
-              <span className="text-base">Ideoramas</span>
+              <span className="text-base hidden sm:inline">Ideoramas</span>
             </VoiceLink>
           </div>
 
