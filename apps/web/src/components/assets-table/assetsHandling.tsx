@@ -124,12 +124,12 @@ export default function AssetHandling() {
 
       <div className="container mx-auto">
         {/* Action Bar */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <SuperButton
                 voiceText={"Le paramètre avancé, c'est pour les grands."}
-                className="flex items-center gap-2 form-button"
+                className="flex items-center justify-center gap-2 form-button w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4" />
                 Ajouter des assets
@@ -141,14 +141,14 @@ export default function AssetHandling() {
           </Dialog>
 
           {selectedAssetIds.length > 0 && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
                 {selectedAssetIds.length} asset(s) sélectionné(s)
               </span>
               <AssetDeleteDialog
                 trigger={
                   <button
-                    className="p-2 rounded-full hover:bg-red-500/30 bg-red-500/10 text-red-500 transition-colors"
+                    className="w-full xs:w-auto p-2 rounded-md hover:bg-red-500/70 bg-red-500/60 text-white text-sm transition-colors whitespace-nowrap"
                     title="Supprimer"
                   >
                     Supprimer la sélection
