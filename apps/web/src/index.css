@@ -316,6 +316,7 @@ text-editor-content .ProseMirror {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --breakpoint-mlg: 36rem;
 }
 
 .dark {
@@ -363,12 +364,14 @@ text-editor-content .ProseMirror {
 }
 
 @theme {
+  --breakpoint-ssm: 36rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-mlg: 60rem;
+  --breakpoint-lg: 64rem;
+
   --bg-welcome: url('/src/assets/images/background.png');
 
   --width-content: 90%;
-
-  --breakpoint-ssm: 576px;
-  --breakpoint-mlg: 992px;
 
   --shadow-header: 0px 15px 10px -20px rgba(0, 0, 0, 0.45);
   --shadow-nav: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px;
