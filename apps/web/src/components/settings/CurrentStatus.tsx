@@ -26,7 +26,9 @@ const CONFIG: Record<
 export const CurrentStatus: React.FC<CurrentStatusProps> = ({ status }) => {
   const { icon, label, className } = CONFIG[status];
   return (
-    <span className={`flex items-center gap-1  mt-1 font-medium ${className}`}>
+    <span
+      className={`flex w-full justify-center sm:justify-start items-center gap-1  mt-1 font-medium ${className}`}
+    >
       {icon}
       {label}
     </span>
