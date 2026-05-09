@@ -1,12 +1,12 @@
 import path from 'path';
 
 import cors from 'cors';
-import dotenv from 'dotenv';
 import express, { type Express } from 'express';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
+import serverConfig from '@/config/server.config';
 import createAssetRoutes from '@/modules/asset/asset.route';
 import AssetService from '@/modules/asset/asset.service';
 import createAuthRoutes from '@/modules/auth/auth.route';
@@ -26,37 +26,31 @@ import UserService from '@/modules/user/user.service';
 import createVoxelRoutes from '@/modules/voxel/voxel.route';
 import VoxelService from '@/modules/voxel/voxel.service';
 
-// Env variables
-dotenv.config();
-
-// Constants
-const PORT = process.env.PORT || 3001;
-const IS_DEV = process.env.NODE_ENV !== 'production';
+const { PORT, IS_DEV, limits } = serverConfig;
 const LOCAL_UPLOADS_DIR = path.resolve(process.cwd(), 'uploads');
 
 // Request Limiters
 const authLimiter = RateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 20,
+  windowMs: 15 * 60 * 1000,
+  max: limits.auth,
   message: { error: 'Too many auth attempts, try again later.' },
 });
 
 const autoSaveLimiter = RateLimit({
-  windowMs: 60 * 1000, // 1 min
-  max: 600, // ~10 autosaves/sec
+  windowMs: 60 * 1000,
+  max: limits.autoSave,
   message: { error: 'Editor rate limit exceeded.' },
 });
 
 const defaultLimiter = RateLimit({
-  windowMs: 60 * 1000, // 1 min
-  max: 200, // 200 req/min per IP for non-auth/autosave routes
+  windowMs: 60 * 1000,
+  max: limits.default,
   message: { error: 'Too many requests, slow down.' },
-  skip: (
-    req // proxy and editor have their own limiters
-  ) => req.path.startsWith('/api/proxy') || req.path.startsWith('/api/editor'),
+  skip: req =>
+    req.path.startsWith('/api/proxy') || req.path.startsWith('/api/editor'),
 });
 
-// app
+// App
 const app: Express = express();
 export default app;
 
@@ -72,36 +66,44 @@ app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 if (IS_DEV) {
   app.use('/uploads', express.static(LOCAL_UPLOADS_DIR));
 }
+
 // Routes
+app.use('/api/proxy', proxyRouter);
+app.use('/api/storage', createStorageRoutes());
 app.use('/api/auth', authLimiter, createAuthRoutes(new AuthService()));
+app.use('/api/user', createUserRoutes(new UserService()));
+app.use('/api/profile', createProfileRoutes(new ProfileService()));
+app.use('/api/settings', createSettingsRoutes(new SettingsService()));
+app.use('/api/asset', createAssetRoutes(new AssetService()));
 app.use(
   '/api/editor',
   autoSaveLimiter,
   createEditorRoutes(new EditorService())
 );
-app.use('/api/proxy', proxyRouter);
-app.use('/api/storage', createStorageRoutes());
-app.use('/api/user', createUserRoutes(new UserService()));
-app.use('/api/profile', createProfileRoutes(new ProfileService()));
 app.use(
   '/api/ideorama',
   autoSaveLimiter,
   createIdeoramaRoutes(new IdeoramaService())
 );
 app.use('/api/voxel', autoSaveLimiter, createVoxelRoutes(new VoxelService()));
-app.use('/api/asset', createAssetRoutes(new AssetService()));
-app.use('/api/settings', createSettingsRoutes(new SettingsService()));
 
-// Health check endpoint
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     service: 'DigiFactori API',
+    concurrentUsers: serverConfig.MAX_CONCURRENT_USERS,
   });
 });
 
-// Basic route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to DigiFactori Idearium',
+    version: '1.0.0',
+  });
+});
+
 app.get('/api', (req, res) => {
   res.json({
     message: 'Welcome to DigiFactori Idearium API',
@@ -109,7 +111,7 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Error handling middleware
+// Error handling
 app.use(
   (
     err: Error,
@@ -122,16 +124,20 @@ app.use(
   }
 );
 
-// 404 handler
+// 404
 app.use((req: express.Request, res: express.Response) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Server start
+// Start
 app.listen(PORT, () => {
   if (IS_DEV) {
     console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`API Documentation: http://localhost:${PORT}/api`);
-    console.log(`Health check: http://localhost:${PORT}/api/health`);
+    console.log(
+      `Limits configured for ${serverConfig.MAX_CONCURRENT_USERS} concurrent users`
+    );
+    console.log(
+      `  Auth: ${limits.auth} req/15min | AutoSave: ${limits.autoSave} req/min | Default: ${limits.default} req/min`
+    );
   }
 });
