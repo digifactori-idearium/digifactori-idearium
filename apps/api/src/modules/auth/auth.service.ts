@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { EmailService } from './email.service';
 
+import config from '@/config/app.config';
 import { prisma, Profile, User } from '@/config/client.config';
 import { IAuthService } from '@/types';
 
@@ -255,5 +256,27 @@ export default class AuthService implements IAuthService {
     });
 
     return true;
+  }
+
+  /**
+   * Decodes a password  token and returns the payload it contains.
+   * Reset tokens are signed with JWT_SECRET + currentHashedPassword, so
+   * successful verification also confirms the token hasn't been used yet.
+   *
+   * @param token - The signed JWT token
+   * @returns The JWT token payload
+   * @throws Error if the token is invalid, expired, or the user no longer exists
+   */
+  async getPayloadFromResetToken(token: string): Promise<JwtPayload> {
+    const decoded = jwt.decode(token) as JwtPayload | null;
+    if (!decoded?.userId || !decoded?.role) throw new Error('Token invalide.');
+
+    const user = await userTable.findUnique({ where: { id: decoded.userId } });
+    if (!user) throw new Error('Utilisateur introuvable.');
+
+    const secret = config.JWT_SECRET + user.password;
+    jwt.verify(token, secret);
+
+    return decoded;
   }
 }
