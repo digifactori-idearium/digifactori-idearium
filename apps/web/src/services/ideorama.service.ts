@@ -69,28 +69,23 @@ export const saveIdeorama = async (
 export const beaconSaveIdeorama = (
   ideoramaId: string | undefined,
   scene: Record<string, unknown> | string | null
-): boolean => {
-  try {
-    if (!ideoramaId || !scene) return false;
+): void => {
+  if (!ideoramaId || !scene) return;
 
-    const sceneObj = typeof scene === 'string' ? JSON.parse(scene) : scene;
+  const token = localStorage.getItem('token');
+  const sceneObj = typeof scene === 'string' ? JSON.parse(scene) : scene;
 
-    const payload = JSON.stringify({
-      ideoramaId,
-      scene: sceneObj,
-      token: localStorage.getItem('token'),
-    });
-
-    return navigator.sendBeacon(
-      `${API_BASE_FOR_BEACON}/api/ideorama/beacon-save`,
-      new Blob([payload], {
-        type: 'application/json',
-      })
-    );
-  } catch (error) {
-    console.error('beaconSaveIdeorama error:', error);
-    return false;
-  }
+  fetch(`${API_BASE_FOR_BEACON}/api/ideorama/${ideoramaId}/save`, {
+    method: 'POST',
+    keepalive: true,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ scene: sceneObj }),
+  }).catch(error => {
+    console.error(error);
+  });
 };
 
 export const likeIdeorama = async (

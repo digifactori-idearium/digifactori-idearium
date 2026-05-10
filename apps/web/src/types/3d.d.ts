@@ -233,3 +233,7 @@ interface TriggerDefinition {
   label: string;
   description: string;
 }
+
+// AUTO SAVE TYPES
+
+type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error';
