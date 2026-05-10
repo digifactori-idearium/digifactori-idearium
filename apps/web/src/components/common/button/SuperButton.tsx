@@ -10,7 +10,9 @@ import {
 import { speak } from '@/lib/speak';
 import { useUser } from '@/providers/UserProvider';
 
-interface SuperButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface SuperButtonProps extends React.ComponentPropsWithoutRef<
+  typeof Button
+> {
   children: ReactNode;
   tooltip?: string;
   voiceText?: string;
