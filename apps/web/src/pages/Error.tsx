@@ -1,5 +1,7 @@
 import React, { ReactNode } from 'react';
 
+import { VoiceButton } from '@/components/common/button';
+
 interface ErrorBoundaryProps {
   children: ReactNode;
 }
@@ -32,15 +34,17 @@ class ErrorBoundary extends React.Component<
         <div className="flex items-center justify-center min-h-screen bg-red-50">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-red-600">
-              Something went wrong
+              Une erreur s'est produite
             </h1>
             <p className="text-gray-600 mt-2">{this.state.error?.message}</p>
-            <button
+            <VoiceButton
+              variant={'ghost'}
+              voiceText="Actualiser la page"
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
+              className="mt-4 p-4! bg-red-600! text-white! rounded"
             >
-              Reload Page
-            </button>
+              Actualiser la page
+            </VoiceButton>
           </div>
         </div>
       );
