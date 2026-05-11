@@ -64,9 +64,10 @@ export const ObjectConfigPanel = () => {
           {selectedObjectData?.info.name || 'Object Configuration'}
         </CardTitle>
         <TooltipButton
+          variant={'ghost'}
           tooltip="Fermer"
           onClick={() => actions.toggleSettingPanel(false)}
-          className="hover:bg-white/10 p-1! bg-transparent! rounded border border-white/20!"
+          className="hover:bg-white/10 p-1! bg-transparent rounded border border-white/20!"
         >
           <X className="size-5 text-white!" />
         </TooltipButton>
