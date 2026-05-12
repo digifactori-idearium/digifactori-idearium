@@ -38,7 +38,7 @@ const ALLOWED_MIME_TYPES = new Set([
  */
 const ALLOWED_EXTENSIONS = new Set(['.glb', '.gltf', '.json']);
 
-const MAX_FILE_SIZE_MB = 100;
+const MAX_FILE_SIZE_MB = 200;
 const MAX_FILES_BULK = 50;
 
 // Filter
@@ -88,7 +88,7 @@ export const uploadBulk = multer(baseOptions).fields([
 
 export const uploadGlb = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB
+  limits: { fileSize: MAX_FILE_SIZE_MB * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ext = file.originalname
       .slice(file.originalname.lastIndexOf('.'))
@@ -102,5 +102,21 @@ export const uploadGlb = multer({
     } else {
       cb(new Error(`Only GLB files are allowed (got ${file.mimetype})`));
     }
+  },
+}).single('file');
+
+export const uploadScene = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_FILE_SIZE_MB * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ext = file.originalname
+      .slice(file.originalname.lastIndexOf('.'))
+      .toLowerCase();
+    const allowed =
+      file.mimetype === 'application/json' ||
+      file.mimetype === 'text/plain' ||
+      ext === '.json';
+    if (allowed) cb(null, true);
+    else cb(new Error(`Only JSON files are allowed (got ${file.mimetype})`));
   },
 }).single('file');
