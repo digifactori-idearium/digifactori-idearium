@@ -147,5 +147,4 @@ vite.config.ts.timestamp-*
 ZNOTE.md
 zm.md
 **/uploads/
-**/migrations/
 **/seeds/
