@@ -9,26 +9,19 @@ import { type User, Profile } from '@/config/client.config';
  * @param {Profile} profile - the profile data
  * @returns the token string or null if generation fails.
  */
-export const generateToken = (user: User, profile: Profile): string | null => {
-  try {
-    if (!config.JWT_SECRET) {
-      throw new Error('JWT_SECRET is not defined in the configuration.');
-    }
-
-    return jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-        voiceButtons: profile.voiceButtons,
-      },
-      config.JWT_SECRET,
-      {
-        expiresIn: '4h',
-      }
-    );
-  } catch (error) {
-    console.error('Token Generation Error:', error);
-    return null;
+export const generateToken = (user: User, profile: Profile): string => {
+  if (!config.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not defined in the configuration.');
   }
+
+  return jwt.sign(
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      voiceButtons: profile.voiceButtons,
+    },
+    config.JWT_SECRET,
+    { expiresIn: '7h' }
+  );
 };

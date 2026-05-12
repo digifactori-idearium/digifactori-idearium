@@ -311,9 +311,9 @@ export default class AssetService implements IAssetService {
     const existing = await this.getAssetById(id);
 
     try {
-      const asset = await assetTable.delete({ where: { id } });
       await deleteFile(existing.file);
       if (existing.thumbnail) await deleteFile(existing.thumbnail);
+      const asset = await assetTable.delete({ where: { id } });
       return asset;
     } catch (error) {
       throw new Error(

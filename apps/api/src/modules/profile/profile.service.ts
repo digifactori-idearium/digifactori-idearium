@@ -39,24 +39,33 @@ export default class ProfileService implements IProfileService {
    */
   async getSingleProfile(userId: string): Promise<Profile | null> {
     const profile = await profileTable.findUnique({
-      where: {
-        userId: userId,
-      },
+      where: { userId },
       include: {
         followers: {
-          select: {
-            followerId: true,
-          },
+          select: { followerId: true },
         },
         following: {
-          select: {
-            followedId: true,
+          select: { followedId: true },
+        },
+        ideoramaLiked: {
+          select: { ideoramaId: true },
+        },
+        user: {
+          include: {
+            _count: {
+              select: {
+                ideoramas: true,
+                voxelModels: true,
+                documents: true,
+              },
+            },
           },
         },
-
-        ideoramaLiked: {
+        _count: {
           select: {
-            ideoramaId: true,
+            followers: true,
+            following: true,
+            ideoramaLiked: true,
           },
         },
       },

@@ -97,7 +97,10 @@ export default class AuthController {
   changePassword = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user!;
 
-    const result = await changePasswordSchema.safeParseAsync(req.body);
+    const result = await changePasswordSchema.safeParseAsync({
+      ...req.body,
+      role: user.role,
+    });
     if (failOnValidation(result, res)) return;
 
     const { currentPassword, newPassword } = result.data!;

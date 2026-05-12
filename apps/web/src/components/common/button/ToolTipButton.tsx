@@ -8,7 +8,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-interface TooltipButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface TooltipButtonProps extends React.ComponentPropsWithoutRef<
+  typeof Button
+> {
   children: ReactNode;
   tooltip?: string;
 }

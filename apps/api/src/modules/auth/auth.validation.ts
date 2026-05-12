@@ -4,8 +4,23 @@ import * as z from 'zod';
 import { prisma } from '@/config/client.config';
 import { createProfileSchema } from '@/modules/profile/profile.validation';
 
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/;
+// Password schemas by role
+const internPasswordSchema = z
+  .string()
+  .min(6, 'Le mot de passe doit comporter au moins 6 caractères');
 
+const staffPasswordSchema = z
+  .string()
+  .min(8, 'Le mot de passe doit comporter au moins 8 caractères')
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/,
+    'Il faut au moins 1 majuscule, 1 minuscule et 1 chiffre.'
+  );
+
+const getPasswordSchema = (role: Role) =>
+  role === Role.INTERN ? internPasswordSchema : staffPasswordSchema;
+
+//  DB helpers
 const getUserByEmail = async (email: string): Promise<User | null> => {
   try {
     return await prisma.user.findUnique({ where: { email } });
@@ -29,18 +44,15 @@ const getOrgCode = async (): Promise<number | null> => {
 /**
  * User registration validation schema
  *
+ * Role-based password requirements:
+ * - INTERN     → min 6 chars, no complexity enforced (children)
+ * - ADMIN      → min 8 chars, 1 uppercase, 1 lowercase, 1 digit
+ * - SUPERVISOR → min 8 chars, 1 uppercase, 1 lowercase, 1 digit
+ *
  * Role-based code requirements:
  * - ADMIN      → must provide `admin_code` matching ADMIN_CODE env variable
  * - SUPERVISOR → must provide `org_code` matching the orgCode in Setting table
- * - INTERN     → no code required at registration — parental code is set by admin via settings
- *
- * @property {string} email        - Valid email format
- * @property {string} first_name   - Minimum 2 characters
- * @property {string} last_name    - Minimum 2 characters
- * @property {Role}   role         - ADMIN | SUPERVISOR | INTERN
- * @property {string} password     - Min 6 chars, 1 uppercase, 1 lowercase, 1 digit
- * @property {string} [admin_code] - Required if role is ADMIN
- * @property {number} [org_code]   - Required if role is SUPERVISOR
+ * - INTERN     → no code required at registration
  *
  * Messages are in French (FR)
  */
@@ -62,17 +74,24 @@ export const userSchema = z
       error: iss =>
         iss.input === undefined ? 'Le rôle est requis' : 'Rôle inconnu',
     }),
-    password: z
-      .string('Le mot de passe est requis')
-      .min(6, 'Le mot de passe doit comporter au moins 6 caractères')
-      .regex(
-        passwordRegex,
-        'Il faut au moins 1 majuscule, 1 minuscule et 1 chiffre.'
-      ),
+    password: z.string('Le mot de passe est requis'),
     admin_code: z.string().optional(),
     orgCode: z.coerce.number().optional(),
   })
   .superRefine(async (data, ctx) => {
+    // Password: validate against the right schema for this role
+    const passwordResult = getPasswordSchema(data.role).safeParse(
+      data.password
+    );
+    if (!passwordResult.success) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['password'],
+        message: passwordResult.error.issues[0].message,
+      });
+      return;
+    }
+
     // ADMIN: verify against ADMIN_CODE env variable
     if (data.role === Role.ADMIN) {
       const adminCode = process.env.ADMIN_CODE;
@@ -134,13 +153,8 @@ export const userSchema = z
   .transform(({ admin_code, orgCode, ...rest }) => rest);
 
 /**
- * User profile update validation schema
+ * User profile update validation schema.
  * Parental code is not editable by the user — it is managed by the admin.
- *
- * @property {string} email      - Valid email format
- * @property {string} first_name - Minimum 2 characters
- * @property {string} last_name  - Minimum 2 characters
- * @property {Role}   role       - ADMIN | SUPERVISOR | INTERN
  *
  * Messages are in French (FR)
  */
@@ -165,7 +179,7 @@ export const userProfileSchema = z.object({
 
 /**
  * Composite registration schema.
- * Combines userSchema + createProfileSchema() and checks both email and pseudo uniqueness.
+ * Combines userSchema + createProfileSchema() and checks email uniqueness.
  *
  * Messages are in French (FR)
  */
@@ -210,10 +224,12 @@ export const loginSchema = z
 
 /**
  * Schema for changing a password while logged in.
+ * Password complexity is enforced based on the user's role passed in context.
  *
  * @property {string} currentPassword - The user's current password
- * @property {string} newPassword     - Min 6 chars, regex enforced
+ * @property {string} newPassword     - Complexity depends on role
  * @property {string} confirmPassword - Must match newPassword
+ * @property {Role}   role            - Injected from JWT to pick the right password rules
  *
  * Messages are in French (FR)
  */
@@ -222,16 +238,22 @@ export const changePasswordSchema = z
     currentPassword: z.string({
       error: () => 'Le mot de passe actuel est requis',
     }),
-    newPassword: z
-      .string()
-      .min(6, 'Le mot de passe doit comporter au moins 6 caractères')
-      .regex(
-        passwordRegex,
-        'Il faut au moins 1 majuscule, 1 minuscule et 1 chiffre.'
-      ),
+    newPassword: z.string('Le nouveau mot de passe est requis'),
     confirmPassword: z.string({ error: () => 'La confirmation est requise' }),
+    role: z.enum(Role),
   })
   .superRefine((data, ctx) => {
+    const passwordResult = getPasswordSchema(data.role).safeParse(
+      data.newPassword
+    );
+    if (!passwordResult.success) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['newPassword'],
+        message: passwordResult.error.issues[0].message,
+      });
+    }
+
     if (data.newPassword !== data.confirmPassword) {
       ctx.addIssue({
         code: 'custom',
@@ -239,6 +261,7 @@ export const changePasswordSchema = z
         message: 'Les mots de passe ne correspondent pas.',
       });
     }
+
     if (data.currentPassword === data.newPassword) {
       ctx.addIssue({
         code: 'custom',
@@ -250,8 +273,6 @@ export const changePasswordSchema = z
 
 /**
  * Schema for requesting a password reset email.
- *
- * @property {string} email - The account email to send the reset link to
  *
  * Messages are in French (FR)
  */
@@ -266,24 +287,32 @@ export const requestResetSchema = z.object({
 
 /**
  * Schema for resetting a password via email token link.
+ * Role is retrieved from the reset token in the controller and injected here.
  *
- * @property {string} newPassword     - Min 6 chars, regex enforced
+ * @property {string} newPassword     - Complexity depends on role
  * @property {string} confirmPassword - Must match newPassword
+ * @property {Role}   role            - Injected from the reset token, not request body
  *
  * Messages are in French (FR)
  */
 export const resetPasswordSchema = z
   .object({
-    newPassword: z
-      .string()
-      .min(6, 'Le mot de passe doit comporter au moins 6 caractères')
-      .regex(
-        passwordRegex,
-        'Il faut au moins 1 majuscule, 1 minuscule et 1 chiffre.'
-      ),
+    newPassword: z.string('Le nouveau mot de passe est requis'),
     confirmPassword: z.string({ error: () => 'La confirmation est requise' }),
+    role: z.enum(Role), // injected from the reset token in the controller
   })
   .superRefine((data, ctx) => {
+    const passwordResult = getPasswordSchema(data.role).safeParse(
+      data.newPassword
+    );
+    if (!passwordResult.success) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['newPassword'],
+        message: passwordResult.error.issues[0].message,
+      });
+    }
+
     if (data.newPassword !== data.confirmPassword) {
       ctx.addIssue({
         code: 'custom',

@@ -115,3 +115,20 @@ export const LIGHT_THEME: ThemePalette = {
   loadingText: '#0369a1',
   loadingSpinner: 'text-sky-500',
 };
+
+// Saving status
+export const STATUS_LABEL: Record<SaveStatus, string> = {
+  idle: '',
+  pending: 'Modifications en cours...',
+  saving: 'Sauvegarde...',
+  saved: '✓ Sauvegardé',
+  error: '✗ Erreur de sauvegarde',
+};
+
+export const STATUS_COLOR: Record<SaveStatus, string> = {
+  idle: '',
+  pending: 'text-yellow-400/70',
+  saving: 'text-blue-400/70',
+  saved: 'text-green-400/70',
+  error: 'text-red-400/70',
+};

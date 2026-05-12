@@ -4,6 +4,7 @@ import IdeoramaController from './ideorama.controller';
 
 import { authenticate, requireAuth } from '@/middlewares/authentication';
 import { checkIdeoramaExistence } from '@/middlewares/checkExistence';
+import { uploadScene } from '@/middlewares/upload';
 import { IIdeoramaService } from '@/types';
 
 export default function createIdeoramaRoutes(
@@ -37,6 +38,7 @@ export default function createIdeoramaRoutes(
         next,
         ideoramaService.getIdeoramaById
       ),
+    uploadScene,
     ideoramaController.saveIdeoramaController
   );
 
@@ -49,6 +51,7 @@ export default function createIdeoramaRoutes(
         next,
         ideoramaService.getIdeoramaById
       ),
+    uploadScene,
     ideoramaController.saveIdeoramaController
   );
 

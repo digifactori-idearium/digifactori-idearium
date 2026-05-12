@@ -65,7 +65,7 @@ model Ideorama {
   name     String  @default("New Ideorama")
   isPublic Boolean @default(true)
 
-  scene Json?
+  scene    String
 
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)

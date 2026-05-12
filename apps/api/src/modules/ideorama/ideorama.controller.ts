@@ -1,9 +1,11 @@
 import { Request, RequestHandler, Response } from 'express';
 
-import IdeoramaService from './ideorama.service';
-
+import { IIdeoramaService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import HttpResponse from '@/utils/http-response';
+import { deleteFile, uploadFile } from '@/utils/storage.service';
+
+const UPLOAD_DIR = 'scenes';
 
 const EMPTY_SCENE = {
   global: {
@@ -20,7 +22,7 @@ const EMPTY_SCENE = {
 };
 
 export default class IdeoramaController {
-  constructor(private readonly ideoramaService: IdeoramaService) {}
+  constructor(private readonly ideoramaService: IIdeoramaService) {}
 
   /**
    * Returns the empty scene template.
@@ -65,7 +67,7 @@ export default class IdeoramaController {
   );
 
   /**
-   * Returns all ideoramas for the authenticated user.
+   * Returns all ideoramas for a particular user.
    *
    * @route  GET /ideorama
    * @access Authenticated
@@ -122,7 +124,7 @@ export default class IdeoramaController {
   );
 
   /**
-   * Saves the scene JSON into the DB.
+   * Saves the ideorama.
    * Syncs name and isPublic from scene metadata to the DB row.
    * Existence is pre-checked by the checkIdeoramaExistence middleware.
    *
@@ -135,22 +137,36 @@ export default class IdeoramaController {
   saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
     const ideoramaId = req.params.ideoramaId as string;
 
-    const scene =
-      typeof req.body.scene === 'string'
-        ? JSON.parse(req.body.scene)
-        : (req.body.scene as import('@prisma/client').Prisma.InputJsonValue);
+    const rawMeta = req.body?.meta;
+    const meta: { name?: string; isPublic?: boolean } = rawMeta
+      ? typeof rawMeta === 'string'
+        ? JSON.parse(rawMeta)
+        : rawMeta
+      : {};
 
-    const sceneName = (scene as any)?.info?.name;
-    const sceneIsPublic = (scene as any)?.global?.isPublic;
+    const sceneFile = req.file ?? null;
 
-    await this.ideoramaService.saveScene(ideoramaId, scene, {
-      ...(typeof sceneName === 'string' && sceneName.trim()
-        ? { name: sceneName.trim() }
-        : {}),
-      ...(typeof sceneIsPublic === 'boolean'
-        ? { isPublic: sceneIsPublic }
-        : {}),
-    });
+    if (!sceneFile) {
+      return HttpResponse.badRequest('Fichier de la scene manquant').send(res);
+    }
+
+    const ideorama = await this.ideoramaService.getIdeoramaById(ideoramaId);
+
+    if (ideorama?.scene) {
+      await deleteFile(ideorama.scene).catch(() => {});
+    }
+
+    const fileKey = await uploadFile(
+      {
+        ...sceneFile,
+        originalname: `${ideoramaId}.json`,
+        mimetype: 'application/json',
+      },
+      UPLOAD_DIR,
+      ideoramaId
+    );
+
+    await this.ideoramaService.saveScene(ideoramaId, fileKey, meta);
 
     HttpResponse.success(null, 'Idéorama sauvegardé avec succès').send(res);
   });
@@ -187,6 +203,12 @@ export default class IdeoramaController {
   deleteIdeoramaController = asyncHandler(
     async (req: Request, res: Response) => {
       const ideoramaId = req.params.ideoramaId as string;
+
+      const ideorama = await this.ideoramaService.getIdeoramaById(ideoramaId);
+
+      if (ideorama?.scene) {
+        await deleteFile(ideorama.scene).catch(() => {});
+      }
 
       await this.ideoramaService.deleteIdeorama(ideoramaId);
       HttpResponse.deleted('Idéorama supprimé avec succès').send(res);

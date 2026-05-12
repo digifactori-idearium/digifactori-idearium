@@ -50,7 +50,7 @@ export interface IIdeoramaService {
   getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   saveScene(
     ideoramaId: string,
-    scene: import('@prisma/client').Prisma.InputJsonValue,
+    scene: string,
     meta?: { name?: string; isPublic?: boolean }
   ): Promise<Ideorama>;
   getIdeoramas(): Promise<Ideorama[]>;

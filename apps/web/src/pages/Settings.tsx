@@ -56,7 +56,7 @@ export const Settings: React.FC = () => {
           Intégrations
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 mlg:grid-cols-3 lg:grid-cols-4 gap-6">
           <NewIntegrationCard onCreated={fetchData} />
 
           {integrations.map(integration => (

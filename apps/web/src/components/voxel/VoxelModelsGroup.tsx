@@ -17,7 +17,7 @@ const VoxelModelsGroup: React.FC<{
   const navigate = useNavigate();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 mlg:grid-cols-3 xl:grid-cols-4 gap-6">
       {models.map((model, index) => (
         <Card
           key={model.id ?? index}

@@ -84,7 +84,7 @@ const IdeoramasGroup: React.FC<{
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 mlg:grid-cols-3 xl:grid-cols-4 gap-6">
       {ideoramas.map(ideorama => {
         const isLiked = ideorama.likers?.some(l => l.userId === user?.id);
         const isOwner = user?.id === ideorama.userId;

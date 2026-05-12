@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 interface ApiErrorResponse {
   errors?: Array<{ field?: string; message: string }>;
   error?: { message: string };
@@ -24,4 +26,11 @@ export const handleApiError = (error: AxiosErrorResponse | unknown): never => {
   }
 
   throw new Error('Erreur réseau');
+};
+
+export const isNotFoundError = (err: unknown): boolean => {
+  if (axios.isAxiosError(err)) {
+    return err.response?.status === 404 || err.response?.status === 403;
+  }
+  return false;
 };

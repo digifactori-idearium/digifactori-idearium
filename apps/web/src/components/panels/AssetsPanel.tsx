@@ -1,5 +1,5 @@
 import { Search, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { AssetsGrid } from '@/components/assets/AssetsGrid';
@@ -8,18 +8,24 @@ import { sceneState, actions } from '@/stores';
 
 export const AssetsPanel = () => {
   const snap = useSnapshot(sceneState);
-
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [committedQuery, setCommittedQuery] = useState('');
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, 300);
+  const handleSearch = () => {
+    setCommittedQuery(searchQuery.trim().toLowerCase());
+  };
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleSearch();
+    if (e.key === 'Escape') handleCloseSearch();
+  };
+
+  const handleCloseSearch = () => {
+    setSearchQuery('');
+    setCommittedQuery('');
+    setSearchOpen(false);
+  };
 
   if (!snap.assetsPanelOpen) return null;
 
@@ -27,67 +33,104 @@ export const AssetsPanel = () => {
     <div className="absolute left-4 bottom-5 w-[320px] h-145 z-60 animate-in slide-in-from-left duration-500">
       <div className="flex flex-col h-full backdrop-blur-xl bg-neutral-600/5 border border-white/20 rounded-2xl shadow-2xl text-white overflow-hidden">
         {/* HEADER */}
-        <div className="relative flex items-center justify-between px-4 py-3 border-b border-white/20">
-          {/* Title */}
-          <h2
-            className={`font-semibold text-lg transition-opacity duration-200 ${
-              searchOpen ? 'opacity-0' : 'opacity-100'
-            }`}
-          >
-            Thing Library
-          </h2>
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/20 min-h-13">
+          {searchOpen ? (
+            <>
+              <div className="flex flex-1 items-center gap-2 bg-white/10 rounded-lg px-3 py-1.5 min-w-0">
+                <Search className="size-4 text-white/50 shrink-0" />
+                <input
+                  autoFocus
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Search, then press Enter…"
+                  className="flex-1 bg-transparent outline-none text-sm placeholder:text-white/40 min-w-0"
+                />
+                {searchQuery.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setCommittedQuery('');
+                    }}
+                    className="text-white/40 hover:text-white transition-colors shrink-0"
+                    aria-label="Clear"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )}
+              </div>
 
-          {/* Right Icons */}
-          <div className="flex items-center gap-2 z-10">
-            <SuperButton
-              tooltip="Rechercher un objet"
-              onClick={() => setSearchOpen(true)}
-              className={`hover:bg-white/10 p-1! bg-transparent! rounded ${!searchOpen ? 'border' : ''} border-white/20!`}
-            >
-              <Search className="size-5 cursor-pointer text-white" />
-            </SuperButton>
+              {/* Go button */}
+              <button
+                onClick={handleSearch}
+                className="shrink-0 flex items-center gap-1 bg-blue-500 hover:bg-blue-400 active:scale-95 transition-all text-white text-xs font-bold px-3 py-1.5 rounded-lg"
+              >
+                <Search className="size-3.5" />
+                Go!
+              </button>
 
-            <SuperButton
-              tooltip="Fermer"
-              onClick={() => actions.toggleAssetsPanel(false)}
-              className="hover:bg-white/10 p-1! bg-transparent! rounded border border-white/20!"
-            >
-              <X className="size-5 text-white" />
-            </SuperButton>
-          </div>
+              {/* Close search */}
+              <SuperButton
+                variant={'ghost'}
+                tooltip="Fermer la recherche"
+                onClick={handleCloseSearch}
+                className="shrink-0 p-1.5 rounded-lg border border-white/20 hover:bg-white/10 transition-colors"
+                aria-label="Close search"
+              >
+                <X className="size-4 text-white/70" />
+              </SuperButton>
+            </>
+          ) : (
+            /* Default Headers*/
+            <>
+              <h2 className="flex-1 font-semibold text-lg">
+                Collection d'objets
+              </h2>
 
-          {/* Animated Search Bar */}
-          <div
-            className={`absolute left-4 right-12 flex items-center gap-2 bg-neutral-900/80 backdrop-blur-md rounded-md px-2 transition-all duration-300 ${
-              searchOpen
-                ? 'opacity-100 scale-100'
-                : 'opacity-0 scale-95 pointer-events-none'
-            }`}
-          >
-            <input
-              autoFocus={searchOpen}
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search assets..."
-              className="flex-1 bg-transparent outline-none text-sm placeholder:text-white/50 py-1"
-            />
+              <SuperButton
+                variant={'ghost'}
+                tooltip="Rechercher un objet"
+                onClick={() => setSearchOpen(true)}
+                className="p-1! bg-transparent hover:bg-white/10 rounded border border-white/20!"
+              >
+                <Search className="size-5 text-white" />
+              </SuperButton>
 
-            <SuperButton
-              onClick={() => {
-                setSearchQuery('');
-                setSearchOpen(false);
-              }}
-              tooltip="ferme la recherche"
-              className="group bg-transparent! hover:text-red-500!"
-            >
-              <X className="size-4 text-white/70 transition-colors group-hover:text-red-500! mr-5" />
-            </SuperButton>
-          </div>
+              <SuperButton
+                variant={'ghost'}
+                tooltip="Fermer"
+                onClick={() => actions.toggleAssetsPanel(false)}
+                className=" p-1! bg-transparent hover:bg-white/10  rounded border border-white/20!"
+              >
+                <X className="size-5 text-white" />
+              </SuperButton>
+            </>
+          )}
         </div>
+
+        {/* Active search badge */}
+        {committedQuery && (
+          <div className="flex items-center gap-2 px-4 py-1.5 bg-blue-500/10 border-b border-blue-400/20 text-xs text-blue-300">
+            <Search className="size-3.5 shrink-0" />
+            <span className="truncate">
+              Résultats pour : <strong>"{committedQuery}"</strong>
+            </span>
+            <button
+              onClick={() => {
+                setCommittedQuery('');
+                setSearchQuery('');
+              }}
+              className="ml-auto shrink-0 hover:text-white transition-colors"
+              aria-label="Clear results"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        )}
 
         {/* CONTENT */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-2 space-y-4">
-          <AssetsGrid query={debouncedQuery} />
+          <AssetsGrid query={committedQuery} />
         </div>
       </div>
     </div>
