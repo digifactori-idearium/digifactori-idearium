@@ -38,7 +38,11 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { isNotFoundError } from '@/lib/api';
 import { STATUS_COLOR, STATUS_LABEL } from '@/lib/constants';
 import { useUser } from '@/providers/UserProvider';
-import { getIdeoramaById, saveIdeorama } from '@/services/ideorama.service';
+import {
+  getIdeoramaById,
+  getSignedUrl,
+  saveIdeorama,
+} from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 import { createReplacer } from '@/utils/utils';
 
@@ -127,11 +131,9 @@ export default function Ideorama() {
         savedTimerRef.current = setTimeout(() => setSaveStatus('idle'), 3000);
       } else {
         setSaveStatus('error');
-        toast.error('Échec de la sauvegarde automatique');
       }
     } catch {
       setSaveStatus('error');
-      toast.error('Erreur lors de la sauvegarde automatique');
     } finally {
       isSavingRef.current = false;
     }
@@ -144,26 +146,42 @@ export default function Ideorama() {
     isLoadingData.current = true;
     isFirstSubscribeRef.current = true;
 
+    actions.resetScene(); //reset
+
     getIdeoramaById(ideoramaid)
-      .then(res => {
+      .then(async res => {
         const record = res.data as any;
-        const scene = record.scene as ModelsInfo;
         setIdeoramaUserId(record.userId);
 
-        if (record.name) scene.info = { ...scene.info, name: record.name };
-        if (typeof record.isPublic === 'boolean') {
-          scene.global = { ...scene.global, isPublic: record.isPublic };
+        let scene: ModelsInfo | null = null;
+
+        if (record.scene) {
+          const { url } = await getSignedUrl(record.scene);
+          const sceneRes = await fetch(url);
+          if (!sceneRes.ok)
+            throw new Error(`Failed to fetch scene: ${sceneRes.status}`);
+          scene = (await sceneRes.json()) as ModelsInfo;
         }
 
-        return scene;
+        return { scene, record };
       })
-      .then((model: ModelsInfo) => {
-        if (model.global) Object.assign(sceneState.global, model.global);
-        if (model.background)
-          Object.assign(sceneState.background, model.background);
-        if (model.info) Object.assign(sceneState.info, model.info);
-        if (model.floor) Object.assign(sceneState.floor, model.floor);
-        if (model.objects) sceneState.objects = model.objects;
+      .then(({ scene, record }: { scene: ModelsInfo | null; record: any }) => {
+        if (scene) {
+          if (scene.global) Object.assign(sceneState.global, scene.global);
+          if (scene.background)
+            Object.assign(sceneState.background, scene.background);
+          if (scene.info) Object.assign(sceneState.info, scene.info);
+          if (scene.floor) Object.assign(sceneState.floor, scene.floor);
+          if (scene.objects) sceneState.objects = scene.objects;
+        }
+
+        if (record.name)
+          sceneState.info = { ...sceneState.info, name: record.name };
+        if (typeof record.isPublic === 'boolean')
+          sceneState.global = {
+            ...sceneState.global,
+            isPublic: record.isPublic,
+          };
 
         actions.stackState();
         isLoadingData.current = false;
@@ -185,6 +203,7 @@ export default function Ideorama() {
         } else {
           toast.error('Erreur lors du chargement du idéorama');
         }
+
         isLoadingData.current = false;
         isFirstSubscribeRef.current = false;
       });
@@ -278,7 +297,6 @@ export default function Ideorama() {
 
           {/* Top toolbar */}
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-            {/* Edit/Play toggle — visible only to owners */}
             {canEdit && (
               <Button
                 onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
@@ -348,7 +366,6 @@ export default function Ideorama() {
               />
             )}
 
-            {/* Save status badge — owners only */}
             {isEditMode && saveStatus !== 'idle' && (
               <span
                 className={`text-xs font-semibold px-3 py-1.5 rounded-full

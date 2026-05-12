@@ -11,9 +11,6 @@ interface ApiResponse<T> {
 
 const BASE = '/api/ideorama';
 
-const API_BASE_FOR_BEACON =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
-
 export const getEmptyIdeorama = async (): Promise<ApiResponse<ModelsInfo>> => {
   const response = await axios.get(`${BASE}/empty`);
   return response.data;
@@ -50,6 +47,18 @@ export const createIdeorama = async (
   return response.data;
 };
 
+/**
+ * Get a short-lived signed URL for a storage key.
+ */
+export const getSignedUrl = async (
+  key: string
+): Promise<{ url: string; expiresAt: string }> => {
+  const response = await axios.get('/api/storage/signed-url', {
+    params: { key },
+  });
+  return response.data.data;
+};
+
 export const saveIdeorama = async (
   ideoramaId: string,
   scene: Record<string, unknown> | string | null
@@ -58,34 +67,29 @@ export const saveIdeorama = async (
     const sceneObj: Record<string, unknown> =
       typeof scene === 'string' ? JSON.parse(scene) : (scene ?? {});
 
-    await axios.patch(`${BASE}/${ideoramaId}/save`, { scene: sceneObj });
+    const blob = new Blob([JSON.stringify(sceneObj)], {
+      type: 'application/json',
+    });
+
+    const meta = {
+      name: (sceneObj?.info as any)?.name as string | undefined,
+      isPublic: (sceneObj?.global as any)?.isPublic as boolean | undefined,
+    };
+
+    const formData = new FormData();
+    formData.append('file', blob, `${ideoramaId}.json`);
+    formData.append('meta', JSON.stringify(meta));
+
+    await axios.patch(`${BASE}/${ideoramaId}/save`, formData, {
+      fetchOptions: { keepalive: true },
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
     return true;
   } catch (error) {
     console.error('saveIdeorama error:', handleApiError(error));
     return false;
   }
-};
-
-export const beaconSaveIdeorama = (
-  ideoramaId: string | undefined,
-  scene: Record<string, unknown> | string | null
-): void => {
-  if (!ideoramaId || !scene) return;
-
-  const token = localStorage.getItem('token');
-  const sceneObj = typeof scene === 'string' ? JSON.parse(scene) : scene;
-
-  fetch(`${API_BASE_FOR_BEACON}/api/ideorama/${ideoramaId}/save`, {
-    method: 'POST',
-    keepalive: true,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ scene: sceneObj }),
-  }).catch(error => {
-    console.error(error);
-  });
 };
 
 export const likeIdeorama = async (
