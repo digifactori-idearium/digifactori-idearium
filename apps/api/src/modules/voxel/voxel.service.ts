@@ -14,7 +14,7 @@ export default class VoxelService implements IVoxelService {
     name?: string;
     userId: string;
   }): Promise<VoxelModel> {
-    return voxelModelTable.create({
+    return await voxelModelTable.create({
       data: {
         name: data.name ?? 'New Voxel Model',
         userId: data.userId,
@@ -30,7 +30,7 @@ export default class VoxelService implements IVoxelService {
     voxelModelId: string,
     fileKey: string
   ): Promise<VoxelModel> {
-    return voxelModelTable.update({
+    return await voxelModelTable.update({
       where: { id: voxelModelId },
       data: { model: fileKey },
     });
@@ -40,7 +40,7 @@ export default class VoxelService implements IVoxelService {
    * Finds a voxel model by ID.
    */
   async getVoxelModelById(voxelModelId: string): Promise<VoxelModel | null> {
-    return voxelModelTable.findFirst({
+    return await voxelModelTable.findFirst({
       where: { id: voxelModelId },
     });
   }
@@ -49,7 +49,7 @@ export default class VoxelService implements IVoxelService {
    * Finds all voxel models for a user, ordered by creation date.
    */
   async getUserVoxelModels(userId: string): Promise<VoxelModel[]> {
-    return voxelModelTable.findMany({
+    return await voxelModelTable.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });
@@ -59,7 +59,7 @@ export default class VoxelService implements IVoxelService {
    * Finds all existing voxel models, ordered by creation date.
    */
   async getVoxelModels(): Promise<VoxelModel[]> {
-    return voxelModelTable.findMany({
+    return await voxelModelTable.findMany({
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -68,7 +68,7 @@ export default class VoxelService implements IVoxelService {
    * Deletes a voxel model from DB.
    */
   async deleteVoxelModel(voxelModelId: string): Promise<VoxelModel> {
-    return voxelModelTable.delete({
+    return await voxelModelTable.delete({
       where: { id: voxelModelId },
     });
   }
