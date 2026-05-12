@@ -48,3 +48,26 @@ export const checkVoxelModelExistence = async (
     next(error);
   }
 };
+
+export const checkDocumentExistence = async (
+  documentID: string,
+  res: Response,
+  next: NextFunction,
+  getDocumentById: (documentID: string) => Promise<VoxelModel | null>
+): Promise<void> => {
+  if (!/^[a-zA-Z0-9_-]+$/.test(documentID)) {
+    return HttpResponse.badRequest('Identifiant invalide').send(res);
+  }
+  try {
+    const document = await getDocumentById(documentID);
+    if (document) {
+      next();
+    } else {
+      HttpResponse.notFound("Le document que vous cherchez n'existe pas").send(
+        res
+      );
+    }
+  } catch (error) {
+    next(error);
+  }
+};
