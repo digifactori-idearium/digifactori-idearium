@@ -34,7 +34,7 @@ export default function NotFound() {
           <VoiceLink
             voiceText={backLabel}
             to={backTo}
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-background hover:bg-background/75 transition text-center"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-background hover:bg-background/85 hover:text-foreground! transition text-center"
           >
             {backLabel}
           </VoiceLink>
@@ -43,7 +43,7 @@ export default function NotFound() {
             variant={'ghost'}
             voiceText={'Revenir en arrière'}
             onClick={() => window.history.back()}
-            className="w-full sm:w-auto p-6! rounded-2xl! border border-mauve hover:bg-mauve  text-mauve hover:text-white transition"
+            className="w-full sm:w-auto p-6! rounded-2xl! border border-mauve hover:bg-mauve!  text-mauve hover:text-white transition"
           >
             Revenir en arrière
           </VoiceButton>
