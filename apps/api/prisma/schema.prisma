@@ -91,7 +91,7 @@ model IdeoramaLikes {
 model Idea {
   id        String   @id @default(cuid())
   data      Json
-  userId    String   
+  userId    String
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
