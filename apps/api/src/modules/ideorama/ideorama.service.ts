@@ -12,28 +12,11 @@ export default class IdeoramaService implements IIdeoramaService {
    * Creates a new ideorama with an empty scene.
    */
   async createIdeorama(ideoramaData: Partial<Ideorama>): Promise<Ideorama> {
-    const emptyScene = {
-      global: {
-        brightness: 'bright',
-        visible: true,
-        isPublic: true,
-        music: { currentTrack: '', volume: 0.5 },
-        theme: 'day',
-      },
-      background: { color: '#8ecae6', accent: '#8ecae6' },
-      info: {
-        name: ideoramaData.name ?? 'New Ideorama',
-        category: 'none',
-      },
-      floor: { color: '#53ED83', hidden: false, texture: 'none' },
-      objects: {},
-    };
-
-    return ideoramaTable.create({
+    return await ideoramaTable.create({
       data: {
         name: ideoramaData.name ?? 'New Ideorama',
         userId: ideoramaData.userId!,
-        scene: emptyScene,
+        scene: '',
       },
     });
   }
@@ -44,10 +27,10 @@ export default class IdeoramaService implements IIdeoramaService {
    */
   async saveScene(
     ideoramaId: string,
-    scene: Prisma.InputJsonValue,
+    scene: string,
     meta?: { name?: string; isPublic?: boolean }
   ): Promise<Ideorama> {
-    return ideoramaTable.update({
+    return await ideoramaTable.update({
       where: { id: ideoramaId },
       data: { scene, ...meta },
     });
@@ -57,11 +40,37 @@ export default class IdeoramaService implements IIdeoramaService {
    * Finds an ideorama by ID (includes like count).
    */
   async getIdeoramaById(ideoramaId: string): Promise<Ideorama | null> {
-    return ideoramaTable.findFirst({
+    return await ideoramaTable.findFirst({
       where: { id: ideoramaId },
       include: {
         _count: { select: { likers: true } },
       },
+    });
+  }
+
+  /**
+   * Finds all ideoramas.
+   */
+  async getIdeoramas(): Promise<Ideorama[]> {
+    return await ideoramaTable.findMany({
+      include: {
+        _count: { select: { likers: true } },
+        likers: { select: { userId: true } },
+
+        user: {
+          include: {
+            profile: {
+              select: {
+                id: true,
+                pseudo: true,
+                avatar: true,
+                ideoramaLiked: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -73,7 +82,25 @@ export default class IdeoramaService implements IIdeoramaService {
       where: { userId },
       include: {
         _count: { select: { likers: true } },
-        likers: { select: { userId: true } },
+
+        likers: userId
+          ? {
+              where: { userId },
+              select: { userId: true },
+            }
+          : false,
+        user: {
+          include: {
+            profile: {
+              select: {
+                id: true,
+                pseudo: true,
+                avatar: true,
+                ideoramaLiked: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -86,9 +113,22 @@ export default class IdeoramaService implements IIdeoramaService {
     ideoramaId: string,
     data: Prisma.IdeoramaUpdateInput
   ): Promise<Ideorama> {
-    return ideoramaTable.update({
+    return await ideoramaTable.update({
       where: { id: ideoramaId },
       data,
+    });
+  }
+
+  /**
+   * Updates the scene storage key for an ideorama.
+   */
+  async updateIdeoramaFileKey(
+    ideoramaId: string,
+    fileKey: string
+  ): Promise<Ideorama> {
+    return await ideoramaTable.update({
+      where: { id: ideoramaId },
+      data: { scene: fileKey },
     });
   }
 
@@ -105,14 +145,18 @@ export default class IdeoramaService implements IIdeoramaService {
   /**
    * Toggles the like on an ideorama for a user.
    */
-  async likeIdeorama(ideoramaId: string, userId: string): Promise<boolean> {
-    const existing = await ideoramaLikeTable.findFirst({
-      where: { ideoramaId, userId },
+  async likeIdeorama(ideoramaId: string, userId: string) {
+    const existing = await ideoramaLikeTable.findUnique({
+      where: {
+        ideoramaId_userId: { ideoramaId, userId },
+      },
     });
 
     if (existing) {
       await ideoramaLikeTable.delete({
-        where: { ideoramaId_userId: { ideoramaId, userId } },
+        where: {
+          ideoramaId_userId: { ideoramaId, userId },
+        },
       });
     } else {
       await ideoramaLikeTable.create({
@@ -120,14 +164,21 @@ export default class IdeoramaService implements IIdeoramaService {
       });
     }
 
-    return true;
+    const count = await ideoramaLikeTable.count({
+      where: { ideoramaId },
+    });
+
+    return {
+      isLiked: !existing,
+      likersCount: count,
+    };
   }
 
   /**
    * Permanently deletes an ideorama.
    */
   async deleteIdeorama(ideoramaId: string): Promise<Ideorama> {
-    return ideoramaTable.delete({
+    return await ideoramaTable.delete({
       where: { id: ideoramaId },
     });
   }

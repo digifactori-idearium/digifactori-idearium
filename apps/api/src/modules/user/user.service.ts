@@ -157,4 +157,64 @@ export default class UserService implements IUserService {
       return { user };
     });
   }
+
+  /**
+   * Bulk delete; partial success.
+   * Respects role-based permissions via the controller.
+   */
+  async bulkDeleteUsers(
+    ids: string[],
+    requesterRole: Role,
+    requesterId: string
+  ): Promise<{ deleted: number; failed: { id: string; reason: string }[] }> {
+    const failed: { id: string; reason: string }[] = [];
+    const safeIds: string[] = [];
+
+    // Pre-flight: filter out self-delete before hitting the DB
+    for (const id of ids) {
+      if (id === requesterId) {
+        failed.push({
+          id,
+          reason: 'Vous ne pouvez pas vous supprimer vous-même.',
+        });
+      } else {
+        safeIds.push(id);
+      }
+    }
+
+    if (safeIds.length === 0) return { deleted: 0, failed };
+
+    // Scope query to only IDs this role is allowed to delete
+    const scopeWhere =
+      requesterRole === Role.ADMIN
+        ? { id: { in: safeIds }, role: { not: Role.ADMIN } }
+        : { id: { in: safeIds }, role: Role.INTERN };
+
+    const existing = await userTable.findMany({
+      where: scopeWhere,
+      select: { id: true },
+    });
+
+    const allowedIds = new Set(existing.map(u => u.id));
+
+    // Everything not found or out of scope → failed
+    for (const id of safeIds) {
+      if (!allowedIds.has(id)) {
+        failed.push({
+          id,
+          reason: 'Utilisateur introuvable ou action non autorisée.',
+        });
+      }
+    }
+
+    if (allowedIds.size === 0) return { deleted: 0, failed };
+
+    // DB handles Profile → Follow, IdeoramaLikes via Cascade
+    // DB handles Ideorama, Document, VoxelModel via SetNull
+    const { count } = await userTable.deleteMany({
+      where: { id: { in: [...allowedIds] } },
+    });
+
+    return { deleted: count, failed };
+  }
 }

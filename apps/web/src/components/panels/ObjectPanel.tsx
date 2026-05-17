@@ -21,7 +21,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { objectConfigInputs } from '@/lib/input';
-import { sceneState, actions } from '@/stores/ideorama.store';
+import { actions, sceneState } from '@/stores/ideorama.store';
 
 type ConfigSlice = 'transform' | 'style' | 'advanced' | 'info';
 
@@ -64,9 +64,10 @@ export const ObjectConfigPanel = () => {
           {selectedObjectData?.info.name || 'Object Configuration'}
         </CardTitle>
         <TooltipButton
+          variant={'ghost'}
           tooltip="Fermer"
           onClick={() => actions.toggleSettingPanel(false)}
-          className="hover:bg-white/10 p-1! bg-transparent! rounded border border-white/20!"
+          className="hover:bg-white/10 p-1! bg-transparent rounded border border-white/20!"
         >
           <X className="size-5 text-white!" />
         </TooltipButton>
@@ -78,7 +79,7 @@ export const ObjectConfigPanel = () => {
           tooltip="Modifier l'objet"
           voiceText="Modifier l'objet"
           className="icon-round-btn"
-          onClick={() => navigate('/app/voxel')}
+          onClick={() => navigate('/app/my-models')}
         >
           <Cuboid className="size-6!" />
         </SuperButton>

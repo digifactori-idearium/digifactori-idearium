@@ -101,7 +101,7 @@ export const ObjectListPanel = memo(() => {
   if (!snap.assetsTreeOpen) return null;
 
   return (
-    <div className="absolute left-4 bottom-5 w-[320px] h-145 z-60 animate-in slide-in-from-bottom-10">
+    <div className="absolute left-4 bottom-5 w-80 h-145 z-60 animate-in slide-in-from-bottom-10">
       <div className="flex flex-col h-full backdrop-blur-xl bg-neutral-600/5 border border-white/20 rounded-2xl shadow-2xl text-white overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/20">

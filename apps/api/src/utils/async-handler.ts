@@ -19,12 +19,13 @@ export const asyncHandler = (
   handler: (req: Request, res: Response, next: NextFunction) => Promise<any>
 ) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(handler(req, res, next)).catch((error: any) => {
-      console.error('Async handler error:', error);
+    Promise.resolve(handler(req, res, next)).catch(error => {
+      const errMessage = error instanceof Error ? error.message : String(error);
+      console.error('Async handler error:', errMessage);
 
       if (!res.headersSent) {
         HttpResponse.serverError(
-          error?.message || 'An unexpected error occurred'
+          errMessage || 'An unexpected error occurred'
         ).send(res);
       }
     });

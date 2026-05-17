@@ -17,7 +17,7 @@ import { useSnapshot } from 'valtio';
 import { Controls } from './Gismo';
 import { SpeechBubble } from './SpeechBubble';
 
-import { useStorageBlob } from '@/hooks/useStorageFile';
+import { useStorageUrl } from '@/hooks/useStorageFile';
 import { useTrigger } from '@/hooks/useTrigger';
 import { cleanObject } from '@/lib/actions/runtime';
 import { isStorageKey } from '@/lib/asset';
@@ -64,7 +64,7 @@ export const Model = memo(function Model({
   ...props
 }: ModelProps) {
   const isStorageFile = isStorageKey(file) && file !== '';
-  const { url, loading, error } = useStorageBlob(isStorageFile ? file : null);
+  const { url, loading, error } = useStorageUrl(isStorageFile ? file : null);
 
   const resolvedFile = isStorageFile
     ? url

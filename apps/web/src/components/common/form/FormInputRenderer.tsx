@@ -67,6 +67,7 @@ export function FormInputRenderer({
           placeholder={input.placeholder}
           error={errors[input.name]?.message as string}
           multiple={input.multiple !== false}
+          acceptedTypes={input.acceptedTypes}
         />
       </div>
     );

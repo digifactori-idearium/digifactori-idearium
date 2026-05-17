@@ -125,6 +125,23 @@ export default class VoxelController {
   });
 
   /**
+   * Retrieves all voxel models.
+   *
+   * @route  GET /voxel
+   * @access Authenticated
+   *
+   * @returns 200 { data: VoxelModel[] }
+   */
+  getVoxelModels = asyncHandler(async (req: Request, res: Response) => {
+    const voxelModels = await this.voxelService.getVoxelModels();
+
+    HttpResponse.success(
+      voxelModels,
+      'Voxel models récupérés avec succès'
+    ).send(res);
+  });
+
+  /**
    * Deletes a voxel model and its GLB file from storage.
    * Existence is pre-checked by the checkVoxelModelExistence middleware.
    *

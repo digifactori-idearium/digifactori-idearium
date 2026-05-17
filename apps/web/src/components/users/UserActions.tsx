@@ -2,12 +2,13 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { UserDeleteDialog } from './UserDeleteDialog';
+import { SuperButton } from '../common/button';
 
 import { FormDialog } from '@/components/common/form/FormDialog';
+import DeleteUserDialog from '@/components/dialog/AlertDialog';
 import {
-  manageUserInputs,
   adminUserRole,
+  manageUserInputs,
   supervisorUserRole,
 } from '@/lib/input';
 import { deleteUser, updateUser } from '@/services/user.service';
@@ -80,7 +81,27 @@ export const UserActions = ({
         onsubmit={handleSubmit}
       />
 
-      <UserDeleteDialog
+      <DeleteUserDialog
+        trigger={
+          <SuperButton
+            tooltip="Supprimer l'utilisateur"
+            className="p-2 rounded-full hover:bg-red-500/30 bg-red-500/10 text-red-500 transition-colors"
+          >
+            <Trash2 className="h-4 w-4" />
+          </SuperButton>
+        }
+        description={
+          <>
+            "Cela supprimera définitivement l'utilisateur"{' '}
+            <span className="font-bold text-mauve">{user.profile?.pseudo}</span>
+            .
+          </>
+        }
+        confirmationMessage="Supprimer l'utilisateur"
+        onConfirm={handleDelete}
+        onCancel={() => {}}
+      />
+      {/* <UserDeleteDialog
         trigger={
           <button
             className="p-2 rounded-full hover:bg-red-500/30 bg-red-500/10 text-red-500 transition-colors"
@@ -92,7 +113,7 @@ export const UserActions = ({
         pseudo={user.profile?.pseudo}
         onConfirm={handleDelete}
         onCancel={() => {}}
-      />
+      /> */}
     </div>
   );
 };

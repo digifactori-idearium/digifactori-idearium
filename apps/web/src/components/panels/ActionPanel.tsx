@@ -129,10 +129,12 @@ export const ActionPanel = () => {
         {/* Header */}
         <CardHeader className="p-0 flex flex-row items-center gap-3">
           <TooltipButton
+            variant={'ghost'}
             tooltip="Retour"
             onClick={() => actions.setSettingView('model')}
+            className="hover:bg-white/10 p-1! bg-transparent rounded border border-white/20!"
           >
-            <ArrowLeft className="size-5" />
+            <ArrowLeft className="size-5 text-white" />
           </TooltipButton>
           <div>
             <p className="text-base font-semibold text-white leading-none">

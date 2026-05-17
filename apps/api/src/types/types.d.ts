@@ -1,3 +1,10 @@
+interface JwtPayload {
+  userId: string;
+  email: string;
+  role: Role;
+  voiceButtons: boolean;
+}
+
 interface ValidationError {
   field: string;
   message: string;
@@ -28,6 +35,7 @@ interface ProfileInput {
   pseudo: string;
   bio?: string;
   avatar?: string;
+  voiceButtons?: boolean;
 }
 
 type RegisterInput = {

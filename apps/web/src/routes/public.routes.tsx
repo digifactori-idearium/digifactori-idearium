@@ -1,7 +1,7 @@
 import Home from '@/pages/Home';
 import Ideoramas from '@/pages/Ideoramas';
+import NotFound from '@/pages/NotFound';
 import Profile from '@/pages/Profile';
-import VoxelLayout from '@/pages/VoxelLayout';
 
 const publicRoutes = [
   { path: '', element: <Home />, exact: true },
@@ -10,15 +10,12 @@ const publicRoutes = [
     children: [{ index: true, element: <Ideoramas /> }],
   },
   {
-    path: 'voxel',
-    children: [
-      { index: true, element: <VoxelLayout /> },
-      { path: 'playground', element: <VoxelLayout /> },
-    ],
-  },
-  {
     path: 'profile/:userId',
     element: <Profile />,
+  },
+  {
+    path: 'not-found',
+    element: <NotFound />,
   },
 ];
 

@@ -1,5 +1,6 @@
 import { prisma } from '@/config/client.config';
 import { ISettingsService } from '@/types';
+import { errorMessage } from '@/utils/errors';
 
 const settingTable = prisma.setting;
 const integrationTable = prisma.integration;
@@ -21,9 +22,9 @@ export default class SettingsService implements ISettingsService {
       });
 
       return settings;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la récupération des paramètres: ${error.message}`
+        `Erreur lors de la récupération des paramètres: ${errorMessage(error)}`
       );
     }
   }
@@ -51,9 +52,9 @@ export default class SettingsService implements ISettingsService {
       });
 
       return settings;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la mise à jour des paramètres: ${error.message}`
+        `Erreur lors de la mise à jour des paramètres: ${errorMessage(error)}`
       );
     }
   }
@@ -76,9 +77,9 @@ export default class SettingsService implements ISettingsService {
       });
 
       return integrations;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la récupération des intégrations: ${error.message}`
+        `Erreur lors de la récupération des intégrations: ${errorMessage(error)}`
       );
     }
   }
@@ -97,9 +98,9 @@ export default class SettingsService implements ISettingsService {
       }
 
       return integration;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la récupération de l'intégration: ${error.message}`
+        `Erreur lors de la récupération de l'intégration: ${errorMessage(error)}`
       );
     }
   }
@@ -132,9 +133,9 @@ export default class SettingsService implements ISettingsService {
       });
 
       return integration;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la création de l'intégration: ${error.message}`
+        `Erreur lors de la création de l'intégration: ${errorMessage(error)}`
       );
     }
   }
@@ -169,9 +170,9 @@ export default class SettingsService implements ISettingsService {
       });
 
       return integration;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la mise à jour de l'intégration: ${error.message}`
+        `Erreur lors de la mise à jour de l'intégration: ${errorMessage(error)}`
       );
     }
   }
@@ -191,9 +192,9 @@ export default class SettingsService implements ISettingsService {
       });
 
       return integration;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors du basculement de l'intégration: ${error.message}`
+        `Erreur lors du basculement de l'intégration: ${errorMessage(error)}`
       );
     }
   }
@@ -208,9 +209,9 @@ export default class SettingsService implements ISettingsService {
       });
 
       return integration;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la suppression de l'intégration: ${error.message}`
+        `Erreur lors de la suppression de l'intégration: ${errorMessage(error)}`
       );
     }
   }

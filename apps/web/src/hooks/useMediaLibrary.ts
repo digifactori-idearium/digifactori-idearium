@@ -9,7 +9,6 @@ import {
 } from '@/lib/integrations/internal';
 import { getIntegrations } from '@/services/settings.service';
 
-// Source abstraction
 type InternalSource = {
   kind: 'internal';
   fetch: (search: string, page: number) => Promise<FetchResult>;
@@ -20,7 +19,6 @@ type ExternalSource = {
   integration: Integration;
 };
 
-/** Internal fetch by type. */
 const INTERNAL_SOURCES: Record<
   IntegrationType,
   Array<InternalSource['fetch']>
@@ -42,12 +40,12 @@ export function useMediaLibrary(
 
   const internalSourcesRef = useRef<InternalSource[]>([]);
   const externalSourcesRef = useRef<ExternalSource[]>([]);
-  // Per-external-source page tracking so each integration paginates independently
+
+  const internalPagesRef = useRef<number[]>([]);
+  const internalHasMoreRef = useRef<boolean[]>([]);
   const externalPagesRef = useRef<number[]>([]);
   const externalHasMoreRef = useRef<boolean[]>([]);
 
-  const internalPageRef = useRef(0);
-  const internalDoneRef = useRef(false);
   const loadingRef = useRef(false);
   const searchRef = useRef(searchTerm);
 
@@ -55,38 +53,41 @@ export function useMediaLibrary(
     searchRef.current = searchTerm;
   }, [searchTerm]);
 
-  // Build source lists when type changes.
+  const initInternalSources = useCallback(() => {
+    const fns = INTERNAL_SOURCES[type] ?? [];
+    internalSourcesRef.current = fns.map(fn => ({
+      kind: 'internal',
+      fetch: fn,
+    }));
+    internalPagesRef.current = fns.map(() => 0);
+    internalHasMoreRef.current = fns.map(() => true);
+  }, [type]);
+
+  // Build source lists when type changes
   useEffect(() => {
     setReady(false);
 
     getIntegrations(type)
       .then(list => {
-        internalSourcesRef.current = (INTERNAL_SOURCES[type] ?? []).map(fn => ({
-          kind: 'internal',
-          fetch: fn,
+        initInternalSources();
+
+        const active = list.filter(i => i.isActive);
+        externalSourcesRef.current = active.map(i => ({
+          kind: 'external' as const,
+          integration: i,
         }));
-
-        externalSourcesRef.current = list
-          .filter(i => i.isActive)
-          .map(i => ({ kind: 'external' as const, integration: i }));
-
-        externalPagesRef.current = list.filter(i => i.isActive).map(() => 0);
-        externalHasMoreRef.current = list
-          .filter(i => i.isActive)
-          .map(() => true);
+        externalPagesRef.current = active.map(() => 0);
+        externalHasMoreRef.current = active.map(() => true);
       })
       .catch(err => {
         console.error('[useMediaLibrary] Failed to load integrations:', err);
-        internalSourcesRef.current = (INTERNAL_SOURCES[type] ?? []).map(fn => ({
-          kind: 'internal',
-          fetch: fn,
-        }));
+        initInternalSources();
         externalSourcesRef.current = [];
         externalPagesRef.current = [];
         externalHasMoreRef.current = [];
       })
       .finally(() => setReady(true));
-  }, [type]);
+  }, [type, initInternalSources]);
 
   const fetchPage = useCallback(async (isNewSearch: boolean) => {
     if (loadingRef.current) return;
@@ -95,41 +96,45 @@ export function useMediaLibrary(
 
     const search = searchRef.current;
 
-    // On a new search reset all pagination state
     if (isNewSearch) {
-      internalPageRef.current = 0;
-      internalDoneRef.current = false;
+      internalPagesRef.current = internalSourcesRef.current.map(() => 0);
+      internalHasMoreRef.current = internalSourcesRef.current.map(() => true);
       externalPagesRef.current = externalSourcesRef.current.map(() => 0);
       externalHasMoreRef.current = externalSourcesRef.current.map(() => true);
     }
 
     const fetches: Promise<MediaItem[]>[] = [];
 
-    // Internal sources (all fetched in parallel)
-    if (!internalDoneRef.current) {
-      const page = internalPageRef.current;
+    // Internal sources
+    internalSourcesRef.current.forEach((src, idx) => {
+      const isFirstPage = internalPagesRef.current[idx] === 0;
+      if (!isFirstPage && !internalHasMoreRef.current[idx]) return;
 
-      for (const src of internalSourcesRef.current) {
-        fetches.push(
-          src
-            .fetch(search, page)
-            .then(r => {
-              if (!r.hasMore) internalDoneRef.current = true;
-              return r.items;
-            })
-            .catch(err => {
-              console.warn('[useMediaLibrary] internal fetch failed', err);
-              return [] as MediaItem[];
-            })
-        );
-      }
+      const page = internalPagesRef.current[idx];
 
-      internalPageRef.current = page + 1;
-    }
+      fetches.push(
+        src
+          .fetch(search, page)
+          .then(r => {
+            internalHasMoreRef.current[idx] = r.hasMore;
+            internalPagesRef.current[idx] = page + 1;
+            return r.items;
+          })
+          .catch(err => {
+            console.warn(
+              `[useMediaLibrary] internal source [${idx}] failed`,
+              err
+            );
+            internalHasMoreRef.current[idx] = false;
+            return [] as MediaItem[];
+          })
+      );
+    });
 
-    // External sources (each tracks its own page)
+    // External sources
     externalSourcesRef.current.forEach((src, idx) => {
-      if (!externalHasMoreRef.current[idx]) return;
+      const isFirstPage = externalPagesRef.current[idx] === 0;
+      if (!isFirstPage && !externalHasMoreRef.current[idx]) return;
 
       const page = externalPagesRef.current[idx];
 
@@ -151,15 +156,14 @@ export function useMediaLibrary(
       );
     });
 
-    // Merge all results
     const results = await Promise.all(fetches);
     const merged = results.flat();
 
     setItems(prev => (isNewSearch ? merged : [...prev, ...merged]));
 
-    // hasMore = internal still has pages OR any external still has pages
     const stillMore =
-      !internalDoneRef.current || externalHasMoreRef.current.some(Boolean);
+      internalHasMoreRef.current.some(Boolean) ||
+      externalHasMoreRef.current.some(Boolean);
 
     setHasMore(stillMore);
 
@@ -167,7 +171,7 @@ export function useMediaLibrary(
     setLoading(false);
   }, []);
 
-  // Reset and re-fetch on search change or after sources are ready.
+  // Reset and re-fetch when search changes or sources become ready
   useEffect(() => {
     if (!ready) return;
     fetchPage(true);

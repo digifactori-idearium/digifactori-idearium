@@ -15,7 +15,7 @@ export const SettingPanel = () => {
 
   return (
     <>
-      <aside className="fixed right-3 top-20 bottom-3 w-100 z-50 animate-in slide-in-from-right duration-500">
+      <aside className="fixed right-3 top-20 bottom-3 w-80 sm:w-100 z-50 animate-in slide-in-from-right duration-500">
         <div className="h-full w-full flex flex-col backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden text-white">
           {!selectedObject ? (
             <ConfigPanel />

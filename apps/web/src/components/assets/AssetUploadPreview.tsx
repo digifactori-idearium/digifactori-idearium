@@ -1,5 +1,5 @@
 import WavesurferPlayer from '@wavesurfer/react';
-import { FileQuestion } from 'lucide-react';
+import { Box, FileQuestion } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 
@@ -16,6 +16,7 @@ export function AssetUplaodPreview({
   file?: File;
 }>) {
   const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
+  const [persistentBlobUrl, setPersistentBlobUrl] = useState<string>('');
 
   const mockFile = file ?? new File([], name);
   const _is3D = is3DModel(mockFile);
@@ -23,13 +24,27 @@ export function AssetUplaodPreview({
   const _isSound = isSound(mockFile);
 
   useEffect(() => {
-    return () => URL.revokeObjectURL(url);
-  }, [url]);
+    if (_is3D && file) {
+      const persistentUrl = URL.createObjectURL(file);
+      setPersistentBlobUrl(persistentUrl);
+      return () => URL.revokeObjectURL(persistentUrl);
+    }
+  }, [_is3D, file]);
 
   if (_is3D) {
+    if (!persistentBlobUrl) {
+      return (
+        <PreviewShell>
+          <div className="flex flex-col items-center justify-center gap-1 text-muted-foreground">
+            <Box className="h-8 w-8 animate-pulse text-muted-foreground/40" />
+            <span className="text-[10px] uppercase tracking-wide">Loading</span>
+          </div>
+        </PreviewShell>
+      );
+    }
     return (
       <PreviewShell>
-        <AssetThumbnail file={url} />
+        <AssetThumbnail file={persistentBlobUrl} />
       </PreviewShell>
     );
   }
@@ -66,7 +81,6 @@ export function AssetUplaodPreview({
     );
   }
 
-  // Unknown / unsupported format, show extension badge instead of crashing.
   const ext = name.split('.').pop()?.toUpperCase() ?? '?';
   return (
     <PreviewShell>
@@ -80,7 +94,7 @@ export function AssetUplaodPreview({
   );
 }
 
-function PreviewShell({ children }: Readonly<{ children: React.ReactNode }>) {
+function PreviewShell({ children }: Readonly<{ children?: React.ReactNode }>) {
   return (
     <span className="shrink-0 flex h-32 w-32 items-center justify-center rounded-md bg-sidebar overflow-hidden">
       {children}

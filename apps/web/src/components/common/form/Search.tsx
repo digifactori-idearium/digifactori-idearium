@@ -133,10 +133,10 @@ export function Search({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between bg-[#161618] border-white/10 text-white hover:bg-white/5"
+            className="w-full justify-between bg-sidebar border-mauve"
           >
             <span className="truncate">
-              {selectedLabel || `Search ${label}...`}
+              {selectedLabel || `Rechercher ${label}...`}
             </span>
             <div className="flex items-center gap-1">
               {selectedLabel && (
@@ -154,13 +154,12 @@ export function Search({
             </div>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-(--radix-popover-trigger-width) p-0 border-white/10 bg-[#161618] z-70">
+        <PopoverContent className="w-(--radix-popover-trigger-width) p-0 border-white/10 bg-sidebar z-70">
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder={placeholder ?? `Search ${label}...`}
+              placeholder={placeholder ?? `Rechercher ${label}...`}
               value={query}
               onValueChange={handleInputChange}
-              className="text-white"
             />
             <CommandList>
               {loading && (
@@ -183,7 +182,7 @@ export function Search({
                       key={id}
                       value={option.value}
                       onSelect={() => handleSelect(option.value, option.label)}
-                      className="text-white hover:bg-white/10 cursor-pointer"
+                      className="hover:bg-white/10 cursor-pointer"
                     >
                       <Check
                         className={cn(

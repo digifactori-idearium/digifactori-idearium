@@ -1,20 +1,10 @@
-import { LogOutIcon, Moon, Sun, LogIn, Play } from 'lucide-react';
+import { LogIn, LogOutIcon, Moon, Play, Sun } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import logo from '../../assets/images/logo.png';
 
-import { VoiceButton, SuperButton } from '@/components/common/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { SuperButton, VoiceButton } from '@/components/common/button';
+import LogOutDialog from '@/components/dialog/AlertDialog';
 import { useAuth } from '@/providers/AuthProvider';
 import { useTheme } from '@/providers/theme-provider';
 import { useUser } from '@/providers/UserProvider';
@@ -80,37 +70,22 @@ export const Header = () => {
           )}
           {user && (
             <div className="flex gap-1 md:gap-2">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
+              <LogOutDialog
+                trigger={
                   <VoiceButton
-                    voiceText="Me déconnecter"
                     className="side-btn text-foreground! flex gap-2"
+                    voiceText="Me déconnecter"
                   >
                     <LogOutIcon className="w-5 h-5 text-red-500" />
                     <span className="hidden sm:inline">Me déconnecter</span>
                   </VoiceButton>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-4xl border-mauve! bg-sidebar!  shadow-2xl p-8">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Se déconnecter ?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Êtes-vous sûr de vouloir quitter votre session ? Vous
-                      devrez vous reconnecter pour accéder à vos données.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="form-button p-4">
-                      Annuler
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={onLogout}
-                      className="danger-btn"
-                    >
-                      Se déconnecter
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                }
+                description="Êtes-vous sûr de vouloir quitter votre session ? Vous
+                      devrez vous reconnecter pour accéder à vos données."
+                confirmationMessage="Se déconnecter"
+                onConfirm={onLogout}
+                onCancel={() => {}}
+              />
             </div>
           )}
           {user && (
