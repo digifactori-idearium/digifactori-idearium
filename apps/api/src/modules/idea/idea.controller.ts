@@ -5,48 +5,23 @@ import HttpResponse from '@/utils/http-response';
 export default class IdeaController {
   constructor(private readonly ideaService: IIdeaService) {}
 
-  createIdea = asyncHandler(async (req, res) => {
-    const userId = req.user!.userId;
-    const { content, column, priority, color } = req.body;
-
-    const idea = await this.ideaService.createIdea({
-      content,
-      column,
-      priority,
-      color,
-      userId,
-    });
-
-    HttpResponse.created(idea, 'Idée créée').send(res);
-  });
-
-  getUserIdeas = asyncHandler(async (req, res) => {
+  getIdeas = asyncHandler(async (req, res) => {
     const userId = req.user!.userId;
 
-    const ideas = await this.ideaService.getUserIdeas(userId);
+    const data = await this.ideaService.getIdeas(userId);
 
-    HttpResponse.success(ideas, 'Idées récupérées').send(res);
+    HttpResponse.success(data, 'Ideas récupérées').send(res);
   });
 
-  updateIdea = asyncHandler(async (req, res) => {
-    const ideaId = req.params.ideaId;
-    const { content, column, priority, color } = req.body;
+  saveIdeas = asyncHandler(async (req, res) => {
+    const userId = req.user!.userId;
+    const data = req.body;
 
-    const idea = await this.ideaService.updateIdea(ideaId, {
-      content,
-      column,
-      priority,
-      color,
-    });
+    console.log(req.body)
+    console.log(req.body.data)
+    console.log(req.body.data.todo)
+    const saved = await this.ideaService.saveIdeas(userId, data);
 
-    HttpResponse.success(idea, 'Idée mise à jour').send(res);
-  });
-
-  deleteIdea = asyncHandler(async (req, res) => {
-    const ideaId = req.params.ideaId;
-
-    await this.ideaService.deleteIdea(ideaId);
-
-    HttpResponse.success({ id: ideaId }, 'Idée supprimée').send(res);
+    HttpResponse.success(saved, 'Ideas sauvegardées').send(res);
   });
 }
