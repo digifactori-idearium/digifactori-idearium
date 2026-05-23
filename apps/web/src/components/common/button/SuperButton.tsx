@@ -8,8 +8,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { speak } from '@/lib/speak';
+import { useUser } from '@/providers/UserProvider';
 
-interface SuperButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface SuperButtonProps extends React.ComponentPropsWithoutRef<
+  typeof Button
+> {
   children: ReactNode;
   tooltip?: string;
   voiceText?: string;
@@ -22,10 +25,18 @@ export function SuperButton({
   ...props
 }: SuperButtonProps) {
   const button = <Button {...props}>{children}</Button>;
+  const { user } = useUser();
 
   const buttonWithVoice =
     voiceText && window.speechSynthesis ? (
-      <Button onMouseEnter={() => speak(voiceText)} {...props}>
+      <Button
+        onMouseEnter={() => {
+          if (user?.voiceButtons) {
+            speak(voiceText);
+          }
+        }}
+        {...props}
+      >
         {children}
       </Button>
     ) : (

@@ -1,12 +1,13 @@
 import {
-  LucideIcon,
-  Users,
   Box,
-  Settings,
-  NotebookText,
   Cuboid,
+  LucideIcon,
+  NotebookText,
   Rocket,
+  Settings,
   SolarPanel,
+  SwatchBook,
+  Users,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -29,7 +30,8 @@ export function NavLink() {
 
   const links: Record<string, NavLinkItem> = {
     mySpace: { path: 'my-space', label: 'Mon Espace', icon: Rocket },
-    home: {
+    home: { path: '', label: 'Ideoramas', icon: SwatchBook },
+    MyIdeoramas: {
       path: 'my-ideoramas',
       label: 'Mes Idéoramas',
       icon: SolarPanel,
@@ -42,7 +44,7 @@ export function NavLink() {
 
     textEditor: {
       path: 'text-editor',
-      label: 'Éditeur Texte',
+      label: 'Mes textes',
       icon: NotebookText,
     },
     userHandling: {

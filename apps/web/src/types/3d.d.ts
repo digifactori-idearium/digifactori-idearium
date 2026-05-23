@@ -51,32 +51,60 @@ type Chunk = {
 };
 
 // GLOBAL ROOM TYPES
+
+type IdeoramaMode = 'edit' | 'play';
+
+type IdeoramaActiveSetting = 'model' | 'actions';
+
+type IdeoramaGlobalState = {
+  brightness: 'bright' | 'dim' | 'dark';
+  isPublic: boolean;
+  music: { currentTrack: string; volume: number };
+  theme: string;
+};
+
+type IdeoramaBackgroundState = {
+  color: string;
+  accent: string;
+};
+
+type IdeoramaInfoState = {
+  name: string;
+  category?: string;
+};
+
 interface PartSettings {
   color: string;
   hidden: boolean;
   texture: string;
 }
 
-type IdeoramaMode = 'edit' | 'play';
+interface ThemeSliceUpdate {
+  color?: string;
+  accent?: string;
+  floor?: string;
+  hidden?: boolean;
+  texture?: string;
+  theme?: string;
+}
+
+type IdeoramaMainState =
+  | IdeoramaGlobalState
+  | IdeoramaBackgroundState
+  | IdeoramaInfoState
+  | PartSettings;
 
 interface IdeoramaState {
   // Global State
-  mode: IdeoramaMode;
   id: string | null;
-  global: {
-    brightness: 'bright' | 'dim' | 'dark';
-    isPublic: boolean;
-    music: { currentTrack: string; volume: number };
-    theme: string;
-  };
+  mode: IdeoramaMode;
 
-  background: { color: string; accent: string };
+  global: IdeoramaGlobalState;
+
+  background: IdeoramaBackgroundState;
 
   // Info State
-  info: {
-    name: string;
-    category?: string;
-  };
+  info: IdeoramaInfoState;
 
   //Part
   floor: PartSettings;
@@ -94,7 +122,7 @@ interface IdeoramaState {
   assetsTreeOpen: boolean;
 
   //Action management
-  activeSettingView: 'model' | 'actions';
+  activeSettingView: IdeoramaActiveSetting;
   actionPickerOpen: boolean;
 
   history: { objects: Record<string, ObjectState> }[];
@@ -205,3 +233,7 @@ interface TriggerDefinition {
   label: string;
   description: string;
 }
+
+// AUTO SAVE TYPES
+
+type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error';

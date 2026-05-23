@@ -1,33 +1,38 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { useUser } from '@/providers/UserProvider';
 
 interface ProtectedRouteProps {
-  role?: string;
+  roles?: string[];
   element: React.ReactElement;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ role, element }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ roles, element }) => {
   const { user } = useUser();
-  const navigate = useNavigate();
+  const location = useLocation();
+  const [ready, setReady] = useState(false);
+
+  const isAuthorized = useMemo(() => {
+    if (!roles || roles.length === 0) return true;
+    return roles.includes(user?.role ?? '');
+  }, [roles, user]);
 
   useEffect(() => {
-    if (!user || !user.token) {
-      toast.warning("Vous n'êtes pas connecté", { id: 'not-auth' });
-      navigate('/');
-    } else if (role && user.role !== role) {
-      toast.error('Vous ne pouvez pas accéder à cette page.', {
-        id: 'not-allowed',
-      });
-      navigate('/');
+    if (!isAuthorized) {
+      toast.error('Accès refusé', { id: 'not-allowed' });
     }
-  }, [user, role, navigate]);
+    setReady(true);
+  }, [isAuthorized]);
 
-  if (!user || !user.token) return null;
-  if (role && user.role !== role) return null;
+  if (!ready) return null;
+
+  if (!isAuthorized) {
+    return <Navigate to="/app/my-space" state={{ from: location }} replace />;
+  }
 
   return element;
 };
+
 export default ProtectedRoute;

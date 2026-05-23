@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { User, VoxelModel } from '@prisma/client';
+import { Profile, User, VoxelModel } from '@prisma/client';
 import express from 'express';
 import request from 'supertest';
 
@@ -36,6 +36,20 @@ function createFakeUser(overrides = {}): User {
     ...overrides,
   };
   return user;
+}
+
+function createFakeProfile(overrides: Partial<Profile> = {}): Profile {
+  return {
+    id: 'profileId',
+    userId: 'cmnup6jyf0000p0utn33xhdpq',
+    pseudo: 'TestUser',
+    avatar: null,
+    bio: null,
+    voiceButtons: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
 }
 
 function createFakeModel(overrides = {}): {
@@ -78,7 +92,7 @@ let mockService!: MockVoxelService;
 let app!: express.Express;
 
 beforeAll(async () => {
-  token = generateToken(createFakeUser()) as string;
+  token = generateToken(createFakeUser(), createFakeProfile()) as string;
 });
 
 beforeEach(() => {

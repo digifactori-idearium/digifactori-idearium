@@ -1,6 +1,6 @@
 import { RotateCcw } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
@@ -8,45 +8,29 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { Loading } from '@/components/common';
 import { SuperButton } from '@/components/common/button/SuperButton';
-import AlertDialog from '@/components/dialog/AlertDialog';
+import ResetVoxelDialog from '@/components/dialog/AlertDialog';
 import EditPanel from '@/components/voxel/panel';
+import { isNotFoundError } from '@/lib/api';
+import { STATUS_COLOR, STATUS_LABEL } from '@/lib/constants';
 import Voxel, { VoxelPoint } from '@/pages/Voxel';
 import {
+  getSignedUrl,
   getVoxelModelById,
   saveVoxelModel,
-  getSignedUrl,
 } from '@/services/voxel.service';
-
-type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error';
 
 // Constants
 const VOXEL_SCALE = 0.005;
 const AUTOSAVE_DEBOUNCE_MS = 2000;
 
-const STATUS_LABEL: Record<SaveStatus, string> = {
-  idle: '',
-  pending: 'Modifications en cours...',
-  saving: 'Sauvegarde...',
-  saved: '✓ Sauvegardé',
-  error: '✗ Erreur de sauvegarde',
-};
-
-const STATUS_COLOR: Record<SaveStatus, string> = {
-  idle: '',
-  pending: 'text-yellow-400/70',
-  saving: 'text-blue-400/70',
-  saved: 'text-green-400/70',
-  error: 'text-red-400/70',
-};
-
-//  GLB export; voxel data stored in group extras
+//  GLB export: voxel data stored in group extras
 const exportGLB = (scene: THREE.Scene, voxels: VoxelPoint[]): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const exporter = new GLTFExporter();
     const exportGroup = new THREE.Group();
     exportGroup.name = 'voxel_model';
 
-    // Embed voxel state in the group's extras — survives the GLB round-trip.
+    // Embed voxel state in the group's extras to survives the GLB processing.
     exportGroup.userData = { voxelData: voxels };
 
     scene.traverse(obj => {
@@ -69,7 +53,7 @@ const exportGLB = (scene: THREE.Scene, voxels: VoxelPoint[]): Promise<Blob> => {
   });
 };
 
-//  GLB importl; extract voxel state from extras
+//  GLB import: extract voxel state from extras
 const loadVoxelsFromGLB = (url: string): Promise<VoxelPoint[]> => {
   return new Promise((resolve, reject) => {
     const loader = new GLTFLoader();
@@ -91,6 +75,7 @@ const loadVoxelsFromGLB = (url: string): Promise<VoxelPoint[]> => {
 
 export default function VoxelLayout() {
   const { modelId } = useParams<{ modelId: string }>();
+  const navigate = useNavigate();
 
   const [mode, setMode] = useState<'add' | 'remove' | 'paint'>('add');
   const [shape, setShape] = useState<
@@ -112,7 +97,6 @@ export default function VoxelLayout() {
   const [voxels, setVoxels] = useState<VoxelPoint[]>([]);
   const [modelName, setModelName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [scene, setScene] = useState<THREE.Scene | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
@@ -152,15 +136,27 @@ export default function VoxelLayout() {
           const saved = await loadVoxelsFromGLB(url);
           if (saved.length > 0) setVoxels(saved);
         }
-      } catch {
-        toast.error('Erreur lors du chargement du modèle');
+      } catch (error) {
+        if (isNotFoundError(error)) {
+          navigate('/not-found', {
+            replace: true,
+            state: {
+              title: 'Modèle Voxel introuvable',
+              message: "Cet modèle n'existe pas ou vous n'avez pas accès.",
+              backTo: '/app/my-models',
+              backLabel: 'Mes modèles',
+            },
+          });
+        } else {
+          toast.error('Erreur lors du chargement du modèle');
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     load();
-  }, [modelId]);
+  }, [modelId, navigate]);
 
   // Core save
   const saveModel = useCallback(async () => {
@@ -230,16 +226,26 @@ export default function VoxelLayout() {
   return (
     <div className="w-full h-full relative">
       <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-        <SuperButton
-          tooltip="Réinitialiser"
-          voiceText="Réinitialiser"
-          onClick={() => setResetDialogOpen(true)}
-          className="z-50 p-2 main-small-btn"
-        >
-          <span className="flex items-center gap-1">
-            <RotateCcw className="w-4 h-4 text-white!" />
-          </span>
-        </SuperButton>
+        <ResetVoxelDialog
+          trigger={
+            <SuperButton
+              tooltip="Réinitialiser"
+              voiceText="Réinitialiser"
+              className="z-50 p-2 main-small-btn"
+            >
+              <span className="flex items-center gap-1">
+                <RotateCcw className="w-4 h-4 text-white!" />
+              </span>
+            </SuperButton>
+          }
+          description="Cela réinitialisera votre modèle"
+          confirmationMessage="Oui, réinitialiser"
+          onConfirm={() => {
+            setVoxels([]);
+            toast.success('Idéorama réinitialisé');
+          }}
+          onCancel={() => {}}
+        />
 
         {saveStatus !== 'idle' && (
           <span
@@ -250,18 +256,6 @@ export default function VoxelLayout() {
             {STATUS_LABEL[saveStatus]}
           </span>
         )}
-
-        <AlertDialog
-          open={resetDialogOpen}
-          description="Cela réinitialisera votre modèle"
-          confirmationMessage="Oui, réinitialiser"
-          onConfirm={() => {
-            setVoxels([]);
-            toast.success('Idéorama réinitialisé');
-            setResetDialogOpen(false);
-          }}
-          onCancel={() => setResetDialogOpen(false)}
-        />
       </div>
 
       <div

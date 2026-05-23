@@ -39,24 +39,33 @@ export default class ProfileService implements IProfileService {
    */
   async getSingleProfile(userId: string): Promise<Profile | null> {
     const profile = await profileTable.findUnique({
-      where: {
-        userId: userId,
-      },
+      where: { userId },
       include: {
         followers: {
-          select: {
-            followerId: true,
-          },
+          select: { followerId: true },
         },
         following: {
-          select: {
-            followedId: true,
+          select: { followedId: true },
+        },
+        ideoramaLiked: {
+          select: { ideoramaId: true },
+        },
+        user: {
+          include: {
+            _count: {
+              select: {
+                ideoramas: true,
+                voxelModels: true,
+                documents: true,
+              },
+            },
           },
         },
-
-        ideoramaLiked: {
+        _count: {
           select: {
-            ideoramaId: true,
+            followers: true,
+            following: true,
+            ideoramaLiked: true,
           },
         },
       },
@@ -116,12 +125,12 @@ export default class ProfileService implements IProfileService {
         },
       });
     }
-    const { pseudo, bio, avatar } = { ...body.profile };
+    const { pseudo, bio, avatar, voiceButtons } = { ...body.profile };
     response.profile = await profileTable.update({
       where: {
         userId: userId,
       },
-      data: { pseudo, bio, avatar },
+      data: { pseudo, bio, avatar, voiceButtons },
     });
     return response;
   }
@@ -168,21 +177,22 @@ export default class ProfileService implements IProfileService {
    */
   async getFollowers(
     userId: string
-  ): Promise<{ pseudo: string; avatar: string | null }[]> {
+  ): Promise<{ pseudo: string; avatar: string | null; userId: string }[]> {
     const followers = await followTable.findMany({
       where: {
         followedId: userId,
       },
       include: {
-        following: {
+        follower: {
           select: {
             pseudo: true,
             avatar: true,
+            userId: true,
           },
         },
       },
     });
-    return followers.map(follow => follow.following);
+    return followers.map(follow => follow.follower);
   }
 
   /**
@@ -193,21 +203,22 @@ export default class ProfileService implements IProfileService {
    */
   async getFollowing(
     userId: string
-  ): Promise<{ pseudo: string; avatar: string | null }[]> {
+  ): Promise<{ pseudo: string; avatar: string | null; userId: string }[]> {
     const following = await followTable.findMany({
       where: {
         followerId: userId,
       },
       include: {
-        follower: {
+        following: {
           select: {
             pseudo: true,
             avatar: true,
+            userId: true,
           },
         },
       },
     });
-    return following.map(follow => follow.follower);
+    return following.map(follow => follow.following);
   }
 
   /**

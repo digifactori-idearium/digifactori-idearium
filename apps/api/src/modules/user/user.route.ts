@@ -80,6 +80,17 @@ export default function createUserRoutes(
   );
 
   /**
+   * DELETE /user/bulk
+   * ADMIN      → any non-ADMIN users
+   * SUPERVISOR → any INTERN accounts
+   */
+  userRoutes.delete(
+    '/bulk',
+    requireRole('ADMIN', 'SUPERVISOR'),
+    userController.bulkDeleteUsers
+  );
+
+  /**
    * DELETE /users/:id
    * ADMIN      → any non-ADMIN user
    * SUPERVISOR → any INTERN account

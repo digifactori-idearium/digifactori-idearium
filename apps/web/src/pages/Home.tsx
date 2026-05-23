@@ -3,7 +3,6 @@ import React from 'react';
 import DigifactoryLogo from '@/assets/images/digifactory.png';
 import ImageStage from '@/assets/images/stage.jpg';
 import UnamurLogo from '@/assets/images/unamur.png';
-import VoxelColor from '@/components/3d-scene/VoxelColor';
 import Card from '@/components/home/Card';
 import CardText from '@/components/home/CardText';
 import Hero from '@/components/home/Hero';
@@ -17,21 +16,6 @@ const Home: React.FC = () => {
         <Hero />
         <HoneycombGrid />
       </div>
-
-      {/*  SECTION 3D */}
-      <section className="w-full max-w-6xl mx-auto px-6 mb-32">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Démonstration 3D interactive
-        </h2>
-
-        <div className="w-full h-100 rounded-xl overflow-hidden border">
-          <VoxelColor />
-        </div>
-
-        <p className="text-center mt-4 text-muted-foreground">
-          Sélectionnez une couleur dans la palette puis cliquez sur un cube.
-        </p>
-      </section>
 
       {/* SECTION STAGE */}
       <div className="flex flex-col md:flex-row items-center w-full max-w-6xl mx-auto mb-32 px-6">

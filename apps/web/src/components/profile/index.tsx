@@ -1,4 +1,4 @@
-import { Loader2, Lock } from 'lucide-react';
+import { Contact, Loader2, Lock } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ import ProfileHeader from './ProfileHeader';
 
 import { VoiceButton } from '@/components/common/button';
 import { useProfile } from '@/hooks/useProfile';
+import { useUser } from '@/providers/UserProvider';
 
 const AVATAR_OPTIONS = [
   { id: 1, url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Noah' },
@@ -23,12 +24,13 @@ const AVATAR_OPTIONS = [
 
 const MyProfile: React.FC = () => {
   const navigate = useNavigate();
+  const { setToken } = useUser();
   const { fetchProfile, updateUserProfile, removeProfile, loading } =
     useProfile();
 
   const [acc, setAcc] = useState<{
-    profile: any;
-    user: any;
+    profile: Profile;
+    user: User | null;
   } | null>(null);
 
   useEffect(() => {
@@ -79,8 +81,9 @@ const MyProfile: React.FC = () => {
 
   const handleProfileSubmit = async (data: any) => {
     const profileData = { ...data, avatar: acc.profile?.avatar };
-
-    await updateUserProfile(acc.user, profileData);
+    await updateUserProfile(acc.user, profileData).then(res =>
+      setToken(res.token)
+    );
     setAcc(prev =>
       prev
         ? {
@@ -95,6 +98,14 @@ const MyProfile: React.FC = () => {
     <div className="w-full">
       <ProfileHeader>
         <div className="flex flex-wrap gap-2 justify-center items-center">
+          <VoiceButton
+            voiceText={'Voir mon profile public'}
+            className="flex items-center gap-2 form-button"
+            onClick={() => navigate(`/app/profile/${acc.user?.id}`)}
+          >
+            <Contact className="w-4 h-4" />
+            Voir mon profile public
+          </VoiceButton>
           <AdvancedSettingsDialog
             user={acc.user}
             profile={acc.profile}
@@ -135,6 +146,7 @@ const MyProfile: React.FC = () => {
             pseudo: acc.profile.pseudo || '',
             bio: acc.profile.bio || '',
             avatar: acc.profile.avatar || AVATAR_OPTIONS[0].url,
+            voiceButtons: acc.profile.voiceButtons || false,
           }}
           onSubmit={handleProfileSubmit}
         />

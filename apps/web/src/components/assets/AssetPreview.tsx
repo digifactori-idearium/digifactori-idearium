@@ -1,4 +1,5 @@
 import WavesurferPlayer from '@wavesurfer/react';
+import { AlertTriangle } from 'lucide-react';
 import React, { useState, memo } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 
@@ -57,7 +58,7 @@ function resolveExtensionType(fileKey: string): ExtensionType {
 const PreviewContainer = ({
   children,
 }: Readonly<{ children: React.ReactNode }>) => (
-  <span className="shrink-0 flex h-20 w-20 items-center justify-center rounded-md bg-sidebar overflow-hidden border border-border/50">
+  <span className="shrink-0 flex h-20 w-20 items-center justify-center rounded-md bg-transparent overflow-hidden border border-border/50">
     {children}
   </span>
 );
@@ -65,6 +66,7 @@ const PreviewContainer = ({
 export const AssetPreview = memo(
   ({ fileKey }: AssetPreviewProps) => {
     const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
+
     const { url, loading, error } = useStorageUrl(fileKey);
 
     if (loading)
@@ -79,8 +81,11 @@ export const AssetPreview = memo(
     if (error || !url)
       return (
         <PreviewContainer>
-          <div className="text-[10px] text-destructive uppercase">
-            {error ? 'Error' : 'Empty'}
+          <div className="flex flex-col items-center justify-center gap-1 text-muted-foreground">
+            <AlertTriangle className="h-7 w-7 text-muted-foreground/50" />
+            <span className="text-[10px] uppercase tracking-wide">
+              {error ? 'Error' : 'Empty'}
+            </span>
           </div>
         </PreviewContainer>
       );
