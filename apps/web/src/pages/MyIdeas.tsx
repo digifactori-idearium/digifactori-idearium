@@ -12,11 +12,55 @@ type Task = {
 };
 
 type ColumnType = 'todo' | 'progress' | 'done';
+
 type Columns = Record<ColumnType, Task[]>;
 
-type DragData = {
-  task: Task;
-  from: ColumnType;
+type Inputs = Record<ColumnType, string>;
+
+type ModalTaskData = {
+  column: ColumnType;
+  id: string;
+};
+
+type ModalEditData = {
+  column: ColumnType;
+  id: string;
+  value: string;
+};
+
+type ColumnProps = {
+  title: string;
+  columnKey: ColumnType;
+  columns: Columns;
+  inputs: Inputs;
+  setInputs: React.Dispatch<React.SetStateAction<Inputs>>;
+  addTask: (column: ColumnType) => void;
+  onDrop: (
+    e: React.DragEvent<HTMLDivElement>,
+    to: ColumnType
+  ) => Promise<void>;
+  onDragStart: (
+    e: React.DragEvent<HTMLDivElement>,
+    task: Task,
+    from: ColumnType
+  ) => void;
+  setModalPriority: React.Dispatch<
+    React.SetStateAction<ModalTaskData | null>
+  >;
+  setModalEdit: React.Dispatch<
+    React.SetStateAction<ModalEditData | null>
+  >;
+  setModalDelete: React.Dispatch<
+    React.SetStateAction<ModalTaskData | null>
+  >;
+  setModalColor: React.Dispatch<
+    React.SetStateAction<ModalTaskData | null>
+  >;
+};
+
+type ModalProps = {
+  children: React.ReactNode;
+  title: string;
 };
 
 const initialData: Columns = {
@@ -28,7 +72,7 @@ const initialData: Columns = {
 const COLORS = ['#fde68a', '#bfdbfe', '#bbf7d0', '#fecaca', '#ddd6fe'];
 
 // ================= COLUMN =================
-const Column = ({
+const Column: React.FC<ColumnProps> = ({
   title,
   columnKey,
   columns,
@@ -41,7 +85,7 @@ const Column = ({
   setModalEdit,
   setModalDelete,
   setModalColor,
-}: any) => (
+}) => (
   <div
     onDragOver={(e) => e.preventDefault()}
     onDrop={(e) => onDrop(e, columnKey)}
@@ -121,7 +165,7 @@ const Column = ({
       <textarea
         value={inputs[columnKey]}
         onChange={(e) =>
-          setInputs((prev: any) => ({
+          setInputs((prev) => ({
             ...prev,
             [columnKey]: e.target.value,
           }))
@@ -145,16 +189,23 @@ const Column = ({
 const MyIdeas: React.FC = () => {
   const [columns, setColumns] = useState<Columns>(initialData);
 
-  const [inputs, setInputs] = useState({
+  const [inputs, setInputs] = useState<Inputs>({
     todo: '',
     progress: '',
     done: '',
   });
 
-  const [modalPriority, setModalPriority] = useState<any>(null);
-  const [modalDelete, setModalDelete] = useState<any>(null);
-  const [modalEdit, setModalEdit] = useState<any>(null);
-  const [modalColor, setModalColor] = useState<any>(null);
+  const [modalPriority, setModalPriority] =
+    useState<ModalTaskData | null>(null);
+
+  const [modalDelete, setModalDelete] =
+    useState<ModalTaskData | null>(null);
+
+  const [modalEdit, setModalEdit] =
+    useState<ModalEditData | null>(null);
+
+  const [modalColor, setModalColor] =
+    useState<ModalTaskData | null>(null);
 
   // LOAD
   useEffect(() => {
@@ -188,7 +239,7 @@ const MyIdeas: React.FC = () => {
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
     };
 
-    const newCols = {
+    const newCols: Columns = {
       ...columns,
       [column]: [...(columns[column] || []), task],
     };
@@ -201,10 +252,11 @@ const MyIdeas: React.FC = () => {
   const setPriority = async (priority: Priority) => {
     if (!modalPriority) return;
 
-    const newCols = {
+    const newCols: Columns = {
       ...columns,
-      [modalPriority.column]: columns[modalPriority.column].map((t) =>
-        t.id === modalPriority.id ? { ...t, priority } : t
+      [modalPriority.column]: columns[modalPriority.column].map(
+        (t: Task) =>
+          t.id === modalPriority.id ? { ...t, priority } : t
       ),
     };
 
@@ -214,10 +266,12 @@ const MyIdeas: React.FC = () => {
 
   // DELETE
   const confirmDelete = async () => {
-    const newCols = {
+    if (!modalDelete) return;
+
+    const newCols: Columns = {
       ...columns,
       [modalDelete.column]: columns[modalDelete.column].filter(
-        (t) => t.id !== modalDelete.id
+        (t: Task) => t.id !== modalDelete.id
       ),
     };
 
@@ -227,9 +281,11 @@ const MyIdeas: React.FC = () => {
 
   // EDIT
   const confirmEdit = async () => {
-    const newCols = {
+    if (!modalEdit) return;
+
+    const newCols: Columns = {
       ...columns,
-      [modalEdit.column]: columns[modalEdit.column].map((t) =>
+      [modalEdit.column]: columns[modalEdit.column].map((t: Task) =>
         t.id === modalEdit.id
           ? { ...t, content: modalEdit.value }
           : t
@@ -242,9 +298,11 @@ const MyIdeas: React.FC = () => {
 
   // COLOR
   const setColor = async (color: string) => {
-    const newCols = {
+    if (!modalColor) return;
+
+    const newCols: Columns = {
       ...columns,
-      [modalColor.column]: columns[modalColor.column].map((t) =>
+      [modalColor.column]: columns[modalColor.column].map((t: Task) =>
         t.id === modalColor.id ? { ...t, color } : t
       ),
     };
@@ -254,18 +312,30 @@ const MyIdeas: React.FC = () => {
   };
 
   // DRAG
-  const onDragStart = (e: any, task: Task, from: ColumnType) => {
+  const onDragStart = (
+    e: React.DragEvent<HTMLDivElement>,
+    task: Task,
+    from: ColumnType
+  ) => {
     e.dataTransfer.setData('task', JSON.stringify({ task, from }));
   };
 
-  const onDrop = async (e: any, to: ColumnType) => {
-    const { task, from } = JSON.parse(e.dataTransfer.getData('task'));
+  const onDrop = async (
+    e: React.DragEvent<HTMLDivElement>,
+    to: ColumnType
+  ) => {
+    const {
+      task,
+      from,
+    }: { task: Task; from: ColumnType } = JSON.parse(
+      e.dataTransfer.getData('task')
+    );
 
     if (from === to) return;
 
-    const newCols = {
+    const newCols: Columns = {
       ...columns,
-      [from]: columns[from].filter((t) => t.id !== task.id),
+      [from]: columns[from].filter((t: Task) => t.id !== task.id),
       [to]: [...columns[to], task],
     };
 
@@ -274,25 +344,72 @@ const MyIdeas: React.FC = () => {
 
   return (
     <div className="min-h-screen p-6 bg-white">
-
       {/* ✅ TITRE ROSE DOUX */}
       <h1 className="text-3xl font-semibold mb-8 text-pink-400 drop-shadow-sm">
         Mon planificateur d'idées
       </h1>
 
       <div className="flex gap-6">
-        <Column title="À faire" columnKey="todo" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete, setModalColor }} />
-        <Column title="En cours" columnKey="progress" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete, setModalColor }} />
-        <Column title="Terminé" columnKey="done" {...{ columns, inputs, setInputs, addTask, onDrop, onDragStart, setModalPriority, setModalEdit, setModalDelete, setModalColor }} />
+        <Column
+          title="À faire"
+          columnKey="todo"
+          columns={columns}
+          inputs={inputs}
+          setInputs={setInputs}
+          addTask={addTask}
+          onDrop={onDrop}
+          onDragStart={onDragStart}
+          setModalPriority={setModalPriority}
+          setModalEdit={setModalEdit}
+          setModalDelete={setModalDelete}
+          setModalColor={setModalColor}
+        />
+
+        <Column
+          title="En cours"
+          columnKey="progress"
+          columns={columns}
+          inputs={inputs}
+          setInputs={setInputs}
+          addTask={addTask}
+          onDrop={onDrop}
+          onDragStart={onDragStart}
+          setModalPriority={setModalPriority}
+          setModalEdit={setModalEdit}
+          setModalDelete={setModalDelete}
+          setModalColor={setModalColor}
+        />
+
+        <Column
+          title="Terminé"
+          columnKey="done"
+          columns={columns}
+          inputs={inputs}
+          setInputs={setInputs}
+          addTask={addTask}
+          onDrop={onDrop}
+          onDragStart={onDragStart}
+          setModalPriority={setModalPriority}
+          setModalEdit={setModalEdit}
+          setModalDelete={setModalDelete}
+          setModalColor={setModalColor}
+        />
       </div>
 
-      {/* MODALS inchangés */}
+      {/* MODALS */}
       {modalPriority && (
         <Modal title="Changer la priorité">
-          <button onClick={() => setPriority('high')} className="bg-red-500 text-white px-4 py-2 rounded">
+          <button
+            onClick={() => setPriority('high')}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
             Important
           </button>
-          <button onClick={() => setPriority('low')} className="bg-green-500 text-white px-4 py-2 rounded">
+
+          <button
+            onClick={() => setPriority('low')}
+            className="bg-green-500 text-white px-4 py-2 rounded"
+          >
             Pas important
           </button>
         </Modal>
@@ -300,10 +417,17 @@ const MyIdeas: React.FC = () => {
 
       {modalDelete && (
         <Modal title="Supprimer cette idée ?">
-          <button onClick={confirmDelete} className="bg-red-500 text-white px-4 py-2 rounded">
+          <button
+            onClick={confirmDelete}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
             Supprimer
           </button>
-          <button onClick={() => setModalDelete(null)} className="bg-gray-300 px-4 py-2 rounded">
+
+          <button
+            onClick={() => setModalDelete(null)}
+            className="bg-gray-300 px-4 py-2 rounded"
+          >
             Annuler
           </button>
         </Modal>
@@ -314,11 +438,18 @@ const MyIdeas: React.FC = () => {
           <textarea
             value={modalEdit.value}
             onChange={(e) =>
-              setModalEdit({ ...modalEdit, value: e.target.value })
+              setModalEdit({
+                ...modalEdit,
+                value: e.target.value,
+              })
             }
             className="w-full p-2 border rounded mb-3"
           />
-          <button onClick={confirmEdit} className="bg-blue-500 text-white px-4 py-2 rounded">
+
+          <button
+            onClick={confirmEdit}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
             Valider
           </button>
         </Modal>
@@ -343,10 +474,11 @@ const MyIdeas: React.FC = () => {
 };
 
 // ================= MODAL =================
-const Modal = ({ children, title }: any) => (
+const Modal: React.FC<ModalProps> = ({ children, title }) => (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
     <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col gap-4">
       <h3 className="font-semibold text-gray-700">{title}</h3>
+
       <div className="flex gap-3 flex-wrap">{children}</div>
     </div>
   </div>
