@@ -12,16 +12,16 @@
                 ┌──────────────┼──────────────┐
                 │              │              │
                 ▼              ▼              ▼
-         ┌──────────────┐  ┌─────────┐  ┌──────────────┐
-         │ Middlewares  │  │Business │  │Error Handler │
-         │              │  │ Logic   │  │              │
-         ├──────────────┤  └─────────┘  ├──────────────┤
-         │• requireAuth │  (Services)   │asyncHandler  │
-         │• requireRole │               │(catches all) │
-         │• validate    │               └──────────────┘
-         └──────────────┘                        ▲
-                │                                │
-                └────────────────┬───────────────┘
+         ┌───────────────┐  ┌─────────┐  ┌──────────────┐
+         │ Middlewares   │  │Business │  │Error Handler │
+         │               │  │ Logic   │  │              │
+         ├───────────────┤  └─────────┘  ├──────────────┤
+         │• requireAuth  │  (Services)   │asyncHandler  │
+         │• requireRole  │               │(catches all) │
+         │• authenticate │               └──────────────┘
+         └───────────────┘                        ▲
+                │                                 │
+                └────────────────┬────────────────┘
                                  │
                         ┌────────▼────────┐
                         │ HttpResponse    │
@@ -81,7 +81,7 @@
          │   return; // 400 error sent          │
          └─────────────────┬────────────────────┘
                            │
-                    ✅ Valid
+                      ✅ Valid
                            │
                            ▼
          ┌──────────────────────────────────────┐
@@ -90,7 +90,7 @@
          │ const data = await service.action()  │
          └─────────────────┬────────────────────┘
                            │
-                    ✅ Success
+                     ✅ Success
                            │
                            ▼
          ┌──────────────────────────────────────┐
@@ -158,20 +158,20 @@
         ┌──────────────────▼──────────────────┐
         │  asyncHandler Catches It!           │
         │  (No manual try-catch needed)       │
-        └──────────────┬─────────────────────┘
+        └──────────────┬──────────────────────┘
                        │
                        ▼
          ┌──────────────────────────────────────┐
          │ Log error                            │
          │ Check if response already sent       │
-         └──────────────┬─────────────────────┘
+         └──────────────┬───────────────────────┘
                         │
                         ▼
          ┌──────────────────────────────────────┐
          │ Send Error Response:                 │
          │ HttpResponse.serverError(msg)        │
          │        .send(res)                    │
-         └──────────────┬─────────────────────┘
+         └──────────────┬───────────────────────┘
                         │
                         ▼
          ┌──────────────────────────────────────┐
@@ -193,31 +193,31 @@
 
 ```
                     Express Request
-                         │
-            ┌────────────┬┴─────────┬─────────────┐
-            │            │         │              │
-            ▼            ▼         ▼              ▼
-        requireAuth   Validation  Business  Error (thrown)
-        middleware    (if needed)  Logic
-            │            │         │              │
-            ├─ Checks ────┤         │              │
-            │  if user    │         │              │
-            │  exists     │         │              │
-            │             │         │              │
-            └─────────────┼─────────┼──────────────┘
-                          │         │
-              ┌───────────▼─────────▼────────────┐
-              │      asyncHandler Wrapper       │
-              │  (Catches ALL thrown errors)    │
+                          │
+            ┌─────────────┴───────────┬─────────────┐
+            │             │           │             │
+            ▼             ▼           ▼             ▼
+        requireAuth   Validation   Business  Error(thrown)
+        middleware    (if needed)   Logic
+            │             │           │             │
+            ├─ Checks ────┤           │             │
+            │  if user    │           │             │
+            │  exists     │           │             │
+            │             │           │             │
+            └─────────────┼───────────┼─────────────┘
+                          │           │
+              ┌───────────▼───────────▼──────────┐
+              │      asyncHandler Wrapper        │
+              │  (Catches ALL thrown errors)     │
               └───────────────┬──────────────────┘
                               │
-                ┌─────────────┬┴──────────────┐
+                ┌─────────────┴──────────────┐
                 │             │              │
                 ▼             ▼              ▼
          failOnValidation  HttpResponse   Custom Error
          (validation)      (all statuses)  (caught & formatted)
                 │             │              │
-                └─────────────┬┴──────────────┘
+                └─────────────┴──────────────┘
                               │
                               ▼
                     Response Sent to Client
@@ -271,26 +271,25 @@ REQUEST ARRIVES
 ### Overview
 
 ```
-                    HttpResponse
-                         │
-            ┌────────┬───┴────┬─────────┬──────────┐
-            │        │        │         │          │
-            ▼        ▼        ▼         ▼          ▼
-         SUCCESS  ERROR    CREATED  DELETED   EDGE CASES
-            │        │        │         │          │
-        200 ──┬─  400-500─┬─ 201    204       (others)
-            │ │        │ │
-          204  │       │ │ 401 (Unauthorized)
-          201  │       │ │ 403 (Forbidden)
-          (with)│       │ │ 404 (Not Found)
-          data) │      │ │ 500 (Server Error)
-              204       │
-              (no data) │
-                   badRequest()
-                   unAuthorized()
-                   forbidden()
-                   notFound()
-                   serverError()
+                        HttpResponse
+                             │
+       ┌───────────┬─────────┼─────────┬──────────┐
+       │           │         │         │          │
+       ▼           ▼         ▼         ▼          ▼
+    SUCCESS      ERROR    CREATED   DELETED   EDGE CASES
+       │           │         │         │          │
+    200, 201,   400-500     201       204      (others)
+    204         (status)     │         │
+       │           │      created() deleted()
+       │           │
+       │           ├─ 401 (Unauthorized)  ──► unAuthorized()
+       │           ├─ 403 (Forbidden)     ──► forbidden()
+       │           ├─ 404 (Not Found)     ──► notFound()
+       │           └─ 500 (Server Error)  ──► serverError()
+       │
+       ├─ 200 (OK with data)              ──► ok()
+       ├─ 201 (Created with data)         ──► created()
+       └─ 204 (No Content / no data)      ──► noContent()
 ```
 
 ---
@@ -299,49 +298,40 @@ REQUEST ARRIVES
 
 ```
 Router Definition
-        │
-        ▼
+       │
+       ▼
 router.post('/register',
-        │
-        ├─ asyncHandler ◄─ Wraps the function
-        │                 │
-        │                 ▼
-        │             Catches ANY error
-        │             thrown inside
-        │
-        └─ async (req, res) => {
-             │
-             ├─ registrationSchema.safeParseAsync(req.body)
-             │  │
-             │  └─►Result: {success: boolean, data?, error?}
-             │
-             ├─ if (failOnValidation(result, res))
-             │  │
-             │  ├─ Checks if validation failed
-             │  ├─ If failed: sends 400 + returns true
-             │  ├─ If passed: checks nothing, returns false
-             │  │
-             │  └─ return; // Exit early if validation failed
-             │
-             ├─ const account = await AuthenticationService.create(data)
-             │  │
-             │  ├─ If error thrown here:
-             │  │  asyncHandler catches it ◄───┐
-             │  │  Sends 500 response ────────┤─ Auto error handling
-             │  │                             │
-             │  └─ Otherwise: continue
-             │
-             ├─ const token = generateToken(account.user)
-             │
-             └─ HttpResponse.created(
-                  { accessToken: token, user: account.user },
-                  'Account created'
-                ).send(res)
-                │
-                ├─ Creates HttpResponse object
-                ├─ Calls toJson() to format
-                ├─ res.status(201)
-                └─ res.json({...formatted data...})
+       │
+       ├─ asyncHandler ─────────────────────────► Wraps the handler function
+       │                                          Catches ANY uncaught errors
+       │
+       └─ async (req, res) => {
+            │
+            ├─ const result = await registrationSchema.safeParseAsync(req.body)
+            │    │
+            │    └─► Result: { success: boolean, data?, error? }
+            │
+            ├─ if (failOnValidation(result, res)) return;
+            │    │
+            │    ├─ Checks if validation failed
+            │    ├─ If failed: Sends 400 response + returns true (exits early)
+            │    └─ If passed: Returns false (continues flow)
+            │
+            ├─ const account = await AuthenticationService.create(data)
+            │    │
+            │    ├─ If an error is thrown here:
+            │    │    └─► Caught by asyncHandler ──► Auto-sends 500/error response
+            │    │
+            │    └─ Otherwise: Continues execution
+            │
+            ├─ const token = generateToken(account.user)
+            │
+            └─ HttpResponse.created({ accessToken: token, user: account.user }, 'Account created').send(res)
+                 │
+                 ├─ Creates a new unified HttpResponse instance
+                 ├─ Runs .toJson() to standardize the body format
+                 ├─ Sets res.status(201)
+                 └─ Sends final response payload via res.json(...)
 ```
 
 ---
@@ -445,5 +435,3 @@ HttpResponse (our custom)
 5. **Business logic** → Service method runs (errors caught by asyncHandler)
 6. **Response built** → HttpResponse factory method creates it
 7. **JSON sent** → Consistent, standardized format
-
-All with minimal boilerplate! 🎉
