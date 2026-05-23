@@ -73,7 +73,7 @@ model Ideorama {
 
   likers IdeoramaLikes[] @relation("likers")
 
-  voxels Voxel[]
+  voxels Voxel[] @relation("IdeoramaVoxels")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -107,7 +107,7 @@ model Voxel {
   color String
 
   ideoramaId String
-  ideorama   Ideorama @relation(fields: [ideoramaId], references: [id])
+  ideorama   Ideorama @relation("IdeoramaVoxels", fields: [ideoramaId], references: [id])
 
   createdAt DateTime @default(now())
 }
