@@ -17,9 +17,6 @@ export default class IdeaController {
     const userId = req.user!.userId;
     const data = req.body;
 
-    console.log(req.body)
-    console.log(req.body.data)
-    console.log(req.body.data.todo)
     const saved = await this.ideaService.saveIdeas(userId, data);
 
     HttpResponse.success(saved, 'Ideas sauvegardées').send(res);
