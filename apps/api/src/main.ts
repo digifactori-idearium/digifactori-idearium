@@ -6,6 +6,9 @@ import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
+import createIdeaRoutes from './modules/idea/idea.route';
+import IdeaService from './modules/idea/idea.service';
+
 import serverConfig from '@/config/server.config';
 import createAssetRoutes from '@/modules/asset/asset.route';
 import AssetService from '@/modules/asset/asset.service';
@@ -14,8 +17,6 @@ import AuthService from '@/modules/auth/auth.service';
 import createEditorRoutes from '@/modules/editor/editor.route';
 import EditorService from '@/modules/editor/editor.service';
 import createIdeoramaRoutes from '@/modules/ideorama/ideorama.route';
-import createIdeaRoutes from './modules/idea/idea.route';
-import IdeaService from './modules/idea/idea.service';
 import IdeoramaService from '@/modules/ideorama/ideorama.service';
 import createProfileRoutes from '@/modules/profile/profile.route';
 import ProfileService from '@/modules/profile/profile.service';
@@ -72,25 +73,9 @@ if (IS_DEV) {
 // Routes
 app.use('/api/proxy', proxyRouter);
 app.use('/api/storage', createStorageRoutes());
-app.use('/api/auth', authLimiter, createAuthRoutes(new AuthService()));
-app.use('/api/user', createUserRoutes(new UserService()));
-app.use('/api/profile', createProfileRoutes(new ProfileService()));
-app.use('/api/settings', createSettingsRoutes(new SettingsService()));
-app.use('/api/asset', createAssetRoutes(new AssetService()));
-app.use(
-  '/api/editor',
-  autoSaveLimiter,
-  createEditorRoutes(new EditorService())
-);
-app.use(
-  '/api/ideorama',
-  autoSaveLimiter,
-  createIdeoramaRoutes(new IdeoramaService())
-);
-app.use('/api/voxel', autoSaveLimiter, createVoxelRoutes(new VoxelService()));
 
 const authService = new AuthService();
-app.use('/api/auth', createAuthRoutes(authService));
+app.use('/api/auth', authLimiter, createAuthRoutes(authService));
 
 const userService = new UserService();
 app.use('/api/user', createUserRoutes(userService));
@@ -99,14 +84,17 @@ const profileService = new ProfileService();
 app.use('/api/profile', createProfileRoutes(profileService));
 
 const ideoramaService = new IdeoramaService();
-app.use('/api/ideorama', createIdeoramaRoutes(ideoramaService));
+app.use(
+  '/api/ideorama',
+  autoSaveLimiter,
+  createIdeoramaRoutes(ideoramaService)
+);
 
 const ideaService = new IdeaService();
 app.use('/api/ideas', createIdeaRoutes(ideaService));
 
-
 const voxelService = new VoxelService();
-app.use('/api/voxel', createVoxelRoutes(voxelService));
+app.use('/api/voxel', autoSaveLimiter, createVoxelRoutes(voxelService));
 
 const editorService = new EditorService();
 app.use('/api/editor', createEditorRoutes(editorService));
