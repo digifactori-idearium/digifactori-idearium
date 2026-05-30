@@ -67,6 +67,11 @@ export interface IIdeoramaService {
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
 }
 
+export interface IIdeaService {
+  getIdeas(userId: string): Promise<any>;
+  saveIdeas(userId: string, data: any): Promise<any>;
+}
+
 export interface IProfileService {
   verifyPassword(userId: string, password: string): Promise<boolean>;
   getSingleProfile(userId: string): Promise<Profile | null>;

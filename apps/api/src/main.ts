@@ -14,6 +14,8 @@ import AuthService from '@/modules/auth/auth.service';
 import createEditorRoutes from '@/modules/editor/editor.route';
 import EditorService from '@/modules/editor/editor.service';
 import createIdeoramaRoutes from '@/modules/ideorama/ideorama.route';
+import createIdeaRoutes from './modules/idea/idea.route';
+import IdeaService from './modules/idea/idea.service';
 import IdeoramaService from '@/modules/ideorama/ideorama.service';
 import createProfileRoutes from '@/modules/profile/profile.route';
 import ProfileService from '@/modules/profile/profile.service';
@@ -87,7 +89,35 @@ app.use(
 );
 app.use('/api/voxel', autoSaveLimiter, createVoxelRoutes(new VoxelService()));
 
-// Health check
+const authService = new AuthService();
+app.use('/api/auth', createAuthRoutes(authService));
+
+const userService = new UserService();
+app.use('/api/user', createUserRoutes(userService));
+
+const profileService = new ProfileService();
+app.use('/api/profile', createProfileRoutes(profileService));
+
+const ideoramaService = new IdeoramaService();
+app.use('/api/ideorama', createIdeoramaRoutes(ideoramaService));
+
+const ideaService = new IdeaService();
+app.use('/api/ideas', createIdeaRoutes(ideaService));
+
+
+const voxelService = new VoxelService();
+app.use('/api/voxel', createVoxelRoutes(voxelService));
+
+const editorService = new EditorService();
+app.use('/api/editor', createEditorRoutes(editorService));
+
+const assetService = new AssetService();
+app.use('/api/asset', createAssetRoutes(assetService));
+
+const settingsService = new SettingsService();
+app.use('/api/settings', createSettingsRoutes(settingsService));
+
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',

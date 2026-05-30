@@ -30,6 +30,7 @@ model User {
   ideoramas   Ideorama[]
   voxelModels VoxelModel[]
   documents   Document[]
+  ideas       Idea[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -43,6 +44,7 @@ model Profile {
   voiceButtons  Boolean         @default(true)
   followers     Follow[]        @relation("UserFollowers")
   following     Follow[]        @relation("UserFollowing")
+  ideas         Idea[]
   ideoramaLiked IdeoramaLikes[] @relation("ideoramaLiked")
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -72,6 +74,8 @@ model Ideorama {
 
   likers IdeoramaLikes[] @relation("likers")
 
+  voxels Voxel[] @relation("IdeoramaVoxels")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -85,6 +89,29 @@ model IdeoramaLikes {
   @@id([ideoramaId, userId])
 }
 
+model Idea {
+  id        String   @id @default(cuid())
+  data      Json
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  profile   Profile? @relation(fields: [profileId], references: [id])
+  profileId String?
+}
+
+model Voxel {
+  id    String @id @default(cuid())
+  x     Int
+  y     Int
+  z     Int
+  color String
+
+  ideoramaId String
+  ideorama   Ideorama @relation("IdeoramaVoxels", fields: [ideoramaId], references: [id])
+
+  createdAt DateTime @default(now())
+}
 
 model VoxelModel {
   id        String   @id @default(cuid())
