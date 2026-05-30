@@ -10,7 +10,7 @@
     "lint:fix": "turbo run lint:fix",
     "test": "turbo run test",
     "db:generate": "turbo db:generate",
-    "db:migrate": "turbo db:migrate",
+    "db:migrate": "pnpm --filter @digifactory_idearium/api db:migrate",
     "db:push": "turbo db:push",
     "db:seed": "turbo db:seed",
     "db:studio": "turbo db:studio",

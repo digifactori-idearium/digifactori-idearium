@@ -148,7 +148,7 @@ importers:
         specifier: ^1.9.10
         version: 1.9.10
       '@types/node':
-        specifier: ^24.10.4
+        specifier: ^24.12.2
         version: 24.12.2
       '@types/pg':
         specifier: ^8.16.0
