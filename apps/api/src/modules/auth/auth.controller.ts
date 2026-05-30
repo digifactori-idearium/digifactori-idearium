@@ -101,7 +101,7 @@ export default class AuthController {
 
     const result = await changePasswordSchema.safeParseAsync({
       ...req.body,
-      role: user.role,
+      role: userAuth.role,
     });
     if (failOnValidation(result, res)) return;
 
@@ -200,7 +200,10 @@ export default class AuthController {
       ).send(res);
     }
 
-    const result = await resetPasswordSchema.safeParseAsync(req.body);
+    const result = await resetPasswordSchema.safeParseAsync({
+      ...req.body,
+      role: user.role,
+    });
     if (failOnValidation(result, res)) return;
 
     await this.authService.changePassword(user.id, result.data!.newPassword);

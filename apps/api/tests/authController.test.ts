@@ -313,7 +313,6 @@ describe('User authentication handling', () => {
 
       const res = await request(app)
         .post('/api/auth/reset-password/request')
-        .set('Authorization', authHeader())
         .send({
           email: user.email,
         });
@@ -327,7 +326,6 @@ describe('User authentication handling', () => {
 
       const res = await request(app)
         .post('/api/auth/reset-password/request')
-        .set('Authorization', authHeader())
         .send({
           email: FAKE_EMAIL,
         });
@@ -342,7 +340,7 @@ describe('User authentication handling', () => {
       const { user } = createFakeUser({ isActive: true });
       mockService.getSingleUser.mockResolvedValue(user);
       mockService.changePassword.mockResolvedValue(true);
-      const token = jwt.sign(
+      const resetToken = jwt.sign(
         { userId: user.id, email: user.email },
         process.env.JWT_SECRET + user.password,
         { expiresIn: '1h' }
@@ -350,8 +348,7 @@ describe('User authentication handling', () => {
 
       const res = await request(app)
         .patch('/api/auth/reset-password')
-        .query({ token: token })
-        .set('Authorization', authHeader())
+        .query({ token: resetToken })
         .send({
           newPassword: '333333aA!',
           confirmPassword: '333333aA!',
@@ -382,13 +379,13 @@ describe('User authentication handling', () => {
     });
 
     it('should return 400 if the token is invalid', async () => {
+      console.log('token invalid test');
       const { user } = createFakeUser({ isActive: true });
       mockService.getSingleUser.mockResolvedValue(user);
 
       const res = await request(app)
         .patch('/api/auth/reset-password')
         .query({ token: authHeader() })
-        .set('Authorization', authHeader())
         .send({
           newPassword: '333333aA!',
           confirmPassword: '333333aA!',
@@ -407,7 +404,6 @@ describe('User authentication handling', () => {
       const res = await request(app)
         .patch('/api/auth/reset-password')
         .query({ token: generateToken(user, profile) })
-        .set('Authorization', authHeader())
         .send({
           newPassword: '333333aA!',
           confirmPassword: '333333aA!',
@@ -426,7 +422,6 @@ describe('User authentication handling', () => {
       const res = await request(app)
         .patch('/api/auth/reset-password')
         .query({ token: generateToken(user, profile) })
-        .set('Authorization', authHeader())
         .send({
           newPassword: '333333aA!',
           confirmPassword: '333333aA!',
@@ -445,7 +440,6 @@ describe('User authentication handling', () => {
       const res = await request(app)
         .patch('/api/auth/reset-password')
         .query({ token: generateToken(user, profile) })
-        .set('Authorization', authHeader())
         .send({
           newPassword: '333333aA!',
           confirmPassword: '333333aA!',
@@ -468,7 +462,6 @@ describe('User authentication handling', () => {
       const res = await request(app)
         .patch('/api/auth/reset-password')
         .query({ token: token })
-        .set('Authorization', authHeader())
         .send({
           newPassword: '3!',
           confirmPassword: '3!',
@@ -491,7 +484,6 @@ describe('User authentication handling', () => {
       const res = await request(app)
         .patch('/api/auth/reset-password')
         .query({ token: token })
-        .set('Authorization', authHeader())
         .send({
           newPassword: '333333aA!',
           confirmPassword: '33aA!',
