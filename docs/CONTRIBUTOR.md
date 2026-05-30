@@ -137,7 +137,7 @@ A new version is realesed each time a modification is pushed on **main**, and th
 
   - PATCH: bug fixes
 
-### Deployment
+### Test Deployment
 
 - **Frontend (Web)**: Deployed on **Netlify** – provides live hosting for the React application.
 - **Backend (API)**: Deployed on **Render** – hosts the Node.js + Express server with Prisma database integration.

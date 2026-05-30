@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,132 +9,16 @@ datasource db {
   provider = "postgresql"
 }
 
+// ============================================================
+// ENUMS
+// ============================================================
+
 enum Role {
   INTERN
   SUPERVISOR
   ADMIN
 }
 
-model User {
-  id          String       @id @default(cuid())
-  email       String       @unique
-  first_name  String
-  last_name   String
-  password    String
-  role        Role
-  isActive    Boolean      @default(true)
-  profile     Profile?
-  ideoramas   Ideorama[]
-  voxelModels VoxelModel[]
-  documents   Document[]
-  ideas       Idea[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-}
-
-model Profile {
-  id            String          @id @default(cuid())
-  userId        String          @unique
-  pseudo        String          @unique
-  avatar        String?
-  bio           String?
-  voiceButtons  Boolean         @default(true)
-  followers     Follow[]        @relation("UserFollowers")
-  following     Follow[]        @relation("UserFollowing")
-  ideas         Idea[]
-  ideoramaLiked IdeoramaLikes[] @relation("ideoramaLiked")
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Follow {
-  follower   Profile @relation("UserFollowing", fields: [followerId], references: [userId], onDelete: Cascade)
-  followerId String
-
-  following  Profile @relation("UserFollowers", fields: [followedId], references: [userId], onDelete: Cascade)
-  followedId String
-
-  @@id([followerId, followedId])
-}
-
-// use metadata
-model Ideorama {
-  id       String  @id @default(cuid())
-  name     String  @default("New Ideorama")
-  isPublic Boolean @default(true)
-
-  scene    String
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  likers IdeoramaLikes[] @relation("likers")
-
-  voxels Voxel[] @relation("IdeoramaVoxels")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model IdeoramaLikes {
-  profile    Profile  @relation("ideoramaLiked", fields: [userId], references: [userId], onDelete: Cascade)
-  userId     String
-  ideorama   Ideorama @relation("likers", fields: [ideoramaId], references: [id], onDelete: Cascade)
-  ideoramaId String
-
-  @@id([ideoramaId, userId])
-}
-
-model Idea {
-  id        String   @id @default(cuid())
-  data      Json
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  profile   Profile? @relation(fields: [profileId], references: [id])
-  profileId String?
-}
-
-model Voxel {
-  id    String @id @default(cuid())
-  x     Int
-  y     Int
-  z     Int
-  color String
-
-  ideoramaId String
-  ideorama   Ideorama @relation("IdeoramaVoxels", fields: [ideoramaId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
-model VoxelModel {
-  id        String   @id @default(cuid())
-  name      String   @default("New Voxel Model")
-  model     String
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Document {
-  id        String   @id @default(cuid())
-  title     String   @default("Sans titre")
-  content   String   @default("")
-  json      Json?
-  wordCount Int      @default(0)
-  emoji     String   @default("📝")
-  color     String   @default("#a78bfa")
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// ASSETS
 enum IntegrationType {
   MODEL_3D
   SOUND
@@ -160,16 +41,6 @@ enum AssetCategory {
   OTHER
 }
 
-model Setting {
-  id              Int           @id @default(1)
-  orgCode         Int           @default(202026)
-  orgParentalCode Int           @default(2026)
-  storage         CloudStorage?
-  integrations    Integration[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-}
-
 enum StorageProvider {
   S3
   R2
@@ -179,6 +50,170 @@ enum StorageProvider {
   LOCAL
 }
 
+// ============================================================
+// AUTH & IDENTITY
+// ============================================================
+
+// Account layer — authentication, roles, and owned content
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  first_name  String
+  last_name   String
+  password    String
+  role        Role
+  isActive    Boolean  @default(true)
+
+  // Owned content
+  profile     Profile?
+  ideoramas   Ideorama[]
+  voxelModels VoxelModel[]
+  documents   Document[]
+  ideas       Idea[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Social/public identity layer — follows, likes, avatar, bio
+model Profile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  pseudo       String  @unique
+  avatar       String?
+  bio          String?
+  voiceButtons Boolean @default(true)
+
+  // Social
+  followers     Follow[]        @relation("UserFollowers")
+  following     Follow[]        @relation("UserFollowing")
+  ideoramaLiked IdeoramaLikes[] @relation("ideoramaLiked")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Join table for follower/following relationships between profiles
+model Follow {
+  follower   Profile @relation("UserFollowing", fields: [followerId], references: [userId], onDelete: Cascade)
+  followerId String
+
+  following  Profile @relation("UserFollowers", fields: [followedId], references: [userId], onDelete: Cascade)
+  followedId String
+
+  @@id([followerId, followedId])
+}
+
+// ============================================================
+// CONTENT
+// ============================================================
+
+// 3D scene stored as serialized string
+model Ideorama {
+  id       String  @id @default(cuid())
+  name     String  @default("New Ideorama")
+  isPublic Boolean @default(true)
+  scene    String  // storage key of the ideorama
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  likers IdeoramaLikes[] @relation("likers")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Many-to-many: profiles liking ideorama
+model IdeoramaLikes {
+  profile    Profile  @relation("ideoramaLiked", fields: [userId], references: [userId], onDelete: Cascade)
+  userId     String
+  ideorama   Ideorama @relation("likers", fields: [ideoramaId], references: [id], onDelete: Cascade)
+  ideoramaId String
+
+  @@id([ideoramaId, userId])
+}
+
+// Kanbam Idea type
+model Idea {
+  id     String @id @default(cuid())
+  data   Json
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Text Editor Saved document
+model Document {
+  id        String  @id @default(cuid())
+  title     String  @default("Sans titre")
+  content   String  @default("")
+  json      Json?
+  wordCount Int     @default(0)
+  emoji     String  @default("📝")
+  color     String  @default("#a78bfa")
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 3D voxel model
+model VoxelModel {
+  id    String @id @default(cuid())
+  name  String @default("New Voxel Model")
+  model String // storage key of the model
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// ASSETS
+// ============================================================
+
+// Media assets (3D models, sounds, images)
+model Asset {
+  id        String          @id @default(cuid())
+  name      String
+  type      IntegrationType @default(OTHER)
+  category  AssetCategory   @default(OTHER)
+  tags      String[]
+  file      String  // storage key of the asset
+  thumbnail String? // storage key of the asset preview
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// SETTINGS & INTEGRATIONS
+// ============================================================
+
+// Organization settings
+model Setting {
+  id              Int  @id @default(1)
+  orgCode         Int  @default(202026)
+  orgParentalCode Int  @default(2026)
+
+  storage      CloudStorage?
+  integrations Integration[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Cloud storage configuration for asset uploads
 model CloudStorage {
   id        Int             @id @default(1)
   name      String?
@@ -197,29 +232,18 @@ model CloudStorage {
   updatedAt DateTime @updatedAt
 }
 
+// External service integrations (APIs, asset sources, etc.)
 model Integration {
   id           String          @id @default(cuid())
-  settingId    Int
-  setting      Setting         @relation(fields: [settingId], references: [id])
   name         String
   url          String
   type         IntegrationType
   key          String?
   isActive     Boolean         @default(true)
   fieldMapping Json            @default("{}")
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-}
 
-model Asset {
-  id       String          @id @default(cuid())
-  name     String
-  type     IntegrationType @default(OTHER)
-  category AssetCategory   @default(OTHER)
-  tags     String[]
-
-  file      String
-  thumbnail String?
+  settingId Int
+  setting   Setting @relation(fields: [settingId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

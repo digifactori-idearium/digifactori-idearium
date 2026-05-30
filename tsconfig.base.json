@@ -7,8 +7,6 @@
     "jsx": "react-jsx",
 
     // Modules
-    "module": "ESNext",
-    "moduleResolution": "node",
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,

@@ -3,9 +3,11 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
+    "module": "Node16",
+    "moduleResolution": "node16",
     "paths": {
       "@/*": ["./src/*"],
-      "@app/*": ["../../package/*"]
+      "@app/*": ["../../packages/*"]
     },
     "noEmit": false,
     "declaration": true,
