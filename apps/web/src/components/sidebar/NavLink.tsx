@@ -1,6 +1,7 @@
 import {
   Box,
   Cuboid,
+  Lightbulb,
   LucideIcon,
   NotebookText,
   Rocket,
@@ -44,8 +45,13 @@ export function NavLink() {
 
     textEditor: {
       path: 'text-editor',
-      label: 'Mes textes',
+      label: 'Mes Textes',
       icon: NotebookText,
+    },
+    myIdeas: {
+      path: 'my-ideas',
+      label: 'Mes Idées',
+      icon: Lightbulb,
     },
     userHandling: {
       path: 'users',
