@@ -21,12 +21,13 @@ import {
   Undo2,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useSnapshot } from 'valtio';
+import { subscribe, useSnapshot } from 'valtio';
+import { subscribeKey } from 'valtio/utils';
 
 import Scene from '@/components/3d-scene';
-import { AssetThumbnail } from '@/components/assets/AssetThumbnail';
+import { AssetPreview } from '@/components/assets/AssetPreview';
 import { SuperButton } from '@/components/common/button';
 import ResetIdeoramaDialog from '@/components/dialog/AlertDialog';
 import { AssetsPanel } from '@/components/panels/AssetsPanel';
@@ -34,15 +35,18 @@ import { ObjectListPanel } from '@/components/panels/ObjectListPanel';
 import { SettingPanel } from '@/components/panels/SettingPanel';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { resolveAssetUrl, resolveThumbnailUrl } from '@/lib/asset';
+import { isNotFoundError } from '@/lib/api';
+import { STATUS_COLOR, STATUS_LABEL } from '@/lib/constants';
 import { useUser } from '@/providers/UserProvider';
 import {
-  beaconSaveIdeorama,
   getIdeoramaById,
+  getSignedUrl,
   saveIdeorama,
 } from '@/services/ideorama.service';
 import { actions, sceneState } from '@/stores';
 import { createReplacer } from '@/utils/utils';
+
+const AUTOSAVE_DEBOUNCE_MS = 1500;
 
 const serializeScene = (): Record<string, unknown> | null => {
   try {
@@ -65,22 +69,42 @@ const serializeScene = (): Record<string, unknown> | null => {
 };
 
 export default function Ideorama() {
-  const snap = useSnapshot(sceneState);
-  const { ideoramaid } = useParams<{ ideoramaid: string }>();
-  const isEditMode = snap.mode === 'edit';
+  const mode = useSnapshot(sceneState).mode;
+  const current = useSnapshot(sceneState).current;
+  const newest = useSnapshot(sceneState).newest;
 
+  const { ideoramaid } = useParams<{ ideoramaid: string }>();
+  const navigate = useNavigate();
   const { user } = useUser();
 
   const [activeAsset, setActiveAsset] = useState<any>(null);
   const [ideoramaUserId, setIdeoramaUserId] = useState('');
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
+  const canEdit =
+    user?.role === 'SUPERVISOR' ||
+    user?.role === 'ADMIN' ||
+    user?.id === ideoramaUserId;
+
+  const isEditMode = canEdit && mode === 'edit';
+
+  // Refs
   const isLoadingData = useRef(true);
-  const isSaving = useRef(false);
-  const pendingSave = useRef(false);
-  const periodicSaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isSavingRef = useRef(false);
+  const canEditRef = useRef(canEdit);
+  const ideoramaidRef = useRef(ideoramaid);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstSubscribeRef = useRef(true);
+
+  useEffect(() => {
+    ideoramaidRef.current = ideoramaid;
+  }, [ideoramaid]);
+  useEffect(() => {
+    canEditRef.current = canEdit;
+  }, [canEdit]);
 
   const { setOpen } = useSidebar();
-
   useEffect(() => {
     setOpen(false);
   }, []);
@@ -89,139 +113,151 @@ export default function Ideorama() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  //Save
+  // Core save
   const performSave = useCallback(async () => {
-    if (!ideoramaid) return;
-    if (isSaving.current) {
-      pendingSave.current = true;
-      return;
-    }
+    const id = ideoramaidRef.current;
+    if (!id || isSavingRef.current || !canEditRef.current) return;
 
     const scene = serializeScene();
     if (!scene) return;
 
-    localStorage.setItem('sceneState', JSON.stringify(scene));
+    isSavingRef.current = true;
+    setSaveStatus('saving');
 
-    isSaving.current = true;
     try {
-      const success = await saveIdeorama(ideoramaid, scene);
-      if (!success) toast.error('Échec de la sauvegarde automatique');
-    } catch {
-      toast.error('Erreur lors de la sauvegarde automatique');
-    } finally {
-      isSaving.current = false;
-      if (pendingSave.current) {
-        pendingSave.current = false;
-        performSave();
+      const success = await saveIdeorama(id, scene);
+      if (success) {
+        setSaveStatus('saved');
+        savedTimerRef.current = setTimeout(() => setSaveStatus('idle'), 3000);
+      } else {
+        setSaveStatus('error');
       }
+    } catch {
+      setSaveStatus('error');
+    } finally {
+      isSavingRef.current = false;
     }
-  }, [ideoramaid]);
-
-  // save on tab close or refresh
-  const performBeaconSave = useCallback(() => {
-    if (!ideoramaid) return;
-    const scene = serializeScene();
-    if (!scene) return;
-
-    try {
-      localStorage.setItem('sceneState', JSON.stringify(scene));
-    } catch (err) {
-      console.warn('localStorage quota exceeded on unload:', err);
-    }
-
-    beaconSaveIdeorama(ideoramaid, scene);
-  }, [ideoramaid]);
-
-  // Periodic save (every 30 s)
-  useEffect(() => {
-    if (!ideoramaid) return;
-    periodicSaveRef.current = setInterval(performSave, 30_000);
-    return () => {
-      if (periodicSaveRef.current) clearInterval(periodicSaveRef.current);
-    };
-  }, [ideoramaid, performSave]);
-
-  // Save on unload / tab hide
-  useEffect(() => {
-    const handleBeforeUnload = () => performBeaconSave();
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') performBeaconSave();
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      performBeaconSave();
-
-      sceneState.selectedObjectId = null;
-      sceneState.history = [];
-      sceneState.current = -1;
-      sceneState.newest = 0;
-      sceneState.mode = 'play';
-    };
-  }, [performBeaconSave]);
+  }, []);
 
   // Load
   useEffect(() => {
     if (!ideoramaid) return;
 
     isLoadingData.current = true;
+    isFirstSubscribeRef.current = true;
+
+    actions.resetScene(); //reset
+
     getIdeoramaById(ideoramaid)
-      .then(res => {
+      .then(async res => {
         const record = res.data as any;
-        setIdeoramaUserId(res.data.userId);
-        console.log(ideoramaUserId);
-        const scene = record.scene as ModelsInfo | null;
+        setIdeoramaUserId(record.userId);
 
-        if (!scene) {
-          throw new Error(`No scene data for ideorama "${ideoramaid}"`);
+        let scene: ModelsInfo | null = null;
+
+        if (record.scene) {
+          const { url } = await getSignedUrl(record.scene);
+          const sceneRes = await fetch(url);
+          if (!sceneRes.ok)
+            throw new Error(`Failed to fetch scene: ${sceneRes.status}`);
+          scene = (await sceneRes.json()) as ModelsInfo;
         }
 
-        if (record.name) scene.info = { ...scene.info, name: record.name };
-        if (typeof record.isPublic === 'boolean') {
-          scene.global = { ...scene.global, isPublic: record.isPublic };
-        }
-
-        return scene;
+        return { scene, record };
       })
-      .then((model: ModelsInfo) => {
-        localStorage.setItem('sceneState', JSON.stringify(model));
+      .then(({ scene, record }: { scene: ModelsInfo | null; record: any }) => {
+        if (scene) {
+          if (scene.global) Object.assign(sceneState.global, scene.global);
+          if (scene.background)
+            Object.assign(sceneState.background, scene.background);
+          if (scene.info) Object.assign(sceneState.info, scene.info);
+          if (scene.floor) Object.assign(sceneState.floor, scene.floor);
+          if (scene.objects) sceneState.objects = scene.objects;
+        }
 
-        if (model.global) Object.assign(sceneState.global, model.global);
-        if (model.background)
-          Object.assign(sceneState.background, model.background);
-        if (model.info) Object.assign(sceneState.info, model.info);
-        if (model.floor) Object.assign(sceneState.floor, model.floor);
-        if (model.objects) sceneState.objects = model.objects;
+        if (record.name)
+          sceneState.info = { ...sceneState.info, name: record.name };
+        if (typeof record.isPublic === 'boolean')
+          sceneState.global = {
+            ...sceneState.global,
+            isPublic: record.isPublic,
+          };
 
         actions.stackState();
         isLoadingData.current = false;
+        isFirstSubscribeRef.current = false;
       })
       .catch(err => {
         console.error('[LoadIdeorama] Failed:', err);
-        toast.error('Erreur lors du chargement du idéorama');
+
+        if (isNotFoundError(err)) {
+          navigate('/not-found', {
+            replace: true,
+            state: {
+              title: 'Idéorama introuvable',
+              message: "Cet idéorama n'existe pas ou vous n'avez pas accès.",
+              backTo: '/app/my-ideoramas',
+              backLabel: 'Mes idéoramas',
+            },
+          });
+        } else {
+          toast.error('Erreur lors du chargement du idéorama');
+        }
+
         isLoadingData.current = false;
+        isFirstSubscribeRef.current = false;
       });
   }, [ideoramaid]);
 
   // Auto-save on state change
   useEffect(() => {
-    if (isLoadingData.current || snap.isDragging) return;
-    localStorage.setItem('sceneState', JSON.stringify(serializeScene()));
-    performSave();
-  }, [snap.global, snap.background, snap.info, snap.floor, snap.objects]);
+    const unsub = subscribe(sceneState, () => {
+      if (
+        isLoadingData.current ||
+        isFirstSubscribeRef.current ||
+        sceneState.isDragging ||
+        !canEditRef.current
+      )
+        return;
 
+      setSaveStatus('pending');
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = setTimeout(performSave, AUTOSAVE_DEBOUNCE_MS);
+    });
+    return unsub;
+  }, [performSave]);
+
+  // Save after drag ends
   useEffect(() => {
-    if (isLoadingData.current) return;
-    if (!snap.isDragging) {
-      localStorage.setItem('sceneState', JSON.stringify(serializeScene()));
-      performSave();
-      actions.stackState();
-    }
-  }, [snap.isDragging]);
+    const unsub = subscribeKey(sceneState, 'isDragging', isDragging => {
+      if (isLoadingData.current || !canEditRef.current) return;
+      if (!isDragging) {
+        setSaveStatus('pending');
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = setTimeout(() => {
+          performSave();
+          actions.stackState();
+        }, AUTOSAVE_DEBOUNCE_MS);
+      }
+    });
+    return unsub;
+  }, [performSave]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+
+      isLoadingData.current = true;
+      sceneState.selectedObjectId = null;
+      sceneState.history = [];
+      sceneState.current = -1;
+      sceneState.newest = 0;
+      sceneState.mode = 'play';
+    };
+  }, []);
 
   // DnD handlers
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -256,12 +292,12 @@ export default function Ideorama() {
       onDragStart={handleDragStart}
     >
       <div className="flex h-full lg:flex-row flex-col w-full overflow-hidden relative">
-        <div className="w-full h-full overflow-hidden flex flex-col">
+        <div className="w-full h-full flex flex-col">
           <Scene />
+
+          {/* Top toolbar */}
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-            {(user?.role == 'SUPERVISOR' ||
-              user?.role == 'ADMIN' ||
-              user?.id == ideoramaUserId) && (
+            {canEdit && (
               <Button
                 onClick={() => actions.setMode(isEditMode ? 'play' : 'edit')}
                 className="p-2 main-small-btn"
@@ -280,31 +316,28 @@ export default function Ideorama() {
               </Button>
             )}
 
-            {snap.current != 0 && isEditMode && (
+            {current !== 0 && isEditMode && (
               <SuperButton
                 tooltip="Revenir en arrière"
                 voiceText="Revenir en arrière"
                 onClick={() => actions.undo()}
                 className="p-2 main-small-btn"
               >
-                <span className="flex items-center gap-1">
-                  <Undo2 className="w-4 h-4 text-white!" />
-                </span>
+                <Undo2 className="w-4 h-4 text-white!" />
               </SuperButton>
             )}
 
-            {snap.current != snap.newest && isEditMode && (
+            {current !== newest && isEditMode && (
               <SuperButton
                 tooltip="Rétablir"
                 voiceText="Rétablir"
                 onClick={() => actions.redo()}
                 className="p-2 main-small-btn"
               >
-                <span className="flex items-center gap-1">
-                  <Redo2 className="w-4 h-4 text-white!" />
-                </span>
+                <Redo2 className="w-4 h-4 text-white!" />
               </SuperButton>
             )}
+
             {isEditMode && (
               <ResetIdeoramaDialog
                 trigger={
@@ -313,9 +346,7 @@ export default function Ideorama() {
                     voiceText="Réinitialiser"
                     className="z-50 p-2 main-small-btn"
                   >
-                    <span className="flex items-center gap-1">
-                      <RotateCcw className="w-4 h-4 text-white!" />
-                    </span>
+                    <RotateCcw className="w-4 h-4 text-white!" />
                   </SuperButton>
                 }
                 description="Cela réinitialisera votre ideorama"
@@ -334,8 +365,19 @@ export default function Ideorama() {
                 onCancel={() => {}}
               />
             )}
+
+            {isEditMode && saveStatus !== 'idle' && (
+              <span
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full
+                  bg-sidebar-dark backdrop-blur transition-all duration-300
+                  ${STATUS_COLOR[saveStatus]}`}
+              >
+                {STATUS_LABEL[saveStatus]}
+              </span>
+            )}
           </div>
 
+          {/* Bottom edit actions */}
           {isEditMode && (
             <SuperButton
               tooltip="Ajouter un objet"
@@ -384,23 +426,14 @@ export default function Ideorama() {
         >
           {activeAsset && (
             <div className="w-24 h-24 cursor-grabbing rounded-xl overflow-hidden opacity-90 flex items-center justify-center">
-              {resolveThumbnailUrl(
-                activeAsset.thumbnail,
-                activeAsset.thumbnailUrl
-              ) ? (
-                <img
-                  src={resolveThumbnailUrl(
-                    activeAsset.thumbnail,
-                    activeAsset.thumbnailUrl
-                  )}
-                  alt="Dragging Asset"
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <AssetThumbnail
-                  file={resolveAssetUrl(activeAsset.file, activeAsset.fileUrl)}
-                />
-              )}
+              <AssetPreview
+                fileKey={
+                  activeAsset.thumbnailUrl ||
+                  activeAsset.thumbnail ||
+                  activeAsset.fileUrl ||
+                  activeAsset.file
+                }
+              />
             </div>
           )}
         </DragOverlay>

@@ -3,6 +3,7 @@ import { Asset } from '@prisma/client';
 import { prisma } from '@/config/client.config';
 import { resolveStorageAdapter } from '@/modules/storage/storage.factory';
 import { IAssetService } from '@/types';
+import { errorMessage } from '@/utils/errors';
 import { uploadFile, deleteFile } from '@/utils/storage.service';
 
 export type AssetWithUrls = Asset & {
@@ -16,7 +17,7 @@ const THUMB_DIR = 'assets/thumbnails';
 
 /**
  * Resolve storage keys to public URLs and attach them to an asset record.
- * The DB stores keys ("assets/clxxx.glb"); the client always receives URLs.
+ * The DB stores keys ("assets/blabla.glb")
  */
 async function withPublicUrls<
   T extends { file: string; thumbnail: string | null },
@@ -78,9 +79,9 @@ export default class AssetService implements IAssetService {
         limit,
         totalPages: Math.ceil(total / limit),
       };
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la récupération des assets: ${error.message}`
+        `Erreur lors de la récupération des assets: ${errorMessage(error)}`
       );
     }
   }
@@ -93,9 +94,10 @@ export default class AssetService implements IAssetService {
       const asset = await assetTable.findUnique({ where: { id } });
       if (!asset) throw new Error('Asset introuvable');
       return withPublicUrls(asset);
-    } catch (error: any) {
+    } catch (error) {
+      const errMessage = error instanceof Error ? error.message : String(error);
       throw new Error(
-        `Erreur lors de la récupération de l'asset: ${error.message}`
+        `Erreur lors de la récupération de l'asset: ${errMessage}`
       );
     }
   }
@@ -120,9 +122,9 @@ export default class AssetService implements IAssetService {
         select: { id: true },
       });
       id = placeholder.id;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la création du placeholder: ${error.message}`
+        `Erreur lors de la création du placeholder: ${errorMessage(error)}`
       );
     }
 
@@ -132,9 +134,11 @@ export default class AssetService implements IAssetService {
     // Upload main file, if failure roll back placeholder
     try {
       fileKey = await uploadFile(input.file, UPLOAD_DIR, id);
-    } catch (error: any) {
+    } catch (error) {
       await assetTable.delete({ where: { id } }).catch(() => {});
-      throw new Error(`Erreur lors de l'upload du fichier: ${error.message}`);
+      throw new Error(
+        `Erreur lors de l'upload du fichier: ${errorMessage(error)}`
+      );
     }
 
     // Upload thumbnail, if failure roll back placeholder and file.
@@ -145,11 +149,11 @@ export default class AssetService implements IAssetService {
           THUMB_DIR,
           `${id}-thumb`
         );
-      } catch (error: any) {
+      } catch (error) {
         await deleteFile(fileKey);
         await assetTable.delete({ where: { id } }).catch(() => {});
         throw new Error(
-          `Erreur lors de l'upload de la miniature: ${error.message}`
+          `Erreur lors de l'upload de la miniature: ${errorMessage(error)}`
         );
       }
     }
@@ -161,12 +165,12 @@ export default class AssetService implements IAssetService {
         data: { file: fileKey, thumbnail: thumbnailKey ?? null },
       });
       return withPublicUrls(asset);
-    } catch (error: any) {
+    } catch (error) {
       await deleteFile(fileKey);
       if (thumbnailKey) await deleteFile(thumbnailKey);
       await assetTable.delete({ where: { id } }).catch(() => {});
       throw new Error(
-        `Erreur lors de la finalisation de l'asset: ${error.message}`
+        `Erreur lors de la finalisation de l'asset: ${errorMessage(error)}`
       );
     }
   }
@@ -213,11 +217,11 @@ export default class AssetService implements IAssetService {
           thumbnail,
         });
         results.succeeded.push(asset);
-      } catch (error: any) {
+      } catch (error) {
         results.failed.push({
           index: i,
           name: desc.name,
-          reason: error.message,
+          reason: errorMessage(error),
         });
       }
     }
@@ -239,9 +243,9 @@ export default class AssetService implements IAssetService {
     if (input.file) {
       try {
         fileKey = await uploadFile(input.file, UPLOAD_DIR, id);
-      } catch (error: any) {
+      } catch (error) {
         throw new Error(
-          `Erreur lors de l'upload du nouveau fichier: ${error.message}`
+          `Erreur lors de l'upload du nouveau fichier: ${errorMessage(error)}`
         );
       }
     }
@@ -253,10 +257,10 @@ export default class AssetService implements IAssetService {
           THUMB_DIR,
           `${id}-thumb`
         );
-      } catch (error: any) {
+      } catch (error) {
         if (fileKey) await deleteFile(fileKey);
         throw new Error(
-          `Erreur lors de l'upload de la nouvelle miniature: ${error.message}`
+          `Erreur lors de l'upload de la nouvelle miniature: ${errorMessage(error)}`
         );
       }
     }
@@ -291,11 +295,11 @@ export default class AssetService implements IAssetService {
       }
 
       return withPublicUrls(asset);
-    } catch (error: any) {
+    } catch (error) {
       if (fileKey) await deleteFile(fileKey);
       if (thumbnailKey) await deleteFile(thumbnailKey);
       throw new Error(
-        `Erreur lors de la mise à jour de l'asset: ${error.message}`
+        `Erreur lors de la mise à jour de l'asset: ${errorMessage(error)}`
       );
     }
   }
@@ -307,13 +311,13 @@ export default class AssetService implements IAssetService {
     const existing = await this.getAssetById(id);
 
     try {
-      const asset = await assetTable.delete({ where: { id } });
       await deleteFile(existing.file);
       if (existing.thumbnail) await deleteFile(existing.thumbnail);
+      const asset = await assetTable.delete({ where: { id } });
       return asset;
-    } catch (error: any) {
+    } catch (error) {
       throw new Error(
-        `Erreur lors de la suppression de l'asset: ${error.message}`
+        `Erreur lors de la suppression de l'asset: ${errorMessage(error)}`
       );
     }
   }
@@ -331,8 +335,8 @@ export default class AssetService implements IAssetService {
       try {
         await this.deleteAsset(id);
         results.deleted++;
-      } catch (error: any) {
-        results.failed.push({ id, reason: error.message });
+      } catch (error) {
+        results.failed.push({ id, reason: errorMessage(error) });
       }
     }
 

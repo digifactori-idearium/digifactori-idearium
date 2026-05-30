@@ -70,21 +70,22 @@ export const Header = () => {
           )}
           {user && (
             <div className="flex gap-1 md:gap-2">
-              
-          <LogOutDialog
-            trigger={<VoiceButton
-            className="side-btn text-foreground! flex gap-2"
-            voiceText="Me déconnecter"
-          >
-            <LogOutIcon className="w-5 h-5 text-red-500" />
-            <span className="hidden sm:inline">Me déconnecter</span>
-          </VoiceButton>}
-            description="Êtes-vous sûr de vouloir quitter votre session ? Vous
+              <LogOutDialog
+                trigger={
+                  <VoiceButton
+                    className="side-btn text-foreground! flex gap-2"
+                    voiceText="Me déconnecter"
+                  >
+                    <LogOutIcon className="w-5 h-5 text-red-500" />
+                    <span className="hidden sm:inline">Me déconnecter</span>
+                  </VoiceButton>
+                }
+                description="Êtes-vous sûr de vouloir quitter votre session ? Vous
                       devrez vous reconnecter pour accéder à vos données."
-            confirmationMessage="Se déconnecter"
-            onConfirm={onLogout}
-            onCancel={() => {}}
-          />
+                confirmationMessage="Se déconnecter"
+                onConfirm={onLogout}
+                onCancel={() => {}}
+              />
             </div>
           )}
           {user && (

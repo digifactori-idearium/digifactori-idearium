@@ -47,17 +47,26 @@ export interface IIdeoramaService {
   getIdeoramaById(ideoramaId: string): Promise<Ideorama | null>;
   saveScene(
     ideoramaId: string,
-    scene: import('@prisma/client').Prisma.InputJsonValue,
+    scene: string,
     meta?: { name?: string; isPublic?: boolean }
   ): Promise<Ideorama>;
+  getIdeoramas(): Promise<Ideorama[]>;
   getUserIdeoramas(userId: string): Promise<Ideorama[]>;
   updateIdeorama(
     ideoramaId: string,
     data: import('@prisma/client').Prisma.IdeoramaUpdateInput
   ): Promise<Ideorama>;
   isIdeoramaInBD(ideoramaId: string): Promise<boolean>;
-  likeIdeorama(ideoramaId: string, userId: string): Promise<boolean>;
+  likeIdeorama(
+    ideoramaId: string,
+    userId: string
+  ): Promise<{ isLiked: boolean; likersCount: number }>;
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
+}
+
+export interface IIdeaService {
+  getIdeas(userId: string): Promise<any>;
+  saveIdeas(userId: string, data: any): Promise<any>;
 }
 
 export interface IProfileService {
@@ -91,6 +100,7 @@ export interface IVoxelService {
   ): Promise<VoxelModel>;
 
   getVoxelModelById(voxelModelId: string): Promise<VoxelModel | null>;
+  getVoxelModels(): Promise<VoxelModel[]>;
   getUserVoxelModels(userId: string): Promise<VoxelModel[]>;
   deleteVoxelModel(voxelModelId: string): Promise<VoxelModel>;
 }
@@ -187,6 +197,11 @@ export interface IUserService {
   setActive(id: string, isActive: boolean): Promise<User>;
   updateRole(id: string, role: Role): Promise<User>;
   deleteUser(id: string): Promise<{ user: User }>;
+  bulkDeleteUsers(
+    ids: string[],
+    requesterRole: Role,
+    requesterId: string
+  ): Promise<{ deleted: number; failed: { id: string; reason: string }[] }>;
 }
 
 export interface IAssetService {

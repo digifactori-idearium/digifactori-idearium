@@ -18,75 +18,85 @@ import VoxelLayout from '@/pages/VoxelLayout';
 const appRoutes = [
   {
     path: '',
-    element: <ProtectedRoute element={<Ideoramas />} />,
+    element: <Ideoramas />,
     exact: true,
   },
   {
+    path: 'my-space',
+    element: <MySpace />,
+    handle: { isCanvas: true },
+  },
+  {
     path: 'profile',
-    element: <ProtectedRoute element={<ProfilePage />} />,
+    element: <ProfilePage />,
   },
   {
     path: 'profile/:userId',
-    element: <ProtectedRoute element={<Profile />} />,
+    element: <Profile />,
   },
-  { path: 'ideorama', element: <ProtectedRoute element={<Ideorama />} /> },
+  { path: 'ideorama', element: <Ideorama /> },
   {
     path: 'ideorama/:ideoramaid',
-    element: <ProtectedRoute element={<Ideorama />} />,
+    element: <Ideorama />,
     handle: { isCanvas: true },
   },
   {
     path: 'my-ideoramas',
-    element: <ProtectedRoute element={<MyIdeoramas />} />,
+    element: <MyIdeoramas />,
   },
   {
     path: 'my-models',
-    element: <ProtectedRoute element={<MyModels />} />,
+    element: <MyModels />,
   },
-  {
-    path: 'users',
-    element: <ProtectedRoute element={<UserHandling />} />,
-  },
-  {
-    path: 'assets',
-    element: <ProtectedRoute element={<AssetHandling />} />,
-  },
-  {
-    path: 'my-space',
-    element: <ProtectedRoute element={<MySpace />} />,
-    handle: { isCanvas: true },
-  },
+
   {
     path: 'text-editor',
     children: [
-      { index: true, element: <ProtectedRoute element={<TextEditor />} /> },
+      { index: true, element: <TextEditor /> },
       {
         path: ':documentId',
-        element: <ProtectedRoute element={<EditorPage />} />,
+        element: <EditorPage />,
         handle: { isCanvas: true },
       },
     ],
   },
   {
     path: 'audio-editor',
-    element: <ProtectedRoute element={<AudioEditor />} />,
+    element: <AudioEditor />,
   },
   {
     path: 'my-ideas',
-    element: <ProtectedRoute element={<MyIdeas />} />,
+    element: <MyIdeas />,
   },
   {
     path: 'voxel',
     children: [
-      { index: true, element: <ProtectedRoute element={<VoxelLayout />} /> },
+      { index: true, element: <VoxelLayout />, handle: { isCanvas: true } },
       {
         path: ':modelId',
-        element: <ProtectedRoute element={<VoxelLayout />} />,
+        element: <VoxelLayout />,
         handle: { isCanvas: true },
       },
     ],
   },
-  { path: 'settings', element: <ProtectedRoute element={<Settings />} /> },
+  {
+    path: 'users',
+    element: (
+      <ProtectedRoute
+        element={<UserHandling />}
+        roles={['ADMIN', 'SUPERVISOR']}
+      />
+    ),
+  },
+  {
+    path: 'assets',
+    element: <ProtectedRoute element={<AssetHandling />} roles={['ADMIN']} />,
+  },
+
+  {
+    path: 'settings',
+    element: <ProtectedRoute element={<Settings />} roles={['ADMIN']} />,
+  },
 ];
 
 export default appRoutes;

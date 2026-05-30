@@ -11,6 +11,23 @@ import { getEmptyIdeorama } from '@/services/ideorama.service';
 const INITIAL_THEME = 'day' as keyof typeof themesToColors;
 const initialThemeData = themesToColors[INITIAL_THEME];
 
+// initial scene
+export const INITIAL_SCENE = {
+  global: {
+    brightness: 'bright' as 'bright' | 'dim' | 'dark',
+    isPublic: true,
+    music: { currentTrack: '', volume: 0.5 },
+    theme: INITIAL_THEME,
+  },
+  background: {
+    color: initialThemeData.background,
+    accent: initialThemeData.accent,
+  },
+  info: { name: 'New Ideorama', category: 'none' },
+  floor: { color: initialThemeData.floor, hidden: false, texture: 'none' },
+  objects: {} as Record<string, ObjectState>,
+};
+
 //action
 const NON_DUPLICABLE_ACTIONS = ['playSound', 'say'];
 
@@ -75,7 +92,11 @@ export const actions = {
     sceneState.floor.color = themeData.floor;
   },
 
-  markThemeCustomized(sliceKey: string, values: Partial<any>, target: any) {
+  markThemeCustomized(
+    sliceKey: string,
+    values: Partial<{ color: string }>,
+    target: Record<string, unknown>
+  ) {
     const colorSlices = ['background', 'floor'];
     if (!colorSlices.includes(sliceKey)) return;
     if (!values.color) return;
@@ -242,7 +263,7 @@ export const actions = {
     stackNewState(sceneState);
   },
 
-  // Undo/ redo
+  // Undo/ redo / reset
   undo() {
     if (sceneState.current <= 0) return;
     sceneState.current -= 1;
@@ -253,6 +274,14 @@ export const actions = {
     if (sceneState.current >= sceneState.newest) return;
     sceneState.current += 1;
     resetState(sceneState);
+  },
+  resetScene() {
+    const d = INITIAL_SCENE;
+    Object.assign(sceneState.global, structuredClone(d.global));
+    Object.assign(sceneState.background, structuredClone(d.background));
+    Object.assign(sceneState.info, structuredClone(d.info));
+    Object.assign(sceneState.floor, structuredClone(d.floor));
+    sceneState.objects = {};
   },
   // ACTIONS MANAGEMENT
   addAction(objectId: string, action: ActionConfig) {

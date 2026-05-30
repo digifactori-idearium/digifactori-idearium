@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { speak } from '@/lib/speak';
 import { useUser } from '@/providers/UserProvider';
 
-interface VoiceButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface VoiceButtonProps extends React.ComponentPropsWithoutRef<
+  typeof Button
+> {
   children: ReactNode;
   voiceText?: string;
 }
+
 export function VoiceButton({
   children,
   voiceText,

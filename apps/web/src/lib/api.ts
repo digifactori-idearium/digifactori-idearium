@@ -1,6 +1,20 @@
-export const handleApiError = (error: any): never => {
-  if (error.response?.data) {
-    const data = error.response.data;
+import axios from 'axios';
+
+interface ApiErrorResponse {
+  errors?: Array<{ field?: string; message: string }>;
+  error?: { message: string };
+  message?: string;
+}
+
+interface AxiosErrorResponse {
+  response?: {
+    data?: ApiErrorResponse;
+  };
+}
+
+export const handleApiError = (error: AxiosErrorResponse | unknown): never => {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const data = (error as AxiosErrorResponse).response?.data;
 
     const message = data?.errors?.[0]
       ? `${data.errors[0].field ? data.errors[0].field + ':' : ''} ${data.errors[0].message}`
@@ -12,4 +26,11 @@ export const handleApiError = (error: any): never => {
   }
 
   throw new Error('Erreur réseau');
+};
+
+export const isNotFoundError = (err: unknown): boolean => {
+  if (axios.isAxiosError(err)) {
+    return err.response?.status === 404 || err.response?.status === 403;
+  }
+  return false;
 };

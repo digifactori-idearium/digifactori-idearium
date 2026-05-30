@@ -139,39 +139,6 @@ export function inferType(file: File): IntegrationType {
   return 'OTHER';
 }
 
-const STORAGE_PREFIX = '/api/storage/file/';
-
 export function isStorageKey(file: string): boolean {
   return !file.startsWith('http') && !file.startsWith('blob:');
-}
-
-export function resolveFileUrl(file: string): string {
-  if (!file) return '';
-  if (isStorageKey(file)) return `${STORAGE_PREFIX}${file}`;
-  return file; // full URL (poly.pizza, freesound, etc.)
-}
-
-/**
- * Resolve the best displayable URL for an asset's main file.
- *
- * Prefer the pre-resolved `fileUrl` when available (avoids an extra
- * `/api/storage/file/` round-trip).  Fall back to deriving the URL from the
- * raw storage key so the result is always a usable URL regardless of whether
- * the caller has a full Asset or a leaner MediaItem.
- */
-export function resolveAssetUrl(file: string, fileUrl?: string | null): string {
-  if (fileUrl) return fileUrl;
-  return resolveFileUrl(file);
-}
-
-/**
- * Same as resolveAssetUrl but for the thumbnail field.
- */
-export function resolveThumbnailUrl(
-  thumbnail?: string | null,
-  thumbnailUrl?: string | null
-): string | undefined {
-  if (thumbnailUrl) return thumbnailUrl;
-  if (thumbnail) return resolveFileUrl(thumbnail);
-  return undefined;
 }

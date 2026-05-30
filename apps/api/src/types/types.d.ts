@@ -1,3 +1,10 @@
+interface JwtPayload {
+  userId: string;
+  email: string;
+  role: Role;
+  voiceButtons: boolean;
+}
+
 interface ValidationError {
   field: string;
   message: string;

@@ -143,3 +143,19 @@ export const updateRoleSchema = z.object({
       iss.input === undefined ? 'Le rôle est requis' : 'Rôle inconnu',
   }),
 });
+
+/**
+ * Schema for bulk deletion.
+ *
+ * @property {string[]} ids - Non-empty array of user IDs to delete
+ */
+export const bulkDeleteUsersSchema = z.object({
+  ids: z
+    .array(
+      z.string({ error: () => 'Chaque identifiant doit être une chaîne' }),
+      {
+        error: () => 'Le champ ids est requis',
+      }
+    )
+    .min(1, 'Au moins un identifiant est requis'),
+});

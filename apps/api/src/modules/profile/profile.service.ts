@@ -39,24 +39,33 @@ export default class ProfileService implements IProfileService {
    */
   async getSingleProfile(userId: string): Promise<Profile | null> {
     const profile = await profileTable.findUnique({
-      where: {
-        userId: userId,
-      },
+      where: { userId },
       include: {
         followers: {
-          select: {
-            followerId: true,
-          },
+          select: { followerId: true },
         },
         following: {
-          select: {
-            followedId: true,
+          select: { followedId: true },
+        },
+        ideoramaLiked: {
+          select: { ideoramaId: true },
+        },
+        user: {
+          include: {
+            _count: {
+              select: {
+                ideoramas: true,
+                voxelModels: true,
+                documents: true,
+              },
+            },
           },
         },
-
-        ideoramaLiked: {
+        _count: {
           select: {
-            ideoramaId: true,
+            followers: true,
+            following: true,
+            ideoramaLiked: true,
           },
         },
       },
@@ -168,7 +177,7 @@ export default class ProfileService implements IProfileService {
    */
   async getFollowers(
     userId: string
-  ): Promise<{ pseudo: string; avatar: string | null }[]> {
+  ): Promise<{ pseudo: string; avatar: string | null; userId: string }[]> {
     const followers = await followTable.findMany({
       where: {
         followedId: userId,
@@ -178,6 +187,7 @@ export default class ProfileService implements IProfileService {
           select: {
             pseudo: true,
             avatar: true,
+            userId: true,
           },
         },
       },
@@ -193,7 +203,7 @@ export default class ProfileService implements IProfileService {
    */
   async getFollowing(
     userId: string
-  ): Promise<{ pseudo: string; avatar: string | null }[]> {
+  ): Promise<{ pseudo: string; avatar: string | null; userId: string }[]> {
     const following = await followTable.findMany({
       where: {
         followerId: userId,
@@ -203,6 +213,7 @@ export default class ProfileService implements IProfileService {
           select: {
             pseudo: true,
             avatar: true,
+            userId: true,
           },
         },
       },

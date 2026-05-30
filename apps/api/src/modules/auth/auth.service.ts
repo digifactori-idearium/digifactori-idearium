@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { EmailService } from './email.service';
 
+import config from '@/config/app.config';
 import { prisma, Profile, User } from '@/config/client.config';
 import { IAuthService } from '@/types';
 
@@ -244,5 +245,61 @@ export default class AuthService implements IAuthService {
     });
 
     await EmailService.sendPasswordReset(email, token);
+  }
+
+  /**
+   * Verifies the reset token and applies the new password.
+   *
+   * The token is verified against JWT_SECRET + currentHashedPassword.
+   * If the password was already reset (hash changed), the old token is invalid.
+   *
+   * @param token       - The JWT from the reset link
+   * @param newPassword - The new plain password to hash and store
+   * @returns Promise<true> on success
+   * @throws Error if the token is invalid, expired, or the user is not found
+   */
+  async resetPassword(token: string, newPassword: string): Promise<true> {
+    const decoded = jwt.decode(token) as { userId?: string } | null;
+    if (!decoded?.userId) throw new Error('Token invalide.');
+
+    const user = await userTable.findUnique({ where: { id: decoded.userId } });
+    if (!user || !user.isActive) throw new Error('Utilisateur introuvable.');
+
+    const secret = process.env.JWT_SECRET + user.password;
+    try {
+      jwt.verify(token, secret);
+    } catch {
+      throw new Error('Le lien de réinitialisation est invalide ou a expiré.');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await userTable.update({
+      where: { id: user.id },
+      data: { password: hashed },
+    });
+
+    return true;
+  }
+
+  /**
+   * Decodes a password  token and returns the payload it contains.
+   * Reset tokens are signed with JWT_SECRET + currentHashedPassword, so
+   * successful verification also confirms the token hasn't been used yet.
+   *
+   * @param token - The signed JWT token
+   * @returns The JWT token payload
+   * @throws Error if the token is invalid, expired, or the user no longer exists
+   */
+  async getPayloadFromResetToken(token: string): Promise<JwtPayload> {
+    const decoded = jwt.decode(token) as JwtPayload | null;
+    if (!decoded?.userId || !decoded?.role) throw new Error('Token invalide.');
+
+    const user = await userTable.findUnique({ where: { id: decoded.userId } });
+    if (!user) throw new Error('Utilisateur introuvable.');
+
+    const secret = config.JWT_SECRET + user.password;
+    jwt.verify(token, secret);
+
+    return decoded;
   }
 }

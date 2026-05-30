@@ -31,6 +31,8 @@ type User = {
   parental_code: string | null;
   role: Role;
   profile?: Profile;
+  following?: { pseudo: string; avatar: string; userId: string }[];
+  followers?: { pseudo: string; avatar: string; userId: string }[];
 };
 
 type UserSession = {
@@ -77,7 +79,9 @@ type Ideorama = {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
+  user?: User;
   _count?: { likers: number };
+  likers?: { userId: string }[];
 };
 
 type ModelsInfo = {
@@ -262,7 +266,6 @@ interface Settings {
 }
 
 // ===== Internal Assets Management
-type IntegrationType = 'MODEL_3D' | 'SOUND' | 'IMAGE' | 'OTHER';
 
 type AssetCategory =
   | 'FOOD_AND_DRINK'

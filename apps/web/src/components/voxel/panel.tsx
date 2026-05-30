@@ -36,7 +36,7 @@ interface EditPanelProps {
   setHauteur: (n: number) => void;
 }
 
-// ─── Shape config ─────────────────────────────────────────────────────────────
+// Shape config
 
 const SHAPES = [
   { id: 'cube', emoji: '🧱', label: 'Cube' },

@@ -1,5 +1,5 @@
 import { Heart, Trash2 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -12,24 +12,86 @@ import { deleteIdeorama, likeIdeorama } from '@/services/ideorama.service';
 
 const IdeoramasGroup: React.FC<{
   ideoramas: Ideorama[];
-  profile: Partial<Profile>;
   setIdeoramas: React.Dispatch<React.SetStateAction<Ideorama[]>>;
-  setProfile: React.Dispatch<React.SetStateAction<Profile>>;
-}> = ({ ideoramas, profile, setIdeoramas, setProfile }) => {
+}> = ({ ideoramas, setIdeoramas }) => {
   const navigate = useNavigate();
-  const user = useUser().user;
+  const { user } = useUser();
+
+  const [loadingLike, setLoadingLike] = useState<string | null>(null);
+
+  const handleLike = async (e: React.MouseEvent, ideorama: Ideorama) => {
+    e.stopPropagation();
+
+    if (!user) {
+      toast.warning('Connectez-vous pour aimer un idéorama');
+      return;
+    }
+
+    if (loadingLike === ideorama.id) return;
+
+    const isCurrentlyLiked = !!ideorama.likers?.some(l => l.userId === user.id);
+    const newLikeCount =
+      (ideorama._count?.likers ?? 0) + (isCurrentlyLiked ? -1 : 1);
+
+    setIdeoramas(prev =>
+      prev.map(i =>
+        i.id === ideorama.id
+          ? {
+              ...i,
+              likers: isCurrentlyLiked
+                ? i.likers?.filter(l => l.userId !== user.id)
+                : [...(i.likers || []), { userId: user.id }],
+              _count: { likers: newLikeCount },
+            }
+          : i
+      )
+    );
+
+    try {
+      setLoadingLike(ideorama.id);
+      await likeIdeorama(ideorama.id);
+    } catch {
+      // Rollback on error
+      setIdeoramas(prev =>
+        prev.map(i =>
+          i.id === ideorama.id
+            ? {
+                ...i,
+                likers: isCurrentlyLiked
+                  ? [...(i.likers || []), { userId: user.id }]
+                  : i.likers?.filter(l => l.userId !== user.id),
+                _count: { likers: ideorama._count?.likers ?? 0 },
+              }
+            : i
+        )
+      );
+      toast.error('Erreur lors du like');
+    } finally {
+      setLoadingLike(null);
+    }
+  };
+
+  const handleDelete = async (ideoramaId: string) => {
+    if (!ideoramaId) return;
+
+    try {
+      await deleteIdeorama(ideoramaId);
+      setIdeoramas(prev => prev.filter(i => i.id !== ideoramaId));
+      toast.success('Idéorama supprimé avec succès');
+    } catch {
+      toast.error("Échec lors de la suppression de l'idéorama");
+    }
+  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      {ideoramas.map((ideorama, index) => {
-        const isLiked = profile.ideoramaLiked?.some(
-          liked => liked.ideoramaId === ideorama.id
-        );
-        const isOwner = profile.userId === user?.id;
+    <div className="grid grid-cols-1 md:grid-cols-2 mlg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {ideoramas.map(ideorama => {
+        const isLiked = ideorama.likers?.some(l => l.userId === user?.id);
+        const isOwner = user?.id === ideorama.userId;
 
         return (
           <Card
-            key={index}
+            key={ideorama.id}
             className="overflow-hidden pt-0 bg-sidebar dark:bg-sidebar shadow-[0_0_20px_rgba(0,0,0,0.2)] border-2 border-white/5 dark:border-white/20 relative group cursor-pointer transition-transform duration-300 hover:z-50 hover:scale-[1.03]"
             onClick={() => navigate(`/app/ideorama/${ideorama.id}`)}
           >
@@ -41,57 +103,15 @@ const IdeoramasGroup: React.FC<{
                 className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               {/* Like badge — floated over the image */}
-              <SuperButton
-                tooltip={
-                  isLiked
-                    ? `Ne plus aimer ${ideorama.name}`
-                    : `Aimer ${ideorama.name}`
-                }
-                voiceText={`like ${ideorama.name}`}
-                onClick={async e => {
-                  e.stopPropagation();
-                  await likeIdeorama(ideorama.id);
-                  if (isLiked) {
-                    setProfile(pro => ({
-                      ...pro,
-                      ideoramaLiked:
-                        pro.ideoramaLiked?.filter(
-                          l => l.ideoramaId !== ideorama.id
-                        ) ?? [],
-                    }));
-                    setIdeoramas(prev =>
-                      prev.map(i =>
-                        i.id === ideorama.id
-                          ? {
-                              ...i,
-                              _count: { likers: (i._count?.likers ?? 0) - 1 },
-                            }
-                          : i
-                      )
-                    );
-                  } else {
-                    setProfile(pro => ({
-                      ...pro,
-                      ideoramaLiked: [
-                        ...(pro.ideoramaLiked ?? []),
-                        { ideoramaId: ideorama.id },
-                      ],
-                    }));
-                    setIdeoramas(prev =>
-                      prev.map(i =>
-                        i.id === ideorama.id
-                          ? {
-                              ...i,
-                              _count: { likers: (i._count?.likers ?? 0) + 1 },
-                            }
-                          : i
-                      )
-                    );
-                  }
-                }}
-                className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
-                  bg-black/50 backdrop-blur-sm text-white text-xs font-bold
-                  hover:bg-black/70 transition-all active:scale-90"
+              <button
+                disabled={loadingLike === ideorama.id || !user}
+                onClick={e => handleLike(e, ideorama)}
+                className={`absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
+                  ${
+                    !user
+                      ? 'opacity-50 cursor-not-allowed bg-black/50 backdrop-blur-sm text-white'
+                      : 'bg-black/50 backdrop-blur-sm text-white text-xs font-bold hover:bg-black/70 transition-all active:scale-90'
+                  }`}
               >
                 <Heart
                   className={`w-3.5 h-3.5 transition-colors ${
@@ -99,55 +119,48 @@ const IdeoramasGroup: React.FC<{
                   }`}
                 />
                 {ideorama._count?.likers ?? 0}
-              </SuperButton>
+              </button>
             </CardContent>
 
             {/* Info bar */}
-            <div className="px-4 py-3 flex items-center gap-3">
+            <div className="px-4 py-2 flex items-center gap-3">
               {/* Avatar — links to profile */}
               <SuperButton
-                tooltip={`voir le profile de ${profile.pseudo}`}
+                tooltip={`voir le profile de ${ideorama.user?.profile?.pseudo}`}
                 onClick={e => {
                   e.stopPropagation();
-                  if (ideorama.userId == profile.userId) {
-                    navigate(`/app/profile/${ideorama.userId}`);
-                  } else {
-                    navigate(`/app/profile`);
-                  }
+                  navigate(`/app/profile/${ideorama.userId}`);
                 }}
-                className="shrink-0 ring-2 ring-white/10 rounded-full hover:ring-mauve/60 transition-all bg-transparent! p-0!"
+                className="shrink-0 ring-2 size-13 ring-white/10 rounded-full hover:ring-mauve/60 transition-all bg-transparent! p-0!"
               >
-                <Avatar className="h-9 w-9">
+                <Avatar className="h-12 w-12">
                   <AvatarImage
                     src={
-                      profile.avatar ??
+                      ideorama.user?.profile?.avatar ??
                       'https://api.dicebear.com/7.x/bottts/svg?seed=Emma'
                     }
-                    alt={profile.pseudo}
+                    alt={ideorama.user?.profile?.pseudo}
+                    className="size-11"
                   />
-                  <AvatarFallback className="text-xs">
-                    {profile.pseudo?.[0]?.toUpperCase()}
+                  <AvatarFallback className="text-sm">
+                    {ideorama.user?.profile?.pseudo?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </SuperButton>
 
               {/* Name + author */}
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-foreground truncate leading-tight">
+                <p className="font-bold text-xl text-foreground truncate leading-tight">
                   {ideorama.name}
                 </p>
                 <button
                   onClick={e => {
                     e.stopPropagation();
-                    if (ideorama.userId == profile.userId) {
-                      navigate(`/app/profile/${ideorama.userId}`);
-                    } else {
-                      navigate(`/app/profile`);
-                    }
+                    navigate(`/app/profile/${ideorama.userId}`);
                   }}
-                  className="text-xs text-mauve font-medium hover:underline leading-tight bg-transparent! p-0!"
+                  className="text-sm text-mauve font-medium hover:underline leading-tight bg-transparent! p-0!"
                 >
-                  {profile.pseudo}
+                  {ideorama.user?.profile?.pseudo}
                 </button>
               </div>
 
@@ -176,20 +189,7 @@ const IdeoramasGroup: React.FC<{
                     </>
                   }
                   confirmationMessage="Oui, supprimer"
-                  onConfirm={() => {
-                    deleteIdeorama(ideorama.id).then(res => {
-                      if (res) {
-                        setIdeoramas(prev =>
-                          prev.filter(i => i.id !== ideorama.id)
-                        );
-                        toast.success('Idéorama supprimé avec succès');
-                      } else {
-                        toast.error(
-                          "Échec lors de la suppression de l'idéorama"
-                        );
-                      }
-                    });
-                  }}
+                  onConfirm={() => handleDelete(ideorama.id)}
                   onCancel={() => {}}
                 />
               )}

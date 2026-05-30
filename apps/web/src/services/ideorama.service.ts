@@ -1,5 +1,7 @@
 import axios from '../services/axios.service';
 
+import { handleApiError } from '@/lib/api';
+
 interface ApiResponse<T> {
   status: string;
   message: string;
@@ -22,7 +24,19 @@ export const getIdeoramaById = async (
 };
 
 export const getAllIdeoramas = async (): Promise<ApiResponse<Ideorama[]>> => {
+  const response = await axios.get(`${BASE}/all`);
+  return response.data;
+};
+
+export const getUserIdeoramas = async (): Promise<ApiResponse<Ideorama[]>> => {
   const response = await axios.get(BASE);
+  return response.data;
+};
+
+export const getParticularUserIdeoramas = async (
+  userId: string
+): Promise<ApiResponse<Ideorama[]>> => {
+  const response = await axios.get(`${BASE}/user/${userId}`);
   return response.data;
 };
 
@@ -33,6 +47,18 @@ export const createIdeorama = async (
   return response.data;
 };
 
+/**
+ * Get a short-lived signed URL for a storage key.
+ */
+export const getSignedUrl = async (
+  key: string
+): Promise<{ url: string; expiresAt: string }> => {
+  const response = await axios.get('/api/storage/signed-url', {
+    params: { key },
+  });
+  return response.data.data;
+};
+
 export const saveIdeorama = async (
   ideoramaId: string,
   scene: Record<string, unknown> | string | null
@@ -41,42 +67,27 @@ export const saveIdeorama = async (
     const sceneObj: Record<string, unknown> =
       typeof scene === 'string' ? JSON.parse(scene) : (scene ?? {});
 
-    await axios.patch(`${BASE}/${ideoramaId}/save`, { scene: sceneObj });
-    return true;
-  } catch (error) {
-    console.error('saveIdeorama error:', error);
-    return false;
-  }
-};
+    const blob = new Blob([JSON.stringify(sceneObj)], {
+      type: 'application/json',
+    });
 
-export const beaconSaveIdeorama = (
-  ideoramaId: string | undefined,
-  scene: Record<string, unknown> | string | null
-): boolean => {
-  try {
-    if (!ideoramaId || !scene) {
-      console.warn('beaconSaveIdeorama: missing required fields');
-      return false;
-    }
+    const meta = {
+      name: (sceneObj?.info as any)?.name as string | undefined,
+      isPublic: (sceneObj?.global as any)?.isPublic as boolean | undefined,
+    };
 
-    const sceneObj: Record<string, unknown> =
-      typeof scene === 'string' ? JSON.parse(scene) : scene;
+    const formData = new FormData();
+    formData.append('file', blob, `${ideoramaId}.json`);
+    formData.append('meta', JSON.stringify(meta));
 
-    const token = localStorage.getItem('token');
-
-    fetch(`${BASE}/${ideoramaId}/save`, {
-      method: 'PATCH',
-      keepalive: true,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ scene: sceneObj }),
-    }).catch(err => console.error('beaconSaveIdeorama failed:', err));
+    await axios.patch(`${BASE}/${ideoramaId}/save`, formData, {
+      fetchOptions: { keepalive: true },
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
 
     return true;
   } catch (error) {
-    console.error('beaconSaveIdeorama error:', error);
+    console.error('saveIdeorama error:', handleApiError(error));
     return false;
   }
 };

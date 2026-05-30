@@ -91,16 +91,28 @@ export default class EditorController {
       : req.params.documentId;
     const { title, content, json, wordCount, emoji, color } = req.body;
 
-    const document = await this.editorService.updateDocument(documentId, {
-      title,
-      content,
-      json,
-      wordCount,
-      emoji,
-      color,
-    });
+    const document = await this.editorService.getDocumentById(documentId);
 
-    HttpResponse.success(document, 'Document mis à jour avec succès').send(res);
+    if (!document) {
+      return HttpResponse.notFound('Document introuvable').send(res);
+    }
+
+    const updatedDocument = await this.editorService.updateDocument(
+      documentId,
+      {
+        title,
+        content,
+        json,
+        wordCount,
+        emoji,
+        color,
+      }
+    );
+
+    HttpResponse.success(
+      updatedDocument,
+      'Document mis à jour avec succès'
+    ).send(res);
   });
 
   /**
@@ -117,6 +129,12 @@ export default class EditorController {
     const documentId = Array.isArray(req.params.documentId)
       ? req.params.documentId[0]
       : req.params.documentId;
+
+    const document = await this.editorService.getDocumentById(documentId);
+
+    if (!document) {
+      return HttpResponse.notFound('Document introuvable').send(res);
+    }
 
     await this.editorService.deleteDocument(documentId);
 

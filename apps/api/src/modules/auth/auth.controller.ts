@@ -99,7 +99,10 @@ export default class AuthController {
   changePassword = asyncHandler(async (req: Request, res: Response) => {
     const userAuth = req.user!;
 
-    const result = await changePasswordSchema.safeParseAsync(req.body);
+    const result = await changePasswordSchema.safeParseAsync({
+      ...req.body,
+      role: user.role,
+    });
     if (failOnValidation(result, res)) return;
 
     const user = await this.authService.getSingleUser(userAuth.userId);

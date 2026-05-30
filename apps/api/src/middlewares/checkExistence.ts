@@ -50,16 +50,16 @@ export const checkVoxelModelExistence = async (
 };
 
 export const checkDocumentExistence = async (
-  documentId: string,
+  documentID: string,
   res: Response,
   next: NextFunction,
-  getDocumentById: (voxelModelId: string) => Promise<Document | null>
+  getDocumentById: (documentID: string) => Promise<Document | null>
 ): Promise<void> => {
-  if (!/^[a-zA-Z0-9_-]+$/.test(documentId)) {
+  if (!/^[a-zA-Z0-9_-]+$/.test(documentID)) {
     return HttpResponse.badRequest('Identifiant invalide').send(res);
   }
   try {
-    const document = await getDocumentById(documentId);
+    const document = await getDocumentById(documentID);
     if (document) {
       next();
     } else {

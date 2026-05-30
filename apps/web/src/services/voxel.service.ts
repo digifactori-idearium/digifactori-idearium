@@ -1,5 +1,7 @@
 import axios from './axios.service';
 
+import { handleApiError } from '@/lib/api';
+
 interface ApiResponse<T> {
   status: string;
   message?: string;
@@ -33,6 +35,13 @@ export const createVoxelModel = async (
 };
 
 export const getAllVoxelModels = async (): Promise<
+  ApiResponse<VoxelModel[]>
+> => {
+  const response = await axios.get(`${BASE}/all`);
+  return response.data;
+};
+
+export const getUserVoxelModels = async (): Promise<
   ApiResponse<VoxelModel[]>
 > => {
   const response = await axios.get(BASE);
@@ -70,22 +79,18 @@ export const saveVoxelModel = async (
     const formData = new FormData();
     formData.append('file', blob, `${voxelModelId}.glb`);
 
-    const token = localStorage.getItem('token');
-    const baseUrl =
-      (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
-      'http://localhost:3001';
-
-    // Do NOT set Content-Type manually; the browser must set it so it
-    const response = await fetch(`${baseUrl}${BASE}/${voxelModelId}/save`, {
-      method: 'PATCH',
-      body: formData,
-      keepalive: true,
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    await axios.patch(`${BASE}/${voxelModelId}/save`, formData, {
+      fetchOptions: {
+        keepalive: true,
+      },
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
 
-    return response.ok;
+    return true;
   } catch (error) {
-    console.error('Error saving voxel model:', error);
+    console.error('Error saving voxel model:', handleApiError(error));
     return false;
   }
 };
