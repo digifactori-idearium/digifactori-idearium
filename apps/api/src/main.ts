@@ -91,7 +91,7 @@ app.use(
 );
 
 const ideaService = new IdeaService();
-app.use('/api/ideas', createIdeaRoutes(ideaService));
+app.use('/api/idea', createIdeaRoutes(ideaService));
 
 const voxelService = new VoxelService();
 app.use('/api/voxel', autoSaveLimiter, createVoxelRoutes(voxelService));
