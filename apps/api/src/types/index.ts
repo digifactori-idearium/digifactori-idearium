@@ -64,6 +64,19 @@ export interface IIdeoramaService {
   deleteIdeorama(ideoramaId: string): Promise<Ideorama>;
 }
 
+type Idea = {
+  id: string;
+  color: string;
+  content: string;
+  priority: string;
+};
+
+type Ideas = {
+  todo: Idea[];
+  progress: Idea[];
+  done: Idea[];
+};
+
 export interface IIdeaService {
   getIdeas(userId: string): Promise<any>;
   saveIdeas(userId: string, data: any): Promise<any>;

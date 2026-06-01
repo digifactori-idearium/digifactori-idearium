@@ -83,6 +83,7 @@ class MockVoxelService implements IVoxelService {
   >();
   updateVoxelModelFileKey = jest.fn<Promise<VoxelModel>, [string, string]>();
   getVoxelModelById = jest.fn<Promise<VoxelModel | null>, [string]>();
+  getVoxelModels = jest.fn<Promise<VoxelModel[]>, []>();
   getUserVoxelModels = jest.fn<Promise<VoxelModel[]>, [string]>();
   deleteVoxelModel = jest.fn<Promise<VoxelModel>, [string]>();
 }
