@@ -90,6 +90,14 @@ jest.mock('@/config/client.config', () => ({
   },
 }));
 
+jest.mock('resend', () => ({
+  Resend: jest.fn().mockImplementation(() => ({
+    emails: {
+      send: jest.fn().mockResolvedValue(undefined),
+    },
+  })),
+}));
+
 let token: string;
 let mockService!: MockAuthService;
 let app!: express.Express;
