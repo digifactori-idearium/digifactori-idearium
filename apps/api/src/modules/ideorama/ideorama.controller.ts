@@ -29,6 +29,9 @@ export default class IdeoramaController {
    *
    * @route  GET /ideorama/empty
    * @access Authenticated
+   *
+   * @returns
+   *   - 200 { data: EMPTY_SCENE }
    */
   getEmptyIdeorama: RequestHandler = asyncHandler(
     async (_req: Request, res: Response) => {
@@ -41,6 +44,9 @@ export default class IdeoramaController {
    *
    * @route  GET /ideorama
    * @access Authenticated
+   *
+   * @returns
+   *   - 200 { data: Ideorama[] }
    */
   getIdeoramasController = asyncHandler(async (req: Request, res: Response) => {
     const ideoramas = await this.ideoramaService.getIdeoramas();
@@ -54,6 +60,9 @@ export default class IdeoramaController {
    *
    * @route  GET /ideorama
    * @access Authenticated
+   *
+   * @returns
+   *   - 200 { data: Ideorama[] }
    */
   getUserIdeoramasController = asyncHandler(
     async (req: Request, res: Response) => {
@@ -71,6 +80,11 @@ export default class IdeoramaController {
    *
    * @route  GET /ideorama
    * @access Authenticated
+   *
+   * @params {userId: string}
+   *
+   * @returns
+   *   - 200 { data: Ideorama[] }
    */
   getParticularUserIdeoramasController = asyncHandler(
     async (req: Request, res: Response) => {
@@ -89,7 +103,10 @@ export default class IdeoramaController {
    * @route  GET /ideorama/:ideoramaId
    * @access Authenticated
    *
-   * @params ideoramaId
+   * @params { ideoramaId: string }
+   *
+   * @returns
+   *   - 200 { data: Ideorama }
    */
   getIdeoramaByIdController = asyncHandler(
     async (req: Request, res: Response) => {
@@ -112,6 +129,9 @@ export default class IdeoramaController {
    * @access Authenticated
    *
    * @body   { name?: string }
+   *
+   * @returns
+   *   - 200 { data: Ideorama }
    */
   createIdeoramaController = asyncHandler(
     async (req: Request, res: Response) => {
@@ -133,6 +153,9 @@ export default class IdeoramaController {
    *
    * @params ideoramaId
    * @body   { scene: object | string }
+   *
+   * @returns
+   *   - 200 { data: null }
    */
   saveIdeoramaController = asyncHandler(async (req: Request, res: Response) => {
     const ideoramaId = req.params.ideoramaId as string;
@@ -179,6 +202,9 @@ export default class IdeoramaController {
    * @access Authenticated
    *
    * @params ideoramaId
+   *
+   * @returns
+   *   - 200 { data: { liked: boolean, likersCount: number } }
    */
   likeIdeoramaController = asyncHandler(async (req, res) => {
     const ideoramaId = req.params.ideoramaId as string;
@@ -199,6 +225,9 @@ export default class IdeoramaController {
    * @access Authenticated
    *
    * @params ideoramaId
+   *
+   * @returns
+   *   - 200 { data: null }
    */
   deleteIdeoramaController = asyncHandler(
     async (req: Request, res: Response) => {

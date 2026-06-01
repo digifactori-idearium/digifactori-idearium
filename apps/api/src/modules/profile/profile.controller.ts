@@ -85,7 +85,6 @@ export default class ProfileController {
    */
   setProfile = asyncHandler(async (req: Request, res: Response) => {
     const authUser = req.user!;
-    console.log(req.body.profile);
     if (req.body.profile) {
       const profileSchema = createProfileSchema(authUser.userId);
       const result = await profileSchema.safeParseAsync(req.body.profile);
