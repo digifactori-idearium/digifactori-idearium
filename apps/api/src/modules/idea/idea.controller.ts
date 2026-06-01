@@ -38,12 +38,9 @@ export default class IdeaController {
   saveIdeas = asyncHandler(async (req, res) => {
     const userId = req.user!.userId;
     const data = req.body;
-    console.log('validation checking');
     const result = await IdeasSchema.safeParseAsync(data.data);
-    console.log('validation +result', result);
 
     if (failOnValidation(result, res)) return;
-    console.log('validation successed');
 
     const saved = await this.ideaService.saveIdeas(userId, data);
 
