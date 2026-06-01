@@ -32,8 +32,8 @@ export const authenticate = (
     const decoded = jwt.verify(token, config.JWT_SECRET) as UserPayload;
     req.user = decoded;
     return next();
-  } catch (error: any) {
-    return HttpResponse.unAuthorized(`Token non valide:${error}`).send(res);
+  } catch {
+    return HttpResponse.unAuthorized('Invalid or expired token').send(res);
   }
 };
 
