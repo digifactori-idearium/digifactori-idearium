@@ -73,25 +73,9 @@ if (IS_DEV) {
 // Routes
 app.use('/api/proxy', proxyRouter);
 app.use('/api/storage', createStorageRoutes());
-app.use('/api/auth', authLimiter, createAuthRoutes(new AuthService()));
-app.use('/api/user', createUserRoutes(new UserService()));
-app.use('/api/profile', createProfileRoutes(new ProfileService()));
-app.use('/api/settings', createSettingsRoutes(new SettingsService()));
-app.use('/api/asset', createAssetRoutes(new AssetService()));
-app.use(
-  '/api/editor',
-  autoSaveLimiter,
-  createEditorRoutes(new EditorService())
-);
-app.use(
-  '/api/ideorama',
-  autoSaveLimiter,
-  createIdeoramaRoutes(new IdeoramaService())
-);
-app.use('/api/voxel', autoSaveLimiter, createVoxelRoutes(new VoxelService()));
 
 const authService = new AuthService();
-app.use('/api/auth', createAuthRoutes(authService));
+app.use('/api/auth', authLimiter, createAuthRoutes(authService));
 
 const userService = new UserService();
 app.use('/api/user', createUserRoutes(userService));
@@ -100,13 +84,17 @@ const profileService = new ProfileService();
 app.use('/api/profile', createProfileRoutes(profileService));
 
 const ideoramaService = new IdeoramaService();
-app.use('/api/ideorama', createIdeoramaRoutes(ideoramaService));
+app.use(
+  '/api/ideorama',
+  autoSaveLimiter,
+  createIdeoramaRoutes(ideoramaService)
+);
 
 const ideaService = new IdeaService();
-app.use('/api/ideas', createIdeaRoutes(ideaService));
+app.use('/api/idea', createIdeaRoutes(ideaService));
 
 const voxelService = new VoxelService();
-app.use('/api/voxel', createVoxelRoutes(voxelService));
+app.use('/api/voxel', autoSaveLimiter, createVoxelRoutes(voxelService));
 
 const editorService = new EditorService();
 app.use('/api/editor', createEditorRoutes(editorService));

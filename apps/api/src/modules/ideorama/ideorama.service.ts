@@ -10,6 +10,9 @@ const ideoramaLikeTable = prisma.ideoramaLikes;
 export default class IdeoramaService implements IIdeoramaService {
   /**
    * Creates a new ideorama with an empty scene.
+   *
+   * @params ideoramaData - Partial ideorama data (must include userId, name is optional) (Partial<Ideorama>)
+   * @returns The created ideorama as Promise<Ideorama>
    */
   async createIdeorama(ideoramaData: Partial<Ideorama>): Promise<Ideorama> {
     return await ideoramaTable.create({
@@ -24,6 +27,12 @@ export default class IdeoramaService implements IIdeoramaService {
   /**
    * Saves the scene JSON and optionally syncs metadata fields (name, isPublic)
    * to the DB row so the DB and scene stay in sync.
+   * The actual scene file is handled separately in the storage service, this method only updates the DB record with the new storage key and metadata.
+   *
+   * @param ideoramaId - the id of the ideorama to update (string)
+   * @param scene - the scene JSON to save (stringified) (string)
+   * @param meta - optional metadata to sync to the DB row (e.g. name, isPublic) ({ name?: string; isPublic?: boolean })
+   * @returns The updated ideorama as Promise<Ideorama>
    */
   async saveScene(
     ideoramaId: string,
@@ -38,6 +47,9 @@ export default class IdeoramaService implements IIdeoramaService {
 
   /**
    * Finds an ideorama by ID (includes like count).
+   *
+   * @params ideoramaId - the id of the ideorama to find (string)
+   * @returns The found ideorama with like count as Promise<Ideorama>, or Promise<null> if not found
    */
   async getIdeoramaById(ideoramaId: string): Promise<Ideorama | null> {
     return await ideoramaTable.findFirst({
@@ -50,6 +62,8 @@ export default class IdeoramaService implements IIdeoramaService {
 
   /**
    * Finds all ideoramas.
+   *
+   * @returns An array of all ideoramas including user, like counts and likers as Promise<Ideorama[]>
    */
   async getIdeoramas(): Promise<Ideorama[]> {
     return await ideoramaTable.findMany({
@@ -76,6 +90,8 @@ export default class IdeoramaService implements IIdeoramaService {
 
   /**
    * Finds all ideoramas belonging to a user.
+   *
+   * @params userId - the id of the user whose ideoramas to find (string)
    */
   async getUserIdeoramas(userId: string): Promise<Ideorama[]> {
     return ideoramaTable.findMany({
@@ -108,6 +124,10 @@ export default class IdeoramaService implements IIdeoramaService {
 
   /**
    * Generic update for ideorama metadata fields.
+   *
+   * @params ideoramaId - the id of the ideorama to update (string)
+   * @params data - the fields to update (Prisma.IdeoramaUpdateInput)
+   * @returns The updated ideorama as Promise<Ideorama>
    */
   async updateIdeorama(
     ideoramaId: string,
@@ -121,6 +141,10 @@ export default class IdeoramaService implements IIdeoramaService {
 
   /**
    * Updates the scene storage key for an ideorama.
+   *
+   * @params ideoramaId - the id of the ideorama to update (string)
+   * @params fileKey - the new storage key for the ideorama scene (string)
+   * @returns The updated ideorama as Promise<Ideorama>
    */
   async updateIdeoramaFileKey(
     ideoramaId: string,
@@ -134,6 +158,9 @@ export default class IdeoramaService implements IIdeoramaService {
 
   /**
    * Checks whether an ideorama exists.
+   *
+   * @params ideoramaId - the id of the ideorama to check (string)
+   * @returns Promise<true> if the ideorama exists, Promise<false> otherwise
    */
   async isIdeoramaInBD(ideoramaId: string): Promise<boolean> {
     const ideorama = await ideoramaTable.findUnique({
@@ -144,6 +171,10 @@ export default class IdeoramaService implements IIdeoramaService {
 
   /**
    * Toggles the like on an ideorama for a user.
+   *
+   * @params ideoramaId - the id of the ideorama to like/unlike (string)
+   * @params userId - the id of the user liking/unliking the ideorama (string)
+   * @returns An object containing whether the ideorama is now liked and the total like count as Promise<{ isLiked: boolean; likersCount: number }>
    */
   async likeIdeorama(ideoramaId: string, userId: string) {
     const existing = await ideoramaLikeTable.findUnique({
@@ -176,6 +207,10 @@ export default class IdeoramaService implements IIdeoramaService {
 
   /**
    * Permanently deletes an ideorama.
+   *
+   * @params ideoramaId - the id of the ideorama to delete (string)
+   * @returns The deleted ideorama as Promise<Ideorama>
+   * @throws an error if the ideorama is not found
    */
   async deleteIdeorama(ideoramaId: string): Promise<Ideorama> {
     return await ideoramaTable.delete({

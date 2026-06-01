@@ -1,4 +1,4 @@
-import { Ideorama, VoxelModel } from '@prisma/client';
+import { Document, Ideorama, VoxelModel } from '@prisma/client';
 import type { NextFunction, Response } from 'express';
 
 import HttpResponse from '@/utils/http-response';
@@ -53,7 +53,7 @@ export const checkDocumentExistence = async (
   documentID: string,
   res: Response,
   next: NextFunction,
-  getDocumentById: (documentID: string) => Promise<VoxelModel | null>
+  getDocumentById: (documentID: string) => Promise<Document | null>
 ): Promise<void> => {
   if (!/^[a-zA-Z0-9_-]+$/.test(documentID)) {
     return HttpResponse.badRequest('Identifiant invalide').send(res);

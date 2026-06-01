@@ -57,7 +57,9 @@ export default class StorageController {
       url = `/api/storage/file/${key}`;
     }
 
-    HttpResponse.success({ url, expiresAt }, 'URL signée générée').send(res);
+    return HttpResponse.success({ url, expiresAt }, 'URL signée générée').send(
+      res
+    );
   });
 
   /**

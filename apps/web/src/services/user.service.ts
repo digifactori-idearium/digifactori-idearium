@@ -7,7 +7,7 @@ import axios from '@/services/axios.service';
  */
 export const getUsers = async (): Promise<User[]> => {
   try {
-    const response = await axios.get('api/user/list');
+    const response = await axios.get('api/user/');
     return response.data.data;
   } catch (error) {
     return handleApiError(error);
