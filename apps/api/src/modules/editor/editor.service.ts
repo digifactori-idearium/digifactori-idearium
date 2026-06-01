@@ -5,7 +5,10 @@ const documentTable = prisma.document;
 
 export default class EditorService implements IEditorService {
   /**
-   * Create a new document
+   * Creates a new document
+   *
+   * @param data - the document data ({ title?: string; content?: string; json?: Record<string, any>; wordCount?: number; emoji?: string; color?: string; userId: string })
+   * @returns The created document as Promise<Document>
    */
   async createDocument(data: {
     title?: string;
@@ -35,7 +38,10 @@ export default class EditorService implements IEditorService {
   }
 
   /**
-   * Get all documents for a user
+   * Gets all documents for a user
+   *
+   * @param userId - the id of the user whose documents we want to retrieve (string)
+   * @returns An array of documents as Promise<Document[]>
    */
   async getUserDocuments(userId: string) {
     const documents = await documentTable.findMany({
@@ -54,7 +60,10 @@ export default class EditorService implements IEditorService {
   }
 
   /**
-   * Get a single document by ID
+   * Gets a single document by ID
+   *
+   * @param documentId - the id of the document to retrieve (string)
+   * @returns The found document as Promise<Document>, or Promise<null> if not found
    */
   async getDocumentById(documentId: string) {
     const document = await documentTable.findUnique({
@@ -70,7 +79,11 @@ export default class EditorService implements IEditorService {
   }
 
   /**
-   * Update a document
+   * Updates a document
+   *
+   * @param documentId - the id of the document to update (string)
+   * @param data - the new document data ({ title?: string; content?: string; json?: Record<string, any>; wordCount?: number; emoji?: string; color?: string })
+   * @returns The updated document as Promise<Document>
    */
   async updateDocument(
     documentId: string,
@@ -104,7 +117,10 @@ export default class EditorService implements IEditorService {
   }
 
   /**
-   * Delete a document
+   * Deletes a document
+   *
+   * @param documentId - the id of the document to delete (string)
+   * @returns The deleted document as Promise<Document>
    */
   async deleteDocument(documentId: string) {
     const deletedDocument = await documentTable.delete({
@@ -117,7 +133,10 @@ export default class EditorService implements IEditorService {
   }
 
   /**
-   * Save document with both HTML content and TipTap JSON
+   * Saves document with both HTML content and TipTap JSON
+   * @param documentId - the id of the document to save (string)
+   * @param data - the new document data ({ title: string; content: string; json?: Record<string, any>; wordCount: number; emoji?: string; color?: string })
+   * @returns The updated document as Promise<Document>
    */
   async saveDocument(
     documentId: string,

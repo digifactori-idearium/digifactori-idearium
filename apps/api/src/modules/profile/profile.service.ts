@@ -14,7 +14,7 @@ export default class ProfileService implements IProfileService {
    * Checks if the password is correct
    *
    * @param userId: the id of the user who wants to connect (string)
-   * @param password: the provided password
+   * @param password: the provided password (string)
    * @returns Promise<true> if the password is correct, Promise<false> otherwise
    */
   async verifyPassword(userId: string, password: string): Promise<boolean> {

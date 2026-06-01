@@ -11,7 +11,7 @@ export default function createAuthRoutes(authService: IAuthService) {
   const authRoutes: ExpressRouter = Router();
   authRoutes.post('/register', authController.register);
   authRoutes.post('/login', authController.login);
-  authRoutes.post(
+  authRoutes.patch(
     '/change-password',
     authenticate,
     authController.changePassword
@@ -20,7 +20,7 @@ export default function createAuthRoutes(authService: IAuthService) {
     '/reset-password/request',
     authController.requestPasswordReset
   );
-  authRoutes.post('/reset-password', authController.resetPassword);
+  authRoutes.patch('/reset-password', authController.resetPassword);
 
   return authRoutes;
 }

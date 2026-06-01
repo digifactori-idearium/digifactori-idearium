@@ -49,7 +49,7 @@ export const changePassword = async (
   confirmPassword: string
 ): Promise<void> => {
   try {
-    await axios.post('api/auth/change-password', {
+    await axios.patch('api/auth/change-password', {
       currentPassword,
       newPassword,
       confirmPassword,
@@ -81,7 +81,7 @@ export const resetPassword = async (
   confirmPassword: string
 ): Promise<void> => {
   try {
-    await axios.post(`api/auth/reset-password?token=${token}`, {
+    await axios.patch(`api/auth/reset-password?token=${token}`, {
       newPassword,
       confirmPassword,
     });

@@ -5,7 +5,7 @@ import {
   createIntegrationSchema,
   updateIntegrationSchema,
   updateOrgSettingsSchema,
-} from './setting.validation';
+} from './settings.validation';
 
 import { ISettingsService } from '@/types';
 import asyncHandler from '@/utils/async-handler';

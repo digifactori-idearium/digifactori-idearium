@@ -21,7 +21,7 @@ export default function createUserRoutes(
    * SUPERVISOR → all INTERN accounts
    */
   userRoutes.get(
-    '/list',
+    '/',
     requireRole('ADMIN', 'SUPERVISOR'),
     userController.getUsers
   );

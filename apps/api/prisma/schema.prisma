@@ -56,20 +56,20 @@ enum StorageProvider {
 
 // Account layer — authentication, roles, and owned content
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  first_name  String
-  last_name   String
-  password    String
-  role        Role
-  isActive    Boolean  @default(true)
+  id         String  @id @default(cuid())
+  email      String  @unique
+  first_name String
+  last_name  String
+  password   String
+  role       Role
+  isActive   Boolean @default(true)
 
   // Owned content
   profile     Profile?
   ideoramas   Ideorama[]
   voxelModels VoxelModel[]
   documents   Document[]
-  ideas       Idea[]
+  ideas       Ideas?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -115,7 +115,7 @@ model Ideorama {
   id       String  @id @default(cuid())
   name     String  @default("New Ideorama")
   isPublic Boolean @default(true)
-  scene    String  // storage key of the ideorama
+  scene    String // storage key of the ideorama
 
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -136,12 +136,12 @@ model IdeoramaLikes {
   @@id([ideoramaId, userId])
 }
 
-// Kanbam Idea type
-model Idea {
-  id     String @id @default(cuid())
-  data   Json
+// Kanban Idea type
+model Ideas {
+  id   String @id @default(cuid())
+  data Json
 
-  userId String
+  userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
@@ -150,13 +150,13 @@ model Idea {
 
 // Text Editor Saved document
 model Document {
-  id        String  @id @default(cuid())
-  title     String  @default("Sans titre")
-  content   String  @default("")
+  id        String @id @default(cuid())
+  title     String @default("Sans titre")
+  content   String @default("")
   json      Json?
-  wordCount Int     @default(0)
-  emoji     String  @default("📝")
-  color     String  @default("#a78bfa")
+  wordCount Int    @default(0)
+  emoji     String @default("📝")
+  color     String @default("#a78bfa")
 
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -189,7 +189,7 @@ model Asset {
   type      IntegrationType @default(OTHER)
   category  AssetCategory   @default(OTHER)
   tags      String[]
-  file      String  // storage key of the asset
+  file      String // storage key of the asset
   thumbnail String? // storage key of the asset preview
 
   createdAt DateTime @default(now())
@@ -202,9 +202,9 @@ model Asset {
 
 // Organization settings
 model Setting {
-  id              Int  @id @default(1)
-  orgCode         Int  @default(202026)
-  orgParentalCode Int  @default(2026)
+  id              Int @id @default(1)
+  orgCode         Int @default(202026)
+  orgParentalCode Int @default(2026)
 
   storage      CloudStorage?
   integrations Integration[]

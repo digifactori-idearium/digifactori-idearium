@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 
 import {
   changePasswordSchema,
@@ -69,7 +70,7 @@ export default class AuthController {
       data = await this.authService.loginEmail(email, password);
     }
 
-    if (!data.user) {
+    if (!data) {
       return HttpResponse.unAuthorized('Invalid credentials').send(res);
     }
 
@@ -93,28 +94,33 @@ export default class AuthController {
    *   - 200 success message
    *   - 400 validation errors | wrong current password | same as current
    *   - 401 not authenticated
+   *   - 404 if user is not found
    */
   changePassword = asyncHandler(async (req: Request, res: Response) => {
-    const user = req.user!;
+    const userAuth = req.user!;
 
     const result = await changePasswordSchema.safeParseAsync({
       ...req.body,
-      role: user.role,
+      role: userAuth.role,
     });
     if (failOnValidation(result, res)) return;
 
-    const { currentPassword, newPassword } = result.data!;
-
-    try {
-      await this.authService.changePassword(
-        user.userId,
-        currentPassword,
-        newPassword
-      );
-    } catch (err: any) {
-      return HttpResponse.badRequest(err.message).send(res);
+    const user = await this.authService.getSingleUser(userAuth.userId);
+    if (!user) {
+      return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
     }
 
+    const { currentPassword, newPassword } = result.data!;
+
+    const isPasswordCorrect = await this.authService.verifyPassword(
+      user.id,
+      currentPassword
+    );
+    if (!isPasswordCorrect) {
+      return HttpResponse.badRequest('Code incorrect').send(res);
+    }
+
+    await this.authService.changePassword(user.id, newPassword);
     return HttpResponse.success(null, 'Mot de passe modifié avec succès.').send(
       res
     );
@@ -170,14 +176,37 @@ export default class AuthController {
       return HttpResponse.badRequest('Token manquant.').send(res);
     }
 
-    const result = await resetPasswordSchema.safeParseAsync(req.body);
+    const decoded = jwt.decode(token) as { userId?: string } | null;
+    if (!decoded?.userId) {
+      return HttpResponse.badRequest('Token invalide').send(res);
+    }
+
+    const user = await this.authService.getSingleUser(decoded.userId);
+    if (!user) {
+      return HttpResponse.notFound("Cet utilisateur n'existe pas").send(res);
+    }
+    if (!user.isActive) {
+      return HttpResponse.badRequest("Cet utilisateur n'est pas actif").send(
+        res
+      );
+    }
+
+    const secret = process.env.JWT_SECRET + user.password;
+    try {
+      jwt.verify(token, secret);
+    } catch {
+      return HttpResponse.badRequest(
+        'Le lien de réinitialisation est invalide ou a expiré.'
+      ).send(res);
+    }
+
+    const result = await resetPasswordSchema.safeParseAsync({
+      ...req.body,
+      role: user.role,
+    });
     if (failOnValidation(result, res)) return;
 
-    try {
-      await this.authService.resetPassword(token, result.data!.newPassword);
-    } catch (err: any) {
-      return HttpResponse.badRequest(err.message).send(res);
-    }
+    await this.authService.changePassword(user.id, result.data!.newPassword);
 
     return HttpResponse.success(
       null,
