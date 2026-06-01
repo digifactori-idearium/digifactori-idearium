@@ -9,17 +9,23 @@ jobs:
   sync:
     name: Sync dev with main
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.SYNC_TOKEN }}
 
-      - name: Merge main into dev
+      - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync dev with main
+        run: |
           git checkout dev
           git pull origin dev
           git merge origin/main --no-edit
@@ -29,11 +35,11 @@ jobs:
         if: success()
         run: |
           echo "✓ dev synced with main"
-          echo "Commit : ${{ github.sha }}"
+          echo "Commit: ${{ github.sha }}"
 
       - name: Sync failed
         if: failure()
         run: |
           echo "✗ Sync failed — manual intervention required"
-          echo "Run: git checkout dev && git pull origin main"
+          echo "Run: git checkout dev && git merge main && git push origin dev"
           exit 1
