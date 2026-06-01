@@ -64,16 +64,12 @@ export default class EditorController {
    *   - 404 document not found
    */
   getDocumentById = asyncHandler(async (req, res) => {
-    const documentId = Array.isArray(req.params.documentId)
-      ? req.params.documentId[0]
-      : req.params.documentId;
-
-    const document = await this.editorService.getDocumentById(documentId);
-
+    const document = await this.editorService.getDocumentById(
+      req.params.documentId as string
+    );
     if (!document) {
-      return HttpResponse.notFound('Document introuvable').send(res);
+      return HttpResponse.notFound("Ce document n'existe pas").send(res);
     }
-
     HttpResponse.success(document, 'Document retrieved successfully').send(res);
   });
 

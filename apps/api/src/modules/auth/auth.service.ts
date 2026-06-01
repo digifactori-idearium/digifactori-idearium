@@ -12,11 +12,47 @@ const profileTable = prisma.profile;
 
 export default class AuthService implements IAuthService {
   /**
+   * Checks if the password is correct
+   *
+   * @param userId: the id of the user who wants to connect (string)
+   * @param password: the provided password
+   * @returns Promise<true> if the password is correct, Promise<false> otherwise
+   */
+  async verifyPassword(userId: string, password: string): Promise<boolean> {
+    const correctPassword = await userTable
+      .findUnique({
+        where: {
+          id: userId,
+        },
+      })
+      .then(res => res?.password);
+    const result = await bcrypt.compare(password, correctPassword);
+    return result;
+  }
+
+  /**
+   * Finds the user in DB.
+   *
+   * @param id - the user id for wich we are looking for its profile (string)
+   * @returns :
+   * - if found, a Promise with the profile (Promise<Profile>)
+   * - otherwise, a Promise with null (Promise<null>)
+   */
+  async getSingleUser(id: string): Promise<User | null> {
+    const user = await userTable.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    return user;
+  }
+
+  /**
    * Returns the profile of the user
    *
    * @param userId - the user id. It exists in DB
    */
-  async getProfileById(userId: string): Promise<Profile | null> {
+  async getSingleProfile(userId: string): Promise<Profile | null> {
     const profile = await profileTable.findUnique({
       where: {
         userId: userId,
@@ -171,31 +207,18 @@ export default class AuthService implements IAuthService {
 
   /**
    * Changes the password for an authenticated user.
-   * Verifies the current password before applying the change.
+   * hashes the current password before applying the change.
    *
    * @param userId          - The authenticated user's id
-   * @param currentPassword - The user's current plain password to verify
    * @param newPassword     - The new plain password to hash and store
    * @returns Promise<true> on success
-   * @throws Error if the current password is wrong or the user is not found
    */
-  async changePassword(
-    userId: string,
-    currentPassword: string,
-    newPassword: string
-  ): Promise<true> {
-    const user = await userTable.findUnique({ where: { id: userId } });
-    if (!user) throw new Error('Utilisateur introuvable.');
-
-    const isValid = await bcrypt.compare(currentPassword, user.password);
-    if (!isValid) throw new Error('Mot de passe actuel incorrect.');
-
+  async changePassword(userId: string, newPassword: string): Promise<true> {
     const hashed = await bcrypt.hash(newPassword, 10);
     await userTable.update({
       where: { id: userId },
       data: { password: hashed },
     });
-
     return true;
   }
 

@@ -6,12 +6,12 @@ import createProfileRoutes from '@/modules/profile/profile.route';
 import { IProfileService } from '@/types';
 import { generateToken } from '@/utils/generate-token';
 
-const FAKE_USER_ID = 'cmnup6jyf0000p0utn33xhdpq';
-const FAKE_PROFILE_ID = 'id';
+const FAKE_USER_ID = 'fake-user-id';
+const FAKE_PROFILE_ID = 'fake-profile-id';
 
 function createFakeUser(overrides = {}): { user: User; userJSON: any } {
   const user: User = {
-    id: 'cmnup6jyf0000p0utn33xhdpq',
+    id: FAKE_USER_ID,
     email: 'pseudo@gmail.com',
     first_name: 'FirstName',
     last_name: 'LastName',
@@ -35,8 +35,8 @@ function createFakeProfile(overrides = {}): {
   profileJSON: any;
 } {
   const profile: Profile = {
-    id: 'profileId',
-    userId: 'cmnup6jyf0000p0utn33xhdpq',
+    id: FAKE_PROFILE_ID,
+    userId: FAKE_USER_ID,
     pseudo: 'TestUser',
     avatar: null,
     bio: null,
@@ -119,6 +119,11 @@ describe('Profile Handling', () => {
 
       expect(mockService.getSingleProfile).toHaveBeenCalledWith(FAKE_USER_ID);
       expect(res.status).toBe(404);
+    });
+
+    it('should return 401 if not authenticated', async () => {
+      const res = await request(app).get('/api/profile/');
+      expect(res.status).toBe(401);
     });
   });
 
