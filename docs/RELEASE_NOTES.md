@@ -151,7 +151,15 @@ Centralized configuration management accessible only to ADMIN users:
 
 ## 4. System Optimizations Required
 
-### 4.1 3D Rendering Optimization (High Priority)
+### 4.1 Asset URL Management Optimization
+
+- Improve asset URL handling across different storage providers
+- Implement URL caching and CDN optimization
+- Better error handling for broken asset links
+- Support for versioned asset URLs
+- Cross-provider URL consistency
+
+### 4.2 3D Rendering Optimization (High Priority)
 
 **Goal:** Maintain smooth FPS on low-end educational devices.
 
@@ -160,42 +168,42 @@ Centralized configuration management accessible only to ADMIN users:
 - Add Level of Detail (LOD) & instanced rendering
 - Implement better scene culling
 
-### 4.2 Particles Management
+### 4.3 Particles Management
 
 - Move particles to GPU-based processing
 - Implement particle pooling & frustum culling
 - Add dynamic particle limits & performance fallbacks
 
-### 4.3 Gizmo Optimization (Ideorama)
+### 4.4 Gizmo Optimization (Ideorama)
 
 - Optimize transform controls & object snapping
 - Reduce unnecessary updates & improve raycasting
 - Enhance mobile interaction handling
 - Add preview thumbnail for each ideorama in the list (currently no visual preview, making element identification difficult)
 
-### 4.4 Camera Management (Voxel Editor)
+### 4.5 Camera Management (Voxel Editor)
 
 - Add smooth interpolation & better orbit controls
 - Implement camera collision handling & zoom constraints
 - Improve mobile-friendly controls & focus targeting
 - Add preview thumbnail for each voxel model in the list (currently no visual preview, making element identification difficult)
 
-### 4.5 Intern Idea Management
+### 4.6 Intern Idea Management
 
 - Child-friendly UI with better project organization
 - Improved saving system, idea categorization, session persistence
 
-### 4.6 Email Service Improvements
+### 4.7 Email Service Improvements
 
 - Add retry queue, status tracking, and fallback provider
 - Improve transactional templates & monitoring/logging
 
-### 4.7 Admin Code Security
+### 4.8 Admin Code Security
 
 - Hash admin codes with expiration & one-time invite system
 - Add audit logs, rate limiting, and IP restrictions
 
-### 4.8 More Avatars for Interns
+### 4.9 More Avatars for Interns
 
 - Add diverse, child-friendly, cartoon-style avatars
 - Include educational themes and basic customization
