@@ -239,10 +239,13 @@ export default class AuthService implements IAuthService {
 
     if (!user || !user.isActive) return;
 
-    const secret = process.env.JWT_SECRET + user.password;
-    const token = jwt.sign({ userId: user.id, email: user.email }, secret, {
-      expiresIn: '1h',
-    });
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      config.JWT_SECRET,
+      {
+        expiresIn: '1h',
+      }
+    );
 
     await EmailService.sendPasswordReset(email, token);
   }
@@ -250,7 +253,7 @@ export default class AuthService implements IAuthService {
   /**
    * Verifies the reset token and applies the new password.
    *
-   * The token is verified against JWT_SECRET + currentHashedPassword.
+   * The token is verified against JWT_SECRET.
    * If the password was already reset (hash changed), the old token is invalid.
    *
    * @param token       - The JWT from the reset link
@@ -265,9 +268,8 @@ export default class AuthService implements IAuthService {
     const user = await userTable.findUnique({ where: { id: decoded.userId } });
     if (!user || !user.isActive) throw new Error('Utilisateur introuvable.');
 
-    const secret = process.env.JWT_SECRET + user.password;
     try {
-      jwt.verify(token, secret);
+      jwt.verify(token, config.JWT_SECRET);
     } catch {
       throw new Error('Le lien de réinitialisation est invalide ou a expiré.');
     }
@@ -283,7 +285,7 @@ export default class AuthService implements IAuthService {
 
   /**
    * Decodes a password  token and returns the payload it contains.
-   * Reset tokens are signed with JWT_SECRET + currentHashedPassword, so
+   * Reset tokens are signed with JWT_SECRET
    * successful verification also confirms the token hasn't been used yet.
    *
    * @param token - The signed JWT token
@@ -297,7 +299,7 @@ export default class AuthService implements IAuthService {
     const user = await userTable.findUnique({ where: { id: decoded.userId } });
     if (!user) throw new Error('Utilisateur introuvable.');
 
-    const secret = config.JWT_SECRET + user.password;
+    const secret = config.JWT_SECRET;
     jwt.verify(token, secret);
 
     return decoded;

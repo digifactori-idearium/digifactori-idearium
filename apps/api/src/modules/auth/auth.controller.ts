@@ -9,6 +9,7 @@ import {
   resetPasswordSchema,
 } from './auth.validation';
 
+import config from '@/config/app.config';
 import { IAuthService } from '@/types';
 import asyncHandler from '@/utils/async-handler';
 import { generateToken } from '@/utils/generate-token';
@@ -156,7 +157,7 @@ export default class AuthController {
    * Resets the password using the JWT token received in the email link.
    * The token is passed as a query parameter: /auth/reset-password?token=xxx
    *
-   * The token secret is built from JWT_SECRET + currentHashedPassword,
+   * The token secret is built from JWT_SECRET,
    * so it is automatically invalidated once the password changes (true one-time use).
    *
    * @route  POST /auth/reset-password?token=xxx
@@ -191,9 +192,8 @@ export default class AuthController {
       );
     }
 
-    const secret = process.env.JWT_SECRET + user.password;
     try {
-      jwt.verify(token, secret);
+      jwt.verify(token, config.JWT_SECRET);
     } catch {
       return HttpResponse.badRequest(
         'Le lien de réinitialisation est invalide ou a expiré.'

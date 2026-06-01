@@ -3,6 +3,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 
+import config from '@/config/app.config';
 import { prisma } from '@/config/client.config';
 import createAuthRoutes from '@/modules/auth/auth.route';
 import { EmailService } from '@/modules/auth/email.service';
@@ -350,7 +351,7 @@ describe('User authentication handling', () => {
       mockService.changePassword.mockResolvedValue(true);
       const resetToken = jwt.sign(
         { userId: user.id, email: user.email },
-        process.env.JWT_SECRET + user.password,
+        config.JWT_SECRET,
         { expiresIn: '1h' }
       );
 
@@ -442,12 +443,17 @@ describe('User authentication handling', () => {
 
     it('should return 400 if the token is not valid', async () => {
       const { user } = createFakeUser({ isActive: true });
-      const { profile } = createFakeProfile();
       mockService.getSingleUser.mockResolvedValue(user);
+
+      const invalidToken = jwt.sign(
+        { userId: user.id, email: user.email },
+        'wrong-secret-key',
+        { expiresIn: '1h' }
+      );
 
       const res = await request(app)
         .patch('/api/auth/reset-password')
-        .query({ token: generateToken(user, profile) })
+        .query({ token: invalidToken })
         .send({
           newPassword: '333333aA!',
           confirmPassword: '333333aA!',
@@ -463,7 +469,7 @@ describe('User authentication handling', () => {
       mockService.getSingleUser.mockResolvedValue(user);
       const token = jwt.sign(
         { userId: user.id, email: user.email },
-        process.env.JWT_SECRET + user.password,
+        config.JWT_SECRET,
         { expiresIn: '1h' }
       );
 
@@ -485,7 +491,7 @@ describe('User authentication handling', () => {
       mockService.getSingleUser.mockResolvedValue(user);
       const token = jwt.sign(
         { userId: user.id, email: user.email },
-        process.env.JWT_SECRET + user.password,
+        config.JWT_SECRET,
         { expiresIn: '1h' }
       );
 
