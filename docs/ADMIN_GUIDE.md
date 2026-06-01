@@ -141,13 +141,14 @@ Authorization: Bearer <accessToken>
 
 > ADMIN only.
 
-| Method   | Endpoint             | Description                                                               |
-| -------- | -------------------- | ------------------------------------------------------------------------- |
-| `GET`    | `/storage`           | Get current storage configuration                                         |
-| `POST`   | `/storage/test`      | Test credentials without saving                                           |
-| `PATCH`  | `/storage`           | Update storage configuration                                              |
-| `DELETE` | `/storage`           | Reset storage to LOCAL                                                    |
-| `GET`    | `/storage/file/:key` | Stream a file by its storage key (authenticated, proxied through backend) |
+| Method   | Endpoint              | Description                                                                |
+| -------- | --------------------- | -------------------------------------------------------------------------- |
+| `GET`    | `/storage`            | Get current storage configuration                                          |
+| `POST`   | `/storage/test`       | Test credentials without saving                                            |
+| `PATCH`  | `/storage`            | Update storage configuration                                               |
+| `DELETE` | `/storage`            | Reset storage to LOCAL                                                     |
+| `GET`    | `/storage/file/:key`  | Stream a file by its storage key (authenticated, proxied through backend)  |
+| `GET`    | `/storage/signed-url` | Get a short-lived signed URL to fetch the asset directly from the provider |
 
 ---
 

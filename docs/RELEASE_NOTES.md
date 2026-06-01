@@ -171,12 +171,14 @@ Centralized configuration management accessible only to ADMIN users:
 - Optimize transform controls & object snapping
 - Reduce unnecessary updates & improve raycasting
 - Enhance mobile interaction handling
+- Add preview thumbnail for each ideorama in the list (currently no visual preview, making element identification difficult)
 
 ### 4.4 Camera Management (Voxel Editor)
 
 - Add smooth interpolation & better orbit controls
 - Implement camera collision handling & zoom constraints
 - Improve mobile-friendly controls & focus targeting
+- Add preview thumbnail for each voxel model in the list (currently no visual preview, making element identification difficult)
 
 ### 4.5 Intern Idea Management
 
